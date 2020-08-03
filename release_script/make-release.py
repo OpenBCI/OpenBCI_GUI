@@ -12,22 +12,21 @@
 #
 #########################################################################################
 
-import sys, os, shutil, platform, subprocess
-
-# Fix Python 2.x.
-try: input = raw_input
-except NameError: pass
+import sys
+import os
+import shutil
+import platform
+import subprocess
+import argparse
 
 ### Define platform-specific strings
 ###########################################################
 MAC = 'Darwin'
 LINUX = 'Linux'
 WINDOWS = 'Windows'
-WINDOWS32 = 'Windows32'
 LOCAL_OS = platform.system()
 
 flavors = {
-    WINDOWS32 : "application.windows32",
     WINDOWS : "application.windows64",
     LINUX : "application.linux64",
     MAC : "application.macosx"
@@ -37,12 +36,6 @@ data_dir_names = {
     WINDOWS : "data",
     LINUX : "data",
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
-}
-
-hub_dir_names = {
-    WINDOWS : "OpenBCIHub",
-    LINUX : "OpenBCIHub",
-    MAC : "OpenBCIHub.app"
 }
 
 ### Function: Rename flavor with GUI version
@@ -77,11 +70,11 @@ def find_sketch_dir():
 
 ### Function: Clean up any old build directories or .zips
 ###########################################################
-def cleanup_build_dirs(sketch_dir):
+def cleanup_build_dirs():
     print("Cleanup ...")
-    for file in os.listdir(sketch_dir):
+    for file in os.listdir(os.getcwd()):
         if file.startswith("application.") or file.startswith("openbcigui_"):
-            file_path = os.path.join(sketch_dir, file)
+            file_path = os.path.join(os.getcwd(), file)
             if os.path.isdir(file_path):
                 shutil.rmtree(file_path)
                 print ("Successfully deleted " + file)
@@ -108,29 +101,24 @@ def ask_windows_signing():
 
 ### Function: Run a build using processing-java
 ###########################################################
-def build_app(sketch_dir, bit32 = False):
-    # 32-bit build requires you to have a 32-bit installation of processing
-    # then rename processing-java.exe to processing-java32.exe and add it to your PATH
-    command = "processing-java"
-    if bit32:
-        command += "32"
-
+def build_app(sketch_dir, flavor):
     # unfortunately, processing-java always returns exit code 1,
     # so we can't reliably check for success or failure
+    # https://github.com/processing/processing/issues/5468
     print ("Using sketch: " + sketch_dir)
-    subprocess.call([command, "--sketch=" + sketch_dir, "--export"])
+    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
 
 ### Function: Package the app in the expected file structure
 ###########################################################
 def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     # sanity check: is the build output there?
-    build_dir = os.path.join(sketch_dir, flavor)
+    build_dir = os.path.join(os.getcwd(), flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
 
     # rename the build dir
     release_dir_name = get_release_dir_name(sketch_dir, flavor)
-    new_build_dir = os.path.join(sketch_dir, release_dir_name)
+    new_build_dir = os.path.join(os.getcwd(), release_dir_name)
     os.rename(build_dir, new_build_dir)
     build_dir = new_build_dir
 
@@ -143,47 +131,6 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         print ("WARNING: Could not delete source dir: " + source_dir)
     else:
         print ("Successfully deleted source dir.")
-
-    ### Ask user for the hub directory
-    ###########################################################
-    hub_dir = input("Drag and drop the HUB for " + flavor + " [ENTER to skip]: ")
-
-    if hub_dir: # if the hub_dir is not empty (user did not skip)
-        if LOCAL_OS == WINDOWS:
-            # sanity check: does this directory contain the hub executable?
-            hub_exe = os.path.join(hub_dir, "OpenBCIHub.exe")
-            while not os.path.isfile(hub_exe):
-                hub_dir = input("OpenBCIHub.exe not found in this directory, please re-enter: ")
-                hub_exe = os.path.join(hub_dir, "OpenBCIHub.exe")
-        if LOCAL_OS == LINUX:
-            # sanity check: does this directory contain the hub executable?
-            hub_exe = os.path.join(hub_dir, "OpenBCIHub")
-            while not os.path.isfile(hub_exe):
-                hub_dir = input("OpenBCIHub executable not found in this directory, please re-enter: ")
-                hub_exe = os.path.join(hub_dir, "OpenBCIHub")
-        elif LOCAL_OS == MAC:
-            while not hub_dir.endswith("OpenBCIHub.app"):
-                hub_dir = input("Expected a path to OpenBCIHub.app, please re-enter:")
-
-        ### Copy the Hub to the data directory
-        ###########################################################
-        # sanity check: data directory?
-        data_dir = os.path.join(build_dir, data_dir_names[LOCAL_OS])
-        if not os.path.isdir(data_dir):
-            sys.exit("ERROR: Could not find data directory: " + data_dir)
-
-        # copy Hub to data directory
-        hub_dest_dir = os.path.join(data_dir, hub_dir_names[LOCAL_OS])
-        try:
-            shutil.copytree(hub_dir, hub_dest_dir, symlinks=True)
-        except shutil.Error as err:
-            print (err)
-            print ("WARNING: Failed to copy the Hub to the data dir.")
-        except OSError as err:
-            print (err)
-            print ("WARNING: Failed to copy the Hub to the data dir. Perhaps it already exists?")
-        else:
-            print ("Successfully copied Hub to the data dir.")
 
     ### On mac, copy the icon file and sign the app
     ###########################################################
@@ -212,20 +159,10 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
 
-        ### On Windows, just sign the app
-        ###########################################################
-        if windows_signing:
-            try:
-                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
-                    windows_pfx_password, "/tr", "http://tsa.starfieldtech.com", "/td", "SHA256", exe_dir])
-            except subprocess.CalledProcessError as err:
-                print (err)
-                print ("WARNING: Failed to sign app.")
-
         # On Windows, set the application manifest
         ###########################################################
         try:
-            subprocess.check_call(["mt", "-manifest", "release_script/gui.manifest",
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
                 "-outputresource:" + exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -236,13 +173,23 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         assert (os.path.isfile(java_exe_dir))
         assert (os.path.isfile(javaw_exe_dir))
         try:
-            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
                 "-outputresource:" + java_exe_dir + ";#1"])
-            subprocess.check_call(["mt", "-manifest", "release_script/java.manifest",
+            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
                 "-outputresource:" + javaw_exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to set manifest for java.exe and javaw.exe")
+
+        ### On Windows, sign the app
+        ###########################################################
+        if windows_signing:
+            try:
+                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                    windows_pfx_password, "/tr", "http://timestamp.digicert.com", "/td", "SHA256", exe_dir])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign app.")
 
     ### On Mac, make a .dmg and sign it
     ###########################################################
@@ -250,7 +197,7 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
         dmg_dir = build_dir + ".dmg"
         try:
-            subprocess.check_call(["dmgbuild", "-s", "release_script/dmgbuild_settings.py", "-D",\
+            subprocess.check_call(["dmgbuild", "-s", "release_script/mac_only/dmgbuild_settings.py", "-D",\
                 "app=" + app_dir, "OpenBCI_GUI", dmg_dir])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -279,24 +226,38 @@ def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = ''
         shutil.move(temp_dir, build_dir)
         print ("Done: " + shutil.make_archive(build_dir, 'zip', build_dir))
 
-### Build Sequence
-###########################################################
-# grab the sketch directory
-sketch_dir = find_sketch_dir()
-# ask about signing
-windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
-# Cleanup to start
-cleanup_build_dirs(sketch_dir)
-# run the build (processing-java)
-build_app(sketch_dir)
-#package it up
-flavor = flavors[LOCAL_OS]
-package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
 
-# on window, also build the 32-bit version
-#if(LOCAL_OS == WINDOWS):
-    #flavor = flavors[WINDOWS32]
-    # run the 32-bit build (processing-java32)
-    #build_app(sketch_dir, True)
+def main ():
+    parser = argparse.ArgumentParser ()
+    # use docs to check which parameters are required for specific board, e.g. for Cyton - set serial port
+    parser.add_argument ('--no-prompts', action = 'store_true', help  = 'whether to prompt the user for anything', required = False)
+    parser.add_argument ('--pfx-path', type = str, help  = 'path to the pfx file for windows signing', required = False, default = '', nargs='?')
+    parser.add_argument ('--pfx-password', type = str, help  = 'password for the pfx file for windows signing', required = False, default = '', nargs='?')
+    args = parser.parse_args ()
+
+    # grab the sketch directory
+    sketch_dir = find_sketch_dir()
+
+    # ask about signing
+    windows_signing = False
+    windows_pfx_path = args.pfx_path;
+    windows_pfx_password = args.pfx_password;
+
+    if windows_pfx_path and windows_pfx_password:
+        windows_signing = True;
+    elif(not args.no_prompts):
+        windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
+
+    # Cleanup to start
+    cleanup_build_dirs()
+
+    flavor = flavors[LOCAL_OS]
+
+    # run the build (processing-java)
+    build_app(sketch_dir, flavor)
+
     #package it up
-    #package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
+
+if __name__ == "__main__":
+    main ()

@@ -10,32 +10,34 @@
 
 class Widget{
 
-    PApplet pApplet;
+    protected PApplet pApplet;
 
-    int x0, y0, w0, h0; //true x,y,w,h of container
-    int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
+    protected int x0, y0, w0, h0; //true x,y,w,h of container
+    protected int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
-    int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
+    private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
-    boolean dropdownsShouldBeClosed = false;
-    boolean dropdownIsActive = false;
-    boolean widgetSelectorIsActive = false;
+    protected boolean dropdownIsActive = false;
+    private boolean widgetSelectorIsActive = false;
 
-    ArrayList<NavBarDropdown> dropdowns;
-    ControlP5 cp5_widget;
-    String widgetTitle = "No Title Set";
+    private ArrayList<NavBarDropdown> dropdowns;
+    protected ControlP5 cp5_widget;
+    protected String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
-    private final float widgetDropdownScaling = .35;
+    private final float widgetDropdownScaling = .90;
     private boolean isWidgetActive = false;
 
     //some variables for the dropdowns
-    int navH = 22;
-    int widgetSelectorWidth = 160;
-    int dropdownWidth = 64;
+    protected final int navH = 22;
+    private int widgetSelectorWidth = 160;
+    private int widgetSelectorHeight = 0;
+    private final int dropdownWidth = 64;
+    private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
     Widget(PApplet _parent){
         pApplet = _parent;
         cp5_widget = new ControlP5(pApplet);
+        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
         dropdowns = new ArrayList<NavBarDropdown>();
         //setup dropdown menus
 
@@ -44,19 +46,19 @@ class Widget{
 
     }
 
-    boolean getIsActive() {
+    public boolean getIsActive() {
         return isWidgetActive;
     }
 
-    void setIsActive(boolean isActive) {
+    public void setIsActive(boolean isActive) {
         isWidgetActive = isActive;
     }
 
-    void update(){
+    public void update(){
         updateDropdowns();
     }
 
-    void draw(){
+    public void draw(){
         pushStyle();
 
         fill(255);
@@ -68,53 +70,31 @@ class Widget{
         fill(200, 200, 200);
         rect(x0, y0+navH, w0, navH); //button bar
 
-        // fill(255);
-        // rect(x+2, y+2, navH-4, navH-4);
-        // fill(bgColor, 100);
-        // rect(x+4, y+4, (navH-10)/2, (navH-10)/2);
-        // rect(x+4, y+((navH-10)/2)+5, (navH-10)/2, (navH-10)/2);
-        // rect(x+((navH-10)/2)+5, y+4, (navH-10)/2, (navH-10)/2);
-        // rect(x+((navH-10)/2)+5, y+((navH-10)/2)+5, (navH-10)/2, (navH-10 )/2);
-        //
-        // fill(bgColor);
-        // textAlign(LEFT, CENTER);
-        // textFont(h2);
-        // textSize(16);
-        // text(widgetTitle, x+navH+2, y+navH/2 - 2); //title of widget -- left
-
-        // drawDropdowns(); //moved to WidgetManager, so that dropdowns draw on top of widget content
-
         popStyle();
     }
 
-    void addDropdown(String _id, String _title, List _items, int _defaultItem){
+    public void addDropdown(String _id, String _title, List _items, int _defaultItem){
         NavBarDropdown dropdownToAdd = new NavBarDropdown(_id, _title, _items, _defaultItem);
         dropdowns.add(dropdownToAdd);
     }
 
-    void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
-        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
-        // cp5_widget.setFont(h2, 16);
-        // cp5_widget.getCaptionLabel().toUpperCase(false);
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        //      SETUP the widgetSelector dropdown
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
         cp5_widget.setColor(settings.dropdownColors);
-        cp5_widget.addScrollableList("WidgetSelector")
+        ScrollableList scrollList = new CustomScrollableList(cp5_widget, "WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
+            .setBackgroundColor(150)
+            //.setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
             .setBarHeight(navH-4) //height of top/primary bar
             .setItemHeight(navH-4) //height of all item/dropdown bars
             .addItems(_widgetOptions) // used to be .addItems(maxFreqList)
             ;
-        cp5_widget.getController("WidgetSelector")
-            .getCaptionLabel() //the caption label is the text object in the primary bar
+        
+        scrollList.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(widgetTitle)
             .setFont(h4)
@@ -122,61 +102,44 @@ class Widget{
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_widget.getController("WidgetSelector")
-            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+        
+        scrollList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(widgetTitle)
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
-            ;
+            ;        
     }
 
-    void setupNavDropdowns(){
-
-        cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
-        // cp5_widget.setFont(h3, 12);
-
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-        //      SETUP all NavBarDropdowns
-        //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        /*
-        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
-        // dropdownColors.setForeground((int)color(125)); //when hovering over any box (primary or dropdown)
-        dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
-        dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
-        // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
-        dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
-        */
-
+    public void setupNavDropdowns(){
         cp5_widget.setColor(settings.dropdownColors);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             // println("dropdowns.get(i).id = " + dropdowns.get(i).id);
-            cp5_widget.addScrollableList(dropdowns.get(i).id)
+            ScrollableList scrollList = new CustomScrollableList(cp5_widget, dropdowns.get(i).id)
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
                 .setColor(settings.dropdownColors)
+                .setBackgroundColor(150)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
                 .setItemHeight(navH-4)
                 .addItems(dropdowns.get(i).items) // used to be .addItems(maxFreqList)
                 ;
-            cp5_widget.getController(dropdowns.get(i).id)
-                .getCaptionLabel()
+                
+            scrollList.getCaptionLabel()
                 .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
                 .setText(dropdowns.get(i).returnDefaultAsString())
                 .setSize(12)
                 .getStyle()
                 .setPaddingTop(4)
                 ;
-            cp5_widget.getController(dropdowns.get(i).id)
-                .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+
+            scrollList.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
                 .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
                 .setText(widgetTitle)
                 .setSize(12) //set the font size of the item bars to 14pt
@@ -185,44 +148,25 @@ class Widget{
                 ;
         }
     }
-    void updateDropdowns(){
+    private void updateDropdowns(){
         //if a dropdown is open and mouseX/mouseY is outside of dropdown, then close it
         // println("dropdowns.size() = " + dropdowns.size());
         dropdownIsActive = false;
 
-        if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
-            dropdownIsActive = true;
-            if(!cp5_widget.getController("WidgetSelector").isMouseOver()){
-                cp5_widget.get(ScrollableList.class, "WidgetSelector").close();
-            }
+        if (!initialResize) {
+            resizeWidgetSelector(); //do this once after instantiation to fix grey background drawing error
+            initialResize = true;
         }
 
+        //auto close dropdowns based on mouse location
+        if(cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
+            dropdownIsActive = true;
+
+        }
         for(int i = 0; i < dropdowns.size(); i++){
             if(cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
                 //println("++++++++Mouse is over " + dropdowns.get(i).id);
                 dropdownIsActive = true;
-                if(!cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-                    cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).close();
-                }
-            }
-        }
-
-        //onHover ... open ... no need to click
-        if(dropdownsShouldBeClosed){ //this if takes care of the scenario where you select the same widget that is active...
-            dropdownsShouldBeClosed = false;
-        } else{
-            if(!cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()){
-                if(cp5_widget.getController("WidgetSelector").isMouseOver()){
-                    cp5_widget.get(ScrollableList.class, "WidgetSelector").open();
-                }
-            }
-
-            for(int i = 0; i < dropdowns.size(); i++){
-                if(!cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).isOpen()){
-                    if(cp5_widget.getController(dropdowns.get(i).id).isMouseOver()){
-                        cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).open();
-                    }
-                }
             }
         }
 
@@ -234,68 +178,67 @@ class Widget{
 
     }
 
-    void drawDropdowns(){
-
-        //draw dropdown titles
-        pushStyle();
-
-        noStroke();
-        textFont(h5);
-        textSize(12);
-        textAlign(CENTER, BOTTOM);
-        fill(bgColor);
-        for(int i = 0; i < dropdowns.size(); i++){
-            int dropdownPos = dropdowns.size() - i;
-            // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));
-            text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));
-        }
-
-        //draw background/stroke of widgetSelector dropdown
-        fill(150);
-        rect(cp5_widget.getController("WidgetSelector").getPosition()[0]-1, cp5_widget.getController("WidgetSelector").getPosition()[1]-1, widgetSelectorWidth+2, cp5_widget.get(ScrollableList.class, "WidgetSelector").getHeight()+2);
-
-        //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
-        fill(200);
-        for(int i = 0; i < dropdowns.size(); i++){
-            rect(cp5_widget.getController(dropdowns.get(i).id).getPosition()[0] - 1, cp5_widget.getController(dropdowns.get(i).id).getPosition()[1] - 1, dropdownWidth + 2, cp5_widget.get(ScrollableList.class, dropdowns.get(i).id).getHeight()+2);
-        }
-
-        textAlign(RIGHT, TOP);
+    private void drawDropdowns(){
         cp5_widget.draw(); //this draws all cp5 elements... in this case, the scrollable lists that populate our dropdowns<>
 
-        popStyle();
+        //draw dropdown titles		
+        pushStyle();		
+        noStroke();		
+        textFont(h5);		
+        textSize(12);		
+        textAlign(CENTER, BOTTOM);		
+        fill(bgColor);		
+        for(int i = 0; i < dropdowns.size(); i++){		
+            int dropdownPos = dropdowns.size() - i;		
+            // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
+            text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));		
+        }
     }
 
-
-
-    void mouseDragged(){
+    public void mouseDragged(){
 
     }
 
-    void mousePressed(){
+    public void mousePressed(){
 
     }
 
-    void mouseReleased(){
+    public void mouseReleased(){
 
     }
 
-    void screenResized(){
+    public void screenResized(){
         mapToCurrentContainer();
     }
 
-    void setTitle(String _widgetTitle){
+    public void setTitle(String _widgetTitle){
         widgetTitle = _widgetTitle;
     }
 
-    void setContainer(int _currentContainer){
+    public void setContainer(int _currentContainer){
         currentContainer = _currentContainer;
         mapToCurrentContainer();
         screenResized();
 
     }
 
-    void mapToCurrentContainer(){
+    private void resizeWidgetSelector() {
+        int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
+        if (wm != null) {
+            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
+            if (widgetSelectorHeight > maxDropdownHeight) widgetSelectorHeight = maxDropdownHeight;
+        }
+
+        cp5_widget.getController("WidgetSelector")
+            .setPosition(x0+2, y0+2) //upper left corner
+            ;
+        cp5_widget.getController("WidgetSelector")
+            .setSize(widgetSelectorWidth, widgetSelectorHeight);
+            ;
+    }
+
+    private void mapToCurrentContainer(){
         x0 = (int)container[currentContainer].x;
         y0 = (int)container[currentContainer].y;
         w0 = (int)container[currentContainer].w;
@@ -309,28 +252,11 @@ class Widget{
         //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
         cp5_widget.setGraphics(pApplet, 0, 0);
 
-        int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
-        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
-        int dropdownHeight = (dropdownsItemsToShow + 1) * (navH - 4);
-        if (wm != null) {
-            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
-            if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
+        if (cp5_widget.getController("WidgetSelector") != null) {
+            resizeWidgetSelector();
         }
 
-
-        try {
-            cp5_widget.getController("WidgetSelector")
-                .setPosition(x0+2, y0+2) //upper left corner
-                ;
-            cp5_widget.getController("WidgetSelector")
-                .setSize(widgetSelectorWidth, dropdownHeight);
-                ;
-        }
-        catch (Exception e) {
-            // println(e.getMessage());
-            // println("widgetOptions List not built yet..."); AJK 8/22/17 because this is annoyance
-        }
-
+        //Other dropdowns
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             cp5_widget.getController(dropdowns.get(i).id)
@@ -341,7 +267,7 @@ class Widget{
         }
     }
 
-    boolean isMouseHere(){
+    public boolean isMouseHere(){
         if(getIsActive()){
             if(mouseX >= x0 && mouseX <= x0 + w0 && mouseY >= y0 && mouseY <= y0 + h0){
                 println("Your cursor is in " + widgetTitle);
@@ -354,7 +280,7 @@ class Widget{
         }
     }
 
-    void ignoreButtonCheck(Button b) {
+    void ignoreButtonCheck(Button_obci b) {
         //ignore top left button interaction when widgetSelector dropdown is active
         if (dropdownIsActive) {
             b.setIgnoreHover(true);
@@ -417,13 +343,6 @@ class NavBarDropdown{
 
 }
 
-void closeAllDropdowns(){
-    //close all dropdowns
-    for(int i = 0; i < wm.widgets.size(); i++){
-        wm.widgets.get(i).dropdownsShouldBeClosed = true;
-    }
-}
-
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
@@ -445,8 +364,6 @@ void WidgetSelector(int n){
     wm.widgets.get(n).setIsActive(true);//activate the new widget
     wm.widgets.get(n).setContainer(theContainer);//map it to the current container
     //set the text of the widgetSelector to the newly selected widget
-
-    closeAllDropdowns();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

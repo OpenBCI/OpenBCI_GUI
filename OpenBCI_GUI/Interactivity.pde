@@ -27,11 +27,9 @@ synchronized void keyPressed() {
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
-        if (settings.expertModeToggle || (int(key) == 32)) { //Check if Expert Mode is On or Spacebar has been pressed
+        if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
-            } else {
-                parseKeycode(keyCode);
             }
         }
     }
@@ -42,28 +40,14 @@ synchronized void keyPressed() {
 }
 
 void parseKey(char val) {
-    int Ichan; boolean activate; int code_P_N_Both;
-
     //assumes that val is a usual printable ASCII character (ASCII 32 through 126)
     switch (val) {
         case ' ':
+            // space to start/stop the stream
             stopButtonWasPressed();
-            break;
-        case '.':
-            //This keyboard shortcut is not being used!
             break;
         case ',':
             drawContainers = !drawContainers;
-            break;
-        case '<':
-            //w_timeSeries.setUpdating(!w_timeSeries.isUpdating());
-            break;
-        case '>':
-            /*
-            if(eegDataSource == DATASOURCE_GANGLION){
-                ganglion.enterBootloaderMode();
-            }
-            */
             break;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){
@@ -74,179 +58,116 @@ void parseKey(char val) {
             topNav.updateNavButtonsBasedOnColorScheme();
             println("Changing color scheme.");
             break;
-        case '/':
-            //Not being used
-            break;
-        case '\\':
-            //Not being used
-            break;
+
+        //deactivate channels 1-16
         case '1':
-            deactivateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, false);
             break;
         case '2':
-            deactivateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, false);
             break;
         case '3':
-            deactivateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, false);
             break;
         case '4':
-            deactivateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, false);
             break;
         case '5':
-            deactivateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, false);
             break;
         case '6':
-            deactivateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, false);
             break;
         case '7':
-            deactivateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, false);
             break;
         case '8':
-            deactivateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, false);
             break;
-
         case 'q':
-            if(nchan == 16){
-                deactivateChannel(9-1);
-            }
+            currentBoard.setEXGChannelActive(9-1, false);
             break;
         case 'w':
-            if(nchan == 16){
-                deactivateChannel(10-1);
-            }
+            currentBoard.setEXGChannelActive(10-1, false);
             break;
         case 'e':
-            if(nchan == 16){
-                deactivateChannel(11-1);
-            }
+            currentBoard.setEXGChannelActive(11-1, false);
             break;
         case 'r':
-            if(nchan == 16){
-                deactivateChannel(12-1);
-            }
+            currentBoard.setEXGChannelActive(12-1, false);
             break;
         case 't':
-            if(nchan == 16){
-                deactivateChannel(13-1);
-            }
+            currentBoard.setEXGChannelActive(13-1, false);
             break;
         case 'y':
-            if(nchan == 16){
-                deactivateChannel(14-1);
-            }
+            currentBoard.setEXGChannelActive(14-1, false);
             break;
         case 'u':
-            if(nchan == 16){
-                deactivateChannel(15-1);
-            }
+            currentBoard.setEXGChannelActive(15-1, false);
             break;
         case 'i':
-            if(nchan == 16){
-                deactivateChannel(16-1);
-            }
-            break;
-        case ':':
-            println("test..."); //@@@@@
-            boolean test = isNetworkingTextActive();
+            currentBoard.setEXGChannelActive(16-1, false);
             break;
 
-        //activate channels 1-8
+        //activate channels 1-16
         case '!':
-            activateChannel(1-1);
+            currentBoard.setEXGChannelActive(1-1, true);
             break;
         case '@':
-            activateChannel(2-1);
+            currentBoard.setEXGChannelActive(2-1, true);
             break;
         case '#':
-            activateChannel(3-1);
+            currentBoard.setEXGChannelActive(3-1, true);
             break;
         case '$':
-            activateChannel(4-1);
+            currentBoard.setEXGChannelActive(4-1, true);
             break;
         case '%':
-            activateChannel(5-1);
+            currentBoard.setEXGChannelActive(5-1, true);
             break;
         case '^':
-            activateChannel(6-1);
+            currentBoard.setEXGChannelActive(6-1, true);
             break;
         case '&':
-            activateChannel(7-1);
+            currentBoard.setEXGChannelActive(7-1, true);
             break;
         case '*':
-            activateChannel(8-1);
+            currentBoard.setEXGChannelActive(8-1, true);
             break;
-
-        //activate channels 9-16 (DAISY MODE ONLY)
         case 'Q':
-            if(nchan == 16){
-                activateChannel(9-1);
-            }
+            currentBoard.setEXGChannelActive(9-1, true);
             break;
         case 'W':
-            if(nchan == 16){
-                activateChannel(10-1);
-            }
+            currentBoard.setEXGChannelActive(10-1, true);
             break;
         case 'E':
-            if(nchan == 16){
-                activateChannel(11-1);
-            }
+            currentBoard.setEXGChannelActive(11-1, true);
             break;
         case 'R':
-            if(nchan == 16){
-                activateChannel(12-1);
-            }
+            currentBoard.setEXGChannelActive(12-1, true);
             break;
         case 'T':
-            if(nchan == 16){
-                activateChannel(13-1);
-            }
+            currentBoard.setEXGChannelActive(13-1, true);
             break;
         case 'Y':
-            if(nchan == 16){
-                activateChannel(14-1);
-            }
+            currentBoard.setEXGChannelActive(14-1, true);
             break;
         case 'U':
-            if(nchan == 16){
-                activateChannel(15-1);
-            }
+            currentBoard.setEXGChannelActive(15-1, true);
             break;
         case 'I':
-            if(nchan == 16){
-                activateChannel(16-1);
-            }
+            currentBoard.setEXGChannelActive(16-1, true);
             break;
 
         //other controls
         case 's':
-            println("case s...");
             stopRunning();
             //stopButtonWasPressed();
             break;
 
         case 'b':
-            println("case b...");
             startRunning();
             //stopButtonWasPressed();
-            break;
-
-        //Lowercase k sets Bias Don't Include all channels
-        case 'k':
-            for (int i = 0; i < nchan; i++) { //for every channel
-                //BIAS off all channels
-                channelSettingValues[i][3] = '0';
-                println ("chan " + i + " bias don't include");
-            }
-            break;
-        //Lowercase l sets Bias Include all channels
-        case 'l':
-            for (int i = 0; i < nchan; i++) { //for every channel
-                //buttons are updated in HardwareSettingsController based on channelSettingValues[i][j]
-                //BIAS on all channells
-                channelSettingValues[i][3] = '1';
-                println ("chan " + i + " bias include");
-            }
             break;
 
         ///////////////////// Save User settings lowercase n
@@ -263,152 +184,26 @@ void parseKey(char val) {
             break;
 
         case '?':
-            cyton.printRegisters();
+            if(currentBoard instanceof BoardCyton) {
+                ((BoardCyton)currentBoard).printRegisters();
+            }
             break;
 
-        case 'd':
-            verbosePrint("Updating GUI's channel settings to default...");
-            w_timeSeries.hsc.loadDefaultChannelSettings();
-            //cyton.serial_openBCI.write('d');
-            cyton.configureAllChannelsToDefault();
+        case 'd':   
             break;
 
         case 'm':
-            String picfname = "OpenBCI-" + getDateString() + ".jpg";
+            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
+            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
-        /*
-        //Used for testing marker mode
-        case 'M':
-            if (eegDataSource == DATASOURCE_CYTON) {
-                hub.sendCommand("`9");
-                println("Cyton: Setting a Marker +++++");
-            }
-            break;
-        */
+            
         default:
-            if (eegDataSource == DATASOURCE_CYTON) {
-                println("Interactivity: '" + key + "' Pressed...sending to Cyton...");
-                cyton.write(key);
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                println("Interactivity: '" + key + "' Pressed...sending to Ganglion...");
-                hub.sendCommand(key);
+            if (currentBoard instanceof Board) {
+                println("Interactivity: '" + key + "' Pressed...sending to Board...");
+                ((Board)currentBoard).sendCommand(str(key));
             }
-            break;
-    }
-}
-
-void parseKeycode(int val) {
-    //assumes that val is Java keyCode
-    switch (val) {
-        case 8:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received BACKSPACE keypress.  Ignoring...");
-            break;
-        case 9:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received TAB keypress.  Ignoring...");
-            //gui.showImpedanceButtons = !gui.showImpedanceButtons;
-            // gui.incrementGUIpage(); //deprecated with new channel controller
-            break;
-        case 10:
-            println("Enter was pressed.");
-            drawPresentation = !drawPresentation;
-            break;
-        case 16:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received SHIFT keypress.  Ignoring...");
-            break;
-        case 17:
-            //println("OpenBCI_GUI: parseKeycode(" + val + "): received CTRL keypress.  Ignoring...");
-            break;
-        case 18:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received ALT keypress.  Ignoring...");
-            break;
-        case 20:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received CAPS LOCK keypress.  Ignoring...");
-            break;
-        case 27:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received ESC keypress.  Stopping OpenBCI...");
-            //stopRunning();
-            break;
-        case 33:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE UP keypress.  Ignoring...");
-            break;
-        case 34:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received PAGE DOWN keypress.  Ignoring...");
-            break;
-        case 35:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received END keypress.  Ignoring...");
-            break;
-        case 36:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received HOME keypress.  Ignoring...");
-            break;
-        case 37:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide >= 0){
-                    myPresentation.slideBack();
-                    myPresentation.timeOfLastSlideChange = millis();
-                }
-            }
-            break;
-        case 38:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received UP ARROW keypress.  Ignoring...");
-            break;
-        case 39:
-            if (millis() - myPresentation.timeOfLastSlideChange >= 250) {
-                if(myPresentation.currentSlide < myPresentation.presentationSlides.length - 1){
-                    myPresentation.slideForward();
-                    myPresentation.timeOfLastSlideChange = millis();
-                }
-            }
-            break;
-        case 40:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received DOWN ARROW keypress.  Ignoring...");
-            break;
-        case 112:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F1 keypress.  Ignoring...");
-            break;
-        case 113:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F2 keypress.  Ignoring...");
-            break;
-        case 114:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F3 keypress.  Ignoring...");
-            break;
-        case 115:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F4 keypress.  Ignoring...");
-            break;
-        case 116:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F5 keypress.  Ignoring...");
-            break;
-        case 117:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F6 keypress.  Ignoring...");
-            break;
-        case 118:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F7 keypress.  Ignoring...");
-            break;
-        case 119:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F8 keypress.  Ignoring...");
-            break;
-        case 120:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F9 keypress.  Ignoring...");
-            break;
-        case 121:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F10 keypress.  Ignoring...");
-            break;
-        case 122:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F11 keypress.  Ignoring...");
-            break;
-        case 123:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received F12 keypress.  Ignoring...");
-            break;
-        case 127:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received DELETE keypress.  Ignoring...");
-            break;
-        case 155:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): received INSERT keypress.  Ignoring...");
-            break;
-        default:
-            println("OpenBCI_GUI: parseKeycode(" + val + "): value is not known.  Ignoring...");
             break;
     }
 }
@@ -464,8 +259,6 @@ synchronized void mousePressed() {
             }
         }
     }
-
-    redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is pressed
 }
 
 synchronized void mouseReleased() {
@@ -490,8 +283,6 @@ synchronized void mouseReleased() {
 
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
         wm.mouseReleased();
-
-        redrawScreenNow = true;  //command a redraw of the GUI whenever the mouse is released
     }
 
     if (settings.screenHasBeenResized) {
@@ -504,20 +295,51 @@ synchronized void mouseReleased() {
 //                       Classes
 //------------------------------------------------------------------------
 
+class CustomScrollableList extends ScrollableList {
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Formerly Button.pde
-// This class creates and manages a button for use on the screen to trigger actions.
-//
-// Created: Chip Audette, Oct 2013.
-// Modified: Conor Russomanno, Oct 2014
-//
-// Based on Processing's "Button" example code
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
+    CustomScrollableList(ControlP5 cp5, String name) {
+        super(cp5, name);
+    }
+    
+    // there's a bug in control p5 where clicking on the scroll list does not	
+    // open it if you move the mouse while clicking. This fixes that.
+    @Override
+    protected void onEndDrag() {
+        super.onEndDrag();
+        setOpen(!isOpen());
+    }
 
-class Button {
+    // close the dropdown if the mouse leaves it.
+    @Override
+    protected void onLeave() {
+        super.onLeave();
+        close();
+    }
+
+    @Override
+    public ScrollableList updateDisplayMode( int theMode ) {
+        super.updateDisplayMode(theMode);
+
+        if (theMode == DEFAULT) {
+            _myControllerView = new CustomScrollableListView( );
+        }
+        
+        return this;
+    }
+
+    public class CustomScrollableListView extends ScrollableListView {
+        @Override
+        public void display(PGraphics g , ScrollableList c) {
+            // draw rect behind the dropdown 
+            fill(c.getBackgroundColor());
+            rect(-1, -1, c.getWidth()+2, c.getHeight()+2);
+
+            super.display(g, c);
+        }
+    }
+}
+
+class Button_obci {
 
     int but_x, but_y, but_dx, but_dy;      // Position of square button
     //int rectSize = 90;     // Diameter of rect
@@ -548,13 +370,13 @@ class Button {
     boolean hasbgImage = false;
     private boolean ignoreHover = false;
 
-    public Button(int x, int y, int w, int h, String txt) {
+    public Button_obci(int x, int y, int w, int h, String txt) {
         setup(x, y, w, h, txt);
         buttonFont = p5;
         buttonTextSize = 12;
     }
 
-    public Button(int x, int y, int w, int h, String txt, int fontSize) {
+    public Button_obci(int x, int y, int w, int h, String txt, int fontSize) {
         setup(x, y, w, h, txt);
         buttonFont = p5;
         buttonTextSize = 12;
@@ -613,7 +435,7 @@ class Button {
 
     public void setString(String txt) {
         but_txt = txt;
-        //println("Button: setString: string = " + txt);
+        //println("Button_obci: setString: string = " + txt);
     }
 
     public void setHelpText(String _helpText){
@@ -694,10 +516,6 @@ class Button {
 
     public String getButtonText() {
         return but_txt;
-    }
-
-    public void setCurrentColor(color _color){
-        currentColor = _color;
     }
 
     public void setColorPressed(color _color) {
@@ -888,21 +706,22 @@ void toggleFrameRate(){
         frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
     }
     if(frameRateCounter==0){
-        frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-        topNav.fpsButton.setString("24 fps");
+        setFrameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
     }
     if(frameRateCounter==1){
-        frameRate(30);
-        topNav.fpsButton.setString("30 fps");
+        setFrameRate(30);
     }
     if(frameRateCounter==2){
-        frameRate(45);
-        topNav.fpsButton.setString("45 fps");
+        setFrameRate(45);
     }
     if(frameRateCounter==3){
-        frameRate(60);
-        topNav.fpsButton.setString("60 fps");
+        setFrameRate(60);
     }
+}
+
+void setFrameRate(int fps) {
+    frameRate(fps);
+    topNav.fpsButton.setString(fps + " fps");
 }
 
 //loop through networking textfields and find out if any are active

@@ -37,21 +37,6 @@ long timeSinceStopRunning = 1000;
 boolean werePacketsDroppedSerial = false;
 int numPacketsDroppedSerial = 0;
 
-
-//everything below is now deprecated...
-// final String[] command_activate_leadoffP_channel = {"!", "@", "#", "$", "%", "^", "&", "*"};  //shift + 1-8
-// final String[] command_deactivate_leadoffP_channel = {"Q", "W", "E", "R", "T", "Y", "U", "I"};   //letters (plus shift) right below 1-8
-// final String[] command_activate_leadoffN_channel = {"A", "S", "D", "F", "G", "H", "J", "K"}; //letters (plus shift) below the letters below 1-8
-// final String[] command_deactivate_leadoffN_channel = {"Z", "X", "C", "V", "B", "N", "M", "<"};   //letters (plus shift) below the letters below the letters below 1-8
-// final String command_biasAuto = "`";
-// final String command_biasFixed = "~";
-
-// ArrayList defaultChannelSettings;
-
-//here is the routine that listens to the serial port.
-//if any data is waiting, get it, parse it, and stuff it into our vector of
-//pre-allocated dataPacketBuff
-
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -60,7 +45,6 @@ void serialEvent(Serial port){
     //check to see which serial port it is
     if (iSerial.isOpenBCISerial(port)) {
 
-        // boolean echoBytes = !cyton.isStateNormal();
         boolean echoBytes;
 
         if (iSerial.isStateNormal() != true) {  // || printingRegisters == true){
@@ -69,46 +53,11 @@ void serialEvent(Serial port){
             echoBytes = false;
         }
         iSerial.read(echoBytes);
-        openBCI_byteCount++;
         if (iSerial.get_isNewDataPacketAvailable()) {
             println("woo got a new packet");
             //copy packet into buffer of data packets
-            curDataPacketInd = (curDataPacketInd+1) % dataPacketBuff.length; //this is also used to let the rest of the code that it may be time to do something
 
-            cyton.copyDataPacketTo(dataPacketBuff[curDataPacketInd]);
             iSerial.set_isNewDataPacketAvailable(false); //resets isNewDataPacketAvailable to false
-
-            // KILL SPIKES!!!
-            if(werePacketsDroppedSerial){
-                for(int i = numPacketsDroppedSerial; i > 0; i--){
-                    int tempDataPacketInd = curDataPacketInd - i; //
-                    if(tempDataPacketInd >= 0 && tempDataPacketInd < dataPacketBuff.length){
-                        cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd]);
-                    } else {
-                        cyton.copyDataPacketTo(dataPacketBuff[tempDataPacketInd+255]);
-                    }
-                    //put the last stored packet in # of packets dropped after that packet
-                }
-
-                //reset werePacketsDroppedSerial & numPacketsDroppedSerial
-                werePacketsDroppedSerial = false;
-                numPacketsDroppedSerial = 0;
-            }
-
-            switch (outputDataSource) {
-            case OUTPUT_SOURCE_ODF:
-                fileoutput_odf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd], cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), byte(0xC0), (new Date()).getTime());
-                break;
-            case OUTPUT_SOURCE_BDF:
-                curBDFDataPacketInd = curDataPacketInd;
-                thread("writeRawData_dataPacket_bdf");
-                // fileoutput_bdf.writeRawData_dataPacket(dataPacketBuff[curDataPacketInd]);
-                break;
-            case OUTPUT_SOURCE_NONE:
-            default:
-                // Do nothing...
-                break;
-            }
 
             newPacketCounter++;
         }
@@ -201,9 +150,7 @@ class InterfaceSerial {
 
     private int nEEGValuesPerPacket = 8; //defined by the data format sent by cyton boards
     private int nAuxValuesPerPacket = 3; //defined by the data format sent by cyton boards
-    private DataPacket_ADS1299 rawReceivedDataPacket;
-    private DataPacket_ADS1299 missedDataPacket;
-    private DataPacket_ADS1299 dataPacket;
+
     public int [] validAuxValues = {0, 0, 0};
     public boolean[] freshAuxValuesAvailable = {false, false, false};
     public boolean freshAuxValues = false;
@@ -212,7 +159,6 @@ class InterfaceSerial {
     private int nAuxValues;
     private boolean isNewDataPacketAvailable = false;
     private OutputStream output; //for debugging  WEA 2014-01-26
-    private int prevSampleIndex = 0;
     private int serialErrorCounter = 0;
 
     private final float fs_Hz = 250.0f;  //sample rate used by OpenBCI board...set by its Arduino code
@@ -267,34 +213,6 @@ class InterfaceSerial {
         }
 
         dataMode = prefered_datamode;
-
-        initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
-
-    }
-
-    public void initDataPackets(int numEEG, int numAux) {
-        nEEGValuesPerPacket = numEEG;
-        nAuxValuesPerPacket = numAux;
-        //allocate space for data packet
-        rawReceivedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        missedDataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);  //this should always be 8 channels
-        dataPacket = new DataPacket_ADS1299(nEEGValuesPerPacket, nAuxValuesPerPacket);            //this could be 8 or 16 channels
-
-        for (int i = 0; i < nEEGValuesPerPacket; i++) {
-            rawReceivedDataPacket.values[i] = 0;
-            //prevDataPacket.values[i] = 0;
-        }
-        for (int i=0; i < nEEGValuesPerPacket; i++) {
-            // println("i = " + i);
-            dataPacket.values[i] = 0;
-            missedDataPacket.values[i] = 0;
-        }
-        for (int i = 0; i < nAuxValuesPerPacket; i++) {
-            rawReceivedDataPacket.auxValues[i] = 0;
-            dataPacket.auxValues[i] = 0;
-            missedDataPacket.auxValues[i] = 0;
-            //prevDataPacket.auxValues[i] = 0;
-        }
     }
 
     // //manage the serial port
@@ -318,7 +236,7 @@ class InterfaceSerial {
             } else {
                 println("RunttimeException: " + e);
                 output("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
-                abandonInit = true; //global variable in OpenBCI_GUI.pde
+                //abandonInit = true; //global variable in OpenBCI_GUI.pde
             }
             return 0;
         }
@@ -338,12 +256,9 @@ class InterfaceSerial {
     public int closeSDandSerialPort() {
         int returnVal=0;
 
-        cyton.closeSDFile();
-
         readyToSend = false;
         returnVal = closeSerialPort();
         prevState_millis = 0;  //reset Serial state clock to use as a conditional for timing at the beginnign of systemUpdate()
-        cyton.hardwareSyncStep = 0; //reset Hardware Sync step to be ready to go again...
 
         return returnVal;
     }
@@ -367,9 +282,6 @@ class InterfaceSerial {
             state = STATE_SYNCWITHHARDWARE;
             timeOfLastCommand = millis();
             serial_openBCI.clear();
-            cyton.potentialFailureMessage = "";
-            cyton.defaultChannelSettings = ""; //clear channel setting string to be reset upon a new Init System
-            cyton.daisyOrNot = ""; //clear daisyOrNot string to be reset upon a new Init System
             println("InterfaceSerial: systemUpdate: [0] Sending 'v' to OpenBCI to reset hardware in case of 32bit board...");
             serial_openBCI.write('v');
         }
@@ -379,8 +291,6 @@ class InterfaceSerial {
             if (millis() - timeOfLastCommand > 200 && readyToSend == true) {
                 println("sdSetting: " + sdSetting);
                 timeOfLastCommand = millis();
-                cyton.hardwareSyncStep++;
-                cyton.syncWithHardware(sdSetting);
             }
         }
     }
@@ -452,57 +362,14 @@ class InterfaceSerial {
             prev3chars[1] = prev3chars[2];
             prev3chars[2] = inASCII;
 
-            if (cyton.hardwareSyncStep == 0 && inASCII != '$') {
-                cyton.potentialFailureMessage+=inASCII;
-            }
-
-            if (cyton.hardwareSyncStep == 1 && inASCII != '$') {
-                cyton.daisyOrNot+=inASCII;
-                //if hardware returns 8 because daisy is not attached, switch the GUI mode back to 8 channels
-                // if(nchan == 16 && char(daisyOrNot.substring(daisyOrNot.length() - 1)) == '8'){
-                if (nchan == 16 && cyton.daisyOrNot.charAt(cyton.daisyOrNot.length() - 1) == '8') {
-                    // verbosePrint(" received from OpenBCI... Switching to nchan = 8 bc daisy is not present...");
-                    verbosePrint(" received from OpenBCI... Abandoning hardware initiation.");
-                    abandonInit = true;
-                    // haltSystem();
-
-                    // updateToNChan(8);
-                    //
-                    // //initialize the FFT objects
-                    // for (int Ichan=0; Ichan < nchan; Ichan++) {
-                    //   verbosePrint("Init FFT Buff – "+Ichan);
-                    //   fftBuff[Ichan] = new FFT(Nfft, getSampleRateSafe());
-                    // }  //make the FFT objects
-                    //
-                    // initializeFFTObjects(fftBuff, dataBuffY_uV, Nfft, getSampleRateSafe());
-                    // setupWidgetManager();
-                }
-            }
-
-            if (cyton.hardwareSyncStep == 3 && inASCII != '$') { //if we're retrieving channel settings from OpenBCI
-                cyton.defaultChannelSettings+=inASCII;
-            }
-
             //if the last three chars are $$$, it means we are moving on to the next stage of initialization
             if (prev3chars[0] == EOT[0] && prev3chars[1] == EOT[1] && prev3chars[2] == EOT[2]) {
                 verbosePrint(" > EOT detected...");
                 // Added for V2 system down rejection line
-                if (cyton.hardwareSyncStep == 0) {
-                    // Failure: Communications timeout - Device failed to poll Host$$$
-                    if (cyton.potentialFailureMessage.equals(failureMessage)) {
-                        closeLogFile();
-                        return 0;
-                    }
-                }
+
                 // hardwareSyncStep++;
                 prev3chars[2] = '#';
-                if (cyton.hardwareSyncStep == 3) {
-                    println("InterfaceSerial: read(): x");
-                    println("InterfaceSerial: defaultChanSettings: " + cyton.defaultChannelSettings);
-                    println("InterfaceSerial: read(): y");
-                    w_timeSeries.hsc.loadDefaultChannelSettings();
-                    println("InterfaceSerial: read(): z");
-                }
+
                 readyToSend = true;
                 // println(hardwareSyncStep);
             }
@@ -562,29 +429,7 @@ class InterfaceSerial {
             //check the packet counter
             // println("case 1");
             byte inByte = actbyte;
-            rawReceivedDataPacket.sampleIndex = int(inByte); //changed by JAM
-            if ((rawReceivedDataPacket.sampleIndex-prevSampleIndex) != 1) {
-                if (rawReceivedDataPacket.sampleIndex != 0) {  // if we rolled over, don't count as error
-                    serialErrorCounter++;
-                    werePacketsDroppedSerial = true; //set this true to activate packet duplication in serialEvent
 
-                    if(rawReceivedDataPacket.sampleIndex < prevSampleIndex){   //handle the situation in which the index jumps from 250s past 255, and back to 0
-                        numPacketsDroppedSerial = (rawReceivedDataPacket.sampleIndex+255) - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-                    } else {
-                        numPacketsDroppedSerial = rawReceivedDataPacket.sampleIndex - prevSampleIndex; //calculate how many times the last received packet should be duplicated...
-                    }
-
-                    println("InterfaceSerial: apparent sampleIndex jump from Serial data: " + prevSampleIndex + " to  " + rawReceivedDataPacket.sampleIndex + ".  Keeping packet. (" + serialErrorCounter + ")");
-                    if (outputDataSource == OUTPUT_SOURCE_BDF) {
-                        int fakePacketsToWrite = (rawReceivedDataPacket.sampleIndex - prevSampleIndex) - 1;
-                        for (int i = 0; i < fakePacketsToWrite; i++) {
-                            fileoutput_bdf.writeRawData_dataPacket(missedDataPacket);
-                        }
-                        println("InterfaceSerial: because BDF, wrote " + fakePacketsToWrite + " empty data packet(s)");
-                    }
-                }
-            }
-            prevSampleIndex = rawReceivedDataPacket.sampleIndex;
             localByteCounter=0;//prepare for next usage of localByteCounter
             localChannelCounter=0; //prepare for next usage of localChannelCounter
             PACKET_readstate++;
@@ -595,8 +440,6 @@ class InterfaceSerial {
             localAdsByteBuffer[localByteCounter] = actbyte;
             localByteCounter++;
             if (localByteCounter==3) {
-                rawReceivedDataPacket.values[localChannelCounter] = interpret24bitAsInt32(localAdsByteBuffer);
-                arrayCopy(localAdsByteBuffer, rawReceivedDataPacket.rawValues[localChannelCounter]);
                 localChannelCounter++;
                 if (localChannelCounter==8) { //nDataValuesInPacket) {
                     // all ADS channels arrived !
@@ -617,26 +460,7 @@ class InterfaceSerial {
             // println("case 3");
             localAccelByteBuffer[localByteCounter] = actbyte;
             localByteCounter++;
-            if (localByteCounter==2) {
-                rawReceivedDataPacket.auxValues[localChannelCounter]  = interpret16bitAsInt32(localAccelByteBuffer);
-                arrayCopy(localAccelByteBuffer, rawReceivedDataPacket.rawAuxValues[localChannelCounter]);
-                if (rawReceivedDataPacket.auxValues[localChannelCounter] != 0) {
-                    validAuxValues[localChannelCounter] = rawReceivedDataPacket.auxValues[localChannelCounter];
-                    freshAuxValuesAvailable[localChannelCounter] = true;
-                    freshAuxValues = true;
-                } else freshAuxValues = false;
-                localChannelCounter++;
-                if (localChannelCounter==nAuxValues) { //number of accelerometer axis) {
-                    // all Accelerometer channels arrived !
-                    // println("InterfaceSerial: interpretBinaryStream: Accel Data: " + rawReceivedDataPacket.auxValues[0] + ", " + rawReceivedDataPacket.auxValues[1] + ", " + rawReceivedDataPacket.auxValues[2]);
-                    PACKET_readstate++;
-                    localByteCounter = 0;
-                    //isNewDataPacketAvailable = true;  //tell the rest of the code that the data packet is complete
-                } else {
-                    //prepare for next data channel
-                    localByteCounter=0; //prepare for next usage of localByteCounter
-                }
-            }
+
             break;
         case 4:
             //look for end byte
@@ -658,9 +482,7 @@ class InterfaceSerial {
             PACKET_readstate=0;  // look for next packet
         }
 
-        if (flag_copyRawDataToFullData) {
-            copyRawDataToFullData();
-        }
+
     } // end of interpretBinaryStream
 
 
@@ -674,61 +496,5 @@ class InterfaceSerial {
         }
     }
 
-    private int interpret24bitAsInt32(byte[] byteArray) {
-        //little endian
-        int newInt = (
-            ((0xFF & byteArray[0]) << 16) |
-            ((0xFF & byteArray[1]) << 8) |
-            (0xFF & byteArray[2])
-            );
-        if ((newInt & 0x00800000) > 0) {
-            newInt |= 0xFF000000;
-        } else {
-            newInt &= 0x00FFFFFF;
-        }
-        return newInt;
-    }
-
-    private int interpret16bitAsInt32(byte[] byteArray) {
-        int newInt = (
-            ((0xFF & byteArray[0]) << 8) |
-            (0xFF & byteArray[1])
-            );
-        if ((newInt & 0x00008000) > 0) {
-            newInt |= 0xFFFF0000;
-        } else {
-            newInt &= 0x0000FFFF;
-        }
-        return newInt;
-    }
-
-
-    private int copyRawDataToFullData() {
-        //Prior to the 16-chan OpenBCI, we did NOT have rawReceivedDataPacket along with dataPacket...we just had dataPacket.
-        //With the 16-chan OpenBCI, where the first 8 channels are sent and then the second 8 channels are sent, we introduced
-        //this extra structure so that we could alternate between them.
-        //
-        //This function here decides how to join the latest data (rawReceivedDataPacket) into the full dataPacket
-
-        if (dataPacket.values.length < 2*rawReceivedDataPacket.values.length) {
-            //this is an 8 channel board, so simply copy the data
-            return rawReceivedDataPacket.copyTo(dataPacket);
-        } else {
-            //this is 16-channels, so copy the raw data into the correct channels of the new data
-            int offsetInd_values = 0;  //this is correct assuming we just recevied a  "board" packet (ie, channels 1-8)
-            int offsetInd_aux = 0;     //this is correct assuming we just recevied a  "board" packet (ie, channels 1-8)
-            if (rawReceivedDataPacket.sampleIndex % 2 == 0) { // even data packets are from the daisy board
-                offsetInd_values = rawReceivedDataPacket.values.length;  //start copying to the 8th slot
-                //offsetInd_aux = rawReceivedDataPacket.auxValues.length;  //start copying to the 3rd slot
-                offsetInd_aux = 0;
-            }
-            return rawReceivedDataPacket.copyTo(dataPacket, offsetInd_values, offsetInd_aux);
-        }
-    }
-
-    public int copyDataPacketTo(DataPacket_ADS1299 target) {
-        isNewDataPacketAvailable = false;
-        return dataPacket.copyTo(target);
-    }
 
 };

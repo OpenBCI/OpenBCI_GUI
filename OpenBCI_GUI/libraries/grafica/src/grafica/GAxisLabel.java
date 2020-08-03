@@ -21,8 +21,8 @@
  * Boston, MA  02111-1307  USA
  * 
  * @author      Javier Gracia Carpio http://jagracar.com
- * @modified    11/21/2019
- * @version     1.9.1 (11)
+ * @modified    05/05/2020
+ * @version     1.9.2 (12)
  */
 
 package grafica;

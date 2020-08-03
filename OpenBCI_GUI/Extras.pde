@@ -1,39 +1,31 @@
-
-//////////////////////////////////////
-//
-// This file contains classes that are helfpul in some way.
-// Created: Chip Audette, Oct 2013 - Dec 2014
-//
-/////////////////////////////////////
-
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
-
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
-//////////////////////////////////////////////////
-//
-// Formerly, Math.pde
-//  - std
-//  - mean
-//  - medianDestructive
-//  - findMax
-//  - mean
-//  - sum
-//  - CalcDotProduct
-//  - log10
-//  - filterWEA_1stOrderIIR
-//  - filterIIR
-//  - removeMean
-//  - rereferenceTheMontage
-//  - CLASS RunningMean
-//
-// Created: Chip Audette, Oct 2013
-//
-//////////////////////////////////////////////////
+/**
+  * @description Helper function to determine if the system is linux or not.
+  * @return {boolean} true if os is linux, false otherwise.
+  */
+private boolean isLinux() {
+    return System.getProperty("os.name").toLowerCase().indexOf("linux") > -1;
+}
+
+/**
+  * @description Helper function to determine if the system is windows or not.
+  * @return {boolean} true if os is windows, false otherwise.
+  */
+private boolean isWindows() {
+    return System.getProperty("os.name").toLowerCase().indexOf("windows") > -1;
+}
+
+/**
+  * @description Helper function to determine if the system is macOS or not.
+  * @return {boolean} true if os is windows, false otherwise.
+  */
+private boolean isMac() {
+    return !isWindows() && !isLinux();
+}
+
 
 //compute the standard deviation
 float std(float[] data) {
@@ -124,38 +116,6 @@ float filterWEA_1stOrderIIR(float[] filty, float learn_fac, float filt_state) {
     return prev;
 }
 
-void filterIIR(double[] filt_b, double[] filt_a, float[] data) {
-    int Nback = filt_b.length;
-    double[] prev_y = new double[Nback];
-    double[] prev_x = new double[Nback];
-
-    //step through data points
-    for (int i = 0; i < data.length; i++) {
-        //shift the previous outputs
-        for (int j = Nback-1; j > 0; j--) {
-            prev_y[j] = prev_y[j-1];
-            prev_x[j] = prev_x[j-1];
-        }
-
-        //add in the new point
-        prev_x[0] = data[i];
-
-        //compute the new data point
-        double out = 0;
-        for (int j = 0; j < Nback; j++) {
-            out += filt_b[j]*prev_x[j];
-            if (j > 0) {
-                out -= filt_a[j]*prev_y[j];
-            }
-        }
-
-        //save output value
-        prev_y[0] = out;
-        data[i] = (float)out;
-    }
-}
-
-
 void removeMean(float[] filty, int Nback) {
     float meanVal = mean(filty,Nback);
     for (int i=0; i < filty.length; i++) {
@@ -163,20 +123,31 @@ void removeMean(float[] filty, int Nback) {
     }
 }
 
-void rereferenceTheMontage(float[][] data) {
-    int n_chan = data.length;
-    int n_points = data[0].length;
-    float sum, mean;
+double[] floatToDoubleArray(float[] array) {
+    double[] res = new double[array.length];
+    for (int i = 0; i < res.length; i++) {
+        res[i] = (double)array[i];
+    }
+    return res;
+}
 
-    //loop over all data points
-    for (int Ipoint=0;Ipoint<n_points;Ipoint++) {
-        //compute mean signal right now
-        sum=0.0;
-        for (int Ichan=0;Ichan<n_chan;Ichan++) sum += data[Ichan][Ipoint];
-        mean = sum / n_chan;
+float[] doubleToFloatArray(double[] array) {
+    float[] res = new float[array.length];
+    for (int i = 0; i < res.length; i++) {
+        res[i] = (float)array[i];
+    }
+    return res;
+}
 
-        //remove the mean signal from all channels
-        for (int Ichan=0;Ichan<n_chan;Ichan++) data[Ichan][Ipoint] -= mean;
+void floatToDoubleArray(float[] array, double[] res) {
+    for (int i = 0; i < array.length; i++) {
+        res[i] = (double)array[i];
+    }
+}
+
+void doubleToFloatArray(double[] array, float[] res) {
+    for (int i = 0; i < array.length; i++) {
+        res[i] = (float)array[i];
     }
 }
 
@@ -206,119 +177,59 @@ String shortenString(String str, float maxWidth, PFont font) {
     return s1 + "..." + s2;
 }
 
-int lerpInt(int first, int second, float bias)
-{
+int lerpInt(long first, long second, float bias) {
     return round(lerp(first, second, bias));    
 }
 
-// creates an DataPacket_ADS1299 with interpolated values.
-// the bias is a float between 0 and 1. It's the weight between the two packets.
-// a bias of 0 will return packet "first"
-// a bias of 1 will return packet "second"
-// a bias of 0.5 will return the average of the two.
-// This is exactly the behavior of a lerp() function
-DataPacket_ADS1299 CreateInterpolatedPacket(DataPacket_ADS1299 first, DataPacket_ADS1299 second, float bias) {
-    int nValues = first.values.length;
-    int nAuxValues = first.auxValues.length;
+int[] range(int first, int second) {
+    int total = abs(first-second);
+    int[] result = new int[total];
 
-    DataPacket_ADS1299 interpolated = new DataPacket_ADS1299(nValues, nAuxValues);
-    first.copyTo(interpolated);
-    
-    interpolated.interpolated = true;
+    for(int i=0; i<total; i++) {
+        int newNumber = first;
+        if(first > second) {
+            newNumber -= i;
+        }
+        else {
+            newNumber += i;
+        }
 
-    for (int i=0; i < nValues; i++) {
-        interpolated.values[i] = lerpInt(first.values[i], second.values[i], bias);
+        result[i] = newNumber;
     }
 
-    for (int i=0; i < nAuxValues; i++) {
-        interpolated.auxValues[i] = lerpInt(first.auxValues[i], second.auxValues[i], bias);
-    }
-
-    interpolated.sampleIndex = lerpInt(first.sampleIndex, second.sampleIndex, bias);
-
-    return interpolated;
+    return result;
 }
 
 //------------------------------------------------------------------------
 //                            Classes
 //------------------------------------------------------------------------
 
-class RunningMean {
-    private float[] values;
-    private int cur_ind = 0;
-    RunningMean(int N) {
-        values = new float[N];
-        cur_ind = 0;
-    }
-    public void addValue(float val) {
-        values[cur_ind] = val;
-        cur_ind = (cur_ind + 1) % values.length;
-    }
-    public float calcMean() {
-        return mean(values);
-    }
-};
-
-class DataPacket_ADS1299 {
-    private final int rawAdsSize = 3;
-    private final int rawAuxSize = 2;
-
-    int sampleIndex;
-    int[] values;
-    int[] auxValues;
-    byte[][] rawValues;
-    byte[][] rawAuxValues;
-    boolean interpolated;
-
-    //constructor, give it "nValues", which should match the number of values in the
-    //data payload in each data packet from the Arduino.  This is likely to be at least
-    //the number of EEG channels in the OpenBCI system (ie, 8 channels if a single OpenBCI
-    //board) plus whatever auxiliary data the Arduino is sending.
-    DataPacket_ADS1299(int nValues, int nAuxValues) {
-        values = new int[nValues];
-        auxValues = new int[nAuxValues];
-        rawValues = new byte[nValues][rawAdsSize];
-        rawAuxValues = new byte[nAuxValues][rawAdsSize];
-        interpolated = false; // default
-    }
-
-    int copyTo(DataPacket_ADS1299 target) { return copyTo(target, 0, 0); }
-    int copyTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
-        target.sampleIndex = sampleIndex;
-        return copyValuesAndAuxTo(target, target_startInd_values, target_startInd_aux);
-    }
-    int copyValuesAndAuxTo(DataPacket_ADS1299 target, int target_startInd_values, int target_startInd_aux) {
-        int nvalues = values.length;
-        for (int i=0; i < nvalues; i++) {
-            target.values[target_startInd_values + i] = values[i];
-            target.rawValues[target_startInd_values + i] = rawValues[i];
-        }
-        nvalues = auxValues.length;
-        for (int i=0; i < nvalues; i++) {
-            target.auxValues[target_startInd_aux + i] = auxValues[i];
-            target.rawAuxValues[target_startInd_aux + i] = rawAuxValues[i];
-        }
-        return 0;
-    }
-};
-
 class DataStatus {
     public boolean is_railed;
-    private int threshold_railed;
+    private double threshold_railed;
     public boolean is_railed_warn;
-    private int threshold_railed_warn;
+    private double threshold_railed_warn;
 
     DataStatus(int thresh_railed, int thresh_railed_warn) {
+        // convert int24 value to uV
         is_railed = false;
+        // convert thresholds to uV
         threshold_railed = thresh_railed;
         is_railed_warn = false;
         threshold_railed_warn = thresh_railed_warn;
     }
-    public void update(int data_value) {
+    public void update(float data_value, int channel) {
         is_railed = false;
-        if (abs(data_value) >= threshold_railed) is_railed = true;
         is_railed_warn = false;
-        if (abs(data_value) >= threshold_railed_warn) is_railed_warn = true;
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
+            if (abs(data_value) >= threshold_railed * scaler) {
+                is_railed = true;
+            }
+            if (abs(data_value) >= threshold_railed_warn * scaler) {
+                is_railed_warn = true;
+            }
+        }
     }
 };
 
@@ -334,24 +245,6 @@ class FilterConstants {
         name = name_given;
         short_name = short_name_given;
     }
-};
-
-class DetectionData_FreqDomain {
-    public float inband_uV = 0.0f;
-    public float inband_freq_Hz = 0.0f;
-    public float guard_uV = 0.0f;
-    public float thresh_uV = 0.0f;
-    public boolean isDetected = false;
-
-    DetectionData_FreqDomain() {
-    }
-};
-
-class GraphDataPoint {
-    public double x;
-    public double y;
-    public String x_units;
-    public String y_units;
 };
 
 class PlotFontInfo {
@@ -383,6 +276,7 @@ class TextBox {
         alignH = LEFT;
         alignV = BOTTOM;
     }
+    
     public void setFontSize(int size) {
         fontSize = size;
         font = p5;

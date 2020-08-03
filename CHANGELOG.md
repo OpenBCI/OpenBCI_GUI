@@ -1,7 +1,41 @@
+# v5.0.0
+
+### Improvements
+* Use BrainFlow Java Binding to handle data acquisition (no need to run the Hub!)
+* Speed up entire GUI by plotting data more efficiently
+* Updated OpenBCI Data Format (CSV) Files, with more detailed information and data
+* Popup with link to GUI v4 file coverter script
+* Improved Playback Mode and Time Series
+* Refactored GUI data flow
+* Add Travis and Appveyor CI tests and builds for all OS
+* Add data smoothing option for live Cyton data
+* Cyton Port manual selection only displays serial ports with a dongle connected.
+* Cyton SD file read works without conversion to playback file
+* Use BrainFlow filters, add 1-100 BandPass filter
+* Can Hide/Show channels in time series
+
+### Bug Fixes
+* Remove OpenBCI Hub #665 #669 #708
+* General UI/UX improvements
+* Missing Filter Button Label in Networking #696
+* Ganglion+WiFi Accelerometer Data not in Sync #512
+* Remove # Chan Textfield from LSL in Networking Widget #644
+* LSL manual timestamping interferes with LSL clock_offset correction #775
+* Fixed a graphics related error on linux #816
+
+### Deprecated Features
+* OpenBCI Hub - This is no longer required to run the GUI!
+* Old OBCI (CSV) Files - A converter will be made available
+* Presentation Mode
+* SSVEP_Beta Widget
+* Focus Widget
+* Marker Mode Widget
+* OpenBionics Widget
+
 # v4.2.0
 Please use OpenBCIHub v2.1.0 and Processing 4.
 
-# Improvements
+### Improvements
 * Update to Processing 4 and Java 11! #671
 * Add functional Spectrogram Widget! #416
 * Clean up Marker Mode UDP listener #305

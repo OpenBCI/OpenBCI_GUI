@@ -18,7 +18,6 @@ class W_Spectrogram extends Widget {
     int xPos = 0;
     int hueLimit = 160;
 
-    Button widgetTemplateButton;
     PImage dataImg;
     int dataImageW = 1800;
     int dataImageH = 200;
@@ -89,6 +88,8 @@ class W_Spectrogram extends Widget {
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
+        //Fetch/calculate the time strings for the horizontal axis ticks
+        fetchTimeStrings(numHorizAxisDivs);
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -96,22 +97,10 @@ class W_Spectrogram extends Widget {
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
         addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
-
-        widgetTemplateButton = new Button (x + int(spectChanSelectBot.tri_xpos) + 10, y + navHeight + 2, 142, navHeight - 4, "Save Spectrogram", 10);
-        widgetTemplateButton.setFont(p4, 14);
     }
 
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-        //put your code here...
-        //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
-        if (topNav.configSelector.isVisible || topNav.layoutSelector.isVisible) {
-            widgetTemplateButton.setIsActive(false);
-            widgetTemplateButton.setIgnoreHover(true);
-        } else {
-            widgetTemplateButton.setIgnoreHover(false);
-        }
 
         //Update channel checkboxes and active channels
         spectChanSelectTop.update(x, y, w);
@@ -126,14 +115,10 @@ class W_Spectrogram extends Widget {
         
         
         
-        if (isRunning && eegDataSource != DATASOURCE_PLAYBACKFILE) {
+        if (isRunning) {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
-            fetchTimeStrings(numHorizAxisDivs);
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            xPos = dataImg.width - 1;
-            //Fetch playback data timestamp even when system is not running
             fetchTimeStrings(numHorizAxisDivs);
         }
         
@@ -163,7 +148,6 @@ class W_Spectrogram extends Widget {
         float scaleW = float(graphW) / dataImageW;
         float scaleH = float(graphH) / dataImageH;
 
-        widgetTemplateButton.draw();
         pushStyle();
         fill(0);
         rect(x, y, w, h); //draw a black background for the widget
@@ -246,10 +230,7 @@ class W_Spectrogram extends Widget {
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-        
-        //cp5.setGraphics(pApplet, 0, 0);
-        //put your code here...
-        widgetTemplateButton.setPos(x + int(textWidth("Channels")) + 7 + 5, y - navHeight + 2);
+
         spectChanSelectTop.screenResized(pApplet);
         spectChanSelectBot.screenResized(pApplet);  
         graphX = x + paddingLeft;
@@ -265,29 +246,13 @@ class W_Spectrogram extends Widget {
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        //put your code here...
-        //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
-        if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
-            if(widgetTemplateButton.isMouseHere()){
-                widgetTemplateButton.setIsActive(true);
-            }
-        }
+
         spectChanSelectTop.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
         spectChanSelectBot.mousePressed(this.dropdownIsActive);
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        
-        //put your code here...
-        if(widgetTemplateButton.isActive && widgetTemplateButton.isMouseHere()){
-            //selectInput("Select a sound file for playback:", "loadSoundFromFile");
-            String s = settings.guiDataPath + System.currentTimeMillis() + ".jpg";
-            dataImg.save(s);
-            outputSuccess("Spectrogram Image saved to: " + s);
-        }
-
-        widgetTemplateButton.setIsActive(false);
 
     }
 
@@ -317,7 +282,9 @@ class W_Spectrogram extends Widget {
             for (int i = 0; i <= numHorizAxisDivs; i++) {
                 float offset = scaledW * dataImageW * (float(i) / numHorizAxisDivs);
                 line(horizAxisX + offset, horizAxisY, horizAxisX + offset, horizAxisY + tickMarkSize);
-                text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
+                if (horizAxisLabelStrings.get(i) != null) {
+                    text(horizAxisLabelStrings.get(i), horizAxisX + offset - (int)textWidth(horizAxisLabelStrings.get(i))/2, horizAxisY + tickMarkSize * 3);
+                }
             }
         popStyle();
         
@@ -427,55 +394,31 @@ class W_Spectrogram extends Widget {
 
     void fetchTimeStrings(int numAxisTicks) {
         horizAxisLabelStrings.clear();
-        LocalTime time;
+        LocalDateTime time;
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE) {
-            time = LocalTime.now();
+
+        if (getCurrentTimeStamp() == 0) {
+            time = LocalDateTime.now();
         } else {
-            try {
-                String timeFromPlayback;
-                if (!getCurrentTimeStamp().equals("notFound")) {
-                    long t = new Long(getCurrentTimeStamp());
-                    Date d =  new Date(t);
-                    timeFromPlayback = new SimpleDateFormat("HH:mm:ss").format(d);
-                    time = LocalTime.parse(timeFromPlayback);
-                } else {
-                    time = LocalTime.now();
-                }
-            } catch (NullPointerException e) {
-                println("Spectrogram: Timestamp error...");
-                e.printStackTrace();
-                time = LocalTime.now();
-            }
+            time = LocalDateTime.ofInstant(Instant.ofEpochMilli(getCurrentTimeStamp()), 
+                                            TimeZone.getDefault().toZoneId()); 
         }
-        
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalTime t = time.plus(l, ChronoUnit.SECONDS);
+            LocalDateTime t = time.minus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }
 
     //Identical to the method in TimeSeries, but allows spectrogram to get the data directly from the playback data in the background
     //Find times to display for playback position
-    String getCurrentTimeStamp() {
+    private long getCurrentTimeStamp() {
         //return current playback time
-        if (index_of_times != null) { //Check if the hashmap is null to prevent exception
-            if (index_of_times.get(0) != null) {
-                if (currentTableRowIndex > playbackData_table.getRowCount()) {
-                    return index_of_times.get(playbackData_table.getRowCount());
-                } else {
-                    return index_of_times.get(currentTableRowIndex);
-                }
-            } else {
-                //This is a sanity check for null exception, and this would print on screen
-                return "TimeNotFound";
-            }
-        } else {
-            //Same here
-            return "TimeNotFound";
-        }
+        List<double[]> currentData = currentBoard.getData(1);
+        int timeStampChan = currentBoard.getTimestampChannel();
+        long timestampMS = (long)(currentData.get(0)[timeStampChan] * 1000.0);
+        return timestampMS;
     }
 };
 
@@ -486,7 +429,6 @@ void SpectrogramMaxFreq(int n) {
     //Link the choices made in the FFT widget and the Spectrogram Widget for this parameter
     MaxFreq(n);
     w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
-    closeAllDropdowns();
     //reset the vertical axis labelss
     w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     //Resize the height of the data image
@@ -518,10 +460,8 @@ void SpectrogramSampleRate(int n) {
     }
     w_spectrogram.horizAxisLabelStrings.clear();
     w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
-    closeAllDropdowns();
 }
 
 void SpectrogramLogLin(int n) {
     settings.spectLogLinSave = n;
-    closeAllDropdowns();
 }

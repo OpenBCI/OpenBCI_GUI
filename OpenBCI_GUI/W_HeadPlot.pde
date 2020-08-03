@@ -99,7 +99,6 @@ void Polarity(int n) {
         w_headPlot.headPlot.use_polarity = false;
     }
     settings.hpPolaritySave = n;
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
 void ShowContours(int n){
@@ -111,27 +110,18 @@ void ShowContours(int n){
         w_headPlot.headPlot.drawHeadAsContours = false;
     }
     settings.hpContoursSave = n;
-    closeAllDropdowns();
 }
 
 //triggered when there is an event in the SmoothingHeadPlot Dropdown
 void SmoothingHeadPlot(int n) {
     w_headPlot.setSmoothFac(smoothFac[n]);
     settings.hpSmoothingSave = n;
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
-}
-
-//triggered when there is an event in the UnfiltFiltHeadPlot Dropdown
-void UnfiltFiltHeadPlot(int n) {
-    //currently not in use
-    closeAllDropdowns(); // do this at the end of all widget-activated functions to ensure proper widget interactivity ... we want to make sure a click makes the menu close
 }
 
 void Intensity(int n){
     vertScaleFactor_ind = n;
     updateVertScale();
     settings.hpIntensitySave = n;
-    closeAllDropdowns();
 }
 
 // ----- these variable/methods are used for adjusting the intensity factor of the headplot opacity ---------------------------------------------------------------------------------------------------------
