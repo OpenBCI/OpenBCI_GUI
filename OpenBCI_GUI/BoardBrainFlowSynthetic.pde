@@ -7,9 +7,11 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
     private Integer batteryChannelCache = null;
+    private int numChannels = 0;
 
-    public BoardBrainFlowSynthetic() {
+    public BoardBrainFlowSynthetic(int numChannels) {
         super();
+        this.numChannels = numChannels;
     }
 
     // implement mandatory abstract functions
@@ -22,6 +24,17 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
     @Override
     public BoardIds getBoardId() {
         return BoardIds.SYNTHETIC_BOARD;
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        int[] channels = super.getEXGChannels();
+        int[] res = new int[numChannels];
+        for (int i = 0; i < numChannels; i++)
+        {
+            res[i] = channels[i * (channels.length / numChannels)];
+        }
+        return res;
     }
 
     @Override

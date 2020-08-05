@@ -147,6 +147,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     private final NovaXRDefaultSettings defaultSettings;
 
+    // needed for playback
+    public BoardNovaXR() {
+        super();
+
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
+    }
+
     public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
         super();
 

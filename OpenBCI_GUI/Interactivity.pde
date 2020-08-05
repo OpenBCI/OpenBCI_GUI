@@ -193,9 +193,9 @@ void parseKey(char val) {
             break;
 
         case 'm':
-            String picfname = "OpenBCI-" + DirectoryManager.getFileNameDateTime() + ".jpg";
+            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
+            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
             

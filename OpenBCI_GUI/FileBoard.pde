@@ -9,4 +9,6 @@ interface FileBoard {
     public float getCurrentTimeSeconds();
 
     public void goToIndex(int index);
+
+    public boolean endOfFileReached();
 };

@@ -43,6 +43,7 @@ class W_BandPower extends Widget {
         bp_plot.setAllFontProperties("Arial", 0, 14);
         bp_plot.getYAxis().getAxisLabel().setText("Power — (uV)^2 / Hz");
         bp_plot.getXAxis().setAxisLabelText("EEG Power Bands");
+        bp_plot.getXAxis().getAxisLabel().setOffset(42f);
         bp_plot.startHistograms(GPlot.VERTICAL);
         bp_plot.getHistogram().setDrawLabels(true);
 
@@ -89,11 +90,11 @@ class W_BandPower extends Widget {
         }
 
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
-        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
-        bp_points.add(THETA + 0.5, activePower[THETA], "THETA");
-        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA");
-        bp_points.add(BETA + 0.5, activePower[BETA], "BETA");
-        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA");
+        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA\n0.5-4Hz");
+        bp_points.add(THETA + 0.5, activePower[THETA], "THETA\n4-8Hz");
+        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA\n8-13Hz");
+        bp_points.add(BETA + 0.5, activePower[BETA], "BETA\n13-32Hz");
+        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA\n32-100Hz");
         bp_plot.setPoints(bp_points);
     } //end of update
 
