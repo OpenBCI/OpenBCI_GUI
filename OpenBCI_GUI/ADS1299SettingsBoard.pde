@@ -244,4 +244,6 @@ interface ADS1299SettingsBoard {
     public ADS1299Settings getADS1299Settings();
     public char getChannelSelector(int channel);
     public double getGain(int channel);
+    public void setDynamicScaler(boolean val);
+    public boolean getDynamicScaler();
 };
