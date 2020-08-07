@@ -16,18 +16,17 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
         fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTrackerCytonSerialDaisy(
                 sampleIndexChannel, timestampChannel, fakeTimeProvider);
-        packetLossTracker.silent = true;
     }
 
     @Test
     public void testNoPacketLoss() {
         double[][] data =  {
-            {1, 1},
-            {3, 3},
-            {5, 5},
-            {7, 7},
-            {9, 9},
-            {11, 11},
+            {0, 0},
+            {2, 2},
+            {4, 4},
+            {6, 6},
+            {8, 8},
+            {10, 10},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -42,15 +41,15 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
     @Test
     public void testNoPacketLossLooping() {
         double[][] data =  {
-            {247, 247},
-            {249, 249},
-            {251, 251},
-            {253, 253},
-            {255, 255},
-            {1, 1},
-            {3, 3},
-            {5, 5},
-            {7, 7},
+            {246, 246},
+            {248, 248},
+            {250, 250},
+            {252, 252},
+            {254, 254},
+            {0, 0},
+            {2, 2},
+            {4, 4},
+            {6, 6},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -65,12 +64,12 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
     @Test
     public void testPacketLoss() {
         double[][] data =  {
-            {1, 1},
-            {3, 3},
-            {5, 5},
-            {15, 15},
-            {17, 17},
-            {19, 19},
+            {0, 0},
+            {2, 2},
+            {4, 4},
+            {14, 14},
+            {16, 16},
+            {18, 18},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -85,14 +84,14 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
     @Test
     public void testPacketLossLooping() {
         double[][] data =  {
-            {241, 241},
-            {243, 243},
-            {245, 245},
-            {247, 247},
-            {11, 11},
-            {13, 13},
-            {15, 15},
-            {17, 17},
+            {240, 240},
+            {242, 242},
+            {244, 244},
+            {246, 246},
+            {10, 10},
+            {12, 12},
+            {14, 14},
+            {16, 16},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -103,18 +102,19 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
         Assert.assertEquals(input.size(), record.numReceived);
         Assert.assertEquals(9, record.numLost);
     }
+    
 
     @Test
     public void testPacketLossEndOnly() {
         double[][] data =  {
-            {241, 241},
-            {243, 243},
-            {245, 245},
-            {247, 247},
-            {1, 1},
-            {3, 3},
-            {5, 5},
-            {7, 7},
+            {240, 240},
+            {242, 242},
+            {244, 244},
+            {246, 246},
+            {0, 0},
+            {2, 2},
+            {4, 4},
+            {6, 6},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -129,13 +129,13 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
     @Test
     public void testPacketLossBeginningOnly() {
         double[][] data =  {
-            {249, 249},
-            {251, 251},
-            {253, 253},
-            {255, 255},
-            {11, 11},
-            {13, 13},
-            {15, 15},
+            {248, 248},
+            {250, 250},
+            {252, 252},
+            {254, 254},
+            {10, 10},
+            {12, 12},
+            {14, 14},
         };
 
         List<double[]> input = new ArrayList<double[]>(Arrays.asList(data));
@@ -150,25 +150,25 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
     @Test
     public void testPacketLossMultiple() {
         double[][] data1 =  {
-            {245, 245},
-            {247, 247},
-            {249, 249},
-            {251, 251},
+            {244, 244},
+            {246, 246},
+            {248, 248},
+            {250, 250},
         };
 
         double[][] data2 = {
-            {9, 9},
-            {11, 11},
-            {13, 13},
-            {15, 15},
+            {8, 8},
+            {10, 10},
+            {12, 12},
+            {14, 14},
         };
 
         double[][] data3 =  {
-            {25, 25},
-            {27, 27},
-            {29, 29},
-            {31, 31},
-            {33, 33},
+            {24, 24},
+            {26, 26},
+            {28, 28},
+            {30, 30},
+            {32, 32},
         };
 
         List<double[]> input1 = new ArrayList<double[]>(Arrays.asList(data1));
