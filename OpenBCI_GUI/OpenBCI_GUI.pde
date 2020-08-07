@@ -711,6 +711,11 @@ void haltSystem() {
 
         dataLogger.uninitialize();
 
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            // todo change file name and location
+            // or save settings from button click instead onExit?
+            ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().values.saveToFile("E:\\settings.json");
+        }
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
 
