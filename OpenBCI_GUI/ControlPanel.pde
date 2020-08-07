@@ -1369,12 +1369,12 @@ class ComPortBox {
     }
 
     private LinkedList<String> getCytonComPorts() {
-        final String[] names = {"FT231X USB UART", "VCP0"};
+        final String[] names = {"FT231X USB UART", "VCP"};
         final SerialPort[] comPorts = SerialPort.getCommPorts();
         LinkedList<String> results = new LinkedList<String>();
         for (SerialPort comPort : comPorts) {
             for (String name : names) {
-                if (comPort.toString().equals(name)) {
+                if (comPort.toString().startsWith(name)) {
                     String found = "";
                     if (isMac() || isLinux()) found += "/dev/";
                     found += comPort.getSystemPortName();
