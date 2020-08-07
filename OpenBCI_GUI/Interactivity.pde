@@ -297,6 +297,8 @@ synchronized void mouseReleased() {
 
 class CustomScrollableList extends ScrollableList {
 
+    private boolean drawOutlineWhenClosed = true;
+
     CustomScrollableList(ControlP5 cp5, String name) {
         super(cp5, name);
     }
@@ -321,20 +323,43 @@ class CustomScrollableList extends ScrollableList {
         super.updateDisplayMode(theMode);
 
         if (theMode == DEFAULT) {
-            _myControllerView = new CustomScrollableListView( );
+            _myControllerView = new CustomScrollableListView(this);
         }
         
         return this;
     }
 
+    public boolean getDrawOutlineWhenClosed() {
+        return drawOutlineWhenClosed;
+    }
+
+    public CustomScrollableList setDrawOutlineWhenClosed(boolean shouldDraw) {
+        drawOutlineWhenClosed = shouldDraw;
+        return this;
+    }
+
     public class CustomScrollableListView extends ScrollableListView {
+        private CustomScrollableList theList;
+
+        CustomScrollableListView(CustomScrollableList _theList) {
+            super();
+            theList = _theList;
+        }
+
         @Override
         public void display(PGraphics g , ScrollableList c) {
-            // draw rect behind the dropdown 
-            fill(c.getBackgroundColor());
-            rect(-1, -1, c.getWidth()+2, c.getHeight()+2);
-
+            drawOutline();
             super.display(g, c);
+        }
+
+        private void drawOutline() {
+            if (!theList.isOpen() && !theList.getDrawOutlineWhenClosed()) {
+                return; // don't draw outline
+            }
+
+            // draw rect behind the dropdown 
+            fill(theList.getBackgroundColor());
+            rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
         }
     }
 }

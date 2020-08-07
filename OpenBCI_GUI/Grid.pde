@@ -1,3 +1,4 @@
+
 class Grid {
     private int numRows;
     private int numCols;
@@ -7,6 +8,7 @@ class Grid {
     private int rowHeight;
 
     private int x, y, w;
+    private final int pad = 5;
 
     private String[][] strings;
 
@@ -23,20 +25,7 @@ class Grid {
 
     public void draw() {
         pushStyle();
-        textAlign(LEFT);
-
-        final int pad = 5;
-        final float colFraction = 1.f / numCols;
-
-        for (int i = 0; i < numCols; i++) {
-            colOffset[i] = round(w * colFraction * i);
-        }
-
-        for (int i = 0; i < numRows; i++) {
-            rowOffset[i] = rowHeight * (i + 1);
-        }
-
-        
+        textAlign(LEFT);        
         stroke(0);
 
         // draw row lines
@@ -61,10 +50,30 @@ class Grid {
         popStyle();
     }
 
+    public RectDimensions getCellDims(int row, int col) {
+        RectDimensions result = new RectDimensions();
+        result.x = x + colOffset[col] + 1; // +1 accounts for line thickness
+        result.y = y + rowOffset[row] - rowHeight;
+        result.w = w / numCols - 1; // -1 account for line thickness
+        result.h = rowHeight;
+
+        return result;
+    }
+
     public void setDim(int _x, int _y, int _w) {
         x = _x;
         y = _y;
         w = _w;
+        
+        final float colFraction = 1.f / numCols;
+
+        for (int i = 0; i < numCols; i++) {
+            colOffset[i] = round(w * colFraction * i);
+        }
+
+        for (int i = 0; i < numRows; i++) {
+            rowOffset[i] = rowHeight * (i + 1);
+        }
     }
 
     public void setString(String s, int row, int col) {
