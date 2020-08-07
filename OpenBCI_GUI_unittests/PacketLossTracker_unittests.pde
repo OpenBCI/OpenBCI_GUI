@@ -18,6 +18,7 @@ public static class PacketLossTracker_UnitTests{
         fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTracker(
                 sampleIndexChannel, timestampChannel, minSampleIndex, maxSampleIndex, fakeTimeProvider);
+        packetLossTracker.silent = true;
     }
 
     @Test

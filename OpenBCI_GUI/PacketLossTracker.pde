@@ -31,6 +31,8 @@ class PacketRecord {
 
 class PacketLossTracker {
 
+    public boolean silent = false;
+
     private int sampleIndexChannel;
     private int timestampChannel;
     private double[] lastSample = null;
@@ -99,7 +101,7 @@ class PacketLossTracker {
 
         for (double[] sample : newSamples) {
             int currentSampleIndex = (int)(sample[sampleIndexChannel]);
-
+            
             // handle new stream start
             if (newStream) {
                 // wait until we restart the sample index array. this handles the case
@@ -130,7 +132,7 @@ class PacketLossTracker {
 
                 if (numSamplesLost > sampleIndexArray.size()) {
                     // we looped the entire array, the new sample is not part of the current array
-                    println("WATRNING: LOOPED AROUJD");
+                    println("WARNING: The sample index " + currentSampleIndex + " is not in the list of possible sample indices.");
                     break;
                 }
             }
@@ -140,8 +142,11 @@ class PacketLossTracker {
                 streamPacketRecord.numLost += numSamplesLost;
                 currentRecord.numLost += numSamplesLost;
 
-                // print the packet loss event
-                println("WARNING: Lost " + numSamplesLost + " Samples Between " +  (int)lastSample[sampleIndexChannel] + "-" + (int)sample[sampleIndexChannel]);
+                if(!silent) {
+                    // print the packet loss event
+                    println("WARNING: Lost " + numSamplesLost + " Samples Between "
+                        +  (int)lastSample[sampleIndexChannel] + "-" + (int)sample[sampleIndexChannel]);
+                }
             }
 
             lastSample = sample;
@@ -173,9 +178,9 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
         super(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         // add indices to array of indices
-        // 1-255, odd numbers only (skips evens)
-        int firstIndex = 1;
-        int lastIndex = 255;
+        // 0-254, event numbers only (skips odds)
+        int firstIndex = 0;
+        int lastIndex = 254;
         for (int i = firstIndex; i <= lastIndex; i += 2) {
             sampleIndexArray.add(i);
         }

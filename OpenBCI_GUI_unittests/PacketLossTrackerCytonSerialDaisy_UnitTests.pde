@@ -16,6 +16,7 @@ public static class PacketLossTrackerCytonSerialDaisy_UnitTests {
         fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTrackerCytonSerialDaisy(
                 sampleIndexChannel, timestampChannel, fakeTimeProvider);
+        packetLossTracker.silent = true;
     }
 
     @Test

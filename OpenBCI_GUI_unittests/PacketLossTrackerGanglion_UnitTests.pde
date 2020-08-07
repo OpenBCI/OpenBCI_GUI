@@ -16,6 +16,7 @@ public static class PacketLossTrackerGanglion_UnitTests{
         fakeTimeProvider = currentApplet.new FakeTimeProvider();
         packetLossTracker = currentApplet.new PacketLossTrackerGanglion(
                 sampleIndexChannel, timestampChannel, fakeTimeProvider);
+        packetLossTracker.silent = true;
     }
 
     @Test
