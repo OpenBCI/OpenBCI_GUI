@@ -182,26 +182,6 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
     }
 }
 
-// sample index range 0-254, even numbers only (skips odds)
-class PacketLossTrackerCytonWifiDaisy extends PacketLossTracker {
-
-    PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel) {
-        this(_sampleIndexChannel, _timestampChannel, new RealTimeProvider());
-    }
-
-    PacketLossTrackerCytonWifiDaisy(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
-        super(_sampleIndexChannel, _timestampChannel, _timeProvider);
-
-        // add indices to array of indices
-        // 0-254, even numbers only (skips odds)
-        int firstIndex = 0;
-        int lastIndex = 254;
-        for (int i = firstIndex; i <= lastIndex; i += 2) {
-            sampleIndexArray.add(i);
-        }
-    }
-}
-
 // with accel: sample index range 0-100, all sample indexes are duplicated except for zero.
 // eg 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, ... , 99, 99, 100, 100, 0, 1, 1, 2, 2, 3, 3, ...
 // without acceL: sample 0, then 101-200

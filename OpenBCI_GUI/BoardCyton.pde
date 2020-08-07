@@ -171,14 +171,6 @@ class BoardCytonWifi extends BoardCytonWifiBase {
     public BoardIds getBoardId() {
         return BoardIds.CYTON_WIFI_BOARD;
     }
-    
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        final int minSampleIndex = 0;
-        final int maxSampleIndex = 255;
-        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
-                                    minSampleIndex, maxSampleIndex);
-    }
 };
 
 class BoardCytonWifiDaisy extends BoardCytonWifiBase {
@@ -193,11 +185,6 @@ class BoardCytonWifiDaisy extends BoardCytonWifiBase {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_WIFI_BOARD;
-    }
-
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        return new PacketLossTrackerCytonWifiDaisy(getSampleIndexChannel(), getTimestampChannel());
     }
 };
 
@@ -231,6 +218,14 @@ abstract class BoardCytonWifiBase extends BoardCyton {
             sendCommand(command);
         }
         return res;
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 };
 
