@@ -47,7 +47,7 @@ class W_timeSeries extends Widget {
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
+        tsChanSelect = new ChannelSelect(_parent, x, y, w, navH, "TS_Channels");
 
         //activate all channels in channelSelect by default
         activateAllChannels();
@@ -150,7 +150,7 @@ class W_timeSeries extends Widget {
             numChannelBars = tsChanSelect.activeChan.size();
             channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
             
-            /*
+            
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
@@ -161,7 +161,7 @@ class W_timeSeries extends Widget {
                 hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
             }
-            */
+            
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 adsSettingsController.update(); //update channel controller
@@ -244,6 +244,7 @@ class W_timeSeries extends Widget {
             timeDisplay.screenResized(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
         }
 
+        /*
         // offset based on whether channel select is open or not.
         int chanSelectOffset = 0;
         if (tsChanSelect.isVisible()) {
@@ -259,6 +260,7 @@ class W_timeSeries extends Widget {
             hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
+        */
     }
 
     void mousePressed() {
@@ -391,7 +393,6 @@ void Spillover(int n) {
 //one of these will be created for each channel (4, 8, or 16)
 class ChannelBar{
 
-    PApplet pApplet;
     int channelIndex; //duh
     String channelString;
     int x, y, w, h;
@@ -399,6 +400,7 @@ class ChannelBar{
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
     ControlP5 cbCp5;
+    int yScaleButton_w, yScaleButton_h;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -418,9 +420,8 @@ class ChannelBar{
 
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
         
-        pApplet = _parent;
-        cbCp5 = new ControlP5(pApplet);
-        cbCp5.setGraphics(pApplet, x, y);
+        cbCp5 = new ControlP5(ourApplet);
+        cbCp5.setGraphics(ourApplet, x, y);
         cbCp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
         channelIndex = _channelIndex;
@@ -459,8 +460,10 @@ class ChannelBar{
             impButton_diameter = 0;
         }
 
-        createButton("increaseYscale", "+", x + w/2 - 11, y + 4, 22, int(h/8));
-        createButton("decreaseYscale", "-", x + w/2 - 11, y + h - int(h/8) - 4, 22, int(h/8));
+        yScaleButton_w = 36 + impButton_diameter - 8;
+        yScaleButton_h = 12;
+        createButton("increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
+        createButton("decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h);
 
         numSeconds = 5;
         plot = new GPlot(_parent);
@@ -665,11 +668,9 @@ class ChannelBar{
         w = _w;
         h = _h;
 
-        cbCp5.setGraphics(pApplet, x, y);
-
-        cbCp5.get(Button.class, "increaseYscale").setPosition(x + 11, y + 4);
+        cbCp5.get(Button.class, "increaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
         //cbCp5.get(Button.class, "increaseYscale").setSize(22, int(h/8));
-        cbCp5.get(Button.class, "decreaseYscale").setPosition(x + 11, y + h - int(h/8) - 4);
+        cbCp5.get(Button.class, "decreaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
         //cbCp5.get(Button.class, "decreaseYscale").setSize(22, int(h/8));
 
         if(h > 26) {
