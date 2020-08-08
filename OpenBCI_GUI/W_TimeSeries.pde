@@ -400,6 +400,7 @@ class ChannelBar{
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
     ControlP5 cbCp5;
+    MyControlListener myListener;
     int yScaleButton_w, yScaleButton_h;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
@@ -464,6 +465,14 @@ class ChannelBar{
         yScaleButton_h = 12;
         createButton("increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
         createButton("decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h);
+        myListener = new MyControlListener();
+        try {
+            cbCp5.get(Button.class, "increaseYscale").addListener(myListener);
+            cbCp5.get(Button.class, "decreaseYscale").addListener(myListener);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
 
         numSeconds = 5;
         plot = new GPlot(_parent);
@@ -759,6 +768,23 @@ class ChannelBar{
                 .toUpperCase(false)
                 .setSize(14)
                 .setText(bText);
+    }
+
+    class MyControlListener implements ControlListener {
+        int col;
+        public void controlEvent(ControlEvent theEvent) {
+            if (theEvent.getController().getName().equals("increaseYscale")) {
+                println("Increase Y Scale on Channel " + (channelIndex+1));
+            } else if (theEvent.getController().getName().equals("decreaseYscale")) {
+                println("Decreae Y Scale on Channel " + (channelIndex+1));
+            }
+            /*
+            println("i got an event from " + theEvent.getController().getName() +
+                    ", changing background color to " +
+                    theEvent.getController().getValue());
+            col = (int)theEvent.getController().getValue();
+            */
+        }
     }
 };
 
