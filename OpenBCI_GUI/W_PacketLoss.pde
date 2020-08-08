@@ -133,13 +133,18 @@ class W_PacketLoss extends Widget {
     void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+        pushStyle();
+        text("Session length: " + sessionTimeElapsed.toString(), x + padding, y + 15);
+        text("Stream length: " + streamTimeElapsed.toString(), x + padding, y + 35);
+        popStyle();
+
         dataGrid.draw();
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
-        dataGrid.setDim(x, y, w);
+        dataGrid.setDim(x, y + 50, w);
     }
 
     void mousePressed(){
