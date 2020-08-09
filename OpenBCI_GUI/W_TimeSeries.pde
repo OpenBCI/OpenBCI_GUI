@@ -149,19 +149,6 @@ class W_timeSeries extends Widget {
             tsChanSelect.update(x, y, w);
             numChannelBars = tsChanSelect.activeChan.size();
             channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
-            
-            
-            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-                int activeChan = tsChanSelect.activeChan.get(i);
-                int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
-                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
-            }
-            
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 adsSettingsController.update(); //update channel controller
@@ -244,7 +231,6 @@ class W_timeSeries extends Widget {
             timeDisplay.screenResized(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
         }
 
-        /*
         // offset based on whether channel select is open or not.
         int chanSelectOffset = 0;
         if (tsChanSelect.isVisible()) {
@@ -260,7 +246,7 @@ class W_timeSeries extends Widget {
             hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
-        */
+        
     }
 
     void mousePressed() {
