@@ -389,6 +389,7 @@ class ChannelBar{
     MyControlListener myListener;
     int yScaleButton_w, yScaleButton_h;
     int yLim = 200;
+    int uiSpaceWidth;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -403,6 +404,8 @@ class ChannelBar{
 
     TextBox voltageValue;
     TextBox impValue;
+    TextBox yAxisLabel_pos;
+    TextBox yAxisLabel_neg;
 
     boolean drawVoltageValue;
 
@@ -460,10 +463,11 @@ class ChannelBar{
             e.printStackTrace();
         }
         
+        uiSpaceWidth = 36 + 4 + impButton_diameter;
 
         numSeconds = 5;
         plot = new GPlot(_parent);
-        plot.setPos(x + 36 + 4 + impButton_diameter, y);
+        plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(w - 36 - 4 - impButton_diameter, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
@@ -491,19 +495,31 @@ class ChannelBar{
 
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
-        voltageValue = new TextBox("", x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h);
         voltageValue.textColor = color(bgColor);
         voltageValue.alignH = RIGHT;
         // voltageValue.alignV = TOP;
         voltageValue.drawBackground = true;
         voltageValue.backgroundColor = color(255,255,255,125);
 
-        impValue = new TextBox("", x + 36 + 4 + impButton_diameter + 2, y + h);
+        impValue = new TextBox("", x + uiSpaceWidth + 2, y + h);
         impValue.textColor = color(bgColor);
         impValue.alignH = LEFT;
         // impValue.alignV = TOP;
         impValue.drawBackground = true;
         impValue.backgroundColor = color(255,255,255,125);
+
+        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h);
+        yAxisLabel_pos.textColor = color(bgColor);
+        yAxisLabel_pos.alignH = LEFT;
+        yAxisLabel_pos.alignV = TOP;
+        //yAxisLabel_pos.drawBackground = true;
+        //yAxisLabel_pos.backgroundColor = color(255,255,255,255);
+
+        yAxisLabel_neg = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h);
+        yAxisLabel_neg.textColor = color(bgColor);
+        yAxisLabel_neg.alignH = LEFT;
+        yAxisLabel_neg.alignV = BOTTOM;
 
         drawVoltageValue = true;
     }
@@ -597,7 +613,7 @@ class ChannelBar{
         plot.drawGridLines(0);
         plot.drawLines();
         // plot.drawPoints();
-        // plot.drawYAxis();
+        //plot.drawYAxis();
         if(channelIndex == nchan-1) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
@@ -616,6 +632,11 @@ class ChannelBar{
         if(drawVoltageValue) {
             voltageValue.draw();
         }
+
+        yAxisLabel_pos.string = "+" + yLim;
+        yAxisLabel_pos.draw();
+        yAxisLabel_neg.string = "-" + yLim;
+        yAxisLabel_neg.draw();
 
         popStyle();
     }
@@ -663,11 +684,10 @@ class ChannelBar{
         y = _y;
         w = _w;
         h = _h;
+        //cbCp5.setGraphics(ourApplet, x, y);
 
         cbCp5.get(Button.class, "increaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
-        //cbCp5.get(Button.class, "increaseYscale").setSize(22, int(h/8));
         cbCp5.get(Button.class, "decreaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
-        //cbCp5.get(Button.class, "decreaseYscale").setSize(22, int(h/8));
 
         if(h > 26) {
             onOff_diameter = 26;
@@ -689,13 +709,17 @@ class ChannelBar{
         }
 
         //reposition & resize the plot
-        plot.setPos(x + 36 + 4 + impButton_diameter, y);
+        plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(w - 36 - 4 - impButton_diameter, h);
 
-        voltageValue.x = x + 36 + 4 + impButton_diameter + (w - 36 - 4 - impButton_diameter) - 2;
+        voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
         voltageValue.y = y + h;
-        impValue.x = x + 36 + 4 + impButton_diameter + 2;
+        impValue.x = x + uiSpaceWidth + 2;
         impValue.y = y + h;
+        yAxisLabel_pos.x = x + uiSpaceWidth + 2;
+        yAxisLabel_pos.y = y + 2;
+        yAxisLabel_neg.x = x + uiSpaceWidth + 2;
+        yAxisLabel_neg.y = y + h;
 
     }
 
