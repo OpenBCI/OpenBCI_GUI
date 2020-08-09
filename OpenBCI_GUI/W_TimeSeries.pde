@@ -402,6 +402,7 @@ class ChannelBar{
     ControlP5 cbCp5;
     MyControlListener myListener;
     int yScaleButton_w, yScaleButton_h;
+    int yLim = 200;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -481,7 +482,7 @@ class ChannelBar{
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
-        plot.setYLim(-200,200);
+        plot.setYLim(-yLim, yLim);
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
@@ -771,19 +772,15 @@ class ChannelBar{
     }
 
     class MyControlListener implements ControlListener {
-        int col;
         public void controlEvent(ControlEvent theEvent) {
             if (theEvent.getController().getName().equals("increaseYscale")) {
                 println("Increase Y Scale on Channel " + (channelIndex+1));
+                yLim += 100;
             } else if (theEvent.getController().getName().equals("decreaseYscale")) {
                 println("Decreae Y Scale on Channel " + (channelIndex+1));
+                yLim -= 100;
             }
-            /*
-            println("i got an event from " + theEvent.getController().getName() +
-                    ", changing background color to " +
-                    theEvent.getController().getValue());
-            col = (int)theEvent.getController().getValue();
-            */
+            adjustVertScale(yLim);
         }
     }
 };
