@@ -1,4 +1,5 @@
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.*;
 
 
@@ -170,31 +171,6 @@ public class ADS1299SettingsValues {
     public Srb2[] previousSrb2;
 
     public ADS1299SettingsValues() {
-        powerDown = null;
-        gain = null;
-        inputType = null;
-        bias = null;
-        srb2 = null;
-        srb1 = null;
-        previousBias = null;
-        previousSrb2 = null;
-    }
-
-    public String getJson() {
-        return new Gson().toJson(this);
-    }
-
-    public boolean saveToFile(String filename) {
-        String json = getJson();
-        try {
-            FileWriter writer = new FileWriter(filename);
-            writer.write(json);
-            writer.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
     }
 }
 
@@ -248,6 +224,24 @@ class ADS1299Settings {
             Gson gson = new Gson();
             values = gson.fromJson(fileContents.toString(), ADS1299SettingsValues.class);
             commitAll();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String getJson() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(values);
+    }
+
+    public boolean saveToFile(String filename) {
+        String json = getJson();
+        try {
+            FileWriter writer = new FileWriter(filename);
+            writer.write(json);
+            writer.close();
             return true;
         } catch (IOException e) {
             e.printStackTrace();
