@@ -165,7 +165,7 @@ class W_timeSeries extends Widget {
 
             //update channel bars ... this means feeding new EEG data into plots
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
+                int activeChan = tsChanSelect.activeChan.get(i);
                 channelBars[activeChan].update();
             }
         }
@@ -179,7 +179,7 @@ class W_timeSeries extends Widget {
             pushStyle();
             //draw channel bars
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-            int activeChan = tsChanSelect.activeChan.get(i);
+                int activeChan = tsChanSelect.activeChan.get(i);
                 channelBars[activeChan].draw();
             }
 
@@ -386,9 +386,10 @@ class ChannelBar{
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
     ControlP5 cbCp5;
-    MyControlListener myListener;
     int yScaleButton_w, yScaleButton_h;
-    int yLim = 200;
+    Button yScaleButton_pos;
+    Button yScaleButton_neg;
+    int yLim;
     int uiSpaceWidth;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
@@ -429,6 +430,7 @@ class ChannelBar{
             onOff_diameter = h - 2;
         }
 
+        //// Old buttons
         onOffButton = new Button_obci (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
         onOffButton.setHelpText("Click to toggle channel " + channelString + ".");
         onOffButton.setFont(h2, 16);
@@ -450,21 +452,16 @@ class ChannelBar{
         } else {
             impButton_diameter = 0;
         }
+        ////End Old buttons
 
+        // New Buttons :)
         yScaleButton_w = 36 + impButton_diameter - 8;
         yScaleButton_h = 12;
-        createButton("increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
-        createButton("decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h);
-        myListener = new MyControlListener();
-        try {
-            cbCp5.get(Button.class, "increaseYscale").addListener(myListener);
-            cbCp5.get(Button.class, "decreaseYscale").addListener(myListener);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
+        createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h); 
         
         uiSpaceWidth = 36 + 4 + impButton_diameter;
-
+        yLim = 200;
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
@@ -482,7 +479,6 @@ class ChannelBar{
         // plot.setBgColor(color(31,69,110));
 
         nPoints = nPointsBasedOnDataSource();
-
         channelPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
 
@@ -497,8 +493,8 @@ class ChannelBar{
 
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h);
         voltageValue.textColor = color(bgColor);
-        voltageValue.alignH = RIGHT;
-        // voltageValue.alignV = TOP;
+        voltageValue.alignH = LEFT;
+        voltageValue.alignV = TOP;
         voltageValue.drawBackground = true;
         voltageValue.backgroundColor = color(255,255,255,125);
 
@@ -513,13 +509,15 @@ class ChannelBar{
         yAxisLabel_pos.textColor = color(bgColor);
         yAxisLabel_pos.alignH = LEFT;
         yAxisLabel_pos.alignV = TOP;
-        //yAxisLabel_pos.drawBackground = true;
-        //yAxisLabel_pos.backgroundColor = color(255,255,255,255);
+        yAxisLabel_pos.drawBackground = true;
+        yAxisLabel_pos.backgroundColor = color(255,255,255,255);
 
         yAxisLabel_neg = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h);
         yAxisLabel_neg.textColor = color(bgColor);
         yAxisLabel_neg.alignH = LEFT;
         yAxisLabel_neg.alignV = BOTTOM;
+        yAxisLabel_pos.drawBackground = true;
+        yAxisLabel_pos.backgroundColor = color(255,255,255,255);
 
         drawVoltageValue = true;
     }
@@ -766,30 +764,31 @@ class ChannelBar{
         }
     }
 
-    void createButton (String bName, String bText, int _x, int _y, int _w, int _h) {
-        cbCp5.addButton(bName)
+    void createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
+        myButton = cbCp5.addButton(bName)
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
                 .setColorLabel(color(255))
                 .setColorForeground(color(31, 69, 110))
                 .setColorBackground(color(144, 100));
-        cbCp5.getController(bName)
-                .getCaptionLabel()
+        myButton.getCaptionLabel()
                 .setFont(createFont("Arial",14,true))
                 .toUpperCase(false)
                 .setSize(14)
                 .setText(bText);
+        myButton.onClick(new MyCallbackListener (chan, shouldIncrease ));
     }
 
-    class MyControlListener implements ControlListener {
-        public void controlEvent(ControlEvent theEvent) {
-            if (theEvent.getController().getName().equals("increaseYscale")) {
-                println("Increase Y Scale on Channel " + (channelIndex+1));
-                yLim += 100;
-            } else if (theEvent.getController().getName().equals("decreaseYscale")) {
-                println("Decreae Y Scale on Channel " + (channelIndex+1));
-                yLim -= 100;
-            }
+    class MyCallbackListener implements CallbackListener {
+        private int channel;
+        private boolean increase;
+        MyCallbackListener(int theChannel, boolean isIncrease)  {
+            channel = theChannel;
+            increase = isIncrease;
+        }
+        public void controlEvent(CallbackEvent theEvent) {
+            verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
+            yLim += increase ? 50 : -50;
             adjustVertScale(yLim);
         }
     }
