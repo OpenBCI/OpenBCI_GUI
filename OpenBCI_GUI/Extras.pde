@@ -254,6 +254,7 @@ class PlotFontInfo {
         int buttonLabel_size = 12;
 };
 
+
 class TextBox {
     public int x, y;
     public color textColor;
