@@ -390,4 +390,55 @@ class AuxReadBar{
         analogPin.x = x + 14;
         analogPin.y = y + int(h/2.0) + 7;
     }
+
+    protected boolean isBoardActive() {
+        return false;
+    }
+
+    protected int[] getChannels() {
+        return new int[0];
+    }
 };
+
+class EDAReadBar extends AuxReadBar {
+    private EDACapableBoard edaBoard;
+
+    public EDAReadBar (PApplet _parent, EDACapableBoard _edaBoard, int auxChanNum, int _x, int _y, int _w, int _h) {
+        super(_parent, auxChanNum, _x, _y, _w, _h);
+        edaBoard = _edaBoard;
+    }
+
+    @Override
+    public void update() {
+
+    }
+
+    @Override
+    protected boolean isBoardActive() {
+        return edaBoard.isEDAActive();
+    }
+
+    @Override
+    protected int[] getChannels() {
+        return edaBoard.getEDAChannels(); 
+    }
+}
+
+class PPGReadBar extends AuxReadBar {
+    private PPGCapableBoard ppgBoard;
+
+    public PPGReadBar (PApplet _parent, PPGCapableBoard _ppgBoard, int auxChanNum, int _x, int _y, int _w, int _h) {
+        super(_parent, auxChanNum, _x, _y, _w, _h);
+        ppgBoard = _ppgBoard;
+    }
+
+    @Override
+    protected boolean isBoardActive() {
+        return ppgBoard.isPPGActive();
+    }
+
+    @Override
+    protected int[] getChannels() {
+        return ppgBoard.getPPGChannels(); 
+    }
+}
