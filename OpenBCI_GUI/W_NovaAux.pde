@@ -2,16 +2,26 @@ import java.util.*;
 
 class W_NovaAux extends Widget {
 
-    public int numAuxReadBars;
+    // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
+    // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
+    private EDACapableBoard edaBoard;
+    private PPGCapableBoard ppgBoard;
+    private BatteryInfoCapableBoard batteryBoard;
+
+    private int numAuxReadBars = 4;
     private float xF, yF, wF, hF;
     private float arPadding;
     // values for actual time series chart (rectangle encompassing all analogReadBars)
     private float ar_x, ar_y, ar_h, ar_w;
     private float plotBottomWell;
     private float playbackWidgetHeight;
-    private int analogReadBarHeight;
+    private int channelBarHeight;
 
-    private AuxReadBar[] analogReadBars;
+    //private AuxReadBar[] analogReadBars;
+    public PPGReadBar ppgReadBar1;
+    public PPGReadBar ppgReadBar2;
+    public EDAReadBar edaReadBar;
+    public BatteryReadBar batteryReadBar;
 
     public int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
     public int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
@@ -28,14 +38,14 @@ class W_NovaAux extends Widget {
     W_NovaAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+        // todo add check that current board implements these interfaces before casting
+        // otherwise should throw and exception and maybe popup message
+        edaBoard = (EDACapableBoard) currentBoard;
+        ppgBoard = (PPGCapableBoard) currentBoard;
+        batteryBoard = (BatteryInfoCapableBoard) currentBoard;
+
         addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(vertScaleOptions), arInitialVertScaleIndex);
         addDropdown("Duration_NovaAux", "Window", Arrays.asList(horizScaleOptions), arInitialHorizScaleIndex);
-
-        //set number of analog reads
-        numAuxReadBars = 4;
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -48,58 +58,67 @@ class W_NovaAux extends Widget {
         ar_y = yF + (arPadding);
         ar_w = wF - arPadding*2;
         ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        analogReadBarHeight = int(ar_h/numAuxReadBars);
+        channelBarHeight = int(ar_h/numAuxReadBars);
 
-        analogReadBars = new AuxReadBar[numAuxReadBars];
+        int counter = 0;
+        ppgReadBar1 = new PPGReadBar(_parent, counter+1, ppgBoard, 0, "PPG_1", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        ppgReadBar2 = new PPGReadBar(_parent, counter+1, ppgBoard, 1, "PPG_2", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        edaReadBar = new EDAReadBar(_parent, counter+1, edaBoard, "EDA", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        batteryReadBar = new BatteryReadBar(_parent, counter+1, batteryBoard, "Battery", true, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
 
-        //create our channel bars and populate our analogReadBars array!
-        for(int i = 0; i < numAuxReadBars; i++) {
-            int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
-            AuxReadBar tempBar = new AuxReadBar(_parent, i+1, int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //int _channelNumber, totalChannels, int _x, int _y, int _w, int _h
-            analogReadBars[i] = tempBar;
-            analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
-            analogReadBars[i].adjustTimeAxis(xLimOptions[arInitialHorizScaleIndex]);
-        }
+        adjustTimeAxisAllPlots(xLimOptions[arInitialHorizScaleIndex]);
+        adjustVertScaleAllPlots(yLimOptions[arInitialVertScaleIndex]);
     }
 
     public boolean isVisible() {
         return visible;
     }
 
-    public int getNumAnalogReads() {
-        return numAuxReadBars;
-    }
-
     public void setVisible(boolean _visible) {
         visible = _visible;
     }
 
-    void update() {
+    public void update() {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
             //update channel bars ... this means feeding new EEG data into plots
+            /*
             for(int i = 0; i < numAuxReadBars; i++) {
                 analogReadBars[i].update();
             }
+            */
+            ppgReadBar1.update();
+            ppgReadBar2.update();
+            edaReadBar.update();
+            batteryReadBar.update();
         }
     }
 
-    void draw() {
+    public void draw() {
         if(visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
+            /*
             //draw channel bars 
             for(int i = 0; i < numAuxReadBars; i++) {
                 analogReadBars[i].draw();
             }
+            */
+            ppgReadBar1.draw();
+            ppgReadBar2.draw();
+            edaReadBar.draw();
+            batteryReadBar.draw();
             popStyle();
         }
     }
 
-    void screenResized() {
+    public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
@@ -111,28 +130,50 @@ class W_NovaAux extends Widget {
         ar_y = yF + (arPadding);
         ar_w = wF - arPadding*2;
         ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        analogReadBarHeight = int(ar_h/numAuxReadBars);
+        channelBarHeight = int(ar_h/numAuxReadBars);
 
+        /*
         for(int i = 0; i < numAuxReadBars; i++) {
-            int analogReadBarY = int(ar_y) + i*(analogReadBarHeight); //iterate through bar locations
-            analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
+            int analogReadBarY = int(ar_y) + i*(channelBarHeight); //iterate through bar locations
+            analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
+        */
+
+        int counter = 0;
+        ppgReadBar1.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        ppgReadBar2.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        edaReadBar.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        counter++;
+        batteryReadBar.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+
+    }
+
+    public void adjustTimeAxisAllPlots(int _newTimeSize) {
+        ppgReadBar1.adjustTimeAxis(_newTimeSize);
+        ppgReadBar2.adjustTimeAxis(_newTimeSize);
+        edaReadBar.adjustTimeAxis(_newTimeSize);
+        batteryReadBar.adjustTimeAxis(_newTimeSize);
+    }
+
+    public void adjustVertScaleAllPlots(int _vertScaleValue) {
+        ppgReadBar1.adjustVertScale(_vertScaleValue);
+        ppgReadBar2.adjustVertScale(_vertScaleValue);
+        edaReadBar.adjustVertScale(_vertScaleValue);
+        batteryReadBar.adjustVertScale(_vertScaleValue);
     }
 };
 
-//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-void VertScale_NovaAux(int n) {
-    for(int i = 0; i < w_novaAux.numAuxReadBars; i++) {
-            w_novaAux.analogReadBars[i].adjustVertScale(w_novaAux.yLimOptions[n]);
-    }
-}
-
 //triggered when there is an event in the LogLin Dropdown
 void Duration_NovaAux(int n) {
-    //set analog read x axis to the duration selected from dropdown
-    for(int i = 0; i < w_novaAux.numAuxReadBars; i++) {
-        w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[n]);
-    }
+    w_novaAux.adjustTimeAxisAllPlots(w_novaAux.xLimOptions[n]);
+}
+
+//These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
+//^^^not true. we can do this in the class above with a CallbackListener
+void VertScale_NovaAux(int n) {
+    w_novaAux.adjustTimeAxisAllPlots(w_novaAux.yLimOptions[n]);
 }
 
 //========================================================================================================================
@@ -144,6 +185,7 @@ class AuxReadBar{
 
     private int auxValuesPosition;
     private String auxChanLabel;
+    private boolean isBottomBar = false;
     private int channel = 0; //used to track Board channel number
     private int x, y, w, h;
     private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
@@ -165,44 +207,11 @@ class AuxReadBar{
     private boolean drawAnalogValue;
     private int lastProcessedDataPacketInd = 0;
 
-    // todo board may have multiple eda/ppg sensors and EDA/PPGCapableBoard return 2d array due to it
-    // this widget should also operate on 2d arrays. Temporary get only the first row from 2d array
-    private EDACapableBoard edaBoard;
-    private PPGCapableBoard ppgBoard;
-    private BatteryInfoCapableBoard batteryBoard;
-
-    AuxReadBar(PApplet _parent, int auxChanNum, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
 
         auxValuesPosition = auxChanNum;
-
-        // todo add check that current board implements these interfaces before casting
-        // otherwise should throw and exception and maybe popup message
-        edaBoard = (EDACapableBoard) currentBoard;
-        ppgBoard = (PPGCapableBoard) currentBoard;
-        batteryBoard = (BatteryInfoCapableBoard) currentBoard;
-
-        if (auxChanNum == 1 || auxChanNum == 2) {
-            auxChanLabel = "PPG_" + auxChanNum; 
-        } else if (auxChanNum == 3) {
-            auxChanLabel = "EDA";
-        } else {
-            auxChanLabel = "Battery";
-        }
-
-        switch (auxValuesPosition) {
-            case 1:
-                channel = ppgBoard.getPPGChannels()[0];
-                break;
-            case 2:
-                channel = ppgBoard.getPPGChannels()[1];
-                break;
-            case 3:
-                channel = edaBoard.getEDAChannels()[0];
-                break;
-            default:
-                channel = batteryBoard.getBatteryChannel();
-                break;
-        }
+        auxChanLabel = label;
+        isBottomBar = isBotBar;
         
         isOn = true;
 
@@ -217,7 +226,7 @@ class AuxReadBar{
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[(auxValuesPosition)%8]);
-        plot.setXLim(-3.2,-2.9);
+        plot.setXLim(-5,0);
         plot.setYLim(-200,200);
         plot.setPointSize(2);
         plot.setPointColor(0);
@@ -238,10 +247,10 @@ class AuxReadBar{
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;
-        
+
     }
 
-    void initArrays() {
+    private void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
         auxReadPoints = new GPointsArray(nPoints);
@@ -255,17 +264,13 @@ class AuxReadBar{
         plot.setPoints(auxReadPoints); //set the plot with 0.0 for all auxReadPoints to start
     }
 
-    void update() {
+    public void update() {
         // early out if unactive
-        if (auxValuesPosition == 1 || auxValuesPosition == 2) {
-            if (!ppgBoard.isPPGActive()) {
-                return;
-            }
-        } else if (auxValuesPosition == 3) {
-            if (!edaBoard.isEDAActive()) {
-                return;
-            }
+        if (!isBoardActive()) {
+            return;
         }
+
+        channel = getChannel();
 
         // update data in plot
         updatePlotPoints();
@@ -291,11 +296,11 @@ class AuxReadBar{
             return fmt;
     }
 
-    float calcTimeAxis(int sampleIndex) {
+    private float calcTimeAxis(int sampleIndex) {
         return -(float)numSeconds + (float)sampleIndex * timeBetweenPoints;
     }
 
-    void updatePlotPoints() {
+    private void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
 
         for (int i=0; i < nPoints; i++) {
@@ -307,7 +312,7 @@ class AuxReadBar{
         plot.setPoints(auxReadPoints);
     }
 
-    void draw() {
+    public void draw() {
         pushStyle();
 
         //draw plot
@@ -321,7 +326,8 @@ class AuxReadBar{
         plot.drawGridLines(0);
         plot.drawLines();
         
-        if(auxValuesPosition == w_novaAux.numAuxReadBars) { //only draw the x axis label on the bottom channel bar
+        
+        if (isBottomBar) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
@@ -336,25 +342,21 @@ class AuxReadBar{
         popStyle();
     }
 
-    int nPointsBasedOnDataSource() {
+    private int nPointsBasedOnDataSource() {
         return numSeconds * currentBoard.getSampleRate();
     }
 
-    void adjustTimeAxis(int _newTimeSize) {
+    public void adjustTimeAxis(int _newTimeSize) {
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
 
         initArrays();
-
-        if (_newTimeSize > 1) {
-            plot.getXAxis().setNTicks(_newTimeSize);  //sets the number of axis divisions...
-        }
-        else {
-            plot.getXAxis().setNTicks(10);
-        }
+        
+        //sets the number of axis divisions
+        plot.getXAxis().setNTicks(_newTimeSize > 1 ? _newTimeSize : 10);
     }
 
-    void adjustVertScale(int _vertScaleValue) {
+    public void adjustVertScale(int _vertScaleValue) {
         if(_vertScaleValue == 0) {
             isAutoscale = true;
         } else {
@@ -363,7 +365,7 @@ class AuxReadBar{
         }
     }
 
-    void autoScale() {
+    private void autoScale() {
         autoScaleYLim = 0;
         if (auxReadPoints.getNPoints() > 0) {
             for(int i = 0; i < nPoints; i++) {
@@ -375,7 +377,7 @@ class AuxReadBar{
         plot.setYLim(0, autoScaleYLim); //Plot Y values >= 0
     }
 
-    void screenResized(int _x, int _y, int _w, int _h) {
+    public void screenResized(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;
@@ -395,41 +397,20 @@ class AuxReadBar{
         return false;
     }
 
-    protected int[] getChannels() {
-        return new int[0];
+    protected int getChannel() {
+        return 0;
     }
 };
 
-class EDAReadBar extends AuxReadBar {
-    private EDACapableBoard edaBoard;
-
-    public EDAReadBar (PApplet _parent, EDACapableBoard _edaBoard, int auxChanNum, int _x, int _y, int _w, int _h) {
-        super(_parent, auxChanNum, _x, _y, _w, _h);
-        edaBoard = _edaBoard;
-    }
-
-    @Override
-    public void update() {
-
-    }
-
-    @Override
-    protected boolean isBoardActive() {
-        return edaBoard.isEDAActive();
-    }
-
-    @Override
-    protected int[] getChannels() {
-        return edaBoard.getEDAChannels(); 
-    }
-}
 
 class PPGReadBar extends AuxReadBar {
     private PPGCapableBoard ppgBoard;
+    private int ppgChan;
 
-    public PPGReadBar (PApplet _parent, PPGCapableBoard _ppgBoard, int auxChanNum, int _x, int _y, int _w, int _h) {
-        super(_parent, auxChanNum, _x, _y, _w, _h);
+    public PPGReadBar (PApplet _parent, int auxChanNum, PPGCapableBoard _ppgBoard, int _ppgChan, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
         ppgBoard = _ppgBoard;
+        ppgChan = _ppgChan;
     }
 
     @Override
@@ -438,7 +419,45 @@ class PPGReadBar extends AuxReadBar {
     }
 
     @Override
-    protected int[] getChannels() {
-        return ppgBoard.getPPGChannels(); 
+    protected int getChannel() {
+        return ppgBoard.getPPGChannels()[ppgChan]; //There are two ppg sensors
+    }
+}
+
+class EDAReadBar extends AuxReadBar {
+    private EDACapableBoard edaBoard;
+
+    public EDAReadBar (PApplet _parent, int auxChanNum, EDACapableBoard _edaBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
+        edaBoard = _edaBoard;
+    }
+
+    @Override
+    protected boolean isBoardActive() {
+        return edaBoard.isEDAActive();
+    }
+
+    @Override
+    protected int getChannel() {
+        return edaBoard.getEDAChannels()[0]; //There is one EDA sensor
+    }
+}
+
+class BatteryReadBar extends AuxReadBar {
+    private BatteryInfoCapableBoard batteryBoard;
+
+    public BatteryReadBar (PApplet _parent, int auxChanNum, BatteryInfoCapableBoard _batteryBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
+        batteryBoard = _batteryBoard;
+    }
+
+    @Override
+    protected boolean isBoardActive() {
+        return true;
+    }
+
+    @Override
+    protected int getChannel() {
+        return batteryBoard.getBatteryChannel();
     }
 }
