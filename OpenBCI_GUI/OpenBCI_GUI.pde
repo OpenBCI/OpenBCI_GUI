@@ -140,10 +140,9 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
 //BrainFlow Streaming Board
-BoardIds streamingBoard_ID = BoardIds.SYNTHETIC_BOARD;
-String streamingBoard_IP = "225.1.1.1";
-int streamingBoard_Port = 6677;
-
+BoardIds streamingBoard_ID;
+String streamingBoard_IP = null;
+int streamingBoard_Port = 0;
 
 //NovaXR Default Settings
 NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
