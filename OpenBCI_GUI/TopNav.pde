@@ -466,13 +466,19 @@ class TopNav {
             if (stopButton.isMouseHere() && stopButton.isActive()) {
                 stopButtonWasPressed();
             }
+            stopButton.setIsActive(false);
+
             if (filtBPButton.isMouseHere() && filtBPButton.isActive()) {
                 incrementFilterConfiguration();
             }
+            filtBPButton.setIsActive(false);
+
             if (filtNotchButton.isMouseHere() && filtNotchButton.isActive()) {
                 filtNotchButton.setIsActive(true);
                 incrementNotchConfiguration();
             }
+            filtNotchButton.setIsActive(false);
+
             if (currentBoard instanceof SmoothingCapableBoard) {
                 if (smoothingButton.isMouseHere() && smoothingButton.isActive()) {
                     smoothingButton.setIsActive(true);
@@ -481,6 +487,7 @@ class TopNav {
                     smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
                     smoothingButton.setString(getSmoothingString());
                 }
+                smoothingButton.setIsActive(false);
             }
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 if (gainButton.isMouseHere() && gainButton.isActive()) {
@@ -489,6 +496,7 @@ class TopNav {
                     adsBoard.setDynamicScaler(!adsBoard.getDynamicScaler());
                     gainButton.setString(getGainString());
                 }
+                gainButton.setIsActive(false);
             }
             if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
                 if (layoutButton.isMouseHere() && layoutButton.isActive()) {
@@ -497,15 +505,9 @@ class TopNav {
                     //wm.printLayouts(); //Used for debugging
                     println("TopNav: Layout Dropdown Opened");
                 }
+                layoutButton.setIsActive(false);
             }
-            stopButton.setIsActive(false);
-            filtBPButton.setIsActive(false);
-            filtNotchButton.setIsActive(false);
-            layoutButton.setIsActive(false);
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setIsActive(false);
-            }
+            
         }
 
         fpsButton.setIsActive(false);
