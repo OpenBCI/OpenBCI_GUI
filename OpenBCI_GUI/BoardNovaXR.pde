@@ -152,7 +152,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
         super();
 
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
-        useDynamicScaler = true;
+        useDynamicScaler = false;
     }
 
     public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
