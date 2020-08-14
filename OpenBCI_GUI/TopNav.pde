@@ -10,7 +10,6 @@
 import java.awt.Desktop;
 import java.net.*;
 import java.nio.file.*;
-import java.io.LineNumberReader;
 
 int navBarHeight = 32;
 TopNav topNav;
@@ -493,19 +492,8 @@ class TopNav {
         localVersionString = removeAlphaBeta(localVersionString);
         int[] localVersionCompareArray = int(split(localVersionString, '.'));
         localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-        
-        String command = isWindows() ? "ping -n 1 -w 2 www.github.com" : "ping -c 1 -t 2 www.github.com";
-        try {
-            Process p = java.lang.Runtime.getRuntime().exec(command); 
-            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            if (input.readLine() != null) {
-                internetIsConnected = true;
-            }
-            input.close();            
-            p.destroyForcibly();
-        } catch (Exception e) {
-            println("TopNav::loadGUIVersionData: Exception " + e.getMessage());
-        }
+
+        internetIsConnected = pingWebsite("https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest");
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
