@@ -310,7 +310,7 @@ class W_timeSeries extends Widget {
                 }
             }
             if(hardwareSettingsStoreButton.isActive && hardwareSettingsStoreButton.isMouseHere()) {
-                selectInput("Save settings to file", "storeSettingsFileSelected");
+                selectOutput("Save settings to file", "storeSettingsFileSelected");
             }
             hardwareSettingsButton.setIsActive(false);
             hardwareSettingsLoadButton.setIsActive(false);
