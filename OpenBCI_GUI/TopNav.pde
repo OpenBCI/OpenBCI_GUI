@@ -10,6 +10,7 @@
 import java.awt.Desktop;
 import java.net.*;
 import java.nio.file.*;
+import java.io.LineNumberReader;
 
 int navBarHeight = 32;
 TopNav topNav;
@@ -42,7 +43,7 @@ class TopNav {
     int webGUIVersionInt;
     int localGUIVersionInt;
     Boolean guiVersionIsUpToDate;
-    Boolean internetIsConnected;
+    Boolean internetIsConnected = false;
 
     //constructor
     TopNav() {
@@ -493,9 +494,15 @@ class TopNav {
         int[] localVersionCompareArray = int(split(localVersionString, '.'));
         localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
         
+        String command = isWindows() ? "ping -n 1 -w 2 www.github.com" : "ping -c 1 -t 2 www.github.com";
         try {
-            Process process = java.lang.Runtime.getRuntime().exec("ping -c 1 www.github.com"); 
-            internetIsConnected = (process.waitFor() == 0) ? true : false;
+            Process p = java.lang.Runtime.getRuntime().exec(command); 
+            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            if (input.readLine() != null) {
+                internetIsConnected = true;
+            }
+            input.close();            
+            p.destroyForcibly();
         } catch (Exception e) {
             println("TopNav::loadGUIVersionData: Exception " + e.getMessage());
         }
