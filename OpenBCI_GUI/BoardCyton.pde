@@ -247,8 +247,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
-        // todo remove, temp code to test
-        currentADS1299Settings.loadSettingsValues("E:\\settings.json");
     }
 
     // implement mandatory abstract functions
