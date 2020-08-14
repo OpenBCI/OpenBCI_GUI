@@ -141,7 +141,7 @@ CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
 //BrainFlow Streaming Board
 BoardIds streamingBoard_ID;
-String streamingBoard_IP = null;
+String streamingBoard_IP = "";
 int streamingBoard_Port = 0;
 
 //NovaXR Default Settings
