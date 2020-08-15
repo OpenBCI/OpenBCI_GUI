@@ -81,19 +81,22 @@ class NovaXRDefaultSettings extends ADS1299Settings {
 
         switch(mode) {
             case DEFAULT:
-                Arrays.fill(values.gain, 0, 8, Gain.X8); // channels 1-8 with gain x8
-                Arrays.fill(values.gain, 8, 14, Gain.X4); // 9-14 with gain x4
-                Arrays.fill(values.gain, 14, 16, Gain.X12); // 15-16 with gain x12
+                Arrays.fill(values.gain, 0, 8, Gain.X8);
+                Arrays.fill(values.gain, 8, 16, Gain.X4);
+                values.gain[9] = Gain.X12;
+                values.gain[14] = Gain.X12;
                 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
-                // channels 9-14 don't include, all other channels include
                 Arrays.fill(values.bias, Bias.INCLUDE);
-                Arrays.fill(values.bias, 8, 14, Bias.NO_INCLUDE);
+                Arrays.fill(values.bias, 8, 16, Bias.NO_INCLUDE);
+                values.bias[9] = Bias.INCLUDE;
+                values.bias[14] = Bias.INCLUDE;
 
-                // channels 9-14 Connect, all other channels disconnect
                 Arrays.fill(values.srb2, Srb2.CONNECT);
-                Arrays.fill(values.srb2, 8, 14, Srb2.DISCONNECT);
+                Arrays.fill(values.srb2, 8, 16, Srb2.DISCONNECT);
+                values.srb2[9] = Srb2.CONNECT;
+                values.srb2[14] = Srb2.CONNECT;
 
                 Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
