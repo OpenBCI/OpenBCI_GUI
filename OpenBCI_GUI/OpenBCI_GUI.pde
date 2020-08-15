@@ -249,11 +249,10 @@ void settings() {
     // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
     // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
-        size(976, 742, P2D);
-    } else {
-        //default 1024x768 resolution with 2D graphics
-        size(win_x, win_y, P2D);
+        win_x = 976;
+        win_y = 742;
     }
+    size(win_x, win_y, P2D);
 }
 
 void setup() {
