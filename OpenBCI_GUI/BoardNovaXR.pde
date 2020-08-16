@@ -148,12 +148,14 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     private NovaXRSR sampleRate;
 
     private final NovaXRDefaultSettings defaultSettings;
+    private boolean useDynamicScaler;
 
     // needed for playback
     public BoardNovaXR() {
         super();
 
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
+        useDynamicScaler = false;
     }
 
     public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
@@ -240,7 +242,11 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
                 // brainflow assumes default gain. Undo brainflow's scaling and apply new scale.
                 double brainflowGain = defaultSettings.values.gain[i].getScalar();
-                double scalar = brainflowGain / currentADS1299Settings.values.gain[i].getScalar();
+                double currentGain = 1.0;
+                if (useDynamicScaler) {
+                    currentGain = currentADS1299Settings.values.gain[i].getScalar();
+                }
+                double scalar = brainflowGain / currentGain;
                 data[exgChannels[i]][j] *= scalar;
             }
         }
@@ -316,5 +322,15 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     @Override
     public double getGain(int channel) {
         return getADS1299Settings().values.gain[channel].getScalar();
+    }
+
+    @Override
+    public boolean getUseDynamicScaler() {
+        return useDynamicScaler;
+    }
+
+    @Override
+    public void setUseDynamicScaler(boolean val) {
+        useDynamicScaler = val;
     }
 };
