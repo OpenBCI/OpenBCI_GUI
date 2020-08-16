@@ -322,12 +322,12 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     }
 
     @Override
-    public boolean getDynamicScaler() {
+    public boolean getUseDynamicScaler() {
         return useDynamicScaler;
     }
 
     @Override
-    public void setDynamicScaler(boolean val) {
+    public void setUseDynamicScaler(boolean val) {
         useDynamicScaler = val;
     }
 };

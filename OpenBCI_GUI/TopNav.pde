@@ -493,7 +493,7 @@ class TopNav {
                 if (gainButton.isMouseHere() && gainButton.isActive()) {
                     gainButton.setIsActive(true);
                     ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
-                    adsBoard.setDynamicScaler(!adsBoard.getDynamicScaler());
+                    adsBoard.setUseDynamicScaler(!adsBoard.getUseDynamicScaler());
                     gainButton.setString(getGainString());
                 }
                 gainButton.setIsActive(false);
@@ -641,7 +641,7 @@ class TopNav {
     }
 
     private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getDynamicScaler() ? "Gain Conv\nBody uV" : "Gain Conv\n Classic";
+        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Conv\nBody uV" : "Gain Conv\n Classic";
     }
 }
 
