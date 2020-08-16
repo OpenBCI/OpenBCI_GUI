@@ -126,7 +126,7 @@ class W_timeSeries extends Widget {
             hardwareSettingsLoadButton.hasStroke(false);
             hardwareSettingsLoadButton.setHelpText("Select settings file to load.");
         
-            hardwareSettingsStoreButton = new Button_obci(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y + navHeight + 3), 83, navHeight - 6, "Store Settings", 12);
+            hardwareSettingsStoreButton = new Button_obci(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y + navHeight + 3), 83, navHeight - 6, "Save Settings", 12);
             hardwareSettingsStoreButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsStoreButton.setFont(p5,12);
             hardwareSettingsStoreButton.setColorNotPressed(color(57,128,204));
