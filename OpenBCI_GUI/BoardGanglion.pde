@@ -77,7 +77,7 @@ class BoardGanglionWifi extends BoardGanglion {
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
         final int minSampleIndex = 0;
-        final int maxSampleIndex = 255;
+        final int maxSampleIndex = 200;
         return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
                                     minSampleIndex, maxSampleIndex);
     }
