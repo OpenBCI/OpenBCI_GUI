@@ -15,7 +15,7 @@ final String failFileName = "UNITTEST_FAILURE";
 @Suite.SuiteClasses({
         PacketLossTracker_UnitTests.class,
         PacketLossTrackerCytonSerialDaisy_UnitTests.class, 
-        PacketLossTrackerGanglion_UnitTests.class,  
+        PacketLossTrackerGanglionBLE_UnitTests.class,  
         TimeTrackingQueue_UnitTests.class, })
 public class AllTests {};
 

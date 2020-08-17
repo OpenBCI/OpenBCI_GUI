@@ -190,16 +190,16 @@ class PacketLossTrackerCytonSerialDaisy extends PacketLossTracker {
 // with accel: sample index range 0-100, all sample indexes are duplicated except for zero.
 // eg 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, ... , 99, 99, 100, 100, 0, 1, 1, 2, 2, 3, 3, ...
 // without acceL: sample 0, then 101-200
-class PacketLossTrackerGanglion extends PacketLossTracker {
+class PacketLossTrackerGanglionBLE extends PacketLossTracker {
 
     ArrayList<Integer> sampleIndexArrayAccel = new ArrayList<Integer>();
     ArrayList<Integer> sampleIndexArrayNoAccel = new ArrayList<Integer>();
 
-    PacketLossTrackerGanglion(int _sampleIndexChannel, int _timestampChannel) {
+    PacketLossTrackerGanglionBLE(int _sampleIndexChannel, int _timestampChannel) {
         this(_sampleIndexChannel, _timestampChannel, new RealTimeProvider());
     }
 
-    PacketLossTrackerGanglion(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
+    PacketLossTrackerGanglionBLE(int _sampleIndexChannel, int _timestampChannel, TTQTimeProvider _timeProvider) {
         super(_sampleIndexChannel, _timestampChannel, _timeProvider);
 
         {

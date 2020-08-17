@@ -1,4 +1,7 @@
 class BoardGanglionBLE extends BoardGanglion {
+
+    private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
+
     public BoardGanglionBLE() {
         super();
     }
@@ -12,6 +15,24 @@ class BoardGanglionBLE extends BoardGanglion {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.GANGLION_BOARD;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        super.setAccelerometerActive(active);
+
+        if (packetLossTrackerGanglionBLE != null) {
+            // notify the packet loss tracker, because the sample indices change based
+            // on whether accel is active or not
+            packetLossTrackerGanglionBLE.setAccelerometerActive(active);
+        }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        packetLossTrackerGanglionBLE = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglionBLE.setAccelerometerActive(isAccelerometerActive());
+        return packetLossTrackerGanglionBLE;
     }
 };
 
@@ -52,6 +73,14 @@ class BoardGanglionWifi extends BoardGanglion {
     public BoardIds getBoardId() {
         return BoardIds.GANGLION_WIFI_BOARD;
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };
 
 abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapableBoard {
@@ -69,8 +98,6 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     protected String ipAddress = "";
     private boolean isCheckingImpedance = false;
     private boolean isGettingAccel = false;
-
-    private PacketLossTrackerGanglion packetLossTrackerGanglion;
 
     // implement mandatory abstract functions
     @Override
@@ -117,12 +144,6 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     public void setAccelerometerActive(boolean active) {
         sendCommand(active ? "n" : "N");
         isGettingAccel = active;
-
-        if (packetLossTrackerGanglion != null) {
-            // notify the packet loss tracker, because the sample indices change based
-            // on whether accel is active or not
-            packetLossTrackerGanglion.setAccelerometerActive(active);
-        }
     }
 
     @Override
@@ -189,12 +210,5 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-    }
-
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        packetLossTrackerGanglion = new PacketLossTrackerGanglion(getSampleIndexChannel(), getTimestampChannel());
-        packetLossTrackerGanglion.setAccelerometerActive(isAccelerometerActive());
-        return packetLossTrackerGanglion;
     }
 };

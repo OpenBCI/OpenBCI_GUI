@@ -4,9 +4,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.Before;
 
-public static class PacketLossTrackerGanglion_UnitTests{
+public static class PacketLossTrackerGanglionBLE_UnitTests{
 
-    PacketLossTrackerGanglion packetLossTracker;
+    PacketLossTrackerGanglionBLE packetLossTracker;
     FakeTimeProvider fakeTimeProvider;
 
     @Before
@@ -14,7 +14,7 @@ public static class PacketLossTrackerGanglion_UnitTests{
         int sampleIndexChannel = 0;
         int timestampChannel = 1;
         fakeTimeProvider = currentApplet.new FakeTimeProvider();
-        packetLossTracker = currentApplet.new PacketLossTrackerGanglion(
+        packetLossTracker = currentApplet.new PacketLossTrackerGanglionBLE(
                 sampleIndexChannel, timestampChannel, fakeTimeProvider);
         packetLossTracker.silent = true;
     }
