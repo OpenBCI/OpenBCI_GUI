@@ -1,11 +1,6 @@
 import brainflow.*;
 
-interface StreamingBoardSettingsEnum {
-    public String getName();
-    public BoardIds getBoardId();
-}
-
-public enum BrainFlowStreaming_Boards implements StreamingBoardSettingsEnum
+public enum BrainFlowStreaming_Boards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),
     GANGLION("Ganglion", BoardIds.GANGLION_BOARD),
@@ -20,12 +15,10 @@ public enum BrainFlowStreaming_Boards implements StreamingBoardSettingsEnum
         this.boardId = _boardId;
     }
  
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public BoardIds getBoardId() {
         return boardId;
     }

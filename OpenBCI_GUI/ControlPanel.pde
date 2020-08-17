@@ -810,10 +810,6 @@ class ControlPanel {
                 novaXRBox.mousePressed();
             }
 
-            else if (eegDataSource == DATASOURCE_STREAMING) {
-                streamingBoardBox.mousePressed();
-            }
-
             
             //The following buttons apply only to Cyton and Ganglion Modes for now
             if (autoSessionName.isMouseHere()) {
@@ -1076,7 +1072,6 @@ class ControlPanel {
         }
 
         novaXRBox.mouseReleased();
-        streamingBoardBox.mouseReleased();
 
         //reset all buttons to false
         refreshPort.setIsActive(false);
@@ -1181,9 +1176,6 @@ public void initButtonPressed(){
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 // store the current text field value of "File Name" to be passed along to dataFiles
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText();
-            } else if (eegDataSource == DATASOURCE_STREAMING) {
-                streamingBoard_IP = controlPanel.streamingBoardBox.localCP5.get(Textfield.class, "ipAddress").getText();
-                streamingBoard_Port = Integer.parseInt(controlPanel.streamingBoardBox.localCP5.get(Textfield.class, "port").getText());
             } else {
                 sessionName = DirectoryManager.getFileNameDateTime();
             }
@@ -2304,6 +2296,8 @@ class StreamingBoardBox {
     private final String boardLabel = "BOARD";
     private ControlP5 localCP5;
     private ScrollableList boardIdList;
+    private Textfield ipAddress;
+    private Textfield port;
     private final int headerH = 14;
     private final int objectH = 24;
 
@@ -2317,7 +2311,7 @@ class StreamingBoardBox {
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        localCP5.addTextfield("ipAddress")
+        ipAddress = localCP5.addTextfield("ipAddress")
             .setPosition(x + padding * 3, y + headerH + padding*2)
             .setCaptionLabel("")
             .setSize(w / 3, objectH)
@@ -2329,12 +2323,12 @@ class StreamingBoardBox {
             .setColorForeground(isSelected_color)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText(streamingBoard_IP)
+            .setText("") //default ipAddress == ""
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setAutoClear(true);
         
-        localCP5.addTextfield("port")
+        port = localCP5.addTextfield("port")
             .setPosition(x + padding*5 + w/2, y + headerH + padding*2)
             .setCaptionLabel("")
             .setSize(w / 5 + padding, objectH)
@@ -2346,7 +2340,7 @@ class StreamingBoardBox {
             .setColorForeground(isSelected_color)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText(Integer.toString(streamingBoard_Port))
+            .setText(Integer.toString(0)) //default port == 0
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setAutoClear(true);
@@ -2385,13 +2379,7 @@ class StreamingBoardBox {
         localCP5.draw();
     }
 
-    public void mousePressed() {
-    }
-
-    public void mouseReleased() {
-    }
-
-    private ScrollableList createDropdown(String name, StreamingBoardSettingsEnum[] enumValues){
+    private ScrollableList createDropdown(String name, BrainFlowStreaming_Boards[] enumValues){
         ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
@@ -2406,7 +2394,7 @@ class StreamingBoardBox {
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
-        for (StreamingBoardSettingsEnum value : enumValues) {
+        for (BrainFlowStreaming_Boards value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
             list.addItem(value.getName(), value);
         }
@@ -2427,12 +2415,22 @@ class StreamingBoardBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
         return list;
     }
+    
+    public BrainFlowStreaming_Boards getBoard() {
+        int val = (int)boardIdList.getValue();
+        Map bob = boardIdList.getItem(val);
+        // this will retrieve the enum object stored in the dropdown!
+        return (BrainFlowStreaming_Boards)bob.get("value");
+    }
 
-    public void streamingBoard_IDs() {
-        println("CLICKED BOARD ID STREAMING BOARD THING!");
+    public String getIP() {
+        return ipAddress.getText();
+    }
+
+    public int getPort() {
+        return Integer.parseInt(port.getText());
     }
 };
 

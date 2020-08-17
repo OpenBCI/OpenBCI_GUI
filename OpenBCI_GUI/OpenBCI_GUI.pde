@@ -139,11 +139,6 @@ final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
-//BrainFlow Streaming Board
-BoardIds streamingBoard_ID;
-String streamingBoard_IP = "";
-int streamingBoard_Port = 0;
-
 //NovaXR Default Settings
 NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
 NovaXRSR novaXR_sampleRate = NovaXRSR.SR_250;
@@ -533,7 +528,11 @@ void initSystem() {
             //currentBoard = new BoardBrainFlowSynthetic();
             break;
         case DATASOURCE_STREAMING:
-            currentBoard = new BoardBrainFlowStreaming(streamingBoard_ID, streamingBoard_IP, streamingBoard_Port);
+            currentBoard = new BoardBrainFlowStreaming(
+                    controlPanel.streamingBoardBox.getBoard().getBoardId(), 
+                    controlPanel.streamingBoardBox.getIP(),
+                    controlPanel.streamingBoardBox.getPort()
+                    );
         default:
             break;
     }
@@ -592,8 +591,8 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    
-    if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
+     //don't save default session settings for NovaXR or StreamingBoard
+    if (eegDataSource != DATASOURCE_NOVAXR && eegDataSource != DATASOURCE_STREAMING) {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
@@ -724,8 +723,10 @@ void haltSystem() {
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
-        if (systemMode == SYSTEMMODE_POSTINIT) {
-            settings.save(settings.getPath("User", eegDataSource, nchan));
+        if (systemMode == SYSTEMMODE_POSTINIT && 
+            eegDataSource != DATASOURCE_NOVAXR && 
+            eegDataSource != DATASOURCE_STREAMING) {
+                settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
         //reset connect loadStrings
