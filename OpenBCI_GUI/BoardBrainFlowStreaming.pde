@@ -1,5 +1,29 @@
 import brainflow.*;
 
+public enum BrainFlowStreaming_Boards
+{
+    CYTON("Cyton", BoardIds.CYTON_BOARD),
+    GANGLION("Ganglion", BoardIds.GANGLION_BOARD),
+    NOVAXR("NovaXR", BoardIds.NOVAXR_BOARD),
+    SYNTHETIC("Synthetic", BoardIds.SYNTHETIC_BOARD);
+
+    private String name;
+    private BoardIds boardId;
+ 
+    BrainFlowStreaming_Boards(String _name, BoardIds _boardId) {
+        this.name = _name;
+        this.boardId = _boardId;
+    }
+ 
+    public String getName() {
+        return name;
+    }
+
+    public BoardIds getBoardId() {
+        return boardId;
+    }
+}
+
 class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCapableBoard {
 
     private BoardIds masterBoardId;
