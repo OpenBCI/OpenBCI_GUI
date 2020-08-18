@@ -333,4 +333,12 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299Sett
     public void setUseDynamicScaler(boolean val) {
         useDynamicScaler = val;
     }
+    
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };

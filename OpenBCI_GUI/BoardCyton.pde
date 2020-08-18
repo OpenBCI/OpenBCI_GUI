@@ -66,6 +66,14 @@ class BoardCytonSerial extends BoardCytonSerialBase {
     public BoardIds getBoardId() {
         return BoardIds.CYTON_BOARD;
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };
 
 class BoardCytonSerialDaisy extends BoardCytonSerialBase {
@@ -81,6 +89,11 @@ class BoardCytonSerialDaisy extends BoardCytonSerialBase {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_BOARD;
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return new PacketLossTrackerCytonSerialDaisy(getSampleIndexChannel(), getTimestampChannel());
     }
 };
 
@@ -205,6 +218,14 @@ abstract class BoardCytonWifiBase extends BoardCyton {
             sendCommand(command);
         }
         return res;
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 };
 

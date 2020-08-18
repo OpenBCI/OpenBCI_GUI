@@ -56,6 +56,7 @@ import edu.ucsd.sccn.LSL; //for LSL
 //import com.sun.jna.Platform;
 //import com.sun.jna.Pointer;
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
+import org.apache.commons.lang3.time.StopWatch;
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -75,7 +76,7 @@ int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = 
 boolean midInit = false;
 boolean midInitCheck2 = false;
 boolean abandonInit = false;
-boolean systemHasHalted = false;
+boolean systemHasHalted = true;
 boolean reinitRequested = false;
 
 final int NCHAN_CYTON = 8;
@@ -156,6 +157,9 @@ float data_elec_imp_ohm[];
 
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
+
+StopWatch sessionTimeElapsed;
+StopWatch streamTimeElapsed;
 
 String output_fname;
 String sessionName = "N/A";
@@ -371,6 +375,9 @@ void delayedSetup() {
 
     prepareExitHandler();
 
+    sessionTimeElapsed = new StopWatch();
+    streamTimeElapsed = new StopWatch();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
@@ -446,6 +453,10 @@ void initSystem() {
     systemHasHalted = false;
     boolean abandonInit = false;
 
+    sessionTimeElapsed.reset();
+    sessionTimeElapsed.start();
+    sessionTimeElapsed.suspend();
+
     //prepare the source of the input data
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
@@ -497,8 +508,6 @@ void initSystem() {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
-            // Replace line above with line below to test brainflow synthetic
-            //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
@@ -638,6 +647,10 @@ void startRunning() {
     // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
     // close hardware settings if user starts streaming
     w_timeSeries.closeADSSettings();
+
+    streamTimeElapsed.reset();
+    streamTimeElapsed.start();
+    sessionTimeElapsed.resume();
 }
 
 void stopRunning() {
@@ -645,6 +658,9 @@ void stopRunning() {
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
         output("Data stream stopped.");
+
+        streamTimeElapsed.stop();
+        sessionTimeElapsed.suspend();
     }
 
     dataLogger.onStopStreaming();
@@ -712,6 +728,8 @@ void haltSystem() {
 
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
+
+        sessionTimeElapsed.stop();
 
         systemHasHalted = true;
     }
