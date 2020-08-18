@@ -1,3 +1,9 @@
+# v5.0.1
+
+### Improvements
+* add load and store for hardware settings
+* add configurable gain behaviour
+
 # v5.0.0
 
 ### Improvements

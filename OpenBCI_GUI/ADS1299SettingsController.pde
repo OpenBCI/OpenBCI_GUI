@@ -31,11 +31,11 @@ class ADS1299SettingsController{
     public void update(){
         for (int i=0; i<currentBoard.getNumEXGChannels(); i++) {
             // grab the name out of the enum directly.
-            gainButtons[i].setString(boardSettings.gain[i].getName());
-            inputTypeButtons[i].setString(boardSettings.inputType[i].getName());
-            biasButtons[i].setString(boardSettings.bias[i].getName());
-            srb2Buttons[i].setString(boardSettings.srb2[i].getName());
-            srb1Buttons[i].setString(boardSettings.srb1[i].getName());
+            gainButtons[i].setString(boardSettings.values.gain[i].getName());
+            inputTypeButtons[i].setString(boardSettings.values.inputType[i].getName());
+            biasButtons[i].setString(boardSettings.values.bias[i].getName());
+            srb2Buttons[i].setString(boardSettings.values.srb2[i].getName());
+            srb1Buttons[i].setString(boardSettings.values.srb1[i].getName());
 
             // grey out buttons when the channel is not active
             if (boardSettings.isChannelActive(i)) {
@@ -208,31 +208,31 @@ class ADS1299SettingsController{
             for (int i : activeChannels) {
                 if(gainButtons[i].isMouseHere() && gainButtons[i].wasPressed) {
                     // loops over the enum
-                    boardSettings.gain[i] = boardSettings.gain[i].getNext();
+                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
                     boardSettings.commit(i);
                     gainButtons[i].wasPressed = false;
                     gainButtons[i].isActive = false; 
                 }
                 if(inputTypeButtons[i].isMouseHere() && inputTypeButtons[i].wasPressed) {
-                    boardSettings.inputType[i] = boardSettings.inputType[i].getNext();
+                    boardSettings.values.inputType[i] = boardSettings.values.inputType[i].getNext();
                     boardSettings.commit(i);
                     inputTypeButtons[i].wasPressed = false;
                     inputTypeButtons[i].isActive = false;  
                 }
                 if(biasButtons[i].isMouseHere() && biasButtons[i].wasPressed) {
-                    boardSettings.bias[i] = boardSettings.bias[i].getNext();
+                    boardSettings.values.bias[i] = boardSettings.values.bias[i].getNext();
                     boardSettings.commit(i);
                     biasButtons[i].wasPressed = false;
                     biasButtons[i].isActive = false;   
                 }
                 if(srb2Buttons[i].isMouseHere() && srb2Buttons[i].wasPressed) {
-                    boardSettings.srb2[i] = boardSettings.srb2[i].getNext();
+                    boardSettings.values.srb2[i] = boardSettings.values.srb2[i].getNext();
                     boardSettings.commit(i);
                     srb2Buttons[i].wasPressed = false;
                     srb2Buttons[i].isActive = false;    
                 }
                 if(srb1Buttons[i].isMouseHere() && srb1Buttons[i].wasPressed) {
-                    boardSettings.srb1[i] = boardSettings.srb1[i].getNext();
+                    boardSettings.values.srb1[i] = boardSettings.values.srb1[i].getNext();
                     boardSettings.commit(i);
                     srb1Buttons[i].wasPressed = false;
                     srb1Buttons[i].isActive = false;  
