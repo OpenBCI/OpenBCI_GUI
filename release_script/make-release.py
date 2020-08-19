@@ -19,7 +19,7 @@ import platform
 import subprocess
 import argparse
 import requests
-from bs4 import  BeautifulSoup
+import json
 
 ### Define platform-specific strings
 ###########################################################
@@ -53,12 +53,14 @@ def get_timestamp_ci():
         commit_id = os.getenv("APPVEYOR_REPO_COMMIT")
 
     if repo_slug and commit_id:
-        url = "http://github.com/" + repo_slug + "/commit/" + commit_id;
+        url = "http://api.github.com/repos/" + repo_slug + "/commits/" + commit_id;
 
         page = requests.get(url)
-        soup = BeautifulSoup(page.content, features="html.parser")
 
-        timestamp = soup.find("relative-time")["datetime"]
+        json_contents = json.load(page.content)
+
+
+        timestamp = json_contents["author"]["date"]
         timestamp = timestamp.replace(":", "-")
         timestamp = timestamp.replace("T", "_")
         timestamp = timestamp.replace("Z", "")

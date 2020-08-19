@@ -26,7 +26,6 @@ init:
 install:
   # used for getting commit timestamp
   - python -m pip install requests
-  - python -m pip install beautifulsoup4
 
   # decrypt pfx file if env are set (not set in PR builds)
   - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
