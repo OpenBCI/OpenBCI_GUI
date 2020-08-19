@@ -59,7 +59,7 @@ def get_timestamp_ci():
         json_contents = json.loads(page.content)
 
         for key, value in json_contents.items() :
-            print key
+            print (key)
 
         timestamp = json_contents["commit"]["author"]["date"]
         timestamp = timestamp.replace(":", "-")
