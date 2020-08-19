@@ -56,9 +56,7 @@ def get_timestamp_ci():
         url = "http://api.github.com/repos/" + repo_slug + "/commits/" + commit_id;
 
         page = requests.get(url)
-
-        json_contents = json.load(page.content)
-
+        json_contents = json.loads(page.content)
 
         timestamp = json_contents["author"]["date"]
         timestamp = timestamp.replace(":", "-")
