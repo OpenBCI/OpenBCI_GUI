@@ -88,6 +88,8 @@ class W_Spectrogram extends Widget {
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
+        //Fetch/calculate the time strings for the horizontal axis ticks
+        fetchTimeStrings(numHorizAxisDivs);
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -404,7 +406,7 @@ class W_Spectrogram extends Widget {
         
         for (int i = 0; i <= numAxisTicks; i++) {
             long l = (long)(horizAxisLabel[i] * 60f);
-            LocalDateTime t = time.plus(l, ChronoUnit.SECONDS);
+            LocalDateTime t = time.minus(l, ChronoUnit.SECONDS);
             horizAxisLabelStrings.append(t.format(formatter));
         }
     }

@@ -193,9 +193,9 @@ void parseKey(char val) {
             break;
 
         case 'm':
-            String picfname = "OpenBCI-" + DirectoryManager.getFileNameDateTime() + ".jpg";
+            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
+            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
             
@@ -291,40 +291,78 @@ synchronized void mouseReleased() {
     }
 }
 
-void makeScrollableListBetter(ScrollableList scrollList) {
-    // there's a bug in control p5 where clicking on the scroll list does not
-    // open it if you move the mouse while clicking. This fixes that.
-    scrollList.onEndDrag(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
-            theList.setOpen(!theList.isOpen());
-        }
-    });
-
-    // close the dropdown if the mouse leaves it.
-    scrollList.onLeave(new CallbackListener() {
-        public void controlEvent(CallbackEvent event) {
-            ScrollableList theList = (ScrollableList)(event.getController());
-            theList.close();
-        }
-    });
-}
-
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// Formerly Button.pde
-// This class creates and manages a button for use on the screen to trigger actions.
-//
-// Created: Chip Audette, Oct 2013.
-// Modified: Conor Russomanno, Oct 2014
-//
-// Based on Processing's "Button" example code
-//
-////////////////////////////////////////////////////////////////////////////////////////////////////
+class CustomScrollableList extends ScrollableList {
+
+    private boolean drawOutlineWhenClosed = true;
+
+    CustomScrollableList(ControlP5 cp5, String name) {
+        super(cp5, name);
+    }
+    
+    // there's a bug in control p5 where clicking on the scroll list does not	
+    // open it if you move the mouse while clicking. This fixes that.
+    @Override
+    protected void onEndDrag() {
+        super.onEndDrag();
+        setOpen(!isOpen());
+    }
+
+    // close the dropdown if the mouse leaves it.
+    @Override
+    protected void onLeave() {
+        super.onLeave();
+        close();
+    }
+
+    @Override
+    public ScrollableList updateDisplayMode( int theMode ) {
+        super.updateDisplayMode(theMode);
+
+        if (theMode == DEFAULT) {
+            _myControllerView = new CustomScrollableListView(this);
+        }
+        
+        return this;
+    }
+
+    public boolean getDrawOutlineWhenClosed() {
+        return drawOutlineWhenClosed;
+    }
+
+    public CustomScrollableList setDrawOutlineWhenClosed(boolean shouldDraw) {
+        drawOutlineWhenClosed = shouldDraw;
+        return this;
+    }
+
+    public class CustomScrollableListView extends ScrollableListView {
+        private CustomScrollableList theList;
+
+        CustomScrollableListView(CustomScrollableList _theList) {
+            super();
+            theList = _theList;
+        }
+
+        @Override
+        public void display(PGraphics g , ScrollableList c) {
+            drawOutline();
+            super.display(g, c);
+        }
+
+        private void drawOutline() {
+            if (!theList.isOpen() && !theList.getDrawOutlineWhenClosed()) {
+                return; // don't draw outline
+            }
+
+            // draw rect behind the dropdown 
+            fill(theList.getBackgroundColor());
+            rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
+        }
+    }
+}
 
 class Button_obci {
 

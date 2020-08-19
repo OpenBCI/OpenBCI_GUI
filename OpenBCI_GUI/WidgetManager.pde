@@ -27,6 +27,7 @@ W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_NovaAux w_novaAux;
+W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -66,7 +67,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_ganglionImpedance, w);
     }
 
-    if(eegDataSource == DATASOURCE_PLAYBACKFILE){
+    if(currentBoard instanceof DataSourcePlayback){
         //Playback Widget_3
         w_playback = new W_playback(_this);
         w_playback.setTitle("Playback History");
@@ -122,6 +123,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_analogRead = new W_AnalogRead(_this);
         w_analogRead.setTitle("Analog Read");
         addWidget(w_analogRead, w);
+    }
+
+    if (currentBoard instanceof Board) {
+        w_packetLoss = new W_PacketLoss(_this);
+        w_packetLoss.setTitle("Packet Loss");
+        addWidget(w_packetLoss, w);
     }
     
     //Cyton Widget_11, Synthetic Widget_8, Ganglion/Playback Widget_9

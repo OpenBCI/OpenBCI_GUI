@@ -4,6 +4,9 @@
 //------------------------------------------------------------------------
 import ddf.minim.analysis.*; //for FFT
 
+import brainflow.DataFilter;
+import brainflow.FilterTypes;
+
 DataProcessing dataProcessing;
 String curTimestamp;
 HashMap<Integer,String> index_of_times;
@@ -44,7 +47,7 @@ void processNewData() {
     dataProcessing.newDataToSend = true;
 
     //look to see if the latest data is railed so that we can notify the user on the GUI
-    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1]);
+    for (int Ichan=0; Ichan < nchan; Ichan++) is_railed[Ichan].update(dataProcessingRawBuffer[Ichan][dataProcessingRawBuffer.length-1], Ichan);
 
     //compute the electrode impedance. Do it in a very simple way [rms to amplitude, then uVolt to Volt, then Volt/Amp to Ohm]
     for (int Ichan=0; Ichan < nchan; Ichan++) {
@@ -60,28 +63,6 @@ void processNewData() {
         // Store to the global variable
         data_elec_imp_ohm[Ichan] = impedance;
     }
-}
-
-//helper function in handling the EEG data
-void appendAndShift(float[] data, float[] newData) {
-    int nshift = newData.length;
-    int end = data.length-nshift;
-    for (int i=0; i < end; i++) {
-        data[i]=data[i+nshift];  //shift data points down by 1
-    }
-    for (int i=0; i<nshift; i++) {
-        data[end+i] = newData[i];  //append new data
-    }
-}
-
-//help append and shift a single data
-void appendAndShift(float[] data, float newData) {
-    int nshift = 1;
-    int end = data.length-nshift;
-    for (int i=0; i < end; i++) {
-        data[i]=data[i+nshift];  //shift data points down by 1
-    }
-    data[end] = newData;  //append new data
 }
 
 void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
@@ -109,15 +90,11 @@ void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int 
 class DataProcessing {
     private float fs_Hz;  //sample rate
     private int nchan;
-    final int N_FILT_CONFIGS = 5;
-    FilterConstants[] filtCoeff_bp = new FilterConstants[N_FILT_CONFIGS];
-    final int N_NOTCH_CONFIGS = 3;
-    FilterConstants[] filtCoeff_notch = new FilterConstants[N_NOTCH_CONFIGS];
-    private int currentFilt_ind = 3;
-    private int currentNotch_ind = 0;  // set to 0 to default to 60Hz, set to 1 to default to 50Hz
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
+    BandPassRanges bpRange = BandPassRanges.FiveToFifty;
+    BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
@@ -135,289 +112,46 @@ class DataProcessing {
         newDataToSend = false;
         avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
-
-        defineFilters();  //define the filters anyway just so that the code doesn't bomb
     }
-
-    //define filters depending on the sampling rate
-    private void defineFilters() {
-        int n_filt;
-        double[] b, a, b2, a2;
-        String filt_txt, filt_txt2;
-        String short_txt, short_txt2;
-
-        //------------ loop over all of the pre-defined filter types -----------
-        //------------ notch filters ------------
-        n_filt = filtCoeff_notch.length;
-        for (int Ifilt=0; Ifilt < n_filt; Ifilt++) {
-            switch (Ifilt) {
-                case 0:
-                    //60 Hz notch filter, 2nd Order Butterworth: [b, a] = butter(2,[59.0 61.0]/(fs_Hz / 2.0), 'stop') %matlab command
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b2 = new double[] { 0.931378858122982, 3.70081291785747, 5.53903191270520, 3.70081291785747, 0.931378858122982 };
-                            a2 = new double[] { 1, 3.83246204081167, 5.53431749515949, 3.56916379490328, 0.867472133791669 };
-                            break;
-                        case 200:
-                            b2 = new double[] { 0.956543225556877, 1.18293615779028, 2.27881429174348, 1.18293615779028, 0.956543225556877 };
-                            a2 = new double[] { 1, 1.20922304075909, 2.27692490805580, 1.15664927482146, 0.914975834801436 };
-                            break;
-                        case 250:
-                            b2 = new double[] { 0.965080986344733, -0.242468320175764, 1.94539149412878, -0.242468320175764, 0.965080986344733 };
-                            a2 = new double[] { 1, -0.246778261129785, 1.94417178469135, -0.238158379221743, 0.931381682126902 };
-                            break;
-                        case 500:
-                            b2 = new double[] { 0.982385438526095, -2.86473884662109, 4.05324051877773, -2.86473884662109, 0.982385438526095};
-                            a2 = new double[] { 1, -2.89019558531207, 4.05293022193077, -2.83928210793009, 0.965081173899134 };
-                            break;
-                        case 1000:
-                            b2 = new double[] { 0.991153595101611, -3.68627799048791, 5.40978944177152, -3.68627799048791, 0.991153595101611 };
-                            a2 = new double[] { 1, -3.70265590760266, 5.40971118136100, -3.66990007337352, 0.982385450614122 };
-                            break;
-                        case 1600:
-                            b2 = new double[] { 0.994461788958027, -3.86796874670208, 5.75004904085114, -3.86796874670208, 0.994461788958027 };
-                            a2 = new double[] { 1, -3.87870938463296, 5.75001836883538, -3.85722810877252, 0.988954249933128 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b2 = new double[] { 1.0 };
-                            a2 = new double[] { 1.0 };
-                    }
-                    filtCoeff_notch[Ifilt] =  new FilterConstants(b2, a2, "Notch 60Hz", "60Hz");
-                    break;
-                case 1:
-                    //50 Hz notch filter, 2nd Order Butterworth: [b, a] = butter(2,[49.0 51.0]/(fs_Hz / 2.0), 'stop')
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b2 = new double[] { 0.931378858122983, 3.01781693143160, 4.30731047590091, 3.01781693143160, 0.931378858122983 };
-                            a2 = new double[] { 1, 3.12516981877757, 4.30259605835520, 2.91046404408562, 0.867472133791670 };
-                            break;
-                        case 200:
-                            b2 = new double[] { 0.956543225556877, -2.34285519884863e-16, 1.91308645111375, -2.34285519884863e-16, 0.956543225556877 };
-                            a2 = new double[] { 1, -1.41553435639707e-15, 1.91119706742607, -1.36696209906972e-15, 0.914975834801435 };
-                            break;
-                        case 250:
-                            b2 = new double[] { 0.965080986344734, -1.19328255433335, 2.29902305135123, -1.19328255433335, 0.965080986344734 };
-                            a2 = new double[] { 1, -1.21449347931898, 2.29780334191380, -1.17207162934771, 0.931381682126901 };
-                            break;
-                        case 500:
-                            b2 = new double[] { 0.982385438526090, -3.17931708468811, 4.53709552901242, -3.17931708468811, 0.982385438526090 };
-                            a2 = new double[] { 1, -3.20756923909868, 4.53678523216547, -3.15106493027754, 0.965081173899133 };
-                            break;
-                        case 1000:
-                            b2 = new double[] { 0.991153595101607, -3.77064677042206, 5.56847615976560, -3.77064677042206, 0.991153595101607 };
-                            a2 = new double[] { 1, -3.78739953308251, 5.56839789935513, -3.75389400776205, 0.982385450614127 };
-                            break;
-                        case 1600:
-                            b2 = new double[] { 0.994461788958316, -3.90144402068168, 5.81543195046478, -3.90144402068168, 0.994461788958316 };
-                            a2 = new double[] { 1, -3.91227761329151, 5.81540127844733, -3.89061042807090, 0.988954249933127 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b2 = new double[] { 1.0 };
-                            a2 = new double[] { 1.0 };
-                    }
-                    filtCoeff_notch[Ifilt] =  new FilterConstants(b2, a2, "Notch 50Hz", "50Hz");
-                    break;
-                case 2:
-                    //no notch filter
-                    b2 = new double[] { 1.0 };
-                    a2 = new double[] { 1.0 };
-                    filtCoeff_notch[Ifilt] =  new FilterConstants(b2, a2, "No Notch", "None");
-                    break;
-                }
-            }// end loop over notch filters
-
-            //------------ bandpass filters ------------
-            n_filt = filtCoeff_bp.length;
-            for (int Ifilt=0; Ifilt<n_filt; Ifilt++) {
-                //define bandpass filter
-                switch (Ifilt) {
-                case 0:
-                    //1-50 Hz band pass filter, 2nd Order Butterworth: [b, a] = butter(2,[1.0 50.0]/(fs_Hz / 2.0))
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b = new double[] { 0.615877232553135, 0, -1.23175446510627, 0, 0.615877232553135 };
-                            a = new double[] { 1, -0.789307541613509, -0.853263915766877, 0.263710995896442, 0.385190413112446 };
-                            break;
-                        case 200:
-                            b = new double[] { 0.283751216219319, 0, -0.567502432438638, 0, 0.283751216219319 };
-                            a = new double[] { 1, -1.97380379923172, 1.17181238127012, -0.368664525962831, 0.171812381270120 };
-                            break;
-                        case 250:
-                            b = new double[] { 0.200138725658073, 0, -0.400277451316145, 0, 0.200138725658073 };
-                            a = new double[] { 1, -2.35593463113158, 1.94125708865521, -0.784706375533419, 0.199907605296834 };
-                            break;
-                        case 500:
-                            b = new double[] { 0.0652016551604422, 0, -0.130403310320884, 0, 0.0652016551604422 };
-                            a = new double[] { 1, -3.14636562553919, 3.71754597063790, -1.99118301927812, 0.420045500522989 };
-                            break;
-                        case 1000:
-                            b = new double[] { 0.0193615659240911, 0, -0.0387231318481823, 0, 0.0193615659240911 };
-                            a = new double[] { 1, -3.56607203834158, 4.77991824545949, -2.86091191298975, 0.647068888346475 };
-                            break;
-                        case 1600:
-                            b = new double[] { 0.00812885687466408, 0, -0.0162577137493282, 0, 0.00812885687466408 };
-                            a = new double[] { 1, -3.72780746887970, 5.21756471024747, -3.25152171857009, 0.761764999239264 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b = new double[] { 1.0 };
-                            a = new double[] { 1.0 };
-                    }
-                    filt_txt = "Bandpass 1-50Hz";
-                    short_txt = "1-50 Hz";
-                    break;
-                case 1:
-                    //7-13 Hz band pass filter, 2nd Order Butterworth: [b, a] = butter(2,[7.0 13.0]/(fs_Hz / 2.0))
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b = new double[] { 0.0186503962278349, 0, -0.0373007924556699, 0, 0.0186503962278349 };
-                            a = new double[] { 1, -3.17162467236842, 4.11670870329067, -2.55619949640702, 0.652837763407545 };
-                            break;
-                        case 200:
-                            b = new double[] { 0.00782020803349772, 0, -0.0156404160669954, 0, 0.00782020803349772 };
-                            a = new double[] { 1, -3.56776916484310, 4.92946172209398, -3.12070317627516, 0.766006600943265 };
-                            break;
-                        case 250:
-                            b = new double[] { 0.00512926836610803, 0, -0.0102585367322161, 0, 0.00512926836610803 };
-                            a = new double[] { 1, -3.67889546976404, 5.17970041352212, -3.30580189001670, 0.807949591420914 };
-                            break;
-                        case 500:
-                            b = new double[] { 0.00134871194834618, 0, -0.00269742389669237, 0, 0.00134871194834618 };
-                            a = new double[] { 1, -3.86550956895320, 5.63152598761351, -3.66467991638185, 0.898858994155253 };
-                            break;
-                        case 1000:
-                            b = new double[] { 0.000346041337684191, 0, -0.000692082675368382, 0, 0.000346041337684191 };
-                            a = new double[] { 1, -3.93960949694447, 5.82749974685320, -3.83595939375067, 0.948081706106736 };
-                            break;
-                        case 1600:
-                            b = new double[] { 0.000136510722194708, 0, -0.000273021444389417, 0, 0.000136510722194708 };
-                            a = new double[] { 1, -3.96389829181139, 5.89507193593518, -3.89839913574117, 0.967227428151860 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b = new double[] { 1.0 };
-                            a = new double[] { 1.0 };
-                    }
-                    filt_txt = "Bandpass 7-13Hz";
-                    short_txt = "7-13 Hz";
-                    break;
-                case 2:
-                    //15-50 Hz band pass filter, 2nd Order Butterworth: [b, a] = butter(2,[15.0 50.0]/(fs_Hz / 2.0))
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b = new double[] { 0.350346377855414, 0, -0.700692755710828, 0, 0.350346377855414 };
-                            a = new double[] { 1, 0.175228265043619, -0.211846955102387, 0.0137230352398757, 0.180232073898346 };
-                            break;
-                        case 200:
-                            b = new double[] { 0.167483800127017, 0, -0.334967600254034, 0, 0.167483800127017 };
-                            a = new double[] { 1, -1.56695061045088, 1.22696619781982, -0.619519163981229, 0.226966197819818 };
-                            break;
-                        case 250:
-                            b = new double[] { 0.117351036724609, 0, -0.234702073449219, 0, 0.117351036724609 };
-                            a = new double[] { 1, -2.13743018017206, 2.03857800810852, -1.07014439920093, 0.294636527587914 };
-                            break;
-                        case 500:
-                            b = new double[] { 0.0365748358439273, 0, -0.0731496716878546, 0, 0.0365748358439273 };
-                            a = new double[] { 1, -3.18880661866679, 3.98037203788323, -2.31835989524663, 0.537194624801103 };
-                            break;
-                        case 1000:
-                            b = new double[] { 0.0104324133710872, 0, -0.0208648267421744, 0, 0.0104324133710872 };
-                            a = new double[] { 1, -3.63626742713985, 5.01393973667604, -3.10964559897057, 0.732726030371817 };
-                            break;
-                        case 1600:
-                            b = new double[] { 0.00429884732196394, 0, -0.00859769464392787, 0, 0.00429884732196394 };
-                            a = new double[] { 1, -3.78412985599134, 5.39377521548486, -3.43287342581222, 0.823349595537562 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b = new double[] { 1.0 };
-                            a = new double[] { 1.0 };
-                    }
-                    filt_txt = "Bandpass 15-50Hz";
-                    short_txt = "15-50 Hz";
-                    break;
-                case 3:
-                    //5-50 Hz band pass filter, 2nd Order Butterworth: [b, a] = butter(2,[5.0 50.0]/(fs_Hz / 2.0))
-                    switch(int(fs_Hz)) {
-                        case 125:
-                            b = new double[] { 0.529967227069348, 0, -1.05993445413870, 0, 0.529967227069348 };
-                            a = new double[] { 1, -0.517003774490767, -0.734318454224823, 0.103843398397761, 0.294636527587914 };
-                            break;
-                        case 200:
-                            b = new double[] { 0.248341078962541, 0, -0.496682157925081, 0, 0.248341078962541 };
-                            a = new double[] { 1, -1.86549482213123, 1.17757811892770, -0.460665534278457, 0.177578118927698 };
-                            break;
-                        case 250:
-                            b = new double[] { 0.175087643672101, 0, -0.350175287344202, 0, 0.175087643672101 };
-                            a = new double[] { 1, -2.29905535603850, 1.96749775998445, -0.874805556449481, 0.219653983913695 };
-                            break;
-                        case 500:
-                            b = new double[] { 0.0564484622607352, 0, -0.112896924521470, 0, 0.0564484622607352 };
-                            a = new double[] { 1, -3.15946330211917, 3.79268442285094, -2.08257331718360, 0.450445430056042 };
-                            break;
-                        case 1000:
-                            b = new double[] { 0.0165819316692804, 0, -0.0331638633385608, 0, 0.0165819316692804 };
-                            a = new double[] { 1, -3.58623980811691, 4.84628980428803, -2.93042721682014, 0.670457905953175 };
-                            break;
-                        case 1600:
-                            b = new double[] { 0.00692579317243661, 0, -0.0138515863448732, 0, 0.00692579317243661 };
-                            a = new double[] { 1, -3.74392328264678, 5.26758817627966, -3.30252568902969, 0.778873972655117 };
-                            break;
-                        default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
-                            b = new double[] { 1.0 };
-                            a = new double[] { 1.0 };
-                    }
-                    filt_txt = "Bandpass 5-50Hz";
-                    short_txt = "5-50 Hz";
-                    break;
-                default:
-                    //no filtering
-                    b = new double[] { 1.0 };
-                    a = new double[] { 1.0 };
-                    filt_txt = "No BP Filter";
-                    short_txt = "No Filter";
-                }  //end switch block
-
-                //create the bandpass filter
-                filtCoeff_bp[Ifilt] =  new FilterConstants(b, a, filt_txt, short_txt);
-        } //end loop over band pass filters
-    }
-    //end defineFilters method
 
     public String getFilterDescription() {
-        return filtCoeff_bp[currentFilt_ind].name + ", " + filtCoeff_notch[currentNotch_ind].name;
+        return bpRange.getDescr();
     }
     public String getShortFilterDescription() {
-        return filtCoeff_bp[currentFilt_ind].short_name;
+        return bpRange.getDescr();
     }
     public String getShortNotchDescription() {
-        return filtCoeff_notch[currentNotch_ind].short_name;
+        return bsRange.getDescr();
     }
 
-    public void incrementFilterConfiguration() {
-        //increment the index
-        currentFilt_ind++;
-        if (currentFilt_ind >= N_FILT_CONFIGS) currentFilt_ind = 0;
-        settings.dataProcessingBandpassSave = currentFilt_ind;//store the value to save bandpass setting
+    public synchronized void incrementFilterConfiguration() {
+        bpRange = bpRange.next();
     }
 
-    public void incrementNotchConfiguration() {
-        //increment the index
-        currentNotch_ind++;
-        if (currentNotch_ind >= N_NOTCH_CONFIGS) currentNotch_ind = 0;
-        settings.dataProcessingNotchSave = currentNotch_ind;
+    public synchronized  void incrementNotchConfiguration() {
+        bsRange = bsRange.next();
     }
     
-    void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
+    private synchronized void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
         int Nfft = getNfftSafe();
         double foo;
 
         //filter the data in the time domain
-        filterIIR(filtCoeff_notch[currentNotch_ind].b, filtCoeff_notch[currentNotch_ind].a, data_forDisplay_uV[Ichan]); //notch
-        filterIIR(filtCoeff_bp[currentFilt_ind].b, filtCoeff_bp[currentFilt_ind].a, data_forDisplay_uV[Ichan]); //bandpass
+        // todo use double arrays here and convert to float only to plot data
+        try {
+            double[] tempArray = floatToDoubleArray(data_forDisplay_uV[Ichan]);
+            if (bsRange != BandStopRanges.None) {
+                DataFilter.perform_bandstop(tempArray, currentBoard.getSampleRate(), (double)bsRange.getFreq(), (double)4.0, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
+            }
+            if (bpRange != BandPassRanges.None) {
+                double centerFreq = (bpRange.getStart() + bpRange.getStop()) / 2.0;
+                double bandWidth = bpRange.getStop() - bpRange.getStart();
+                DataFilter.perform_bandpass(tempArray, currentBoard.getSampleRate(), centerFreq, bandWidth, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
+            }
+            doubleToFloatArray(tempArray, data_forDisplay_uV[Ichan]);
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+        }
 
         //compute the standard deviation of the filtered signal...this is for the head plot
         float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data

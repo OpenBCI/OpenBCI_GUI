@@ -15,10 +15,6 @@ class DataLogger {
         closeLogFile();  //close log file
     }
 
-    public void onShutDown() {
-        closeLogFile();  //close log file
-    }
-
     public void update() {
         limitRecordingFileDuration();
 
@@ -52,7 +48,7 @@ class DataLogger {
         if (settings.isLogFileOpen() && outputDataSource == OUTPUT_SOURCE_ODF && settings.maxLogTimeReached()) {
             println("DataLogging: Max recording duration reached for OpenBCI data format. Creating a new recording file in the session folder.");
             closeLogFile();
-            openNewLogFile(DirectoryManager.getFileNameDateTime());
+            openNewLogFile(directoryManager.getFileNameDateTime());
             settings.setLogFileStartTime(System.nanoTime());
         }
     }
@@ -61,7 +57,7 @@ class DataLogger {
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource != DATASOURCE_PLAYBACKFILE) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
-                openNewLogFile(DirectoryManager.getFileNameDateTime());
+                openNewLogFile(directoryManager.getFileNameDateTime());
             }
             settings.setLogFileStartTime(System.nanoTime());
         }

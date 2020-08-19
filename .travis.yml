@@ -57,6 +57,8 @@ script:
   # over script will write version and timestamp here
   - GUI_COMMIT_TIME=`cat temp/timestamp.txt`
   - GUI_VERSION_STRING=`cat temp/versionstring.txt`
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python $TRAVIS_BUILD_DIR/OpenBCI_GUI_UnitTests/run-unittests.py                                      ;fi
+  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts  
 
 notifications:
   email:

@@ -6,9 +6,11 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     private int[] accelChannelsCache = null;
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
+    private int numChannels = 0;
 
-    public BoardBrainFlowSynthetic() {
+    public BoardBrainFlowSynthetic(int numChannels) {
         super();
+        this.numChannels = numChannels;
     }
 
     // implement mandatory abstract functions
@@ -21,6 +23,17 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.SYNTHETIC_BOARD;
+    }
+
+    @Override
+    public int[] getEXGChannels() {
+        int[] channels = super.getEXGChannels();
+        int[] res = new int[numChannels];
+        for (int i = 0; i < numChannels; i++)
+        {
+            res[i] = channels[i * (channels.length / numChannels)];
+        }
+        return res;
     }
 
     @Override
@@ -122,5 +135,13 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 };

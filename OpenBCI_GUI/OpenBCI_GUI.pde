@@ -56,13 +56,14 @@ import edu.ucsd.sccn.LSL; //for LSL
 //import com.sun.jna.Platform;
 //import com.sun.jna.Pointer;
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
+import org.apache.commons.lang3.time.StopWatch;
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.0-beta.0";
-String localGUIVersionDate = "June 2020";
+String localGUIVersionString = "v5.0.1";
+String localGUIVersionDate = "August 2020";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
@@ -75,7 +76,7 @@ int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = 
 boolean midInit = false;
 boolean midInitCheck2 = false;
 boolean abandonInit = false;
-boolean systemHasHalted = false;
+boolean systemHasHalted = true;
 boolean reinitRequested = false;
 
 final int NCHAN_CYTON = 8;
@@ -108,6 +109,7 @@ boolean showStartupError = false;
 String startupErrorMessage = "";
 //here are variables that are used if loading input data from a CSV text file...double slash ("\\") is necessary to make a single slash
 String playbackData_fname = "N/A"; //only used if loading input data from a file
+String sdData_fname = "N/A"; //only used if loading input data from a sd file
 int nextPlayback_millis = -100; //any negative number
 
 // Initialize board
@@ -156,6 +158,9 @@ float data_elec_imp_ohm[];
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
 int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
 
+StopWatch sessionTimeElapsed;
+StopWatch streamTimeElapsed;
+
 String output_fname;
 String sessionName = "N/A";
 final int OUTPUT_SOURCE_NONE = 0;
@@ -163,6 +168,14 @@ final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
 final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
 public int outputDataSource = OUTPUT_SOURCE_ODF;
 // public int outputDataSource = OUTPUT_SOURCE_BDF;
+
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+String userPlaybackHistoryFile;
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+boolean recentPlaybackFilesHaveUpdated = false;
 
 // Serial output
 Serial serial_output;
@@ -222,7 +235,8 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-SoftwareSettings settings = new SoftwareSettings();
+SessionSettings settings;
+DirectoryManager directoryManager;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -233,14 +247,16 @@ SoftwareSettings settings = new SoftwareSettings();
 int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
 
 void settings() {
+    //LINUX GFX FIX #816
+    System.setProperty("jogl.disable.openglcore", "false");
+
     // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
     // Later changed to 976x742 so users can access full control panel
     if (displayWidth == 1366 && displayHeight == 768) {
-        size(976, 742, P2D);
-    } else {
-        //default 1024x768 resolution with 2D graphics
-        size(win_x, win_y, P2D);
+        win_x = 976;
+        win_y = 742;
     }
+    size(win_x, win_y, P2D);
 }
 
 void setup() {
@@ -278,6 +294,8 @@ void setup() {
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
     }
+    
+    directoryManager = new DirectoryManager();
 
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
@@ -285,10 +303,15 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    println("Console Log Started at Local Time: " + DirectoryManager.getFileNameDateTime());
+    println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
+    
+    // Copy sample data to the Users' Documents folder +  create Recordings folder
+    directoryManager.init();
+    settings = new SessionSettings();
+    userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
     ourApplet = this;
@@ -325,7 +348,6 @@ void delayedSetup() {
     frame.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
             if (e.getSource()==frame) {
-                println("OpenBCI_GUI: setup: RESIZED");
                 settings.screenHasBeenResized = true;
                 settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
@@ -351,10 +373,10 @@ void delayedSetup() {
 
     buttonHelpText = new ButtonHelpText();
 
-    // Create GUI data folder in Users' Documents and copy sample data if it doesn't already exist
-    copyGUISampleData();
-
     prepareExitHandler();
+
+    sessionTimeElapsed = new StopWatch();
+    streamTimeElapsed = new StopWatch();
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
@@ -364,44 +386,6 @@ void delayedSetup() {
 
         setupComplete = true; // signal that the setup thread has finished
         println("OpenBCI_GUI::Setup: Setup is complete!");
-    }
-}
-
-public void copyGUISampleData(){
-    String directoryName = settings.guiDataPath + File.separator + "Sample_Data" + File.separator;
-    String fileToCheckString = directoryName + "OpenBCI-sampleData-2-meditation.txt";
-    File directory = new File(directoryName);
-    File fileToCheck = new File(fileToCheckString);
-    if (!fileToCheck.exists()){
-        println("OpenBCI_GUI::Setup: Copying sample data to Documents/OpenBCI_GUI/Sample_Data");
-        // Make the entire directory path including parents
-        directory.mkdirs();
-        try {
-            List<File> results = new ArrayList<File>();
-            File[] filesFound = new File(dataPath("EEG_Sample_Data")).listFiles();
-            //If this pathname does not denote a directory, then listFiles() returns null.
-            for (File file : filesFound) {
-                if (file.isFile()) {
-                    results.add(file);
-                }
-            }
-            for(File file : results) {
-                Files.copy(file.toPath(),
-                    (new File(directoryName + file.getName())).toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-            }
-        } catch (IOException e) {
-            outputError("Setup: Error trying to copy Sample Data to Documents directory.");
-        }
-    } else {
-        println("OpenBCI_GUI::Setup: Sample Data exists in Documents folder.");
-    }
-
-    //Create \Documents\OpenBCI_GUI\Recordings\ if it doesn't exist
-    String recordingDirString = settings.guiDataPath + File.separator + "Recordings";
-    File recDirectory = new File(recordingDirString);
-    if (recDirectory.mkdir()) {
-        println("OpenBCI_GUI::Setup: Created \\Documents\\OpenBCI_GUI\\Recordings\\");
     }
 }
 
@@ -436,30 +420,13 @@ synchronized void draw() {
 
 //====================== END-OF-DRAW ==========================//
 
-/**
-  * This allows us to kill the running node process on quit.
-  */
 private void prepareExitHandler () {
+    // This callback will run when the GUI quits
     Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
         public void run () {
             System.out.println("SHUTDOWN HOOK");
-            //If user starts system and quits the app,
-            //save user settings for current mode!
-            try {
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    settings.save(settings.getPath("User", eegDataSource, nchan));
-                }
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
-            //Close network streams
-            if (w_networking != null && w_networking.getNetworkActive()) {
-                w_networking.stopNetwork();
-                println("openBCI_GUI: shutDown: Network streams stopped");
-            }
-
-            // finalize any playback files
-            dataLogger.onShutDown();
+            
+            haltSystem();
         }
     }
     ));
@@ -486,6 +453,10 @@ void initSystem() {
     systemHasHalted = false;
     boolean abandonInit = false;
 
+    sessionTimeElapsed.reset();
+    sessionTimeElapsed.start();
+    sessionTimeElapsed.suspend();
+
     //prepare the source of the input data
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
@@ -507,10 +478,20 @@ void initSystem() {
             }
             break;
         case DATASOURCE_SYNTHETIC:
-            currentBoard = new BoardSynthetic();
+            currentBoard = new BoardBrainFlowSynthetic(nchan);
             break;
         case DATASOURCE_PLAYBACKFILE:
-            currentBoard = new DataSourcePlayback(playbackData_fname);
+            if (!playbackData_fname.equals("N/A")) {
+                currentBoard = new DataSourcePlayback(playbackData_fname);
+            } else {
+                if (!sdData_fname.equals("N/A")) {
+                    currentBoard = new DataSourceSDCard(sdData_fname);
+                }
+                else {
+                    // no code path to it
+                    println("No playback or SD file selected.");
+                }
+            }
             break;
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
@@ -527,8 +508,6 @@ void initSystem() {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
-            // Replace line above with line below to test brainflow synthetic
-            //currentBoard = new BoardBrainFlowSynthetic();
             break;
         default:
             break;
@@ -588,18 +567,11 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    //DISABLE SOFTWARE SETTINGS FOR NOVAXR
-    if (eegDataSource != DATASOURCE_NOVAXR) {
-        if (!abandonInit) {
-            //Init software settings: create default settings files, load user settings, etc.
-            settings.init();
-            settings.initCheckPointFive();
-        } else {
-            haltSystem();
-            outputError("Failed to connect. Check that the device is powered on and in range.");
-            controlPanel.open();
-            systemMode = SYSTEMMODE_PREINIT; // leave this here
-        }
+    
+    if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
+        //Init software settings: create default settings file that is datasource unique
+        settings.init();
+        settings.initCheckPointFive();
     }
 
     midInit = false;
@@ -675,6 +647,10 @@ void startRunning() {
     // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
     // close hardware settings if user starts streaming
     w_timeSeries.closeADSSettings();
+
+    streamTimeElapsed.reset();
+    streamTimeElapsed.start();
+    sessionTimeElapsed.resume();
 }
 
 void stopRunning() {
@@ -682,6 +658,9 @@ void stopRunning() {
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
         output("Data stream stopped.");
+
+        streamTimeElapsed.stop();
+        sessionTimeElapsed.suspend();
     }
 
     dataLogger.onStopStreaming();
@@ -731,8 +710,6 @@ void haltSystem() {
             settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
-        settings.settingsLoaded = false; //on halt, reset this value
-
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
         ganglion_portName = "";
@@ -751,6 +728,8 @@ void haltSystem() {
 
         currentBoard.uninitialize();
         currentBoard = new BoardNull(); // back to null
+
+        sessionTimeElapsed.stop();
 
         systemHasHalted = true;
     }
@@ -781,12 +760,9 @@ void systemUpdate() { // for updating data values and variables
     }
     if (systemMode == SYSTEMMODE_POSTINIT) {
         processNewData();
-
-        // gui.cc.update(); //update Channel Controller even when not updating certain parts of the GUI... (this is a bit messy...)
-
+        
         //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            println("OpenBCI_GUI: setup: RESIZED");
             settings.screenHasBeenResized = true;
             settings.timeOfLastScreenResize = millis();
             settings.widthOfLastScreen = width;
@@ -799,11 +775,6 @@ void systemUpdate() { // for updating data values and variables
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
-        }
-        if (settings.screenHasBeenResized == true && (millis() - settings.timeOfLastScreenResize) > settings.reinitializeGUIdelay) {
-            settings.screenHasBeenResized = false;
-            println("systemUpdate: reinitializing GUI");
-            settings.timeOfGUIreinitialize = millis();
         }
 
         if (wm.isWMInitialized) {
@@ -849,22 +820,7 @@ void systemDraw() { //for drawing to the screen
             break;
         }
 
-        //wait 1 second for GUI to reinitialize
-        if ((millis() - settings.timeOfGUIreinitialize) > settings.reinitializeGUIdelay) {
-            // println("attempting to draw GUI...");
-            try {
-                // println("GUI DRAW!!! " + millis());
-                //draw GUI widgets (visible/invisible) using widget manager
-                wm.draw();
-            } catch (Exception e) {
-                println(e.getMessage());
-                settings.reinitializeGUIdelay = settings.reinitializeGUIdelay * 2;
-                println("OpenBCI_GUI: systemDraw: New GUI reinitialize delay = " + settings.reinitializeGUIdelay);
-            }
-        } else {
-            //reinitializing GUI after resize
-            println("OpenBCI_GUI: systemDraw: reinitializing GUI after resize... not drawing GUI");
-        }
+        wm.draw();
 
         drawContainers();
     } else { //systemMode != 10

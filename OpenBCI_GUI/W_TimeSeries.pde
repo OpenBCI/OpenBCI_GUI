@@ -15,39 +15,44 @@ class W_timeSeries extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
 
-    int numChannelBars;
-    float xF, yF, wF, hF;
-    float ts_padding;
-    float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
-    float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
-    float plotBottomWell;
-    float playbackWidgetHeight;
-    int channelBarHeight;
+    private int numChannelBars;
+    private float xF, yF, wF, hF;
+    private float ts_padding;
+    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+    private float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
+    private float plotBottomWell;
+    private float playbackWidgetHeight;
+    private int channelBarHeight;
 
-    Button_obci hardwareSettingsButton;
+    private Button_obci hardwareSettingsButton;
+    private Button_obci hardwareSettingsLoadButton;
+    private Button_obci hardwareSettingsStoreButton;
 
-    ChannelBar[] channelBars;
-    PlaybackScrollbar scrollbar;
-    TimeDisplay timeDisplay;
+    private ChannelSelect tsChanSelect;
+    private ChannelBar[] channelBars;
+    private PlaybackScrollbar scrollbar;
+    private TimeDisplay timeDisplay;
 
-    int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    private int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    private int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
-    int xLim = xLimOptions[1];  //start at 5s
-    int xMax = xLimOptions[0];  //start w/ autoscale
-
-    boolean allowSpillover = false;
+    private int xLim = xLimOptions[1];  //start at 5s
+    private int xMax = xLimOptions[0];  //start w/ autoscale
 
     private ADS1299SettingsController adsSettingsController;
 
-    TextBox[] impValuesMontage;
-
+    private boolean allowSpillover = false;
+    private TextBox[] impValuesMontage;
     private boolean visible = true;
-
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
+
+        //activate all channels in channelSelect by default
+        activateAllChannels();
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -75,7 +80,7 @@ class W_timeSeries extends Widget {
         // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
-        if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+        if((currentBoard instanceof FileBoard) && hasScrollbar) {
             playbackWidgetHeight = 50.0;
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
@@ -101,7 +106,7 @@ class W_timeSeries extends Widget {
         }
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton = new Button_obci((int)(x + 3), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
+            hardwareSettingsButton = new Button_obci((int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
             // hardwareSettingsButton.setStrokeColor((int)(color(150)));
@@ -112,6 +117,22 @@ class W_timeSeries extends Widget {
             hardwareSettingsButton.hasStroke(false);
             // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
             hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+
+            hardwareSettingsLoadButton = new Button_obci(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y + navHeight + 3), 80, navHeight - 6, "Load Settings", 12);
+            hardwareSettingsLoadButton.setCornerRoundess((int)(navHeight-6));
+            hardwareSettingsLoadButton.setFont(p5,12);
+            hardwareSettingsLoadButton.setColorNotPressed(color(57,128,204));
+            hardwareSettingsLoadButton.textColorNotActive = color(255);
+            hardwareSettingsLoadButton.hasStroke(false);
+            hardwareSettingsLoadButton.setHelpText("Select settings file to load.");
+        
+            hardwareSettingsStoreButton = new Button_obci(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y + navHeight + 3), 83, navHeight - 6, "Save Settings", 12);
+            hardwareSettingsStoreButton.setCornerRoundess((int)(navHeight-6));
+            hardwareSettingsStoreButton.setFont(p5,12);
+            hardwareSettingsStoreButton.setColorNotPressed(color(57,128,204));
+            hardwareSettingsStoreButton.textColorNotActive = color(255);
+            hardwareSettingsStoreButton.hasStroke(false);
+            hardwareSettingsStoreButton.setHelpText("Save current settings to file.");
         }
 
         int x_hsc = int(ts_x);
@@ -120,7 +141,7 @@ class W_timeSeries extends Widget {
         int h_hsc = int(ts_h); //height of montage controls (on left of montage)
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            adsSettingsController = new ADS1299SettingsController((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+            adsSettingsController = new ADS1299SettingsController(tsChanSelect.activeChan, (int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
         }
     }
 
@@ -136,13 +157,36 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            if(currentBoard instanceof ADS1299SettingsBoard) {
+            // offset based on whether channel select is open or not.
+            int chanSelectOffset = 0;
+            if (tsChanSelect.isVisible()) {
+                chanSelectOffset = navHeight;
+            }
+
+            //Update channel checkboxes and active channels
+            tsChanSelect.update(x, y, w);
+            numChannelBars = tsChanSelect.activeChan.size();
+            channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
+
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+                int activeChan = tsChanSelect.activeChan.get(i);
+                int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
+                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+            }
+
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
+                hardwareSettingsLoadButton.setPos(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y0 + navHeight + 3));
+                hardwareSettingsStoreButton.setPos(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y0 + navHeight + 3));
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
                 ignoreButtonCheck(hardwareSettingsButton);
+                ignoreButtonCheck(hardwareSettingsLoadButton);
+                ignoreButtonCheck(hardwareSettingsStoreButton);
             }
 
-            if(eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+            if((currentBoard instanceof FileBoard) && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
             } else {
@@ -150,8 +194,9 @@ class W_timeSeries extends Widget {
             }
 
             //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numChannelBars; i++) {
-                channelBars[i].update();
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+                channelBars[activeChan].update();
             }
         }
     }
@@ -163,12 +208,13 @@ class W_timeSeries extends Widget {
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
-            for(int i = 0; i < numChannelBars; i++) {
-                channelBars[i].draw();
+            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+                channelBars[activeChan].draw();
             }
 
             //Display playback scrollbar or timeDisplay, depending on data source
-            if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            if((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
                 stroke(31,69,110);
                 rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
@@ -179,15 +225,21 @@ class W_timeSeries extends Widget {
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettingsButton.draw();
+                hardwareSettingsLoadButton.draw();
+                hardwareSettingsStoreButton.draw();
                 adsSettingsController.draw();
             }
 
             popStyle();
+            
+            tsChanSelect.draw();
         }
     }
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        tsChanSelect.screenResized(pApplet);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -198,21 +250,9 @@ class W_timeSeries extends Widget {
         ts_y = yF + (ts_padding);
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-        channelBarHeight = int(ts_h/numChannelBars);
-
-        for(int i = 0; i < numChannelBars; i++) {
-            int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            channelBars[i].screenResized(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
-        }
-
-
-        if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton.setPos((int)(x0 + 3), (int)(y0 + navHeight + 3));
-            adsSettingsController.screenResized((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
-        }
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE && hasScrollbar) {
+        if((currentBoard instanceof FileBoard) && hasScrollbar) {
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
             pb_w = ts_w - ts_padding*4;
@@ -226,11 +266,18 @@ class W_timeSeries extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
         if (!this.dropdownIsActive) {
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
+                }
+                if (hardwareSettingsLoadButton.isMouseHere()) {
+                    hardwareSettingsLoadButton.setIsActive(true);
+                }
+                if (hardwareSettingsStoreButton.isMouseHere()) {
+                    hardwareSettingsStoreButton.setIsActive(true);
                 }
             }
         }
@@ -241,8 +288,9 @@ class W_timeSeries extends Widget {
             }
         }
 
-        for(int i = 0; i < channelBars.length; i++) {
-            channelBars[i].mousePressed();
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            channelBars[activeChan].mousePressed();
         }
     }
     
@@ -254,15 +302,28 @@ class W_timeSeries extends Widget {
                 println("HardwareSetingsButton: Toggle...");
                 setAdsSettingsVisible(!adsSettingsController.isVisible);
             }
+            if(hardwareSettingsLoadButton.isActive && hardwareSettingsLoadButton.isMouseHere()) {
+                if (isRunning) {
+                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
+                } else {
+                    selectInput("Select settings file to load", "loadSettingsFileSelected");
+                }
+            }
+            if(hardwareSettingsStoreButton.isActive && hardwareSettingsStoreButton.isMouseHere()) {
+                selectOutput("Save settings to file", "storeSettingsFileSelected");
+            }
             hardwareSettingsButton.setIsActive(false);
+            hardwareSettingsLoadButton.setIsActive(false);
+            hardwareSettingsStoreButton.setIsActive(false);
         }
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
             adsSettingsController.mouseReleased();
         } 
         
-        for(int i = 0; i < channelBars.length; i++) {
-            channelBars[i].mouseReleased();
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            channelBars[activeChan].mouseReleased();
         }
     }
 
@@ -291,7 +352,44 @@ class W_timeSeries extends Widget {
     public void closeADSSettings() {
         setAdsSettingsVisible(false);
     }
+
+    private void activateAllChannels() {
+        tsChanSelect.activeChan.clear();
+        //Activate all channel checkboxes by default for this widget
+        for (int i = 0; i < nchan; i++) {
+            tsChanSelect.checkList.activate(i);
+            tsChanSelect.activeChan.add(i);
+        }
+    }
 };
+
+void loadSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
+                output("Settings loaded.");
+            } else {
+                output("Failed to load settings.");
+            }
+        }
+    }
+}
+
+void storeSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().saveToFile(selection.getAbsolutePath())) {
+                output("Settings saved.");
+            } else {
+                output("Failed to save settings.");
+            }
+        }
+    }
+}
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
@@ -459,9 +557,9 @@ class ChannelBar{
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                voltageValue.string = "RAILED";
+                voltageValue.string = "RAILED - " + voltageValue.string;
             } else if (is_railed[channelIndex].is_railed_warn == true) {
-                voltageValue.string = "NEAR RAILED - " + String.format(getFmt(val),val) + " uVrms";
+                voltageValue.string = "NEAR RAILED - " + voltageValue.string;
             }
         }
 
@@ -470,7 +568,7 @@ class ChannelBar{
         impValue.string = String.format(getFmt(val),val) + " kOhm";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                impValue.string = "RAILED";
+                impValue.string = "RAILED - " + impValue.string;
             }
         }
 
@@ -597,7 +695,7 @@ class ChannelBar{
         plot.setYLim(-autoScaleYLim, autoScaleYLim);
     }
 
-    void screenResized(int _x, int _y, int _w, int _h) {
+    void resize(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;
@@ -697,7 +795,7 @@ class PlaybackScrollbar {
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
-    private DataSourcePlayback playbackDataSource;
+    private FileBoard fileBoard;
     
     private final DateFormat currentTimeFormatShort = new SimpleDateFormat("mm:ss");
     private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
@@ -722,7 +820,7 @@ class PlaybackScrollbar {
         PImage bgImage = loadImage("skipToStart-30x26.png");
         skipToStartButton.setBackgroundImage(bgImage);
 
-        playbackDataSource = (DataSourcePlayback)currentBoard;
+        fileBoard = (FileBoard)currentBoard;
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -761,18 +859,18 @@ class PlaybackScrollbar {
     } //end update loop for PlaybackScrollbar
 
     void updateCursor() {
-        float currentSample = float(playbackDataSource.getCurrentSample());
-        float totalSamples = float(playbackDataSource.getTotalSamples());
+        float currentSample = float(fileBoard.getCurrentSample());
+        float totalSamples = float(fileBoard.getTotalSamples());
         float currentPlaybackPos = currentSample / totalSamples;
 
         spos =  lerp(sposMin, sposMax, currentPlaybackPos);
     }
 
     void scrubToPosition() {
-        int totalSamples = playbackDataSource.getTotalSamples();
+        int totalSamples = fileBoard.getTotalSamples();
         int newSamplePos = floor(totalSamples * getCursorPercentage());
 
-        playbackDataSource.goToIndex(newSamplePos);
+        fileBoard.goToIndex(newSamplePos);
     }
 
     float getCursorPercentage() {
@@ -791,8 +889,8 @@ class PlaybackScrollbar {
     }
 
     String getCurrentTimeToDisplaySeconds() {
-        double totalMillis = playbackDataSource.getTotalTimeSeconds() * 1000.0;
-        double currentMillis = playbackDataSource.getCurrentTimeSeconds() * 1000.0;
+        double totalMillis = fileBoard.getTotalTimeSeconds() * 1000.0;
+        double currentMillis = fileBoard.getCurrentTimeSeconds() * 1000.0;
 
         String totalTimeStr = formatCurrentTime(totalMillis);
         String currentTimeStr = formatCurrentTime(currentMillis);
@@ -885,7 +983,7 @@ class PlaybackScrollbar {
     //This function scrubs to the beginning of the playback file
     //Useful to 'reset' the scrollbar before loading a new playback file
     void skipToStartButtonAction() {       
-        playbackDataSource.goToIndex(0);
+        fileBoard.goToIndex(0);
     }
     
 };//end PlaybackScrollbar class
@@ -895,11 +993,8 @@ class TimeDisplay {
     int swidth, sheight;    // width and height of bar
     float xpos, ypos;       // x and y position of bar
     String currentAbsoluteTimeToDisplay = "";
-    String currentTimeInSecondsToDisplay = "";
     Boolean updatePosition = false;
     LocalDateTime time;
-    long startTime;
-    boolean prevIsRunning = false;
 
     TimeDisplay (float xp, float yp, int sw, int sh) {
         swidth = sw;
@@ -919,16 +1014,7 @@ class TimeDisplay {
                 println("TimeDisplay: Timestamp error...");
                 e.printStackTrace();
             }
-            //Reset second counter when data stream starts and stops
-            if (prevIsRunning == false) {
-                startTime = System.currentTimeMillis();
-                prevIsRunning = true;
-            }
-            //Calculate elapsed time using current millis
-            int secondsElapsed = int((System.currentTimeMillis() - startTime) / 1000F);
-            currentTimeInSecondsToDisplay = secondsElapsed + " s";
-        } else {
-            prevIsRunning = false;
+
         }
     } //end update loop for TimeDisplay
 
@@ -941,7 +1027,7 @@ class TimeDisplay {
             fill(0);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
-            text(currentTimeInSecondsToDisplay, xpos + 10, ypos);
+            text(streamTimeElapsed.toString(), xpos + 10, ypos);
         }
         popStyle();
     }
@@ -960,9 +1046,3 @@ class TimeDisplay {
     }
 };//end TimeDisplay class
 
-//Used in the above PlaybackScrollbar class
-//Also used in OpenBCI_GUI in the app's title bar
-int getElapsedTimeInSeconds(int tableRowIndex) {
-    int elapsedTime = int(float(tableRowIndex)/currentBoard.getSampleRate());
-    return elapsedTime;
-}

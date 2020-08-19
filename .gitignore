@@ -15,6 +15,7 @@ OpenBCI_GUI/SavedData/EEG_Data/SDconverted-*
 OpenBCI_GUI/data/EEG_Data/*
 OpenBCI_GUI/data/OpenBCIHub/*
 OpenBCI_GUI/application.*
+OpenBCI_GUI_unittests/UNITTEST_FAILURE
 openbcigui_*
 application.*
 *.autosave
