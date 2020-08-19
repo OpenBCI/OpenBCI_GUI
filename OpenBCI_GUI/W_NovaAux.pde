@@ -32,8 +32,8 @@ class W_NovaAux extends Widget {
     private boolean visible = true;
 
     //Initial dropdown settings
-    private int arInitialVertScaleIndex = 5;
-    private int arInitialHorizScaleIndex = 2;
+    private int naInitialVertScaleIndex = 0;
+    private int naInitialHorizScaleIndex = 2;
 
     W_NovaAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -44,8 +44,8 @@ class W_NovaAux extends Widget {
         ppgBoard = (PPGCapableBoard) currentBoard;
         batteryBoard = (BatteryInfoCapableBoard) currentBoard;
 
-        addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(vertScaleOptions), arInitialVertScaleIndex);
-        addDropdown("Duration_NovaAux", "Window", Arrays.asList(horizScaleOptions), arInitialHorizScaleIndex);
+        addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(vertScaleOptions), naInitialVertScaleIndex);
+        addDropdown("Duration_NovaAux", "Window", Arrays.asList(horizScaleOptions), naInitialHorizScaleIndex);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -69,8 +69,8 @@ class W_NovaAux extends Widget {
         counter++;
         batteryReadBar = new BatteryReadBar(_parent, counter+1, batteryBoard, "Battery", true, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
 
-        adjustTimeAxisAllPlots(xLimOptions[arInitialHorizScaleIndex]);
-        adjustVertScaleAllPlots(yLimOptions[arInitialVertScaleIndex]);
+        adjustTimeAxisAllPlots(xLimOptions[naInitialHorizScaleIndex]);
+        adjustVertScaleAllPlots(yLimOptions[naInitialVertScaleIndex]);
     }
 
     public boolean isVisible() {
@@ -85,12 +85,7 @@ class W_NovaAux extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
-            /*
-            for(int i = 0; i < numAuxReadBars; i++) {
-                analogReadBars[i].update();
-            }
-            */
+            //Feed new data into plots
             ppgReadBar1.update();
             ppgReadBar2.update();
             edaReadBar.update();
@@ -104,12 +99,6 @@ class W_NovaAux extends Widget {
 
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
-            /*
-            //draw channel bars 
-            for(int i = 0; i < numAuxReadBars; i++) {
-                analogReadBars[i].draw();
-            }
-            */
             ppgReadBar1.draw();
             ppgReadBar2.draw();
             edaReadBar.draw();
@@ -131,13 +120,6 @@ class W_NovaAux extends Widget {
         ar_w = wF - arPadding*2;
         ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
         channelBarHeight = int(ar_h/numAuxReadBars);
-
-        /*
-        for(int i = 0; i < numAuxReadBars; i++) {
-            int analogReadBarY = int(ar_y) + i*(channelBarHeight); //iterate through bar locations
-            analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), channelBarHeight); //bar x, bar y, bar w, bar h
-        }
-        */
 
         int counter = 0;
         ppgReadBar1.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
@@ -272,15 +254,17 @@ class AuxReadBar{
 
         channel = getChannel();
 
-        // update data in plot
-        updatePlotPoints();
+
         
         if(isAutoscale) {
-            autoScale();
+            updatePlotPointsAutoScaled();
+        } else {
+            // update data in plot
+            updatePlotPoints();
         }
 
         //Fetch the last value in the buffer to display on screen
-        float val = auxReadPoints.getY(nPoints-1);
+        float val = auxReadPoints.getLastPoint().getY();
         analogValue.string = String.format(getFmt(val),val);
     }
 
@@ -298,6 +282,25 @@ class AuxReadBar{
 
     private float calcTimeAxis(int sampleIndex) {
         return -(float)numSeconds + (float)sampleIndex * timeBetweenPoints;
+    }
+
+    private void updatePlotPointsAutoScaled() {
+        List<double[]> allData = currentBoard.getData(nPoints);
+        
+        int max = 0;
+        int min = 1000000;
+
+        for (int i=0; i < nPoints; i++) {
+            float timey = calcTimeAxis(i);
+            float value = (float)allData.get(i)[channel];
+            auxReadPoints.set(i, timey, value, "");
+
+            //val = int(auxReadPoints.getY(i));
+            max = (int)value > max ? (int)value : max;
+            min = (int)value < min ? (int)value : min;
+        }
+        plot.setYLim(min, max);
+        plot.setPoints(auxReadPoints);
     }
 
     private void updatePlotPoints() {
@@ -366,6 +369,7 @@ class AuxReadBar{
     }
 
     private void autoScale() {
+        /*
         autoScaleYLim = 0;
         if (auxReadPoints.getNPoints() > 0) {
             for(int i = 0; i < nPoints; i++) {
@@ -375,6 +379,18 @@ class AuxReadBar{
             }
         }
         plot.setYLim(0, autoScaleYLim); //Plot Y values >= 0
+        */
+        int max = 0;
+        int min = 1000000;
+        int val = 0;
+        if (auxReadPoints.getNPoints() > 0) {
+            for(int i = 0; i < nPoints; i++) {
+                val = int(auxReadPoints.getY(i));
+                max = val > max ? val : max;
+                min = val < min ? val : min;
+            }
+        }
+        plot.setYLim(min, max);
     }
 
     public void screenResized(int _x, int _y, int _w, int _h) {
