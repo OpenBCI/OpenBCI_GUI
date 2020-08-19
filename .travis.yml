@@ -1,13 +1,6 @@
-
-language: python            # this works for Linux but is an error on macOS or Windows
-jobs:
-  include:
-    - name: "Python 3.7.4 on Xenial Linux"
-      python: 3.7.4           # this works for Linux but is ignored on macOS or Windows
-    - name: "Python 3.7.4 on macOS"
-      os: osx
-      osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.6
-      language: shell       # 'language: python' is an error on Travis CI macOS
+os:	
+  - linux
+  - osx
 
 addons:
   artifacts:
@@ -53,12 +46,11 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python $TRAVIS_BUILD_DIR/OpenBCI_GUI_UnitTests/run-unittests.py                                      ;fi
   - python3 $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts
   # over script will write version and timestamp here
   - GUI_COMMIT_TIME=`cat temp/timestamp.txt`
   - GUI_VERSION_STRING=`cat temp/versionstring.txt`
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python $TRAVIS_BUILD_DIR/OpenBCI_GUI_UnitTests/run-unittests.py                                      ;fi
-  - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts  
 
 notifications:
   email:
