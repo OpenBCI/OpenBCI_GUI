@@ -8,20 +8,21 @@ class W_NovaAux extends Widget {
     private PPGCapableBoard ppgBoard;
     private BatteryInfoCapableBoard batteryBoard;
 
-    private int numAuxReadBars = 4;
+    private int numAuxReadBars = 3;
     private float xF, yF, wF, hF;
     private float arPadding;
     // values for actual time series chart (rectangle encompassing all analogReadBars)
     private float ar_x, ar_y, ar_h, ar_w;
     private float plotBottomWell;
-    private float playbackWidgetHeight;
     private int channelBarHeight;
+    private int batteryMeterH = 24;
 
     //private AuxReadBar[] analogReadBars;
-    public PPGReadBar ppgReadBar1;
-    public PPGReadBar ppgReadBar2;
-    public EDAReadBar edaReadBar;
-    public BatteryReadBar batteryReadBar;
+    private PPGReadBar ppgReadBar1;
+    private PPGReadBar ppgReadBar2;
+    private EDAReadBar edaReadBar;
+    //public BatteryReadBar batteryReadBar;
+    private BatteryMeter batteryMeter;
 
     public int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
     public int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
@@ -52,22 +53,24 @@ class W_NovaAux extends Widget {
         wF = float(w);
         hF = float(h);
 
-        plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
+        plotBottomWell = 40.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
         arPadding = 10.0;
         ar_x = xF + arPadding;
-        ar_y = yF + (arPadding);
+        ar_y = yF + (arPadding*2) + batteryMeterH;
         ar_w = wF - arPadding*2;
-        ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        channelBarHeight = int(ar_h/numAuxReadBars);
+        ar_h = hF - plotBottomWell - (arPadding*2);
+        channelBarHeight = (int)(ar_h/numAuxReadBars);
+        
+        batteryMeter = new BatteryMeter(_parent, batteryBoard, "Battery", int(xF), int(yF), int(wF), batteryMeterH, (int)arPadding);
 
         int counter = 0;
-        ppgReadBar1 = new PPGReadBar(_parent, counter+1, ppgBoard, 0, "PPG_1", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        ppgReadBar1 = new PPGReadBar(_parent, counter+1, ppgBoard, 0, "PPG_1", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight, plotBottomWell);
         counter++;
-        ppgReadBar2 = new PPGReadBar(_parent, counter+1, ppgBoard, 1, "PPG_2", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        ppgReadBar2 = new PPGReadBar(_parent, counter+1, ppgBoard, 1, "PPG_2", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight, plotBottomWell);
         counter++;
-        edaReadBar = new EDAReadBar(_parent, counter+1, edaBoard, "EDA", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
-        counter++;
-        batteryReadBar = new BatteryReadBar(_parent, counter+1, batteryBoard, "Battery", true, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        edaReadBar = new EDAReadBar(_parent, counter+1, edaBoard, "EDA", true, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight, plotBottomWell);
+        //counter++;
+        //batteryReadBar = new BatteryReadBar(_parent, counter+1, batteryBoard, "Battery", true, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
 
         adjustTimeAxisAllPlots(xLimOptions[naInitialHorizScaleIndex]);
         adjustVertScaleAllPlots(yLimOptions[naInitialVertScaleIndex]);
@@ -85,11 +88,13 @@ class W_NovaAux extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+            batteryMeter.update();
+
             //Feed new data into plots
             ppgReadBar1.update();
             ppgReadBar2.update();
             edaReadBar.update();
-            batteryReadBar.update();
+            //batteryReadBar.update();
         }
     }
 
@@ -97,13 +102,14 @@ class W_NovaAux extends Widget {
         if(visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
+            batteryMeter.draw();
+
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-            pushStyle();
             ppgReadBar1.draw();
             ppgReadBar2.draw();
             edaReadBar.draw();
-            batteryReadBar.draw();
-            popStyle();
+            //batteryReadBar.draw();
+
         }
     }
 
@@ -116,10 +122,12 @@ class W_NovaAux extends Widget {
         hF = float(h);
 
         ar_x = xF + arPadding;
-        ar_y = yF + (arPadding);
+        ar_y = yF + (arPadding*2) + batteryMeterH;
         ar_w = wF - arPadding*2;
-        ar_h = hF - playbackWidgetHeight - plotBottomWell - (arPadding*2);
-        channelBarHeight = int(ar_h/numAuxReadBars);
+        ar_h = hF - plotBottomWell - (arPadding*3) - batteryMeterH;
+        channelBarHeight = (int)(ar_h/numAuxReadBars);
+
+        batteryMeter.screenResized(int(xF), int(yF), int(wF), batteryMeterH);
 
         int counter = 0;
         ppgReadBar1.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
@@ -127,8 +135,8 @@ class W_NovaAux extends Widget {
         ppgReadBar2.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
         counter++;
         edaReadBar.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
-        counter++;
-        batteryReadBar.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
+        //counter++;
+        //batteryReadBar.screenResized(int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight);
 
     }
 
@@ -136,14 +144,14 @@ class W_NovaAux extends Widget {
         ppgReadBar1.adjustTimeAxis(_newTimeSize);
         ppgReadBar2.adjustTimeAxis(_newTimeSize);
         edaReadBar.adjustTimeAxis(_newTimeSize);
-        batteryReadBar.adjustTimeAxis(_newTimeSize);
+        //batteryReadBar.adjustTimeAxis(_newTimeSize);
     }
 
     public void adjustVertScaleAllPlots(int _vertScaleValue) {
         ppgReadBar1.adjustVertScale(_vertScaleValue);
         ppgReadBar2.adjustVertScale(_vertScaleValue);
         edaReadBar.adjustVertScale(_vertScaleValue);
-        batteryReadBar.adjustVertScale(_vertScaleValue);
+        //batteryReadBar.adjustVertScale(_vertScaleValue);
     }
 };
 
@@ -168,9 +176,9 @@ class AuxReadBar{
     private int auxValuesPosition;
     private String auxChanLabel;
     private boolean isBottomBar = false;
+    private float plotBottomWellH;
     private int channel = 0; //used to track Board channel number
     private int x, y, w, h;
-    private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
     private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     private GPointsArray auxReadPoints;
@@ -189,13 +197,12 @@ class AuxReadBar{
     private boolean drawAnalogValue;
     private int lastProcessedDataPacketInd = 0;
 
-    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h, float _plotAxisH) { // channel number, x/y location, height, width
 
         auxValuesPosition = auxChanNum;
         auxChanLabel = label;
         isBottomBar = isBotBar;
-        
-        isOn = true;
+        plotBottomWellH = _plotAxisH;
 
         x = _x;
         y = _y;
@@ -214,6 +221,7 @@ class AuxReadBar{
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().setAxisLabelText("Time (s)");
+        plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
 
         initArrays();
 
@@ -253,8 +261,6 @@ class AuxReadBar{
         }
 
         channel = getChannel();
-
-
         
         if(isAutoscale) {
             updatePlotPointsAutoScaled();
@@ -298,7 +304,7 @@ class AuxReadBar{
             max = (int)value > max ? (int)value : max;
             min = (int)value < min ? (int)value : min;
         }
-        plot.setYLim(min, max); //add some slight breathing room
+        plot.setYLim(min, max);
         plot.setPoints(auxReadPoints);
     }
 
@@ -422,8 +428,8 @@ class PPGReadBar extends AuxReadBar {
     private PPGCapableBoard ppgBoard;
     private int ppgChan;
 
-    public PPGReadBar (PApplet _parent, int auxChanNum, PPGCapableBoard _ppgBoard, int _ppgChan, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
-        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
+    public PPGReadBar (PApplet _parent, int auxChanNum, PPGCapableBoard _ppgBoard, int _ppgChan, String _label, boolean isBotBar, int _x, int _y, int _w, int _h, float axisH) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
         ppgBoard = _ppgBoard;
         ppgChan = _ppgChan;
     }
@@ -442,8 +448,8 @@ class PPGReadBar extends AuxReadBar {
 class EDAReadBar extends AuxReadBar {
     private EDACapableBoard edaBoard;
 
-    public EDAReadBar (PApplet _parent, int auxChanNum, EDACapableBoard _edaBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
-        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
+    public EDAReadBar (PApplet _parent, int auxChanNum, EDACapableBoard _edaBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h, float axisH) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
         edaBoard = _edaBoard;
     }
 
@@ -461,8 +467,8 @@ class EDAReadBar extends AuxReadBar {
 class BatteryReadBar extends AuxReadBar {
     private BatteryInfoCapableBoard batteryBoard;
 
-    public BatteryReadBar (PApplet _parent, int auxChanNum, BatteryInfoCapableBoard _batteryBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h) {
-        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h);
+    public BatteryReadBar (PApplet _parent, int auxChanNum, BatteryInfoCapableBoard _batteryBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h, float axisH) {
+        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
         batteryBoard = _batteryBoard;
     }
 
@@ -474,5 +480,76 @@ class BatteryReadBar extends AuxReadBar {
     @Override
     protected int getChannel() {
         return batteryBoard.getBatteryChannel();
+    }
+}
+
+class BatteryMeter {
+    private int x, y, w, h, padding;
+    private BatteryInfoCapableBoard batteryBoard;
+    private String displayLabel;
+    private int nPoints;
+    private int meterW = 200;
+    private int meterH;
+    private float meterIndicatorW;
+
+    public BatteryMeter (PApplet _parent, BatteryInfoCapableBoard _batteryBoard, String _label, int _x, int _y, int _w, int _h, int _padding) {
+        batteryBoard = _batteryBoard;
+        displayLabel = _label;
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
+        meterH = h - padding;
+        padding = _padding;
+        nPoints = nPointsBasedOnDataSource();
+        meterIndicatorW = meterW;
+    }
+
+    public void update() {
+        meterIndicatorW = map(getBatteryValue(), 0, 100, 0, meterW);
+    }
+
+    public void draw() {
+        int meterX = x + w/2 - meterW/2;
+        String batteryLevel = Integer.toString(getBatteryValue()) + "%";
+
+        pushStyle();
+
+        stroke(0);
+        fill(color(0));
+        text(displayLabel, meterX - padding*2 - textWidth(displayLabel) - textWidth(batteryLevel), y + padding + 4, 200, h);
+        text(batteryLevel, meterX - padding - textWidth(batteryLevel), y + padding + 4, 50, h);
+
+        //Fill battery meter with level
+        noStroke();
+        fill(color(0,255,100,90));
+        rect(meterX, y + padding, meterIndicatorW, meterH);
+
+        //Draw bounding box for meter with no fill on top of indicator rectangle
+        stroke(0);
+        noFill();
+        rect(meterX, y + padding, meterW, meterH);
+        
+        popStyle();
+    }
+
+    private int nPointsBasedOnDataSource() {
+        return 1 * currentBoard.getSampleRate();
+    }
+
+    private int getChannel() {
+        return batteryBoard.getBatteryChannel();
+    }
+
+    private int getBatteryValue() {
+        List<double[]> allData = currentBoard.getData(nPoints);
+        return (int)allData.get(nPoints-1)[getChannel()];
+    }
+
+    public void screenResized(int _x, int _y, int _w, int _h) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
     }
 }
