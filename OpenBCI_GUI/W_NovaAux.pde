@@ -54,7 +54,7 @@ class W_NovaAux extends Widget {
         ar_h = hF - plotBottomWell - (arPadding*2);
         channelBarHeight = (int)(ar_h/numAuxReadBars);
         
-        batteryMeter = new BatteryMeter(_parent, batteryBoard, "Battery", int(xF), int(yF), int(wF), batteryMeterH, (int)arPadding);
+        batteryMeter = new BatteryMeter(_parent, batteryBoard, "Battery", int(xF), int(yF), int(wF), batteryMeterH, int(arPadding));
 
         int counter = 0;
         ppgReadBar1 = new PPGReadBar(_parent, counter+1, ppgBoard, 0, "PPG_1", false, int(ar_x), int(ar_y) + counter*(channelBarHeight), int(ar_w), channelBarHeight, plotBottomWell);
@@ -166,7 +166,8 @@ class AuxReadBar{
 
     private color channelColor; //color of plot trace
 
-    private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    //When isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to minimum and maximum value found in the plot
+    private boolean isAutoscale;
     private int autoScaleYLim = 0;
 
     private TextBox analogValue;
@@ -175,7 +176,7 @@ class AuxReadBar{
     private boolean drawAnalogValue;
     private int lastProcessedDataPacketInd = 0;
 
-    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h, float _plotAxisH) { // channel number, x/y location, height, width
+    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h, float _plotAxisH) {
 
         auxValuesPosition = auxChanNum;
         auxChanLabel = label;
@@ -270,8 +271,8 @@ class AuxReadBar{
     private void updatePlotPointsAutoScaled() {
         List<double[]> allData = currentBoard.getData(nPoints);
         
-        int max = 0;
-        int min = 1000000;
+        int max = 0; //NovaAux values will always be greater than or equal to 0.
+        int min = 1000000; //NovaAux values should never exceed this value. We want to find the minimum, so start with high number.
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
@@ -421,6 +422,7 @@ class BatteryMeter {
     private BatteryInfoCapableBoard batteryBoard;
     private String displayLabel;
     private int nPoints;
+    private int meterX;
     private int meterW = 200;
     private int meterH;
     private float meterIndicatorW;
@@ -432,9 +434,9 @@ class BatteryMeter {
         y = _y;
         w = _w;
         h = _h;
-        meterH = h - padding;
         padding = _padding;
         nPoints = nPointsBasedOnDataSource();
+        meterH = h;
         meterIndicatorW = meterW;
     }
 
@@ -443,15 +445,15 @@ class BatteryMeter {
     }
 
     public void draw() {
-        int meterX = x + w/2 - meterW/2;
+        meterX = x + w/2 - meterW/2;
         String batteryLevel = Integer.toString(getBatteryValue()) + "%";
 
         pushStyle();
 
         stroke(0);
         fill(color(0));
-        text(displayLabel, meterX - padding*2 - textWidth(displayLabel) - textWidth(batteryLevel), y + padding + 4, 200, h);
-        text(batteryLevel, meterX - padding - textWidth(batteryLevel), y + padding + 4, 50, h);
+        text(displayLabel, meterX - padding - textWidth(displayLabel), y + padding + 4, 200, h);
+        text(batteryLevel, meterX + meterW + padding, y + padding + 4, 50, h);
 
         //Fill battery meter with level
         noStroke();
@@ -484,5 +486,6 @@ class BatteryMeter {
         y = _y;
         w = _w;
         h = _h;
+        meterH = h;
     }
 }
