@@ -358,7 +358,7 @@ class AnalogReadBar{
         }
 
         //Fetch the last value in the buffer to display on screen
-        float val = analogReadPoints.getY(nPoints-1);
+        float val = analogReadPoints.getLastPoint().getY();
         analogValue.string = String.format(getFmt(val),val);
     }
 

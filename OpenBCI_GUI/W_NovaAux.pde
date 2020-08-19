@@ -155,7 +155,7 @@ void Duration_NovaAux(int n) {
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 //^^^not true. we can do this in the class above with a CallbackListener
 void VertScale_NovaAux(int n) {
-    w_novaAux.adjustTimeAxisAllPlots(w_novaAux.yLimOptions[n]);
+    w_novaAux.adjustVertScaleAllPlots(w_novaAux.yLimOptions[n]);
 }
 
 //========================================================================================================================
@@ -295,11 +295,10 @@ class AuxReadBar{
             float value = (float)allData.get(i)[channel];
             auxReadPoints.set(i, timey, value, "");
 
-            //val = int(auxReadPoints.getY(i));
             max = (int)value > max ? (int)value : max;
             min = (int)value < min ? (int)value : min;
         }
-        plot.setYLim(min, max);
+        plot.setYLim(min, max); //add some slight breathing room
         plot.setPoints(auxReadPoints);
     }
 
