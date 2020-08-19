@@ -58,7 +58,7 @@ def get_timestamp_ci():
         page = requests.get(url)
         json_contents = json.loads(page.content)
 
-        timestamp = json_contents["author"]["date"]
+        timestamp = json_contents["commit"]["author"]["date"]
         timestamp = timestamp.replace(":", "-")
         timestamp = timestamp.replace("T", "_")
         timestamp = timestamp.replace("Z", "")
