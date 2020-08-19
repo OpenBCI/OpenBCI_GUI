@@ -1,6 +1,13 @@
-os:	
-  - linux
-  - osx
+
+language: python            # this works for Linux but is an error on macOS or Windows
+jobs:	  - osx
+  include:	
+    - name: "Python 3.7.4 on Xenial Linux"	
+      python: 3.7.4           # this works for Linux but is ignored on macOS or Windows
+    - name: "Python 3.7.4 on macOS"	
+      os: osx	
+      osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.6	
+      language: shell       # 'language: python' is an error on Travis CI macOS
 
 addons:
   artifacts:
