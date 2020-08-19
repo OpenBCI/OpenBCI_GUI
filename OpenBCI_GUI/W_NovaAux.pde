@@ -426,6 +426,9 @@ class BatteryMeter {
     private int meterW = 200;
     private int meterH;
     private float meterIndicatorW;
+    private color green = color(0,255,100,100);
+    private color yellow = color(254,211,0,100);
+    private color red = color(255,0,0,100);
 
     public BatteryMeter (PApplet _parent, BatteryInfoCapableBoard _batteryBoard, String _label, int _x, int _y, int _w, int _h, int _padding) {
         batteryBoard = _batteryBoard;
@@ -457,7 +460,7 @@ class BatteryMeter {
 
         //Fill battery meter with level
         noStroke();
-        fill(color(0,255,100,90));
+        fill(getBatteryColor());
         rect(meterX, y + padding, meterIndicatorW, meterH);
 
         //Draw bounding box for meter with no fill on top of indicator rectangle
@@ -479,6 +482,17 @@ class BatteryMeter {
     private int getBatteryValue() {
         List<double[]> allData = currentBoard.getData(nPoints);
         return (int)allData.get(nPoints-1)[getChannel()];
+    }
+
+    private color getBatteryColor() {
+        int val = getBatteryValue();
+        if (val > 50) {
+            return green;
+        } else if (val <= 50 && val > 20) {
+            return yellow;
+        } else {
+            return red;
+        }
     }
 
     public void screenResized(int _x, int _y, int _w, int _h) {
