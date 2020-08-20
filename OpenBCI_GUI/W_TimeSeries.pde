@@ -403,10 +403,10 @@ class ChannelBar{
     boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
     int autoScaleYLim = 0;
 
-    TextBox voltageValue;
-    TextBox impValue;
-    TextBox yAxisLabel_pos;
-    TextBox yAxisLabel_neg;
+    Textlabel voltageValue;
+    Textlabel impValue;
+    Textlabel yAxisLabel_pos;
+    Textlabel yAxisLabel_neg;
 
     boolean drawVoltageValue;
 
@@ -491,13 +491,21 @@ class ChannelBar{
 
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
+        /*
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h);
         voltageValue.textColor = color(bgColor);
         voltageValue.alignH = LEFT;
         voltageValue.alignV = TOP;
         voltageValue.drawBackground = true;
         voltageValue.backgroundColor = color(255,255,255,125);
+        */
 
+        voltageValue = new Textlabel(cbCp5, "", x + uiSpaceWidth + (int)plot.getDim()[0] - 100, y + h - 14);
+        voltageValue.setColor(color(bgColor));
+        voltageValue.setColorBackground(color(255,255,255,125));
+        voltageValue.setFont(p5);
+
+        /*
         impValue = new TextBox("", x + uiSpaceWidth + 2, y + h);
         impValue.textColor = color(bgColor);
         impValue.alignH = LEFT;
@@ -518,34 +526,35 @@ class ChannelBar{
         yAxisLabel_neg.alignV = BOTTOM;
         yAxisLabel_pos.drawBackground = true;
         yAxisLabel_pos.backgroundColor = color(255,255,255,255);
+        */
 
         drawVoltageValue = true;
     }
 
     void update() {
 
-        //update the voltage value text string
+        //Reusable variables
         String fmt; float val;
 
         //update the voltage values
         val = dataProcessing.data_std_uV[channelIndex];
-        voltageValue.string = String.format(getFmt(val),val) + " uVrms";
+        fmt = String.format(getFmt(val),val) + " uVrms";
         if (is_railed != null) {
             if (is_railed[channelIndex].is_railed == true) {
-                voltageValue.string = "RAILED - " + voltageValue.string;
+                fmt = "RAILED - " + fmt;
             } else if (is_railed[channelIndex].is_railed_warn == true) {
-                voltageValue.string = "NEAR RAILED - " + voltageValue.string;
+                fmt = "NEAR RAILED - " + fmt;
             }
         }
+        voltageValue.setText(fmt);
 
         //update the impedance values
         val = data_elec_imp_ohm[channelIndex]/1000;
-        impValue.string = String.format(getFmt(val),val) + " kOhm";
-        if (is_railed != null) {
-            if (is_railed[channelIndex].is_railed == true) {
-                impValue.string = "RAILED - " + impValue.string;
-            }
+        fmt = String.format(getFmt(val),val) + " kOhm";
+        if (is_railed != null && is_railed[channelIndex].is_railed == true) {
+            fmt = "RAILED - " + fmt;
         }
+        //impValue.setText(fmt);
 
         // update data in plot
         updatePlotPoints();
@@ -563,17 +572,17 @@ class ChannelBar{
 
     private String getFmt(float val) {
         String fmt;
-            if (val > 100.0f) {
-                fmt = "%.0f";
-            } else if (val > 10.0f) {
-                fmt = "%.1f";
-            } else {
-                fmt = "%.2f";
-            }
-            return fmt;
+        if (val > 100.0f) {
+            fmt = "%.0f";
+        } else if (val > 10.0f) {
+            fmt = "%.1f";
+        } else {
+            fmt = "%.2f";
+        }
+        return fmt;
     }
 
-    void updatePlotPoints() {
+    private void updatePlotPoints() {
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
@@ -587,7 +596,7 @@ class ChannelBar{
         }
     }
 
-    void draw() {        
+    public void draw() {        
         pushStyle();
 
         //draw channel holder background
@@ -631,19 +640,21 @@ class ChannelBar{
             voltageValue.draw();
         }
 
+        /*
         yAxisLabel_pos.string = "+" + yLim;
         yAxisLabel_pos.draw();
         yAxisLabel_neg.string = "-" + yLim;
         yAxisLabel_neg.draw();
+        */
 
         popStyle();
     }
 
-    int nPointsBasedOnDataSource() {
+    private int nPointsBasedOnDataSource() {
         return numSeconds * currentBoard.getSampleRate();
     }
 
-    void adjustTimeAxis(int _newTimeSize) {
+    public void adjustTimeAxis(int _newTimeSize) {
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
 
@@ -658,7 +669,7 @@ class ChannelBar{
         updatePlotPoints();
     }
 
-    void adjustVertScale(int _vertScaleValue) {
+    public void adjustVertScale(int _vertScaleValue) {
         if(_vertScaleValue == 0) {
             isAutoscale = true;
         } else {
@@ -667,7 +678,7 @@ class ChannelBar{
         }
     }
 
-    void autoScale() {
+    private void autoScale() {
         autoScaleYLim = 0;
         for(int i = 0; i < nPoints; i++) {
             if(int(abs(channelPoints.getY(i))) > autoScaleYLim) {
@@ -677,7 +688,7 @@ class ChannelBar{
         plot.setYLim(-autoScaleYLim, autoScaleYLim);
     }
 
-    void resize(int _x, int _y, int _w, int _h) {
+    public void resize(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;
@@ -709,7 +720,9 @@ class ChannelBar{
         //reposition & resize the plot
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(w - 36 - 4 - impButton_diameter, h);
-
+        
+        voltageValue.setPosition(x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+        /*
         voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
         voltageValue.y = y + h;
         impValue.x = x + uiSpaceWidth + 2;
@@ -718,10 +731,11 @@ class ChannelBar{
         yAxisLabel_pos.y = y + 2;
         yAxisLabel_neg.x = x + uiSpaceWidth + 2;
         yAxisLabel_neg.y = y + h;
+        */
 
     }
 
-    void mousePressed() {
+    public void mousePressed() {
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff pressed");
             onOffButton.setIsActive(true);
@@ -736,7 +750,7 @@ class ChannelBar{
 
     }
 
-    void mouseReleased() {
+    public void mouseReleased() {
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
             currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
@@ -764,7 +778,7 @@ class ChannelBar{
         }
     }
 
-    void createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
+    private void createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
         myButton = cbCp5.addButton(bName)
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
@@ -779,7 +793,7 @@ class ChannelBar{
         myButton.onClick(new MyCallbackListener (chan, shouldIncrease ));
     }
 
-    class MyCallbackListener implements CallbackListener {
+    private class MyCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
         MyCallbackListener(int theChannel, boolean isIncrease)  {
