@@ -464,6 +464,7 @@ class ChannelBar{
     int channelIndex; //duh
     String channelString;
     int x, y, w, h;
+    int defaultH;
     Button_obci onOffButton;
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
@@ -505,6 +506,7 @@ class ChannelBar{
         y = _y;
         w = _w;
         h = _h;
+        defaultH = h;
 
         if(h > 26) {
             onOff_diameter = 26;
@@ -684,7 +686,7 @@ class ChannelBar{
             voltageValue.draw();
         }
         
-        if (!hardwareSettingsAreOpen) {
+        if (!hardwareSettingsAreOpen && h > defaultH/2) {
             yAxisLabel_pos.setText("+" + yLim);
             yAxisLabel_pos.draw();
             yAxisLabel_neg.setText("-" + yLim);
