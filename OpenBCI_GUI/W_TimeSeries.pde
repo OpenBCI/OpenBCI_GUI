@@ -474,6 +474,8 @@ class ChannelBar{
     Button yScaleButton_neg;
     int yLim;
     int uiSpaceWidth;
+    int tinySpacer = 4;
+    int minimumChannelHeight;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -541,15 +543,15 @@ class ChannelBar{
         // New Buttons
         yScaleButton_w = 36 + impButton_diameter - 8;
         yScaleButton_h = 12;
-        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
-        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h); 
+        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + tinySpacer, yScaleButton_w, yScaleButton_h);
+        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - tinySpacer, yScaleButton_w, yScaleButton_h); 
         
-        uiSpaceWidth = 36 + 4 + impButton_diameter;
+        uiSpaceWidth = 36 + tinySpacer + impButton_diameter;
         yLim = 200;
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - 4 - impButton_diameter, h);
+        plot.setDim(w - 36 - tinySpacer - impButton_diameter, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
@@ -579,6 +581,7 @@ class ChannelBar{
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
 
         drawVoltageValue = true;
+        minimumChannelHeight = tinySpacer*4 + yScaleButton_h*2 + onOff_diameter;
     }
 
     void update() {
@@ -660,7 +663,7 @@ class ChannelBar{
         //draw plot
         stroke(31,69,110, 50);
         fill(color(125,30,12,30));
-        rect(x + 36 + 4 + impButton_diameter, y, w - 36 - 4 - impButton_diameter, h);
+        rect(x + uiSpaceWidth, y, w - uiSpaceWidth, h);
 
         plot.beginDraw();
         plot.drawBox(); // we won't draw this eventually ...
@@ -686,6 +689,7 @@ class ChannelBar{
             voltageValue.draw();
         }
         
+        //Hide yAxisLabels when hardwareSettings are open or labels would start to overlap
         if (!hardwareSettingsAreOpen && h > defaultH/2) {
             yAxisLabel_pos.setText("+" + yLim);
             yAxisLabel_pos.draw();
@@ -694,6 +698,15 @@ class ChannelBar{
         }
 
         popStyle();
+
+        //Hide yScaleButtons when they would start to overlap the channelOnOff button
+        if (h < minimumChannelHeight) {
+            yScaleButton_pos.hide();
+            yScaleButton_neg.hide();
+        } else {
+            yScaleButton_pos.show();
+            yScaleButton_neg.show();
+        }
 
         cbCp5.draw();
     }
@@ -744,17 +757,17 @@ class ChannelBar{
         h = _h;
 
         //reposition & resize the plot
-        int plotW = w - 36 - 4 - impButton_diameter;
+        int plotW = w - uiSpaceWidth;
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(plotW, h);
  
         yAxisLabel_pos.setPosition(x + uiSpaceWidth + 2, y + 2);
         yAxisLabel_neg.setPosition(x + uiSpaceWidth + 2, y + h);
-        voltageValue.setPosition(x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+        voltageValue.setPosition(x + uiSpaceWidth + (w - uiSpaceWidth) - 2, y + h);
         impValue.setPosition(x + uiSpaceWidth + 2 + (int)plot.getDim()[0] - 2, y + 2);
 
-        yScaleButton_pos.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
-        yScaleButton_neg.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
+        yScaleButton_pos.setPosition(x + uiSpaceWidth/2 - yScaleButton_w/2, y + tinySpacer);
+        yScaleButton_neg.setPosition(x + uiSpaceWidth/2 - yScaleButton_w/2, y + h - yScaleButton_h - tinySpacer);
 
         if(h > 26) {
             onOff_diameter = 26;
