@@ -266,13 +266,13 @@ class TextBox {
     private PFont font;
     private int fontSize;
     public String string;
-    public boolean drawBackground;
+    public boolean drawBackground = true;
     public int backgroundEdge_pixels;
     public int alignH,alignV;
 
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
-        backgroundColor = color(255,255,255);
+        backgroundColor = color(100,255,100);
         textColor = color(0,0,0);
         fontSize = 12;
         font = p5;
@@ -287,8 +287,11 @@ class TextBox {
         font = p5;
     }
     public void draw() {
+        pushStyle();
         //define text
-        noStroke();
+        //noStroke();
+        
+        stroke(1);
         textFont(font);
 
         //draw the box behind the text
@@ -308,14 +311,30 @@ class TextBox {
             }
             w = w + 2*backgroundEdge_pixels;
             int h = int(textAscent())+2*backgroundEdge_pixels;
-            int ybox = y - int(round(textAscent())) - backgroundEdge_pixels -2;
+            //int ybox = y - int(round(textAscent())) - backgroundEdge_pixels -2;
+            int ybox = y;
+            if (alignV == CENTER) {
+                ybox += textAscent() / 2;
+            } else if (alignV == TOP) {
+                backgroundColor = color(100,255,100);
+                //ybox -= textDescent();
+            } else if (alignV == BOTTOM) {
+                backgroundColor = color(100,100,255);
+                ybox -= textAscent() + backgroundEdge_pixels*3;
+            } else if (alignV == BASELINE) {
+            // do nothing
+                backgroundColor = color(255,100,100);
+            }
             fill(backgroundColor);
             rect(xbox,ybox,w,h);
         }
         //draw the text itself
+        pushStyle();
+        noStroke();
         fill(textColor);
         textAlign(alignH,alignV);
         text(string,x,y);
         strokeWeight(1);
+        popStyle();
     }
 };

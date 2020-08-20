@@ -257,9 +257,12 @@ class AnalogReadBar{
     private int autoScaleYLim = 0;
 
     private ControlP5 arbCp5;
-    private Textlabel analogValue;
-    private Textlabel analogPin;
-    private Textlabel digitalPin;
+    //private Textlabel analogValue;
+    //private Textlabel analogPin;
+    //private Textlabel digitalPin;
+    private TextBox analogValue;
+    private TextBox analogPin;
+    private TextBox digitalPin;
 
     private boolean drawAnalogValue;
     private int lastProcessedDataPacketInd = 0;
@@ -313,11 +316,11 @@ class AnalogReadBar{
 
         initArrays();
         
-        /*
+        
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
         analogValue.textColor = color(bgColor);
         analogValue.alignH = RIGHT;
-        // analogValue.alignV = TOP;
+        analogValue.alignV = BOTTOM;
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
@@ -327,11 +330,15 @@ class AnalogReadBar{
         digitalPin = new TextBox("(D" + digitalPinNum + ")", x+3, y + h + 12);
         digitalPin.textColor = color(bgColor);
         digitalPin.alignH = CENTER;
-        */
+        
+
+        /*
         arbCp5 = new ControlP5(ourApplet);
         arbCp5.setGraphics(ourApplet, x, y);
         arbCp5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
+        */
 
+        /*
         analogValue = arbCp5.addTextlabel("analogValue")
                     .setText("1234")
                     .setPosition(x + 36 + 4 + (w - 36 - 4) - 2, y + h)
@@ -347,14 +354,14 @@ class AnalogReadBar{
                     .setFont(p5)
                     ;
         analogPin.setPosition(x + 40/2 - analogPin.getWidth()/2, y + int(h/2.0) - analogPin.getHeight()/2);
-                    /*
+        
         digitalPin = arbCp5.addTextlabel("digitalPin")
                     .setText("(D" + digitalPinNum + ")")
                     .setPosition(x+3, y + h + 12)
                     .setColorValue(bgColor)
                     .setFont(p5)
                     ;
-                    */
+        */
 
         drawAnalogValue = true;
         analogBoard = (AnalogCapableBoard) currentBoard;
@@ -388,20 +395,21 @@ class AnalogReadBar{
         }
 
         //Fetch the last value in the buffer to display on screen
-        float val = analogReadPoints.getY(nPoints-1);
-        analogValue.setText(String.format(getFmt(val),val));
+        float val = analogReadPoints.getLastPoint().getY();
+        //analogValue.setText(String.format(getFmt(val),val));
+        analogValue.string = String.format(getFmt(val),val);
     }
 
     private String getFmt(float val) {
         String fmt;
-            if (val > 100.0f) {
-                fmt = "%.0f";
-            } else if (val > 10.0f) {
-                fmt = "%.1f";
-            } else {
-                fmt = "%.2f";
-            }
-            return fmt;
+        if (val > 100.0f) {
+            fmt = "%.0f";
+        } else if (val > 10.0f) {
+            fmt = "%.1f";
+        } else {
+            fmt = "%.2f";
+        }
+        return fmt;
     }
 
     float calcTimeAxis(int sampleIndex) {
@@ -453,8 +461,16 @@ class AnalogReadBar{
 
         plot.endDraw();
 
+        /*
         if(drawAnalogValue) {
             arbCp5.draw();
+        }
+        */
+
+        if(drawAnalogValue) {
+            analogValue.draw();
+            analogPin.draw();
+            digitalPin.draw();
         }
 
         popStyle();
@@ -509,10 +525,18 @@ class AnalogReadBar{
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
 
-        println(analogValue.getWidth());
-        println(analogValue.getHeight());
+        /*
         analogValue.setPosition(x + w - analogValue.getWidth(), y + h - analogValue.getHeight());
         analogPin.setPosition(x, y + int(h/2.0) - analogPin.getHeight()/2 - 4);
         //digitalPin.setPosition(x + 14, y + int(h/2.0) + 12);
+        */
+
+        analogValue.x = x + 36 + 4 + (w - 36 - 4) - 2;
+        analogValue.y = y + h;
+
+        analogPin.x = x + 14;
+        analogPin.y = y + int(h/2.0);
+        digitalPin.x = analogPin.x;
+        digitalPin.y = analogPin.y + 12;
     }
 };

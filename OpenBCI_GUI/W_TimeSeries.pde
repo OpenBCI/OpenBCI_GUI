@@ -481,10 +481,10 @@ class ChannelBar{
     boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
     int autoScaleYLim = 0;
 
-    Textlabel voltageValue;
-    Textlabel impValue;
-    Textlabel yAxisLabel_pos;
-    Textlabel yAxisLabel_neg;
+    TextBox voltageValue;
+    //TextBox impValue;
+    TextBox yAxisLabel_pos;
+    TextBox yAxisLabel_neg;
 
     boolean drawVoltageValue;
 
@@ -569,20 +569,20 @@ class ChannelBar{
 
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
-        /*
+        
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h);
         voltageValue.textColor = color(bgColor);
-        voltageValue.alignH = LEFT;
-        voltageValue.alignV = TOP;
+        voltageValue.alignH = RIGHT;
+        voltageValue.alignV = BOTTOM;
         voltageValue.drawBackground = true;
         voltageValue.backgroundColor = color(255,255,255,125);
-        */
-
+        
+        /*
         voltageValue = new Textlabel(cbCp5, "", x + uiSpaceWidth + (int)plot.getDim()[0] - 100, y + h - 14);
         voltageValue.setColor(color(bgColor));
         voltageValue.setColorBackground(color(255,255,255,125));
         voltageValue.setFont(p5);
-
+        */
         /*
         impValue = new TextBox("", x + uiSpaceWidth + 2, y + h);
         impValue.textColor = color(bgColor);
@@ -590,8 +590,9 @@ class ChannelBar{
         // impValue.alignV = TOP;
         impValue.drawBackground = true;
         impValue.backgroundColor = color(255,255,255,125);
+        */
 
-        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h);
+        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + 2);
         yAxisLabel_pos.textColor = color(bgColor);
         yAxisLabel_pos.alignH = LEFT;
         yAxisLabel_pos.alignV = TOP;
@@ -602,9 +603,8 @@ class ChannelBar{
         yAxisLabel_neg.textColor = color(bgColor);
         yAxisLabel_neg.alignH = LEFT;
         yAxisLabel_neg.alignV = BOTTOM;
-        yAxisLabel_pos.drawBackground = true;
-        yAxisLabel_pos.backgroundColor = color(255,255,255,255);
-        */
+        yAxisLabel_neg.drawBackground = true;
+        yAxisLabel_neg.backgroundColor = color(255,255,255,255);
 
         drawVoltageValue = true;
     }
@@ -624,7 +624,8 @@ class ChannelBar{
                 fmt = "NEAR RAILED - " + fmt;
             }
         }
-        voltageValue.setText(fmt);
+        //voltageValue.setText(fmt);
+        voltageValue.string = fmt;
 
         //update the impedance values
         val = data_elec_imp_ohm[channelIndex]/1000;
@@ -685,8 +686,6 @@ class ChannelBar{
         //draw onOff Button_obci
         onOffButton.draw();
 
-        cbCp5.draw();
-
         //draw plot
         stroke(31,69,110, 50);
         fill(color(125,30,12,30));
@@ -710,7 +709,7 @@ class ChannelBar{
             impCheckButton.draw();
 
             if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
-                impValue.draw();
+                //impValue.draw();
             }
         }
         
@@ -718,12 +717,10 @@ class ChannelBar{
             voltageValue.draw();
         }
 
-        /*
         yAxisLabel_pos.string = "+" + yLim;
         yAxisLabel_pos.draw();
         yAxisLabel_neg.string = "-" + yLim;
         yAxisLabel_neg.draw();
-        */
 
         popStyle();
     }
@@ -753,6 +750,7 @@ class ChannelBar{
         } else {
             isAutoscale = false;
             plot.setYLim(-_vertScaleValue, _vertScaleValue);
+            yLim = _vertScaleValue;
         }
     }
 
@@ -777,17 +775,18 @@ class ChannelBar{
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(plotW, h);
         
-        voltageValue.setPosition(x + uiSpaceWidth + plotW - textWidth(voltageValue.getStringValue()), y + h - 16);
-        /*
+        //voltageValue.setPosition(x + uiSpaceWidth + plotW - textWidth(voltageValue.getStringValue()), y + h - 16);
+        
         voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
         voltageValue.y = y + h;
+        /*
         impValue.x = x + uiSpaceWidth + 2;
         impValue.y = y + h;
+        */
         yAxisLabel_pos.x = x + uiSpaceWidth + 2;
         yAxisLabel_pos.y = y + 2;
         yAxisLabel_neg.x = x + uiSpaceWidth + 2;
         yAxisLabel_neg.y = y + h;
-        */
 
         yScaleButton_pos.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
         yScaleButton_neg.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
