@@ -535,8 +535,8 @@ class ChannelBar{
         // New Buttons :)
         yScaleButton_w = 36 + impButton_diameter - 8;
         yScaleButton_h = 12;
-        createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
-        createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h); 
+        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
+        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4, yScaleButton_w, yScaleButton_h); 
         
         uiSpaceWidth = 36 + 4 + impButton_diameter;
         yLim = 200;
@@ -772,9 +772,25 @@ class ChannelBar{
         w = _w;
         h = _h;
         //cbCp5.setGraphics(ourApplet, x, y);
+        //reposition & resize the plot
+        int plotW = w - 36 - 4 - impButton_diameter;
+        plot.setPos(x + uiSpaceWidth, y);
+        plot.setDim(plotW, h);
+        
+        voltageValue.setPosition(x + uiSpaceWidth + plotW - textWidth(voltageValue.getStringValue()), y + h - 16);
+        /*
+        voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
+        voltageValue.y = y + h;
+        impValue.x = x + uiSpaceWidth + 2;
+        impValue.y = y + h;
+        yAxisLabel_pos.x = x + uiSpaceWidth + 2;
+        yAxisLabel_pos.y = y + 2;
+        yAxisLabel_neg.x = x + uiSpaceWidth + 2;
+        yAxisLabel_neg.y = y + h;
+        */
 
-        cbCp5.get(Button.class, "increaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
-        cbCp5.get(Button.class, "decreaseYscale").setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
+        yScaleButton_pos.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
+        yScaleButton_neg.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
 
         if(h > 26) {
             onOff_diameter = 26;
@@ -794,23 +810,6 @@ class ChannelBar{
             impCheckButton.but_x = x + 36;
             impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
         }
-
-        //reposition & resize the plot
-        plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - 4 - impButton_diameter, h);
-        
-        voltageValue.setPosition(x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2, y + h);
-        /*
-        voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
-        voltageValue.y = y + h;
-        impValue.x = x + uiSpaceWidth + 2;
-        impValue.y = y + h;
-        yAxisLabel_pos.x = x + uiSpaceWidth + 2;
-        yAxisLabel_pos.y = y + 2;
-        yAxisLabel_neg.x = x + uiSpaceWidth + 2;
-        yAxisLabel_neg.y = y + h;
-        */
-
     }
 
     public void mousePressed() {
@@ -856,7 +855,7 @@ class ChannelBar{
         }
     }
 
-    private void createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
+    private Button createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
         myButton = cbCp5.addButton(bName)
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
@@ -869,6 +868,7 @@ class ChannelBar{
                 .setSize(14)
                 .setText(bText);
         myButton.onClick(new MyCallbackListener (chan, shouldIncrease ));
+        return myButton;
     }
 
     private class MyCallbackListener implements CallbackListener {
