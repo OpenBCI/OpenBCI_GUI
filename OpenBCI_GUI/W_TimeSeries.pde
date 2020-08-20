@@ -202,19 +202,19 @@ class W_timeSeries extends Widget {
     }
 
     void draw() {
-        if(visible) {
+        if (visible) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //remember to refer to x,y,w,h which are the positioning variables of the Widget class
             pushStyle();
             //draw channel bars
-            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            for (int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
-                channelBars[activeChan].draw();
+                channelBars[activeChan].draw(getAdsSettingsVisible());
             }
 
             //Display playback scrollbar or timeDisplay, depending on data source
-            if((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
                 fill(0,0,0,20);
                 stroke(31,69,110);
                 rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
@@ -223,7 +223,7 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            if(currentBoard instanceof ADS1299SettingsBoard) {
+            if (currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettingsButton.draw();
                 hardwareSettingsLoadButton.draw();
                 hardwareSettingsStoreButton.draw();
@@ -299,7 +299,7 @@ class W_timeSeries extends Widget {
             }
         }
 
-        if(adsSettingsController != null && adsSettingsController.isVisible) {
+        if(adsSettingsController != null && adsSettingsController.getIsVisible()) {
             if (!this.dropdownIsActive) {
                 adsSettingsController.mousePressed();
             }
@@ -317,7 +317,7 @@ class W_timeSeries extends Widget {
         if(currentBoard instanceof ADS1299SettingsBoard) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
-                setAdsSettingsVisible(!adsSettingsController.isVisible);
+                setAdsSettingsVisible(!adsSettingsController.getIsVisible());
             }
             if(hardwareSettingsLoadButton.isActive && hardwareSettingsLoadButton.isMouseHere()) {
                 if (isRunning) {
@@ -334,7 +334,7 @@ class W_timeSeries extends Widget {
             hardwareSettingsStoreButton.setIsActive(false);
         }
 
-        if(adsSettingsController != null && adsSettingsController.isVisible) {
+        if(getAdsSettingsVisible()) {
             adsSettingsController.mouseReleased();
         } 
         
@@ -362,8 +362,12 @@ class W_timeSeries extends Widget {
         }
 
         if (adsSettingsController != null) {
-            adsSettingsController.isVisible = visible;
+            adsSettingsController.setIsVisible(visible);
         }
+    }
+
+    private boolean getAdsSettingsVisible() {
+        return adsSettingsController != null && adsSettingsController.getIsVisible();
     }
 
     public void closeADSSettings() {
@@ -482,7 +486,7 @@ class ChannelBar{
     int autoScaleYLim = 0;
 
     TextBox voltageValue;
-    //TextBox impValue;
+    TextBox impValue;
     TextBox yAxisLabel_pos;
     TextBox yAxisLabel_neg;
 
@@ -532,7 +536,7 @@ class ChannelBar{
         }
         ////End Old buttons
 
-        // New Buttons :)
+        // New Buttons
         yScaleButton_w = 36 + impButton_diameter - 8;
         yScaleButton_h = 12;
         yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + 4, yScaleButton_w, yScaleButton_h);
@@ -559,52 +563,18 @@ class ChannelBar{
         nPoints = nPointsBasedOnDataSource();
         channelPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
-
         for (int i = 0; i < nPoints; i++) {
             float time = -(float)numSeconds + (float)i*timeBetweenPoints;
             float filt_uV_value = 0.0; //0.0 for all points to start
             GPoint tempPoint = new GPoint(time, filt_uV_value);
             channelPoints.set(i, tempPoint);
         }
-
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
-        
-        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h);
-        voltageValue.textColor = color(bgColor);
-        voltageValue.alignH = RIGHT;
-        voltageValue.alignV = BOTTOM;
-        voltageValue.drawBackground = true;
-        voltageValue.backgroundColor = color(255,255,255,125);
-        
-        /*
-        voltageValue = new Textlabel(cbCp5, "", x + uiSpaceWidth + (int)plot.getDim()[0] - 100, y + h - 14);
-        voltageValue.setColor(color(bgColor));
-        voltageValue.setColorBackground(color(255,255,255,125));
-        voltageValue.setFont(p5);
-        */
-        /*
-        impValue = new TextBox("", x + uiSpaceWidth + 2, y + h);
-        impValue.textColor = color(bgColor);
-        impValue.alignH = LEFT;
-        // impValue.alignV = TOP;
-        impValue.drawBackground = true;
-        impValue.backgroundColor = color(255,255,255,125);
-        */
-
-        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + 2);
-        yAxisLabel_pos.textColor = color(bgColor);
-        yAxisLabel_pos.alignH = LEFT;
-        yAxisLabel_pos.alignV = TOP;
-        yAxisLabel_pos.drawBackground = true;
-        yAxisLabel_pos.backgroundColor = color(255,255,255,255);
-
-        yAxisLabel_neg = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h);
-        yAxisLabel_neg.textColor = color(bgColor);
-        yAxisLabel_neg.alignH = LEFT;
-        yAxisLabel_neg.alignV = BOTTOM;
-        yAxisLabel_neg.drawBackground = true;
-        yAxisLabel_neg.backgroundColor = color(255,255,255,255);
+        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + 2, color(bgColor), color(255,255,255,175), LEFT, TOP);
+        yAxisLabel_neg = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h, color(bgColor), color(255,255,255,175), LEFT, BOTTOM);
+        impValue = new TextBox("", x + uiSpaceWidth + 2 + (int)plot.getDim()[0] - 2, y + 2, color(bgColor), color(255,255,255,175), RIGHT, TOP);
+        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
 
         drawVoltageValue = true;
     }
@@ -624,8 +594,7 @@ class ChannelBar{
                 fmt = "NEAR RAILED - " + fmt;
             }
         }
-        //voltageValue.setText(fmt);
-        voltageValue.string = fmt;
+        voltageValue.setText(fmt);
 
         //update the impedance values
         val = data_elec_imp_ohm[channelIndex]/1000;
@@ -633,7 +602,7 @@ class ChannelBar{
         if (is_railed != null && is_railed[channelIndex].is_railed == true) {
             fmt = "RAILED - " + fmt;
         }
-        //impValue.setText(fmt);
+        impValue.setText(fmt);
 
         // update data in plot
         updatePlotPoints();
@@ -675,7 +644,7 @@ class ChannelBar{
         }
     }
 
-    public void draw() {        
+    public void draw(boolean hardwareSettingsAreOpen) {        
         pushStyle();
 
         //draw channel holder background
@@ -689,15 +658,12 @@ class ChannelBar{
         //draw plot
         stroke(31,69,110, 50);
         fill(color(125,30,12,30));
-
         rect(x + 36 + 4 + impButton_diameter, y, w - 36 - 4 - impButton_diameter, h);
 
         plot.beginDraw();
         plot.drawBox(); // we won't draw this eventually ...
         plot.drawGridLines(0);
         plot.drawLines();
-        // plot.drawPoints();
-        //plot.drawYAxis();
         if(channelIndex == nchan-1) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
@@ -705,24 +671,29 @@ class ChannelBar{
         plot.endDraw();
 
         //draw impedance check Button_obci
-        if(currentBoard instanceof ImpedanceSettingsBoard) {
+        drawVoltageValue = true;
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
             impCheckButton.draw();
-
             if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
-                //impValue.draw();
+                impValue.draw();
+                drawVoltageValue = false;
             }
         }
         
-        if(drawVoltageValue) {
+        if (drawVoltageValue) {
             voltageValue.draw();
         }
-
-        yAxisLabel_pos.string = "+" + yLim;
-        yAxisLabel_pos.draw();
-        yAxisLabel_neg.string = "-" + yLim;
-        yAxisLabel_neg.draw();
+        
+        if (!hardwareSettingsAreOpen) {
+            yAxisLabel_pos.setText("+" + yLim);
+            yAxisLabel_pos.draw();
+            yAxisLabel_neg.setText("-" + yLim);
+            yAxisLabel_neg.draw();
+        }
 
         popStyle();
+
+        cbCp5.draw();
     }
 
     private int nPointsBasedOnDataSource() {
@@ -769,24 +740,16 @@ class ChannelBar{
         y = _y;
         w = _w;
         h = _h;
-        //cbCp5.setGraphics(ourApplet, x, y);
+
         //reposition & resize the plot
         int plotW = w - 36 - 4 - impButton_diameter;
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(plotW, h);
-        
-        //voltageValue.setPosition(x + uiSpaceWidth + plotW - textWidth(voltageValue.getStringValue()), y + h - 16);
-        
-        voltageValue.x = x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2;
-        voltageValue.y = y + h;
-        /*
-        impValue.x = x + uiSpaceWidth + 2;
-        impValue.y = y + h;
-        */
-        yAxisLabel_pos.x = x + uiSpaceWidth + 2;
-        yAxisLabel_pos.y = y + 2;
-        yAxisLabel_neg.x = x + uiSpaceWidth + 2;
-        yAxisLabel_neg.y = y + h;
+ 
+        yAxisLabel_pos.setPosition(x + uiSpaceWidth + 2, y + 2);
+        yAxisLabel_neg.setPosition(x + uiSpaceWidth + 2, y + h);
+        voltageValue.setPosition(x + uiSpaceWidth + (w - 36 - 4 - impButton_diameter) - 2, y + h);
+        impValue.setPosition(x + uiSpaceWidth + 2 + (int)plot.getDim()[0] - 2, y + 2);
 
         yScaleButton_pos.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + 4);
         yScaleButton_neg.setPosition(x + (36 + impButton_diameter + 4)/2 - yScaleButton_w/2, y + h - yScaleButton_h - 4);
