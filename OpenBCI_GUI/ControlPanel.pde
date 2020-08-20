@@ -852,14 +852,10 @@ class ControlPanel {
             if (selectedProtocol == BoardProtocol.SERIAL) {
                 if (rcBox.isShowing) {
                     hideRadioPopoutBox();
-                    serialBox.autoConnect.setIgnoreHover(false);
-                    serialBox.autoConnect.setColorNotPressed(255);
                 } else {
                     rcBox.isShowing = true;
                     rcBox.print_onscreen(rcBox.initial_message);
                     popOutRadioConfigButton.setString("Manual <");
-                    serialBox.autoConnect.setIgnoreHover(true);
-                    serialBox.autoConnect.setColorNotPressed(140);
                 }
             }
         }
@@ -1373,12 +1369,12 @@ class ComPortBox {
     }
 
     private LinkedList<String> getCytonComPorts() {
-        final String[] names = {"FT231X USB UART", "VCP0"};
+        final String[] names = {"FT231X USB UART", "VCP"};
         final SerialPort[] comPorts = SerialPort.getCommPorts();
         LinkedList<String> results = new LinkedList<String>();
         for (SerialPort comPort : comPorts) {
             for (String name : names) {
-                if (comPort.toString().equals(name)) {
+                if (comPort.toString().startsWith(name)) {
                     String found = "";
                     if (isMac() || isLinux()) found += "/dev/";
                     found += comPort.getSystemPortName();
