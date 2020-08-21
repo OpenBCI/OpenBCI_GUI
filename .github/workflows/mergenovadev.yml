@@ -14,5 +14,5 @@ jobs:
           type: now
           from_branch: development
           target_branch: novaxr-dev
-          github_token: ${{ github.token }      
+          github_token: ${{ github.token }}      
           
