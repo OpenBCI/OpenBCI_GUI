@@ -152,4 +152,12 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
         }
         channelNames[getBatteryChannel()] = "Battery Info Channel";
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };

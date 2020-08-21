@@ -188,8 +188,8 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
-    public int getSampleNumberChannel() {
-        return underlyingBoard.getSampleNumberChannel();
+    public int getSampleIndexChannel() {
+        return underlyingBoard.getSampleIndexChannel();
     }
 
     public int getTotalSamples() {

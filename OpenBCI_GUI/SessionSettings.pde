@@ -41,8 +41,8 @@ class SessionSettings {
     //Current version to save to JSON
     String settingsVersion = "3.0.0";
     //impose minimum gui width and height in openBCI_GUI.pde
-    int minGUIWidth = 705;
-    int minGUIHeight = 400;
+    int minGUIWidth = win_x;
+    int minGUIHeight = win_y;
     //for screen resizing
     boolean screenHasBeenResized = false;
     float timeOfLastScreenResize = 0;
