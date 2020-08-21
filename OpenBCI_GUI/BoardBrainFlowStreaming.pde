@@ -60,8 +60,8 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
             boardShim = new BoardShim (BoardIds.STREAMING_BOARD.get_code(), getParams());
             try {
                 BoardShim.enable_dev_board_logger();
-                BoardShim.set_log_file(settings.consoleDataPath + "Brainflow_" +
-                    DirectoryManager.getFileNameDateTime() + ".txt");
+                BoardShim.set_log_file(directoryManager.getConsoleDataPath() + "Brainflow_" +
+                    directoryManager.getFileNameDateTime() + ".txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
@@ -118,6 +118,11 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
         }
 
         return new int[0];
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return null;
     }
 
 };
