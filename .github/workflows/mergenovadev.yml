@@ -7,12 +7,14 @@ jobs:
   sync-branch:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - name: Merge development to novaxr-dev
-        uses: devmasx/merge-branch@v1.3.0
+      - name: Branch Merge
+        uses: everlytic/branch-merge@1.1.0
         with:
-          type: now
-          from_branch: development
+          github_token: ${{ github.token }}
+          # Branch name or Ref that you wish to merge into the target_branch.
+          source_ref: development
+          # Branch you are merging the source ref into.
           target_branch: novaxr-dev
-          github_token: ${{ github.token }}      
+          # Template to generate the commit message, see README.md for more info
+          commit_message_template: Merged {source_ref} into {target_branch}.     
           
