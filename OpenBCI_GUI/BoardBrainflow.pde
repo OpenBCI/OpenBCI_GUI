@@ -22,14 +22,12 @@ abstract class BoardBrainFlow extends Board {
     
     @Override
     public boolean initializeInternal() {
-        // initiate the board shim
         try {
-
             boardShim = new BoardShim (getBoardIdInt(), getParams());
-            // for some reason logger configuration doesnt work in contructor or static initializer block
-            // and it looks like smth processing specific
             try {
                 BoardShim.enable_dev_board_logger();
+                BoardShim.set_log_file(settings.consoleDataPath + "Brainflow_" +
+                    DirectoryManager.getFileNameDateTime() + ".txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
