@@ -993,11 +993,8 @@ class TimeDisplay {
     int swidth, sheight;    // width and height of bar
     float xpos, ypos;       // x and y position of bar
     String currentAbsoluteTimeToDisplay = "";
-    String currentTimeInSecondsToDisplay = "";
     Boolean updatePosition = false;
     LocalDateTime time;
-    long startTime;
-    boolean prevIsRunning = false;
 
     TimeDisplay (float xp, float yp, int sw, int sh) {
         swidth = sw;
@@ -1017,16 +1014,7 @@ class TimeDisplay {
                 println("TimeDisplay: Timestamp error...");
                 e.printStackTrace();
             }
-            //Reset second counter when data stream starts and stops
-            if (prevIsRunning == false) {
-                startTime = System.currentTimeMillis();
-                prevIsRunning = true;
-            }
-            //Calculate elapsed time using current millis
-            int secondsElapsed = int((System.currentTimeMillis() - startTime) / 1000F);
-            currentTimeInSecondsToDisplay = secondsElapsed + " s";
-        } else {
-            prevIsRunning = false;
+
         }
     } //end update loop for TimeDisplay
 
@@ -1039,7 +1027,7 @@ class TimeDisplay {
             fill(0);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
-            text(currentTimeInSecondsToDisplay, xpos + 10, ypos);
+            text(streamTimeElapsed.toString(), xpos + 10, ypos);
         }
         popStyle();
     }
@@ -1058,9 +1046,3 @@ class TimeDisplay {
     }
 };//end TimeDisplay class
 
-//Used in the above PlaybackScrollbar class
-//Also used in OpenBCI_GUI in the app's title bar
-int getElapsedTimeInSeconds(int tableRowIndex) {
-    int elapsedTime = int(float(tableRowIndex)/currentBoard.getSampleRate());
-    return elapsedTime;
-}

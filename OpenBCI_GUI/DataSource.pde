@@ -27,7 +27,7 @@ interface DataSource {
 
     public int getTimestampChannel();
 
-    public int getSampleNumberChannel();
+    public int getSampleIndexChannel();
 
     public int getTotalChannelCount();
 };
