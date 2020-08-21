@@ -1173,7 +1173,7 @@ public void initButtonPressed(){
                 // store the current text field value of "File Name" to be passed along to dataFiles
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText();
             } else {
-                sessionName = DirectoryManager.getFileNameDateTime();
+                sessionName = directoryManager.getFileNameDateTime();
             }
 
             if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
