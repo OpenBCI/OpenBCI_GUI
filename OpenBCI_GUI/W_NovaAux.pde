@@ -149,7 +149,7 @@ void VertScale_NovaAux(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class AuxReadBar{
+abstract class AuxReadBar{
 
     private int auxValuesPosition;
     private String auxChanLabel;
@@ -367,13 +367,9 @@ class AuxReadBar{
         analogPin.y = y + int(h/2.0) + 7;
     }
 
-    protected boolean isBoardActive() {
-        return false;
-    }
+    protected abstract boolean isBoardActive();
 
-    protected int getChannel() {
-        return 0;
-    }
+    protected abstract int getChannel();
 };
 
 
