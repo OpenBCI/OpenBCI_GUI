@@ -271,8 +271,8 @@ abstract class AuxReadBar{
     private void updatePlotPointsAutoScaled() {
         List<double[]> allData = currentBoard.getData(nPoints);
         
-        int max = 0; //NovaAux values will always be greater than or equal to 0.
-        int min = 1000000; //NovaAux values should never exceed this value. We want to find the minimum, so start with high number.
+        int max = (int) Math.floor(allData.get(0)[channel] + .5d);
+        int min = max;
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
