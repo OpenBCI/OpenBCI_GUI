@@ -312,7 +312,6 @@ abstract class AuxReadBar{
         plot.drawGridLines(0);
         plot.drawLines();
         
-        
         if (isBottomBar) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
