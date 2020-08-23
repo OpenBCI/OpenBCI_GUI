@@ -66,6 +66,14 @@ class BoardCytonSerial extends BoardCytonSerialBase {
     public BoardIds getBoardId() {
         return BoardIds.CYTON_BOARD;
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };
 
 class BoardCytonSerialDaisy extends BoardCytonSerialBase {
@@ -81,6 +89,11 @@ class BoardCytonSerialDaisy extends BoardCytonSerialBase {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.CYTON_DAISY_BOARD;
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return new PacketLossTrackerCytonSerialDaisy(getSampleIndexChannel(), getTimestampChannel());
     }
 };
 
@@ -206,6 +219,14 @@ abstract class BoardCytonWifiBase extends BoardCyton {
         }
         return res;
     }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
+    }
 };
 
 class CytonDefaultSettings extends ADS1299Settings {
@@ -213,12 +234,12 @@ class CytonDefaultSettings extends ADS1299Settings {
         super(theBoard);
 
         // the 'd' command is automatically sent by brainflow on prepare_session
-        Arrays.fill(powerDown, PowerDown.ON);
-        Arrays.fill(gain, Gain.X24);
-        Arrays.fill(inputType, InputType.NORMAL);
-        Arrays.fill(bias, Bias.INCLUDE);
-        Arrays.fill(srb2, Srb2.CONNECT);
-        Arrays.fill(srb1, Srb1.DISCONNECT);
+        Arrays.fill(values.powerDown, PowerDown.ON);
+        Arrays.fill(values.gain, Gain.X24);
+        Arrays.fill(values.inputType, InputType.NORMAL);
+        Arrays.fill(values.bias, Bias.INCLUDE);
+        Arrays.fill(values.srb2, Srb2.CONNECT);
+        Arrays.fill(values.srb1, Srb1.DISCONNECT);
     }
 }
 
@@ -238,6 +259,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     protected String serialPort = "";
     protected String ipAddress = "";
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
+    private boolean useDynamicScaler;
 
     public BoardCyton() {
         super();
@@ -247,6 +269,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
+        useDynamicScaler = false;
     }
 
     // implement mandatory abstract functions
@@ -373,7 +396,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         char n = '0';
 
         if (active) {
-            Srb2 srb2sSetting = currentADS1299Settings.srb2[channel];
+            Srb2 srb2sSetting = currentADS1299Settings.values.srb2[channel];
             if (srb2sSetting == Srb2.CONNECT) {
                 n = '1';
             }
@@ -401,7 +424,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
                 // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
-                double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
+                double currentGain = 1.0;
+                if (useDynamicScaler) {
+                    currentGain = currentADS1299Settings.values.gain[i].getScalar();
+                }
+                double scalar = brainflowGain / currentGain;
                 data[exgChannels[i]][j] *= scalar;
             }
         }
@@ -471,6 +498,16 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public double getGain(int channel) {
-        return getADS1299Settings().gain[channel].getScalar();
+        return getADS1299Settings().values.gain[channel].getScalar();
+    }
+
+    @Override
+    public boolean getUseDynamicScaler() {
+        return useDynamicScaler;
+    }
+
+    @Override
+    public void setUseDynamicScaler(boolean val) {
+        useDynamicScaler = val;
     }
 };

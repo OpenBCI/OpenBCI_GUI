@@ -1,4 +1,7 @@
 class BoardGanglionBLE extends BoardGanglion {
+
+    private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
+
     public BoardGanglionBLE() {
         super();
     }
@@ -12,6 +15,24 @@ class BoardGanglionBLE extends BoardGanglion {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.GANGLION_BOARD;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        super.setAccelerometerActive(active);
+
+        if (packetLossTrackerGanglionBLE != null) {
+            // notify the packet loss tracker, because the sample indices change based
+            // on whether accel is active or not
+            packetLossTrackerGanglionBLE.setAccelerometerActive(active);
+        }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        packetLossTrackerGanglionBLE = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglionBLE.setAccelerometerActive(isAccelerometerActive());
+        return packetLossTrackerGanglionBLE;
     }
 };
 
@@ -51,6 +72,14 @@ class BoardGanglionWifi extends BoardGanglion {
     @Override
     public BoardIds getBoardId() {
         return BoardIds.GANGLION_WIFI_BOARD;
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 200;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 };
 

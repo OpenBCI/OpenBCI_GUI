@@ -6,7 +6,7 @@ abstract class BoardBrainFlow extends Board {
 
     protected BoardShim boardShim = null;
     protected int samplingRateCache = -1;
-    protected int packetNumberChannelCache = -1;
+    protected int sampleIndexChannelCache = -1;
     protected int timeStampChannelCache = -1;
     protected int totalChannelsCache = -1;
     protected int[] exgChannelsCache = null;
@@ -22,14 +22,12 @@ abstract class BoardBrainFlow extends Board {
     
     @Override
     public boolean initializeInternal() {
-        // initiate the board shim
         try {
-
             boardShim = new BoardShim (getBoardIdInt(), getParams());
-            // for some reason logger configuration doesnt work in contructor or static initializer block
-            // and it looks like smth processing specific
             try {
                 BoardShim.enable_dev_board_logger();
+                BoardShim.set_log_file(directoryManager.getConsoleDataPath() + "Brainflow_" +
+                    directoryManager.getFileNameDateTime() + ".txt");
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
@@ -63,11 +61,14 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void startStreaming() {
+        super.startStreaming();
+
         println("Brainflow start streaming");
         if(streaming) {
             println("Already streaming, do nothing");
             return;
         }
+
         try {
             boardShim.start_stream (3600);
             streaming = true;
@@ -81,6 +82,8 @@ abstract class BoardBrainFlow extends Board {
 
     @Override
     public void stopStreaming() {
+        super.stopStreaming();
+        
         println("Brainflow stop streaming");
         if(!streaming) {
             println("Already stopped streaming, do nothing");
@@ -88,7 +91,7 @@ abstract class BoardBrainFlow extends Board {
         }
         streaming = false;
         try {
-            boardShim.stop_stream ();
+            boardShim.stop_stream();
         }
         catch (BrainFlowError e) {
             println("ERROR: Exception when stoppping stream");
@@ -188,17 +191,17 @@ abstract class BoardBrainFlow extends Board {
     }
     
     @Override
-    public int getSampleNumberChannel() {
-        if(packetNumberChannelCache < 0) {
+    public int getSampleIndexChannel() {
+        if(sampleIndexChannelCache < 0) {
             try {
-                packetNumberChannelCache = BoardShim.get_package_num_channel(getBoardIdInt());
+                sampleIndexChannelCache = BoardShim.get_package_num_channel(getBoardIdInt());
             } catch (BrainFlowError e) {
                 println("WARNING: failed to get package num channel from BoardShim");
                 e.printStackTrace();
             }
         }
 
-        return packetNumberChannelCache;
+        return sampleIndexChannelCache;
     }
 
     public int getBoardIdInt() {
