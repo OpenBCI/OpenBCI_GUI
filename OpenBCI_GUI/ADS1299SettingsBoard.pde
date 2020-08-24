@@ -169,6 +169,7 @@ public class ADS1299SettingsValues {
 
     public Bias[] previousBias;
     public Srb2[] previousSrb2;
+    public InputType[] previousInputType;
 
     public ADS1299SettingsValues() {
     }
@@ -211,6 +212,7 @@ class ADS1299Settings {
 
         values.previousBias = values.bias.clone();
         values.previousSrb2 = values.srb2.clone();
+        values.previousInputType = values.inputType.clone();
     }
 
     public boolean loadSettingsValues(String filename) {
@@ -257,13 +259,16 @@ class ADS1299Settings {
         if (active) {
             values.bias[chan] = values.previousBias[chan];
             values.srb2[chan] = values.previousSrb2[chan];
+            values.inputType[chan] = values.previousInputType[chan];
 
         } else {
             values.previousBias[chan] = values.bias[chan];
             values.previousSrb2[chan] = values.srb2[chan];
+            values.previousInputType[chan] = values.inputType[chan];
 
             values.bias[chan] = Bias.NO_INCLUDE;
             values.srb2[chan] = Srb2.DISCONNECT;
+            values.inputType[chan] = InputType.SHORTED;
         }
 
         values.powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
