@@ -681,8 +681,8 @@ class ChannelBar{
             voltageValue.draw();
         }
         
-        //Hide yAxisLabels when hardwareSettings are open or labels would start to overlap
-        boolean b = !hardwareSettingsAreOpen && h > defaultH/2;
+        //Hide yAxisLabels when hardwareSettings are open, labels would start to overlap, or using autoscale
+        boolean b = !hardwareSettingsAreOpen && h > defaultH/2 && !isAutoscale;
         yScaleButton_pos.setVisible(b);
         yScaleButton_neg.setVisible(b);
 
@@ -726,7 +726,7 @@ class ChannelBar{
         yScaleButton_neg.getCaptionLabel().setText("-"+yLim+"uV");
         //Responsively scale button size based on number of digits
         int n = (int)(log10(yLim));
-        int padding =  Math.round(map(n, 0, 5, 5, 0)) * padding_4;
+        int padding =  (int)map(n, 0, 5, 5, 0) * padding_4;
         yScaleButton_pos.setSize(yScaleButton_pos.autoWidth - padding, yScaleButton_h);
         yScaleButton_neg.setSize(yScaleButton_neg.autoWidth - padding, yScaleButton_h);
     }
