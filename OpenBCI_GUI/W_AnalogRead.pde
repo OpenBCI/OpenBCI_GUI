@@ -255,8 +255,7 @@ class AnalogReadBar{
 
     private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
     private int autoScaleYLim = 0;
-
-    private ControlP5 arbCp5;
+    
     private TextBox analogValue;
     private TextBox analogPin;
     private TextBox digitalPin;
