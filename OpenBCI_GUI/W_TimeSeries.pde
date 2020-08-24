@@ -712,15 +712,14 @@ class ChannelBar{
 
     public void adjustVertScale(int _vertScaleValue) {
         //Early out if autoscale
-        if(_vertScaleValue == 0) {
+        if (_vertScaleValue == 0) {
             isAutoscale = true;
             return;
         }
-
         isAutoscale = false;
+
         //Update plot Y scale limits
-        plot.setYLim(-_vertScaleValue, _vertScaleValue);
-        yLim = _vertScaleValue;
+        plot.setYLim(-yLim, yLim);
         //Update button text
         yScaleButton_pos.getCaptionLabel().setText("+"+yLim+"uV");
         yScaleButton_neg.getCaptionLabel().setText("-"+yLim+"uV");
@@ -848,6 +847,8 @@ class ChannelBar{
         public void controlEvent(CallbackEvent theEvent) {
             verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
             yLim += increase ? 50 : -50;
+            //Hard lower limit on 50uV per channel, don't allow users to reverse y-axis or get stuck in autoscale without buttons
+            yLim = yLim >= 50 ? yLim : 50;
             adjustVertScale(yLim);
         }
     }
