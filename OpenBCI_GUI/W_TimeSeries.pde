@@ -72,12 +72,8 @@ class W_timeSeries extends Widget {
         settings.tsHorizScaleSave = 2;
 
         //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-
         addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(settings.tsVertScaleArray), settings.tsVertScaleSave);
         addDropdown("Duration", "Window", Arrays.asList(settings.tsHorizScaleArray), settings.tsHorizScaleSave);
-        // addDropdown("Spillover", "Spillover", Arrays.asList("False", "True"), 0);
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -469,12 +465,12 @@ class ChannelBar{
     int onOff_diameter, impButton_diameter;
     Button_obci impCheckButton;
     ControlP5 cbCp5;
-    int yScaleButton_w, yScaleButton_h;
+    int yScaleButton_h;
     Button yScaleButton_pos;
     Button yScaleButton_neg;
     int yLim;
     int uiSpaceWidth;
-    int tinySpacer = 4;
+    int padding_4 = 4;
     int minimumChannelHeight;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
@@ -490,8 +486,6 @@ class ChannelBar{
 
     TextBox voltageValue;
     TextBox impValue;
-    TextBox yAxisLabel_pos;
-    TextBox yAxisLabel_neg;
 
     boolean drawVoltageValue;
 
@@ -539,19 +533,13 @@ class ChannelBar{
             impButton_diameter = 0;
         }
         ////End Old buttons
-
-        // New Buttons
-        yScaleButton_w = 36 + impButton_diameter - 8;
-        yScaleButton_h = 12;
-        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+", x + w/2 - yScaleButton_w/2, y + tinySpacer, yScaleButton_w, yScaleButton_h);
-        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-", x + w/2 - yScaleButton_w/2, y + h - yScaleButton_h - tinySpacer, yScaleButton_w, yScaleButton_h); 
         
-        uiSpaceWidth = 36 + tinySpacer + impButton_diameter;
-        yLim = 200;
+        uiSpaceWidth = 36 + padding_4 + impButton_diameter;
+        yLim = 200; //default y axis limit of +/- 200uV
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - tinySpacer - impButton_diameter, h);
+        plot.setDim(w - 36 - padding_4 - impButton_diameter, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
@@ -575,13 +563,17 @@ class ChannelBar{
         }
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
-        yAxisLabel_pos = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + 2, color(bgColor), color(255,255,255,175), LEFT, TOP);
-        yAxisLabel_neg = new TextBox("+"+yLim, x + uiSpaceWidth + 2, y + h, color(bgColor), color(255,255,255,175), LEFT, BOTTOM);
-        impValue = new TextBox("", x + uiSpaceWidth + 2 + (int)plot.getDim()[0] - 2, y + 2, color(bgColor), color(255,255,255,175), RIGHT, TOP);
-        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - 2, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
+        // New Buttons
+        yScaleButton_h = 12;
+        int padding = 2;
+        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+"+yLim+"uV", x + uiSpaceWidth + padding, y + padding, yScaleButton_pos.autoWidth - padding_4*3, yScaleButton_h);
+        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-"+yLim+"uV", x + uiSpaceWidth + padding, y + h - yScaleButton_h - padding_4, yScaleButton_pos.autoWidth - padding_4*3, yScaleButton_h); 
+        
+        impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, color(bgColor), color(255,255,255,175), RIGHT, TOP);
+        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
 
         drawVoltageValue = true;
-        minimumChannelHeight = tinySpacer*4 + yScaleButton_h*2 + onOff_diameter;
+        minimumChannelHeight = padding_4*4 + yScaleButton_h*2 + onOff_diameter;
     }
 
     void update() {
@@ -690,23 +682,11 @@ class ChannelBar{
         }
         
         //Hide yAxisLabels when hardwareSettings are open or labels would start to overlap
-        if (!hardwareSettingsAreOpen && h > defaultH/2) {
-            yAxisLabel_pos.setText("+" + yLim);
-            yAxisLabel_pos.draw();
-            yAxisLabel_neg.setText("-" + yLim);
-            yAxisLabel_neg.draw();
-        }
+        boolean b = !hardwareSettingsAreOpen && h > defaultH/2;
+        yScaleButton_pos.setVisible(b);
+        yScaleButton_neg.setVisible(b);
 
         popStyle();
-
-        //Hide yScaleButtons when they would start to overlap the channelOnOff button
-        if (h < minimumChannelHeight) {
-            yScaleButton_pos.hide();
-            yScaleButton_neg.hide();
-        } else {
-            yScaleButton_pos.show();
-            yScaleButton_neg.show();
-        }
 
         cbCp5.draw();
     }
@@ -731,13 +711,24 @@ class ChannelBar{
     }
 
     public void adjustVertScale(int _vertScaleValue) {
+        //Early out if autoscale
         if(_vertScaleValue == 0) {
             isAutoscale = true;
-        } else {
-            isAutoscale = false;
-            plot.setYLim(-_vertScaleValue, _vertScaleValue);
-            yLim = _vertScaleValue;
+            return;
         }
+
+        isAutoscale = false;
+        //Update plot Y scale limits
+        plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        yLim = _vertScaleValue;
+        //Update button text
+        yScaleButton_pos.getCaptionLabel().setText("+"+yLim+"uV");
+        yScaleButton_neg.getCaptionLabel().setText("-"+yLim+"uV");
+        //Responsively scale button size based on number of digits
+        int n = (int)(log10(yLim));
+        int padding =  Math.round(map(n, 0, 5, 5, 0)) * padding_4;
+        yScaleButton_pos.setSize(yScaleButton_pos.autoWidth - padding, yScaleButton_h);
+        yScaleButton_neg.setSize(yScaleButton_neg.autoWidth - padding, yScaleButton_h);
     }
 
     private void autoScale() {
@@ -760,14 +751,13 @@ class ChannelBar{
         int plotW = w - uiSpaceWidth;
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(plotW, h);
- 
-        yAxisLabel_pos.setPosition(x + uiSpaceWidth + 2, y + 2);
-        yAxisLabel_neg.setPosition(x + uiSpaceWidth + 2, y + h);
-        voltageValue.setPosition(x + uiSpaceWidth + (w - uiSpaceWidth) - 2, y + h);
-        impValue.setPosition(x + uiSpaceWidth + 2 + (int)plot.getDim()[0] - 2, y + 2);
 
-        yScaleButton_pos.setPosition(x + uiSpaceWidth/2 - yScaleButton_w/2, y + tinySpacer);
-        yScaleButton_neg.setPosition(x + uiSpaceWidth/2 - yScaleButton_w/2, y + h - yScaleButton_h - tinySpacer);
+        int padding = 2;
+        voltageValue.setPosition(x + uiSpaceWidth + (w - uiSpaceWidth) - padding, y + h);
+        impValue.setPosition(x + uiSpaceWidth + (int)plot.getDim()[0], y + padding);
+
+        yScaleButton_pos.setPosition(x + uiSpaceWidth + padding, y + padding);
+        yScaleButton_neg.setPosition(x + uiSpaceWidth + padding, y + h - yScaleButton_h - padding);
 
         if(h > 26) {
             onOff_diameter = 26;
