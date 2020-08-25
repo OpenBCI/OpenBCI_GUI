@@ -5,7 +5,7 @@
 * add configurable gain behaviour
 
 ### Bug Fixes
-* Check internet connection to Github using a timeout, so it doesn't cause app to stall
+* Check internet connection to Github using a timeout, so the app doesn't stall
 
 # v5.0.0
 
