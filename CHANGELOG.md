@@ -4,6 +4,9 @@
 * add load and store for hardware settings
 * add configurable gain behaviour
 
+### Bug Fixes
+* Check internet connection to Github using a timeout, so it doesn't cause app to stall
+
 # v5.0.0
 
 ### Improvements
