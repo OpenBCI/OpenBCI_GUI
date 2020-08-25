@@ -26,6 +26,7 @@ before_install:
 install:
   # used for getting commit timestamp
   - pip3 install requests
+  - pip3 install beautifulsoup4
 
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
