@@ -5,23 +5,23 @@ class W_NovaAux extends Widget {
     private PPGCapableBoard ppgBoard;
     private BatteryInfoCapableBoard batteryBoard;
 
-    private int numAuxReadBars = 3;
+    private final int numAuxReadBars = 3;
     private float xF, yF, wF, hF;
     private float arPadding;
     private float ar_x, ar_y, ar_h, ar_w; // values for rectangle encompassing all auxReadBars
     private float plotBottomWell;
     private int channelBarHeight;
-    private int batteryMeterH = 24;
+    private final int batteryMeterH = 24;
 
     private PPGReadBar ppgReadBar1;
     private PPGReadBar ppgReadBar2;
     private EDAReadBar edaReadBar;
     private BatteryMeter batteryMeter;
 
-    public int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    public int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
-    private String[] vertScaleOptions = {"Auto", "50", "100", "200", "400", "1000", "10000"};
-    private String[] horizScaleOptions = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
+    public final int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    public final int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    private final String[] vertScaleOptions = {"Auto", "50", "100", "200", "400", "1000", "10000"};
+    private final String[] horizScaleOptions = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
     private boolean allowSpillover = false;
     private boolean visible = true;
 
@@ -32,8 +32,6 @@ class W_NovaAux extends Widget {
     W_NovaAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        // todo add check that current board implements these interfaces before casting
-        // otherwise should throw and exception and maybe popup message
         edaBoard = (EDACapableBoard) currentBoard;
         ppgBoard = (PPGCapableBoard) currentBoard;
         batteryBoard = (BatteryInfoCapableBoard) currentBoard;
@@ -271,16 +269,17 @@ abstract class AuxReadBar{
     private void updatePlotPointsAutoScaled() {
         List<double[]> allData = currentBoard.getData(nPoints);
         
-        int max = (int) Math.floor(allData.get(0)[channel] + .5d);
+        int max = (int)allData.get(0)[channel];
         int min = max;
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
-            float value = (float)allData.get(i)[channel];
-            auxReadPoints.set(i, timey, value, "");
+            double value = allData.get(i)[channel];
+            auxReadPoints.set(i, timey, (float)value, "");
 
-            max = (int)value > max ? (int)value : max;
-            min = (int)value < min ? (int)value : min;
+            max = getMax((int)value, max);
+            min = getMin((int)value, min);
+            
         }
         plot.setYLim(min, max);
         plot.setPoints(auxReadPoints);
