@@ -799,42 +799,8 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //update the title of the figure;
-        switch (eegDataSource) {
-        case DATASOURCE_CYTON:
-            switch (outputDataSource) {
-            case OUTPUT_SOURCE_ODF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_BDF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_NONE:
-            default:
-                surface.setTitle(int(frameRate) + " fps");
-                break;
-            }
-            break;
-        case DATASOURCE_SYNTHETIC:
-            surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            surface.setTitle(int(frameRate) + " fps, Reading from: " + playbackData_fname);
-            break;
-        case DATASOURCE_GANGLION:
-            surface.setTitle(int(frameRate) + " fps, Ganglion!");
-            break;
-        default:
-            surface.setTitle(int(frameRate) + " fps");
-            break;
-        }
-
         wm.draw();
-
         drawContainers();
-    } else { //systemMode != 10
-        //still print title information about fps
-        surface.setTitle(int(frameRate) + " fps - OpenBCI GUI");
     }
 
     if (systemMode >= SYSTEMMODE_PREINIT) {
@@ -856,6 +822,9 @@ void systemDraw() { //for drawing to the screen
     if (midInit) {
         drawOverlay();
     }
+
+    //Display GUI version and FPS in the title bar of the app
+    surface.setTitle("OpenBCI GUI " + localGUIVersionString + " - " + int(frameRate) + " fps");
 }
 
 void requestReinit() {
