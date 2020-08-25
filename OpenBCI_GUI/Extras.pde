@@ -26,18 +26,6 @@ private boolean isMac() {
     return !isWindows() && !isLinux();
 }
 
-int getMax(int a, int b) {
-  int diff = a - b;
-  int dsgn = diff >> 31;
-  return a - (diff & dsgn);
-}
-
-int getMin(int a, int b) {
-  int diff = a - b;
-  int dsgn = diff >> 31;
-  return b + (diff & dsgn);
-}
-
 
 //compute the standard deviation
 float std(float[] data) {
@@ -330,4 +318,3 @@ class TextBox {
         strokeWeight(1);
     }
 };
-
