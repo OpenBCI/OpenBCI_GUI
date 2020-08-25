@@ -25,6 +25,8 @@ class W_timeSeries extends Widget {
     private int channelBarHeight;
 
     private Button_obci hardwareSettingsButton;
+    private Button_obci hardwareSettingsLoadButton;
+    private Button_obci hardwareSettingsStoreButton;
 
     private ChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
@@ -115,6 +117,22 @@ class W_timeSeries extends Widget {
             hardwareSettingsButton.hasStroke(false);
             // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
             hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
+
+            hardwareSettingsLoadButton = new Button_obci(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y + navHeight + 3), 80, navHeight - 6, "Load Settings", 12);
+            hardwareSettingsLoadButton.setCornerRoundess((int)(navHeight-6));
+            hardwareSettingsLoadButton.setFont(p5,12);
+            hardwareSettingsLoadButton.setColorNotPressed(color(57,128,204));
+            hardwareSettingsLoadButton.textColorNotActive = color(255);
+            hardwareSettingsLoadButton.hasStroke(false);
+            hardwareSettingsLoadButton.setHelpText("Select settings file to load.");
+        
+            hardwareSettingsStoreButton = new Button_obci(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y + navHeight + 3), 83, navHeight - 6, "Save Settings", 12);
+            hardwareSettingsStoreButton.setCornerRoundess((int)(navHeight-6));
+            hardwareSettingsStoreButton.setFont(p5,12);
+            hardwareSettingsStoreButton.setColorNotPressed(color(57,128,204));
+            hardwareSettingsStoreButton.textColorNotActive = color(255);
+            hardwareSettingsStoreButton.hasStroke(false);
+            hardwareSettingsStoreButton.setHelpText("Save current settings to file.");
         }
 
         int x_hsc = int(ts_x);
@@ -158,13 +176,14 @@ class W_timeSeries extends Widget {
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
+                hardwareSettingsLoadButton.setPos(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y0 + navHeight + 3));
+                hardwareSettingsStoreButton.setPos(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y0 + navHeight + 3));
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
-            }
-
-            if(currentBoard instanceof ADS1299SettingsBoard) {
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
                 ignoreButtonCheck(hardwareSettingsButton);
+                ignoreButtonCheck(hardwareSettingsLoadButton);
+                ignoreButtonCheck(hardwareSettingsStoreButton);
             }
 
             if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -206,6 +225,8 @@ class W_timeSeries extends Widget {
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettingsButton.draw();
+                hardwareSettingsLoadButton.draw();
+                hardwareSettingsStoreButton.draw();
                 adsSettingsController.draw();
             }
 
@@ -252,6 +273,12 @@ class W_timeSeries extends Widget {
                 if (hardwareSettingsButton.isMouseHere()) {
                     hardwareSettingsButton.setIsActive(true);
                 }
+                if (hardwareSettingsLoadButton.isMouseHere()) {
+                    hardwareSettingsLoadButton.setIsActive(true);
+                }
+                if (hardwareSettingsStoreButton.isMouseHere()) {
+                    hardwareSettingsStoreButton.setIsActive(true);
+                }
             }
         }
 
@@ -275,7 +302,19 @@ class W_timeSeries extends Widget {
                 println("HardwareSetingsButton: Toggle...");
                 setAdsSettingsVisible(!adsSettingsController.isVisible);
             }
+            if(hardwareSettingsLoadButton.isActive && hardwareSettingsLoadButton.isMouseHere()) {
+                if (isRunning) {
+                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
+                } else {
+                    selectInput("Select settings file to load", "loadSettingsFileSelected");
+                }
+            }
+            if(hardwareSettingsStoreButton.isActive && hardwareSettingsStoreButton.isMouseHere()) {
+                selectOutput("Save settings to file", "storeSettingsFileSelected");
+            }
             hardwareSettingsButton.setIsActive(false);
+            hardwareSettingsLoadButton.setIsActive(false);
+            hardwareSettingsStoreButton.setIsActive(false);
         }
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
@@ -323,6 +362,34 @@ class W_timeSeries extends Widget {
         }
     }
 };
+
+void loadSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
+                output("Settings loaded.");
+            } else {
+                output("Failed to load settings.");
+            }
+        }
+    }
+}
+
+void storeSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().saveToFile(selection.getAbsolutePath())) {
+                output("Settings saved.");
+            } else {
+                output("Failed to save settings.");
+            }
+        }
+    }
+}
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
@@ -926,11 +993,8 @@ class TimeDisplay {
     int swidth, sheight;    // width and height of bar
     float xpos, ypos;       // x and y position of bar
     String currentAbsoluteTimeToDisplay = "";
-    String currentTimeInSecondsToDisplay = "";
     Boolean updatePosition = false;
     LocalDateTime time;
-    long startTime;
-    boolean prevIsRunning = false;
 
     TimeDisplay (float xp, float yp, int sw, int sh) {
         swidth = sw;
@@ -950,16 +1014,7 @@ class TimeDisplay {
                 println("TimeDisplay: Timestamp error...");
                 e.printStackTrace();
             }
-            //Reset second counter when data stream starts and stops
-            if (prevIsRunning == false) {
-                startTime = System.currentTimeMillis();
-                prevIsRunning = true;
-            }
-            //Calculate elapsed time using current millis
-            int secondsElapsed = int((System.currentTimeMillis() - startTime) / 1000F);
-            currentTimeInSecondsToDisplay = secondsElapsed + " s";
-        } else {
-            prevIsRunning = false;
+
         }
     } //end update loop for TimeDisplay
 
@@ -972,7 +1027,7 @@ class TimeDisplay {
             fill(0);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
-            text(currentTimeInSecondsToDisplay, xpos + 10, ypos);
+            text(streamTimeElapsed.toString(), xpos + 10, ypos);
         }
         popStyle();
     }
@@ -991,9 +1046,3 @@ class TimeDisplay {
     }
 };//end TimeDisplay class
 
-//Used in the above PlaybackScrollbar class
-//Also used in OpenBCI_GUI in the app's title bar
-int getElapsedTimeInSeconds(int tableRowIndex) {
-    int elapsedTime = int(float(tableRowIndex)/currentBoard.getSampleRate());
-    return elapsedTime;
-}

@@ -19,16 +19,6 @@ class BoardNull extends Board {
         // empty
     }
 
-    @Override
-    public void startStreaming() {
-        // empty
-    }
-
-    @Override
-    public void stopStreaming() {
-        // empty
-    }
-
     public boolean isConnected() {
         return false;
     }
@@ -49,7 +39,7 @@ class BoardNull extends Board {
     }
     
     @Override
-    public int getSampleNumberChannel() {
+    public int getSampleIndexChannel() {
         return 0;
     }
 
@@ -79,5 +69,10 @@ class BoardNull extends Board {
 
     protected void addChannelNamesInternal(String[] channelNames) {
         // nothing
+    }
+    
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        return null;
     }
 };

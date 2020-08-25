@@ -185,7 +185,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
     @Override
-    public int getSampleNumberChannel() {
+    public int getSampleIndexChannel() {
         return 0;
     }
 

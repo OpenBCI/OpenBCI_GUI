@@ -25,6 +25,7 @@ class TopNav {
     Button_obci filtBPButton;
     Button_obci filtNotchButton;
     Button_obci smoothingButton;
+    Button_obci gainButton;
 
     Button_obci tutorialsButton;
     Button_obci shopButton;
@@ -126,6 +127,18 @@ class TopNav {
             smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
         }
 
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            int pos_x = 0;
+            if (currentBoard instanceof SmoothingCapableBoard) {
+                pos_x = smoothingButton.but_x + smoothingButton.but_dx + 4;
+            } else {
+                pos_x = filtBPButton.but_x + filtBPButton.but_dx + 4;
+            }
+            gainButton = new Button_obci(pos_x, 35, 70, 26, getGainString(), fontInfo.buttonLabel_size);
+            gainButton.setFont(p5, 12);
+            gainButton.setHelpText("Click here to switch gain convention.");
+        }
+
         //right to left in top right (secondary nav)
         layoutButton = new Button_obci(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
         layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
@@ -196,6 +209,11 @@ class TopNav {
                 smoothingButton.textColorNotActive = color(bgColor);
                 smoothingButton.setColorNotPressed(color(255));
             }
+
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                gainButton.textColorNotActive = color(bgColor);
+                gainButton.setColorNotPressed(color(255));
+            }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             filtBPButton.setColorNotPressed(color(57, 128, 204));
             filtNotchButton.setColorNotPressed(color(57, 128, 204));
@@ -208,6 +226,11 @@ class TopNav {
             if (currentBoard instanceof SmoothingCapableBoard) {
                 smoothingButton.setColorNotPressed(color(57, 128, 204));
                 smoothingButton.textColorNotActive = color(255);
+            }
+
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                gainButton.setColorNotPressed(color(57, 128, 204));
+                gainButton.textColorNotActive = color(255);
             }
         }
     }
@@ -280,6 +303,9 @@ class TopNav {
             if (currentBoard instanceof SmoothingCapableBoard) {
                 smoothingButton.draw();
             }
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                gainButton.draw();
+            }
         }
 
         controlPanelCollapser.draw();
@@ -332,6 +358,11 @@ class TopNav {
             if (currentBoard instanceof SmoothingCapableBoard) {
                 if (smoothingButton.isMouseHere()) {
                     smoothingButton.setIsActive(true);
+                }
+            }
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                if (gainButton.isMouseHere()) {
+                    gainButton.setIsActive(true);
                 }
             }
             if (layoutButton.isMouseHere()) {
@@ -435,13 +466,19 @@ class TopNav {
             if (stopButton.isMouseHere() && stopButton.isActive()) {
                 stopButtonWasPressed();
             }
+            stopButton.setIsActive(false);
+
             if (filtBPButton.isMouseHere() && filtBPButton.isActive()) {
                 incrementFilterConfiguration();
             }
+            filtBPButton.setIsActive(false);
+
             if (filtNotchButton.isMouseHere() && filtNotchButton.isActive()) {
                 filtNotchButton.setIsActive(true);
                 incrementNotchConfiguration();
             }
+            filtNotchButton.setIsActive(false);
+
             if (currentBoard instanceof SmoothingCapableBoard) {
                 if (smoothingButton.isMouseHere() && smoothingButton.isActive()) {
                     smoothingButton.setIsActive(true);
@@ -450,6 +487,16 @@ class TopNav {
                     smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
                     smoothingButton.setString(getSmoothingString());
                 }
+                smoothingButton.setIsActive(false);
+            }
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                if (gainButton.isMouseHere() && gainButton.isActive()) {
+                    gainButton.setIsActive(true);
+                    ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
+                    adsBoard.setUseDynamicScaler(!adsBoard.getUseDynamicScaler());
+                    gainButton.setString(getGainString());
+                }
+                gainButton.setIsActive(false);
             }
             if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
                 if (layoutButton.isMouseHere() && layoutButton.isActive()) {
@@ -458,15 +505,9 @@ class TopNav {
                     //wm.printLayouts(); //Used for debugging
                     println("TopNav: Layout Dropdown Opened");
                 }
+                layoutButton.setIsActive(false);
             }
-            stopButton.setIsActive(false);
-            filtBPButton.setIsActive(false);
-            filtNotchButton.setIsActive(false);
-            layoutButton.setIsActive(false);
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setIsActive(false);
-            }
+            
         }
 
         fpsButton.setIsActive(false);
@@ -592,6 +633,10 @@ class TopNav {
 
     private String getSmoothingString() {
         return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\nOn" : "Smoothing\nOff";
+    }
+
+    private String getGainString() {
+        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Conv\nBody uV" : "Gain Conv\n Classic";
     }
 }
 

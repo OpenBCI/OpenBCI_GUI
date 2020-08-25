@@ -204,6 +204,10 @@ int[] range(int first, int second) {
 //                            Classes
 //------------------------------------------------------------------------
 
+class RectDimensions {
+    public int x, y, w, h;
+}
+
 class DataStatus {
     public boolean is_railed;
     private double threshold_railed;

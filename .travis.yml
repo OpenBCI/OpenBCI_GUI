@@ -21,7 +21,7 @@ install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
 ### ### LINUX ### ###
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L http://download.processing.org/processing-3.5.3-linux64.tgz                            ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L --insecure https://download.processing.org/processing-3.5.3-linux64.tgz                 ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-3.5.3-linux64.tgz                                                             ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-3.5.3:$PATH                                          ;fi
   # copy libraries to linux location
@@ -29,7 +29,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/                        ;fi
   
 ### ### MAC ### ###
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L http://download.processing.org/processing-3.5.3-macosx.zip                               ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://download.processing.org/processing-3.5.3-macosx.zip                    ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-3.5.3-macosx.zip                                                                    ;fi
   # Processing.app must be in this location for processing-java to work
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
@@ -43,6 +43,7 @@ install:
 
 script:
   - cd $TRAVIS_BUILD_DIR
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then python $TRAVIS_BUILD_DIR/OpenBCI_GUI_UnitTests/run-unittests.py                                      ;fi
   - python $TRAVIS_BUILD_DIR/release_script/make-release.py --no-prompts  
 
 notifications:
