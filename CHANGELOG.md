@@ -3,6 +3,7 @@
 ### Improvements
 * add load and store for hardware settings
 * add configurable gain behaviour
+* Display GUI version in title bar, along with FPS
 
 # v5.0.0
 
