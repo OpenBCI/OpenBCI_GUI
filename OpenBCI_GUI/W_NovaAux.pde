@@ -271,18 +271,20 @@ abstract class AuxReadBar{
     private void updatePlotPointsAutoScaled() {
         List<double[]> allData = currentBoard.getData(nPoints);
         
-        int max = (int) Math.floor(allData.get(0)[channel] + .5d);
-        int min = max;
+        double max = allData.get(0)[channel];
+        double min = max;
 
         for (int i=0; i < nPoints; i++) {
             float timey = calcTimeAxis(i);
-            float value = (float)allData.get(i)[channel];
-            auxReadPoints.set(i, timey, value, "");
+            double value = allData.get(i)[channel];
+            auxReadPoints.set(i, timey, (float)value, "");
 
-            max = (int)value > max ? (int)value : max;
-            min = (int)value < min ? (int)value : min;
+            max = value > max ? value : max;
+            min = value < min ? value : min;
         }
-        plot.setYLim(min, max);
+        float minF = (float)Math.floor(min);
+        float maxF = (float)Math.ceil(max);
+        plot.setYLim(minF, maxF);
         plot.setPoints(auxReadPoints);
     }
 
