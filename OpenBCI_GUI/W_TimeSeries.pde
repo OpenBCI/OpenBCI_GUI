@@ -466,8 +466,13 @@ class ChannelBar{
     Button_obci impCheckButton;
     ControlP5 cbCp5;
     int yScaleButton_h;
+    int yScaleButton_w;
     Button yScaleButton_pos;
     Button yScaleButton_neg;
+    int yAxisLabel_h;
+    private Textfield yAxisMax;
+    private Textfield yAxisMin;
+    
     int yLim;
     int uiSpaceWidth;
     int padding_4 = 4;
@@ -482,7 +487,6 @@ class ChannelBar{
     color channelColor; //color of plot trace
 
     boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    int autoScaleYLim = 0;
 
     TextBox voltageValue;
     TextBox impValue;
@@ -564,10 +568,15 @@ class ChannelBar{
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
         // New Buttons
-        yScaleButton_h = 12;
+        yScaleButton_w = 20;
+        yScaleButton_h = 20;
+        yAxisLabel_h = 12;
         int padding = 2;
-        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+"+yLim+"uV", x + uiSpaceWidth + padding, y + padding, yScaleButton_pos.autoWidth - padding_4*3, yScaleButton_h);
-        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-"+yLim+"uV", x + uiSpaceWidth + padding, y + h - yScaleButton_h - padding_4, yScaleButton_pos.autoWidth - padding_4*3, yScaleButton_h); 
+        yAxisMax = createTextfield(yAxisMax, "yAxisMax", "+"+yLim+"uV", x + uiSpaceWidth + padding, y + padding, yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
+        yAxisMin = createTextfield(yAxisMin, "yAxisMin", "-"+yLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
+        
+        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h);
+        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h); 
         
         impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, color(bgColor), color(255,255,255,175), RIGHT, TOP);
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
@@ -711,33 +720,38 @@ class ChannelBar{
     }
 
     public void adjustVertScale(int _vertScaleValue) {
+
+        yLim = _vertScaleValue;
+
         //Early out if autoscale
-        if (_vertScaleValue == 0) {
+        if (yLim == 0) {
             isAutoscale = true;
             return;
         }
         isAutoscale = false;
-
+        
         //Update plot Y scale limits
         plot.setYLim(-yLim, yLim);
         //Update button text
-        yScaleButton_pos.getCaptionLabel().setText("+"+yLim+"uV");
-        yScaleButton_neg.getCaptionLabel().setText("-"+yLim+"uV");
+        println(yLim);
+        yAxisMax.setText("+"+yLim+"uV");
+        yAxisMin.setText("-"+yLim+"uV");
         //Responsively scale button size based on number of digits
         int n = (int)(log10(yLim));
-        int padding =  (int)map(n, 0, 5, 5, 0) * padding_4;
-        yScaleButton_pos.setSize(yScaleButton_pos.autoWidth - padding, yScaleButton_h);
-        yScaleButton_neg.setSize(yScaleButton_neg.autoWidth - padding, yScaleButton_h);
+        //int padding =  n * 7;
+        int padding =  (int)map(n, 0, 10, 0, 5) * padding_4;
+        yAxisMax.setSize(yAxisMax.autoWidth + padding, yAxisLabel_h);
+        yAxisMin.setSize(yAxisMin.autoWidth + padding, yAxisLabel_h);
     }
 
     private void autoScale() {
-        autoScaleYLim = 0;
+        yLim = 0;
         for(int i = 0; i < nPoints; i++) {
-            if(int(abs(channelPoints.getY(i))) > autoScaleYLim) {
-                autoScaleYLim = int(abs(channelPoints.getY(i)));
+            if(int(abs(channelPoints.getY(i))) > yLim) {
+                yLim = int(abs(channelPoints.getY(i)));
             }
         }
-        plot.setYLim(-autoScaleYLim, autoScaleYLim);
+        plot.setYLim(-yLim, yLim);
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
@@ -755,8 +769,11 @@ class ChannelBar{
         voltageValue.setPosition(x + uiSpaceWidth + (w - uiSpaceWidth) - padding, y + h);
         impValue.setPosition(x + uiSpaceWidth + (int)plot.getDim()[0], y + padding);
 
-        yScaleButton_pos.setPosition(x + uiSpaceWidth + padding, y + padding);
-        yScaleButton_neg.setPosition(x + uiSpaceWidth + padding, y + h - yScaleButton_h - padding);
+        yScaleButton_pos.setPosition(x + uiSpaceWidth + padding, y + h/2 - yScaleButton_h/2);
+        yScaleButton_neg.setPosition(x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + h/2 - yScaleButton_h/2);
+
+        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + padding);
+        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4);
 
         if(h > 26) {
             onOff_diameter = 26;
@@ -835,6 +852,26 @@ class ChannelBar{
                 .setText(bText);
         myButton.onClick(new MyCallbackListener (chan, shouldIncrease ));
         return myButton;
+    }
+
+    private Textfield createTextfield(Textfield myTextfield, String name, String text, int _x, int _y, int _w, int _h) {
+        myTextfield = cbCp5.addTextfield(name)
+            .setPosition(_x, _y)
+            .setCaptionLabel("")
+            .setSize(_w, _h)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(text) //set the text
+            .align(5, 10, 20, 40)
+            .onDoublePress(cb)
+            .setAutoClear(true);
+        return myTextfield;
     }
 
     private class MyCallbackListener implements CallbackListener {
