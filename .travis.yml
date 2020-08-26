@@ -9,15 +9,6 @@ jobs:
       osx_image: xcode11.2  # Python 3.7.4 running on macOS 10.14.6	
       language: shell       # 'language: python' is an error on Travis CI macOS
 
-addons:
-  artifacts:
-    paths: 
-      - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_macosx.dmg | tr "\n" ":")
-      - $(ls $TRAVIS_BUILD_DIR/openbcigui_*_linux64.zip | tr "\n" ":")
-    target_paths:
-      - /${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}
-    working_dir: $TRAVIS_BUILD_DIR
-
 before_install:
 - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d; fi
 - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then chmod +x release_script/mac_only/add-osx-cert.sh; fi
@@ -58,6 +49,14 @@ script:
   # over script will write version and timestamp here
   - GUI_COMMIT_TIME=`cat temp/timestamp.txt`
   - GUI_VERSION_STRING=`cat temp/versionstring.txt`
+
+after_success:
+  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                                  ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                                  ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"   ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                     ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"      ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                        ;fi
 
 notifications:
   email:
