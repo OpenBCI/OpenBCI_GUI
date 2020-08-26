@@ -283,7 +283,7 @@ abstract class AuxReadBar{
         float maxF = (float)Math.ceil(max);
         //When not using autoscale, center around average value
         if (!isAutoscale) {
-            float avg = minF + maxF / 2;
+            float avg = (minF + maxF) / 2;
             minF = avg - yLim;
             maxF = avg + yLim;
         }
