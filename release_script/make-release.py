@@ -71,10 +71,25 @@ def get_timestamp_ci():
 
     return ""
 
+### Function: Pretty format for timestamp
+###########################################################
+def make_timestamp_pretty(timestamp):
+    dateAndTime = timestamp.split("_")
+
+    date = dateAndTime[0]
+    time = dateAndTime[1]
+
+    dateString = "/".join(date.split("-"))
+    timeString = ":".join(time.split("-"))
+
+    return dateString + " " + timeString
+
 ### Function: Apply timestamp in code
 ###########################################################
 def apply_timestamp(sketch_dir, timestamp):
     main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
+
+    pretty_timestamp = make_timestamp_pretty(timestamp)
 
     data = []
     with open(main_file_dir, 'r') as sketch_file:
@@ -83,7 +98,7 @@ def apply_timestamp(sketch_dir, timestamp):
     for i in range(0, len(data)):
         if data[i].startswith("String localGUIVersionDate"):
             print(data[i])
-            data[i] = "String localGUIVersionDate = \"" + timestamp + "\";\n"
+            data[i] = "String localGUIVersionDate = \"" + pretty_timestamp + "\";\n"
             break
 
     with open(main_file_dir, 'w') as sketch_file:
