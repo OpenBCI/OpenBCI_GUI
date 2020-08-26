@@ -742,22 +742,19 @@ class ChannelBar{
         }
         isAutoscale = false;
 
-        customVertScale(-_vertScaleValue, _vertScaleValue);
+        plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        //Update button text
+        customYLim(yAxisMin, -_vertScaleValue);
+        customYLim(yAxisMax, _vertScaleValue);
     }
 
-    private void customVertScale(int lowerLim, int upperLim) {
-        //Update plot Y scale limits
-        plot.setYLim(lowerLim, upperLim);
-        //Update button text
-        yAxisMax.setText("+"+upperLim+"uV");
-        yAxisMin.setText(lowerLim+"uV");
+    private void customYLim(Textfield tf, int limit) {
+        String positiveSign = limit > 0 ? "+" : "";
+        tf.setText(positiveSign+limit+"uV");
         //Responsively scale button size based on number of digits
-        int n = (int)(log10(upperLim));
+        int n = (int)(log10(limit));
         int padding =  (int)map(n, 0, 10, 0, 5) * padding_4;
-        yAxisMax.setSize(yAxisMax.autoWidth + padding, yAxisLabel_h);
-        n = (int)(log10(lowerLim));
-        padding = (int)map(n, 0, 10, 0, 5) * padding_4;
-        yAxisMin.setSize(yAxisMin.autoWidth + padding, yAxisLabel_h);
+        tf.setSize(tf.autoWidth + padding, yAxisLabel_h);
     }
 
     private void autoScale() {
@@ -881,7 +878,7 @@ class ChannelBar{
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(createFont("Arial",14,true))
+            .setFont(createFont("Arial",12,true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -894,36 +891,44 @@ class ChannelBar{
             //.onDoublePress(new TFCallbackListener (channelIndex, text, multiplier))
             .setAutoClear(false)
             ;
-        myTextfield.addCallback(new TFCallbackListener(channelIndex));
+        myTextfield.addCallback(new TFCallbackListener(channelIndex, myTextfield));
         return myTextfield;
     }
 
     private class MyCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
+        private final int hardLimit = 50;
+        private int delta = 0; //value to change limits by
+
         MyCallbackListener(int theChannel, boolean isIncrease)  {
             channel = theChannel;
             increase = isIncrease;
         }
         public void controlEvent(CallbackEvent theEvent) {
             verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
-            int change = increase ? 50 : -50;
-            yAxisUpperLim += change;
-            yAxisLowerLim -= change;
+            delta = increase ? 50 : -50;
+            yAxisLowerLim -= delta;
+            yAxisUpperLim += delta;
             //Hard lower limit on 50uV per channel, don't allow users to reverse y-axis or get stuck in autoscale without buttons
-            int hardLimit = 50;
-            yAxisUpperLim = yAxisUpperLim >= hardLimit ? yAxisUpperLim : hardLimit;
             yAxisLowerLim = yAxisLowerLim <= -hardLimit ? yAxisLowerLim : -hardLimit;
-            customVertScale(yAxisUpperLim, yAxisUpperLim);
+            yAxisUpperLim = yAxisUpperLim >= hardLimit ? yAxisUpperLim : hardLimit;
+            plot.setYLim(yAxisLowerLim, yAxisUpperLim);
+            //Update button text
+            customYLim(yAxisMin, yAxisLowerLim);
+            customYLim(yAxisMax, yAxisUpperLim);
         }
     }
 
     private class TFCallbackListener implements CallbackListener {
         private int channel;
+        private Textfield tf;
         private String rcvString;
         private int rcvAsInt;
-        TFCallbackListener(int i)  {
+    
+        TFCallbackListener(int i, Textfield _tf)  {
             channel = i;
+            tf = _tf;
         }
         public void controlEvent(CallbackEvent theEvent) {
             //Pressing ENTER in the Textfield triggers a "Broadcast"
@@ -932,11 +937,23 @@ class ChannelBar{
                 rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
                 rcvAsInt = NumberUtils.toInt(rcvString);
                 verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
+                if (tf == yAxisMin) {
+                    yAxisLowerLim = rcvAsInt;
+                } else {
+                    yAxisUpperLim = rcvAsInt;
+                }
+                customYLim(tf, rcvAsInt);
+                plot.setYLim(yAxisLowerLim, yAxisUpperLim);
             }
+
+            if (theEvent.getAction() == ControlP5.ACTION_RELEASED) {
+                int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
+                tf.setText(Integer.toString(i));
+            }
+            
             /*
             //This method provides full details on user interaction with this controller
-            if (theEvent.getController().equals(yAxisMax)) {
-                switch(theEvent.getAction()) {
+            switch(theEvent.getAction()) {
                 case(ControlP5.ACTION_ENTER): 
                 println("Action:ENTER");
                 break;
@@ -954,11 +971,9 @@ class ChannelBar{
                 break;
                 case(ControlP5.ACTION_BROADCAST): 
                 println("Action:BROADCAST");
-                uvString = theEvent.getController().getStringValue();
-                int value = uV
-                println("Textfield: channel===" + channel + "|| string===" + uvString + "|| asInteger===" + );
+                String s = theEvent.getController().getStringValue();
+                println("Textfield: channel===" + channel + "|| string===" + s);
                 break;
-                }
             }
             */
         }
