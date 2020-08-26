@@ -9,6 +9,7 @@
 //
 ///////////////////////////////////////////////////
 
+import org.apache.commons.lang3.math.NumberUtils;
 
 class W_timeSeries extends Widget {
 
@@ -485,7 +486,8 @@ class ChannelBar{
     private Textfield yAxisMax;
     private Textfield yAxisMin;
     
-    int yLim;
+    int yAxisUpperLim;
+    int yAxisLowerLim;
     int uiSpaceWidth;
     int padding_4 = 4;
     int minimumChannelHeight;
@@ -551,7 +553,8 @@ class ChannelBar{
         ////End Old buttons
         
         uiSpaceWidth = 36 + padding_4 + impButton_diameter;
-        yLim = 200; //default y axis limit of +/- 200uV
+        yAxisUpperLim = 200;
+        yAxisLowerLim = -200;
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
@@ -559,7 +562,7 @@ class ChannelBar{
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
-        plot.setYLim(-yLim, yLim);
+        plot.setYLim(yAxisLowerLim, yAxisUpperLim);
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
@@ -580,12 +583,12 @@ class ChannelBar{
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
         // New Buttons
-        yScaleButton_w = 20;
-        yScaleButton_h = 20;
+        yScaleButton_w = 24;
+        yScaleButton_h = 24;
         yAxisLabel_h = 12;
         int padding = 2;
-        yAxisMax = createTextfield(yAxisMax, "yAxisMax", "+"+yLim+"uV", x + uiSpaceWidth + padding, y + padding, yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
-        yAxisMin = createTextfield(yAxisMin, "yAxisMin", "-"+yLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
+        yAxisMax = createTextfield(yAxisMax, "yAxisMax", "+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + padding, yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
+        yAxisMin = createTextfield(yAxisMin, "yAxisMin", yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
         
         yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
         yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
@@ -703,7 +706,7 @@ class ChannelBar{
         }
         
         //Hide yAxisLabels when hardwareSettings are open, labels would start to overlap, or using autoscale
-        boolean b = !hardwareSettingsAreOpen && h > defaultH/2 && !isAutoscale;
+        boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2) && !isAutoscale;
         yScaleButton_pos.setVisible(b);
         yScaleButton_neg.setVisible(b);
 
@@ -732,32 +735,33 @@ class ChannelBar{
     }
 
     public void adjustVertScale(int _vertScaleValue) {
-
-        yLim = _vertScaleValue;
-
         //Early out if autoscale
-        if (yLim == 0) {
+        if (_vertScaleValue == 0) {
             isAutoscale = true;
             return;
         }
         isAutoscale = false;
-        
+
+        customVertScale(-_vertScaleValue, _vertScaleValue);
+    }
+
+    private void customVertScale(int lowerLim, int upperLim) {
         //Update plot Y scale limits
-        plot.setYLim(-yLim, yLim);
+        plot.setYLim(lowerLim, upperLim);
         //Update button text
-        println(yLim);
-        yAxisMax.setText("+"+yLim+"uV");
-        yAxisMin.setText("-"+yLim+"uV");
+        yAxisMax.setText("+"+upperLim+"uV");
+        yAxisMin.setText(lowerLim+"uV");
         //Responsively scale button size based on number of digits
-        int n = (int)(log10(yLim));
-        //int padding =  n * 7;
+        int n = (int)(log10(upperLim));
         int padding =  (int)map(n, 0, 10, 0, 5) * padding_4;
         yAxisMax.setSize(yAxisMax.autoWidth + padding, yAxisLabel_h);
+        n = (int)(log10(lowerLim));
+        padding = (int)map(n, 0, 10, 0, 5) * padding_4;
         yAxisMin.setSize(yAxisMin.autoWidth + padding, yAxisLabel_h);
     }
 
     private void autoScale() {
-        yLim = 0;
+        int yLim = 0;
         for(int i = 0; i < nPoints; i++) {
             if(int(abs(channelPoints.getY(i))) > yLim) {
                 yLim = int(abs(channelPoints.getY(i)));
@@ -784,8 +788,8 @@ class ChannelBar{
         yScaleButton_pos.setPosition(x + uiSpaceWidth + padding, y + h/2 - yScaleButton_h/2);
         yScaleButton_neg.setPosition(x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + h/2 - yScaleButton_h/2);
 
-        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + padding);
-        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4);
+        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + padding*2);
+        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding);
 
         if(h > 26) {
             onOff_diameter = 26;
@@ -868,8 +872,7 @@ class ChannelBar{
                 .setSize(14)
                 .setText("")
                 ;
-        myButton.onClick(new MyCallbackListener (chan, shouldIncrease));
-        myButton.updateSize();
+        myButton.onClick(new MyCallbackListener(chan, shouldIncrease));
         return myButton;
     }
 
@@ -888,9 +891,10 @@ class ChannelBar{
             .setColorCursor(color(26, 26, 26))
             .setText(text) //set the text
             .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true)
+            //.onDoublePress(new TFCallbackListener (channelIndex, text, multiplier))
+            .setAutoClear(false)
             ;
+        myTextfield.addCallback(new TFCallbackListener(channelIndex));
         return myTextfield;
     }
 
@@ -903,10 +907,60 @@ class ChannelBar{
         }
         public void controlEvent(CallbackEvent theEvent) {
             verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
-            yLim += increase ? 50 : -50;
+            int change = increase ? 50 : -50;
+            yAxisUpperLim += change;
+            yAxisLowerLim -= change;
             //Hard lower limit on 50uV per channel, don't allow users to reverse y-axis or get stuck in autoscale without buttons
-            yLim = yLim >= 50 ? yLim : 50;
-            adjustVertScale(yLim);
+            int hardLimit = 50;
+            yAxisUpperLim = yAxisUpperLim >= hardLimit ? yAxisUpperLim : hardLimit;
+            yAxisLowerLim = yAxisLowerLim <= -hardLimit ? yAxisLowerLim : -hardLimit;
+            customVertScale(yAxisUpperLim, yAxisUpperLim);
+        }
+    }
+
+    private class TFCallbackListener implements CallbackListener {
+        private int channel;
+        private String rcvString;
+        private int rcvAsInt;
+        TFCallbackListener(int i)  {
+            channel = i;
+        }
+        public void controlEvent(CallbackEvent theEvent) {
+            //Pressing ENTER in the Textfield triggers a "Broadcast"
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+                verbosePrint("Action:BROADCAST");
+                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
+                rcvAsInt = NumberUtils.toInt(rcvString);
+                verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
+            }
+            /*
+            //This method provides full details on user interaction with this controller
+            if (theEvent.getController().equals(yAxisMax)) {
+                switch(theEvent.getAction()) {
+                case(ControlP5.ACTION_ENTER): 
+                println("Action:ENTER");
+                break;
+                case(ControlP5.ACTION_LEAVE): 
+                println("Action:LEAVE");
+                break;
+                case(ControlP5.ACTION_PRESSED): 
+                println("Action:PRESSED");
+                break;
+                case(ControlP5.ACTION_RELEASED): 
+                println("Action:RELEASED");
+                break;
+                case(ControlP5.ACTION_RELEASEDOUTSIDE): 
+                println("Action:RELEASED OUTSIDE");
+                break;
+                case(ControlP5.ACTION_BROADCAST): 
+                println("Action:BROADCAST");
+                uvString = theEvent.getController().getStringValue();
+                int value = uV
+                println("Textfield: channel===" + channel + "|| string===" + uvString + "|| asInteger===" + );
+                break;
+                }
+            }
+            */
         }
     }
 };
