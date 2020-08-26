@@ -1211,12 +1211,12 @@ void updateToNChan(int _nchan) {
 
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
-    int numItems = 5;
+    int numItems;
     int boxHeight = 24;
     int spacing = 43;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        if (novaXREnabled) numItems = 5;
+        numItems = novaXREnabled ? 6 : 5;
         x = _x;
         y = _y;
         w = _w;
@@ -1229,7 +1229,9 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("CYTON (live)", DATASOURCE_CYTON));
         sourceList.addItem(makeItem("GANGLION (live)", DATASOURCE_GANGLION));
-        if (novaXREnabled) sourceList.addItem(makeItem("NOVAXR (live)", DATASOURCE_NOVAXR));
+        if (novaXREnabled) {
+            sourceList.addItem(makeItem("NOVAXR (live)", DATASOURCE_NOVAXR));
+        }
         sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
         sourceList.addItem(makeItem("STREAMING (from external)", DATASOURCE_STREAMING));
