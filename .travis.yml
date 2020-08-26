@@ -53,12 +53,12 @@ script:
 
 after_success:
   # delete old files in latest
-  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                                          ;fi
-  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                                             ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                                         ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"                                                            ;fi
   -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"   ;fi
   -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                     ;fi
-  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"      ;fi
-  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                        ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"      ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"                                        ;fi
 
 notifications:
   email:
