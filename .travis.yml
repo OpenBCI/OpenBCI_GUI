@@ -18,6 +18,7 @@ install:
   # used for getting commit timestamp
   - pip3 install requests
   - pip3 install beautifulsoup4
+  - pip3 install awscli
 
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
@@ -51,8 +52,9 @@ script:
   - GUI_VERSION_STRING=`cat temp/versionstring.txt`
 
 after_success:
-  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                                  ;fi
-  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                                  ;fi
+  # delete old files in latest
+  -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                                          ;fi
+  -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 rm s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"                                                             ;fi
   -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"   ;fi
   -  if [ "$TRAVIS_OS_NAME" = "linux" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"                                     ;fi
   -  if [ "$TRAVIS_OS_NAME" = "osx" ]; then aws s3 cp $TRAVIS_BUILD_DIR%/. s3://openbci-gui/${TRAVIS_BRANCH}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_maxosx.dmg"      ;fi
