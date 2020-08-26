@@ -168,7 +168,8 @@ abstract class AuxReadBar{
 
     //When isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to minimum and maximum value found in the plot
     private boolean isAutoscale;
-    private int autoScaleYLim = 0;
+    private int yLim = 200;
+    private int channelAverage = 0;
 
     private TextBox analogValue;
     private TextBox analogPin;
@@ -195,7 +196,7 @@ abstract class AuxReadBar{
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[(auxValuesPosition)%8]);
         plot.setXLim(-5,0);
-        plot.setYLim(-200,200);
+        plot.setYLim(-yLim,yLim);
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
@@ -240,12 +241,8 @@ abstract class AuxReadBar{
 
         channel = getChannel();
         
-        if(isAutoscale) {
-            updatePlotPointsAutoScaled();
-        } else {
-            // update data in plot
-            updatePlotPoints();
-        }
+        // update data in plot
+        updatePlotPoints();
 
         //Fetch the last value in the buffer to display on screen
         float val = auxReadPoints.getLastPoint().getY();
@@ -268,7 +265,7 @@ abstract class AuxReadBar{
         return -(float)numSeconds + (float)sampleIndex * timeBetweenPoints;
     }
 
-    private void updatePlotPointsAutoScaled() {
+    private void updatePlotPoints() {
         List<double[]> allData = currentBoard.getData(nPoints);
         
         double max = allData.get(0)[channel];
@@ -284,19 +281,13 @@ abstract class AuxReadBar{
         }
         float minF = (float)Math.floor(min);
         float maxF = (float)Math.ceil(max);
-        plot.setYLim(minF, maxF);
-        plot.setPoints(auxReadPoints);
-    }
-
-    private void updatePlotPoints() {
-        List<double[]> allData = currentBoard.getData(nPoints);
-
-        for (int i=0; i < nPoints; i++) {
-            float timey = calcTimeAxis(i);
-            float value = (float)allData.get(i)[channel];
-            auxReadPoints.set(i, timey, value, "");
+        //When not using autoscale, center around average value
+        if (!isAutoscale) {
+            float avg = minF + maxF / 2;
+            minF = avg - yLim;
+            maxF = avg + yLim;
         }
-
+        plot.setYLim(minF, maxF);
         plot.setPoints(auxReadPoints);
     }
 
@@ -348,7 +339,7 @@ abstract class AuxReadBar{
             isAutoscale = true;
         } else {
             isAutoscale = false;
-            plot.setYLim(0, _vertScaleValue); //Plot Y values >= 0
+            yLim = _vertScaleValue;
         }
     }
 
