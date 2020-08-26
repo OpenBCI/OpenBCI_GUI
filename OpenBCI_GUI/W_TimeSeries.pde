@@ -39,6 +39,13 @@ class W_timeSeries extends Widget {
     private int xLim = xLimOptions[1];  //start at 5s
     private int xMax = xLimOptions[0];  //start w/ autoscale
 
+    private PImage expand_default;
+    private PImage expand_hover;
+    private PImage expand_active;
+    private PImage contract_default;
+    private PImage contract_hover;
+    private PImage contract_active;
+
     private ADS1299SettingsController adsSettingsController;
 
     private boolean allowSpillover = false;
@@ -90,14 +97,19 @@ class W_timeSeries extends Widget {
             playbackWidgetHeight = 0.0;
         }
 
+        expand_default = loadImage("expand_default.png");
+        expand_hover = loadImage("expand_hover.png");
+        expand_active = loadImage("expand_active.png");
+        contract_default = loadImage("contract_default.png");
+        contract_hover = loadImage("contract_hover.png");
+        contract_active = loadImage("contract_active.png");
+
         channelBarHeight = int(ts_h/numChannelBars);
-
         channelBars = new ChannelBar[numChannelBars];
-
         //create our channel bars and populate our channelBars array!
         for(int i = 0; i < numChannelBars; i++) {
             int channelBarY = int(ts_y) + i*(channelBarHeight); //iterate through bar locations
-            ChannelBar tempBar = new ChannelBar(_parent, i, int(ts_x), channelBarY, int(ts_w), channelBarHeight); //int _channelIndex, int _x, int _y, int _w, int _h
+            ChannelBar tempBar = new ChannelBar(_parent, i, int(ts_x), channelBarY, int(ts_w), channelBarHeight, expand_default, expand_hover, expand_active, contract_default, contract_hover, contract_active);
             channelBars[i] = tempBar;
         }
 
@@ -493,7 +505,7 @@ class ChannelBar{
 
     boolean drawVoltageValue;
 
-    ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h) { // channel number, x/y location, height, width
+    ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
         cbCp5 = new ControlP5(ourApplet);
         cbCp5.setGraphics(ourApplet, x, y);
@@ -575,8 +587,8 @@ class ChannelBar{
         yAxisMax = createTextfield(yAxisMax, "yAxisMax", "+"+yLim+"uV", x + uiSpaceWidth + padding, y + padding, yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
         yAxisMin = createTextfield(yAxisMin, "yAxisMin", "-"+yLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
         
-        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h);
-        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h); 
+        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
+        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding*2 + yScaleButton_pos.getWidth(), y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
         
         impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, color(bgColor), color(255,255,255,175), RIGHT, TOP);
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
@@ -838,19 +850,26 @@ class ChannelBar{
         }
     }
 
-    private Button createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h) {
+    private Button createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {
+        _default.resize(_w, _h);
+        _hover.resize(_w, _h);
+        _active.resize(_w, _h);
         myButton = cbCp5.addButton(bName)
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
                 .setColorLabel(color(255))
                 .setColorForeground(color(31, 69, 110))
-                .setColorBackground(color(144, 100));
+                .setColorBackground(color(144, 100))
+                .setImages(_default, _hover, _active)
+                ;
         myButton.getCaptionLabel()
                 .setFont(createFont("Arial",14,true))
                 .toUpperCase(false)
                 .setSize(14)
-                .setText(bText);
-        myButton.onClick(new MyCallbackListener (chan, shouldIncrease ));
+                .setText("")
+                ;
+        myButton.onClick(new MyCallbackListener (chan, shouldIncrease));
+        myButton.updateSize();
         return myButton;
     }
 
@@ -859,7 +878,7 @@ class ChannelBar{
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(f2)
+            .setFont(createFont("Arial",14,true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -870,7 +889,8 @@ class ChannelBar{
             .setText(text) //set the text
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
-            .setAutoClear(true);
+            .setAutoClear(true)
+            ;
         return myTextfield;
     }
 
