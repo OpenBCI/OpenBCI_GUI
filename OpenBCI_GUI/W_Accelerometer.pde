@@ -282,7 +282,6 @@ void accelDuration(int n) {
 class AccelerometerBar {
     //this class contains the plot for the 2d graph of accelerometer data
     int x, y, w, h;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
     int accBarPadding = 30;
     int xOffset;
 
@@ -313,7 +312,6 @@ class AccelerometerBar {
         
         // This widget is only instantiated when the board is accel capable, so we don't need to check
         accelBoard = (AccelerometerCapableBoard)currentBoard;
-        isOn = true;
 
         x = _x;
         y = _y;
