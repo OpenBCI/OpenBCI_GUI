@@ -49,7 +49,9 @@ build_script:
   - set /p GUI_VERSION_STRING= < temp\versionstring.txt
 
 deploy_script:
+  -  aws s3 rm s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
   -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
 
 notifications:
   - provider: Email
