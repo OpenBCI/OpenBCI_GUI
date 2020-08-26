@@ -8,6 +8,7 @@
 ### Bug Fixes
 * Fix #805
 * Covert GUI v4 sample data to GUI v5 format #830
+* Display GUI version in title bar, along with FPS
 
 # v5.0.0
 
