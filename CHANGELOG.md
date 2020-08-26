@@ -3,6 +3,7 @@
 ### Improvements
 * add load and store for hardware settings
 * add configurable gain behaviour
+* Display GUI version in title bar, along with FPS
 
 # v5.0.0
 
@@ -17,6 +18,7 @@
 * Add data smoothing option for live Cyton data
 * Cyton Port manual selection only displays serial ports with a dongle connected.
 * Cyton SD file read works without conversion to playback file
+* Add BrainFlow Streaming Board as Data Source option
 * Use BrainFlow filters, add 1-100 BandPass filter
 * Can Hide/Show channels in time series
 

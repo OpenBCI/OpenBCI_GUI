@@ -71,7 +71,6 @@ class BoardNull extends Board {
         // nothing
     }
     
-    
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
         return null;

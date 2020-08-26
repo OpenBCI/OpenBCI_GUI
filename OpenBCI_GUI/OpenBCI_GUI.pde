@@ -93,6 +93,7 @@ final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via 
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_NOVAXR = 4;
+final int DATASOURCE_STREAMING = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
 
@@ -509,6 +510,12 @@ void initSystem() {
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
             break;
+        case DATASOURCE_STREAMING:
+            currentBoard = new BoardBrainFlowStreaming(
+                    controlPanel.streamingBoardBox.getBoard().getBoardId(), 
+                    controlPanel.streamingBoardBox.getIP(),
+                    controlPanel.streamingBoardBox.getPort()
+                    );
         default:
             break;
     }
@@ -567,8 +574,8 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-    
-    if (eegDataSource != DATASOURCE_NOVAXR) { //don't save default settings for NovaXR
+     //don't save default session settings for NovaXR or StreamingBoard
+    if (eegDataSource != DATASOURCE_NOVAXR && eegDataSource != DATASOURCE_STREAMING) {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
@@ -706,8 +713,10 @@ void haltSystem() {
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
-        if (systemMode == SYSTEMMODE_POSTINIT) {
-            settings.save(settings.getPath("User", eegDataSource, nchan));
+        if (systemMode == SYSTEMMODE_POSTINIT && 
+            eegDataSource != DATASOURCE_NOVAXR && 
+            eegDataSource != DATASOURCE_STREAMING) {
+                settings.save(settings.getPath("User", eegDataSource, nchan));
         }
 
         //reset connect loadStrings
@@ -790,42 +799,8 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //update the title of the figure;
-        switch (eegDataSource) {
-        case DATASOURCE_CYTON:
-            switch (outputDataSource) {
-            case OUTPUT_SOURCE_ODF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_BDF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_NONE:
-            default:
-                surface.setTitle(int(frameRate) + " fps");
-                break;
-            }
-            break;
-        case DATASOURCE_SYNTHETIC:
-            surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            surface.setTitle(int(frameRate) + " fps, Reading from: " + playbackData_fname);
-            break;
-        case DATASOURCE_GANGLION:
-            surface.setTitle(int(frameRate) + " fps, Ganglion!");
-            break;
-        default:
-            surface.setTitle(int(frameRate) + " fps");
-            break;
-        }
-
         wm.draw();
-
         drawContainers();
-    } else { //systemMode != 10
-        //still print title information about fps
-        surface.setTitle(int(frameRate) + " fps - OpenBCI GUI");
     }
 
     if (systemMode >= SYSTEMMODE_PREINIT) {
@@ -847,6 +822,9 @@ void systemDraw() { //for drawing to the screen
     if (midInit) {
         drawOverlay();
     }
+
+    //Display GUI version and FPS in the title bar of the app
+    surface.setTitle("OpenBCI GUI " + localGUIVersionString + " - " + localGUIVersionDate + " - " + int(frameRate) + " fps");
 }
 
 void requestReinit() {

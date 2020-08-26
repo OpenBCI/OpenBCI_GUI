@@ -120,5 +120,4 @@ abstract class Board implements DataSource {
     protected abstract void addChannelNamesInternal(String[] channelNames);
 
     protected abstract PacketLossTracker setupPacketLossTracker();
-
 };
