@@ -869,7 +869,7 @@ class ChannelBar{
                 .setSize(14)
                 .setText("")
                 ;
-        myButton.onClick(new MyCallbackListener(chan, shouldIncrease));
+        myButton.onClick(new ButtonCallbackListener(chan, shouldIncrease));
         return myButton;
     }
 
@@ -895,13 +895,13 @@ class ChannelBar{
         return myTextfield;
     }
 
-    private class MyCallbackListener implements CallbackListener {
+    private class ButtonCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
         private final int hardLimit = 50;
         private int delta = 0; //value to change limits by
 
-        MyCallbackListener(int theChannel, boolean isIncrease)  {
+        ButtonCallbackListener(int theChannel, boolean isIncrease)  {
             channel = theChannel;
             increase = isIncrease;
         }
@@ -931,21 +931,26 @@ class ChannelBar{
             tf = _tf;
         }
         public void controlEvent(CallbackEvent theEvent) {
+            
             //Pressing ENTER in the Textfield triggers a "Broadcast"
             if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
-                verbosePrint("Action:BROADCAST");
+                
+                //Try to clean up typing accidents from user input in Textfield
                 rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
                 rcvAsInt = NumberUtils.toInt(rcvString);
                 verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
+                
                 if (tf == yAxisMin) {
                     yAxisLowerLim = rcvAsInt;
                 } else {
                     yAxisUpperLim = rcvAsInt;
                 }
+                
                 customYLim(tf, rcvAsInt);
                 plot.setYLim(yAxisLowerLim, yAxisUpperLim);
             }
 
+            //Clicking in the Textfield, which you must do before typing, reformats the text to be an integer
             if (theEvent.getAction() == ControlP5.ACTION_RELEASED) {
                 int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
                 tf.setText(Integer.toString(i));
