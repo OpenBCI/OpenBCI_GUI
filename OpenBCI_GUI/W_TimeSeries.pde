@@ -939,8 +939,11 @@ class ChannelBar{
             if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
                 
                 //Try to clean up typing accidents from user input in Textfield
-                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_.]","");
+                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
                 rcvAsInt = NumberUtils.toInt(rcvString);
+                if (rcvAsInt == 0) {
+                    rcvAsInt = Math.round(NumberUtils.toFloat(rcvString));
+                }
                 verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
                 
                 if (tf == yAxisMin) {
