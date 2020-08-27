@@ -734,6 +734,7 @@ class ChannelBar{
         updatePlotPoints();
     }
 
+    //Happens when user selects vert scale dropdown
     public void adjustVertScale(int _vertScaleValue) {
         //Early out if autoscale
         if (_vertScaleValue == 0) {
@@ -741,13 +742,15 @@ class ChannelBar{
             return;
         }
         isAutoscale = false;
-
-        plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        yAxisLowerLim = -_vertScaleValue;
+        yAxisUpperLim = _vertScaleValue;
+        plot.setYLim(yAxisLowerLim, yAxisUpperLim);
         //Update button text
-        customYLim(yAxisMin, -_vertScaleValue);
-        customYLim(yAxisMax, _vertScaleValue);
+        customYLim(yAxisMin, yAxisLowerLim);
+        customYLim(yAxisMax, yAxisUpperLim);
     }
 
+    //Update yAxis text and responsively size Textfield
     private void customYLim(Textfield tf, int limit) {
         String positiveSign = limit > 0 ? "+" : "";
         tf.setText(positiveSign+limit+"uV");
@@ -936,7 +939,7 @@ class ChannelBar{
             if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
                 
                 //Try to clean up typing accidents from user input in Textfield
-                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
+                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_.]","");
                 rcvAsInt = NumberUtils.toInt(rcvString);
                 verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
                 
