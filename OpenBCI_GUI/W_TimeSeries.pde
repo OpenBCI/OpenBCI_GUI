@@ -11,6 +11,67 @@
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+interface TimeSeriesAxisEnum {
+    public int getValue();
+    public String getString();
+}
+
+public enum TimeSeriesXLim implements TimeSeriesAxisEnum
+{
+    ONE (1, "1 sec"),
+    THREE (3, "3 sec"),
+    FIVE (5, "5 sec"),
+    TEN (10, "10 sec"),
+    TWENTY (20, "20 sec");
+
+    private int value;
+    private String label;
+
+    TimeSeriesXLim(int _value, String _label) {
+        this.value = _value;
+        this.label = _label;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String getString() {
+        return label;
+    }
+}
+
+public enum TimeSeriesYLim implements TimeSeriesAxisEnum
+{
+    AUTO (0, "Auto"),
+    UV_50 (50, "50 uV"),
+    UV_100 (100, "100 uV"),
+    UV_200 (200, "200 uV"),
+    UV_400 (400, "400 uV"),
+    UV_1000 (1000, "1000 uV"),
+    UV_10000 (10000, "10000 uV");
+
+    private int value;
+    private String label;
+
+    TimeSeriesYLim(int _value, String _label) {
+        this.value = _value;
+        this.label = _label;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String getString() {
+        return label;
+    }
+}
+
 class W_timeSeries extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
@@ -34,11 +95,14 @@ class W_timeSeries extends Widget {
     private PlaybackScrollbar scrollbar;
     private TimeDisplay timeDisplay;
 
-    private int[] xLimOptions = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    private int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+    TimeSeriesXLim xLimit = TimeSeriesXLim.FIVE;
+    TimeSeriesYLim yLimit = TimeSeriesYLim.AUTO;
 
-    private int xLim = xLimOptions[1];  //start at 5s
-    private int xMax = xLimOptions[0];  //start w/ autoscale
+    //private final int[] XLIM_OPTIONS = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
+    //private final int[] YLIM_OPTIONS = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
+
+    //private int xLim = XLIM_OPTIONS[1];  //start at 5s
+    //private int xMax = XLIM_OPTIONS[0];  //start w/ autoscale
 
     private PImage expand_default;
     private PImage expand_hover;
@@ -425,7 +489,7 @@ void storeSettingsFileSelected(File selection) {
 void VertScale_TS(int n) {
     settings.tsVertScaleSave = n;
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
-        w_timeSeries.channelBars[i].adjustVertScale(w_timeSeries.yLimOptions[n]);
+        w_timeSeries.channelBars[i].adjustVertScale(TimeSeriesYLim.values()[n].getValue());
     }
 }
 
@@ -434,7 +498,7 @@ void Duration(int n) {
     settings.tsHorizScaleSave = n;
     // println("adjust duration to: " + xLimOptions[n]);
     //set time series x axis to the duration selected from dropdown
-    int newDuration = w_timeSeries.xLimOptions[n];
+    int newDuration = TimeSeriesXLim.values()[n].getValue();
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
     }
@@ -676,13 +740,8 @@ class ChannelBar{
         //draw onOff Button_obci
         onOffButton.draw();
 
-        //draw plot
-        stroke(31,69,110, 50);
-        fill(color(125,30,12,30));
-        rect(x + uiSpaceWidth, y, w - uiSpaceWidth, h);
-
         plot.beginDraw();
-        plot.drawBox(); // we won't draw this eventually ...
+        plot.drawBox();
         plot.drawGridLines(0);
         plot.drawLines();
         if(channelIndex == nchan-1) { //only draw the x axis label on the bottom channel bar
@@ -901,8 +960,9 @@ class ChannelBar{
     private class ButtonCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
-        private final int hardLimit = 50;
-        private int delta = 0; //value to change limits by
+        private final int hardLimit = 25;
+        private int yLimOption = TimeSeriesYLim.UV_200.getValue();
+        //private int delta = 0; //value to change limits by
 
         ButtonCallbackListener(int theChannel, boolean isIncrease)  {
             channel = theChannel;
@@ -910,9 +970,25 @@ class ChannelBar{
         }
         public void controlEvent(CallbackEvent theEvent) {
             verbosePrint("A button was pressed for channel " + (channel+1) + ". Should we increase (or decrease?): " + increase);
-            delta = increase ? 50 : -50;
-            yAxisLowerLim -= delta;
-            yAxisUpperLim += delta;
+            /*
+            int delta = increase ? 1 : -1;
+            yLimOption += delta;
+            if (yLimOption >= TimeSeriesYLim.values().length) {
+                yLimOption = TimeSeriesYLim.values().length-1;
+                return;
+            } else if (yLimOption < 1){
+                yLimOption = 1;
+            }
+            */
+            int inc = increase ? 1 : -1;
+            int n = (int)(log10(abs(yAxisLowerLim))) * 25 * inc;
+            yAxisLowerLim -= n;
+            n = (int)(log10(yAxisUpperLim)) * 25 * inc;
+            yAxisUpperLim += n;
+            
+            //delta = increase ? 50 : -50;
+            //yAxisLowerLim -= delta * TimeSeriesYLim.values()[yLimOption].getValue();
+            //yAxisUpperLim += delta * TimeSeriesYLim.values()[yLimOption].getValue();
             //Hard lower limit on 50uV per channel, don't allow users to reverse y-axis or get stuck in autoscale without buttons
             yAxisLowerLim = yAxisLowerLim <= -hardLimit ? yAxisLowerLim : -hardLimit;
             yAxisUpperLim = yAxisUpperLim >= hardLimit ? yAxisUpperLim : hardLimit;
