@@ -660,7 +660,7 @@ class ChannelBar{
         voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
 
         drawVoltageValue = true;
-        minimumChannelHeight = padding_4*4 + yScaleButton_h*2 + onOff_diameter;
+        minimumChannelHeight = padding_4 + yAxisLabel_h*2;
     }
 
     void update() {
@@ -763,10 +763,13 @@ class ChannelBar{
             voltageValue.draw();
         }
         
-        //Hide yAxisLabels when hardwareSettings are open, labels would start to overlap, or using autoscale
-        boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2) && !isAutoscale;
+        //Hide yAxisButtons when hardwareSettings are open, labels would start to overlap, or using autoscale
+        boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2 + 2) && !isAutoscale;
         yScaleButton_pos.setVisible(b);
         yScaleButton_neg.setVisible(b);
+        b = !hardwareSettingsAreOpen && h > minimumChannelHeight;
+        yAxisMin.setVisible(b);
+        yAxisMax.setVisible(b);
 
         popStyle();
 
@@ -1025,7 +1028,7 @@ class ChannelBar{
                 tf.setText(Integer.toString(i));
             }
             
-            
+            /*
             //This method provides full details on user interaction with this controller
             switch(theEvent.getAction()) {
                 case(ControlP5.ACTION_ENTER): 
@@ -1046,10 +1049,10 @@ class ChannelBar{
                 case(ControlP5.ACTION_BROADCAST): 
                 println("Action:BROADCAST");
                 String s = theEvent.getController().getStringValue();
-                println("Textfield: channel===" + channel + "|| string===" + s);
+                println("string===" + s);
                 break;
             }
-            
+            */
         }
     }
 };
