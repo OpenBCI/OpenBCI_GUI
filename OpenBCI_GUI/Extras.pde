@@ -311,31 +311,18 @@ class TextBox {
     }
 
     TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _alignH, int _alignV) {
-        string = s;
-        x = x1;
-        y = y1;
+        this(s, x1, y1);
         textColor = _textColor;
         backgroundColor = _backgroundColor;
-        fontSize = 12;
-        font = p5;
-        backgroundEdge_pixels = 1;
         drawBackground = true;
         alignH = _alignH;
         alignV = _alignV;
     }
 
     TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _fontSize, PFont _font, int _alignH, int _alignV) {
-        string = s;
-        x = x1;
-        y = y1;
-        textColor = _textColor;
-        backgroundColor = _backgroundColor;
+        this(s, x1, y1, _textColor, _backgroundColor, _alignH, _alignV);
         fontSize = _fontSize;
         font = _font;
-        backgroundEdge_pixels = 1;
-        drawBackground = true;
-        alignH = _alignH;
-        alignV = _alignV;
     }
     
     public void draw() {
