@@ -7,10 +7,15 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
     private int numChannels = 0;
+    private volatile boolean[] activeChannels = null;
 
     public BoardBrainFlowSynthetic(int numChannels) {
         super();
         this.numChannels = numChannels;
+        activeChannels = new boolean[numChannels];
+        for (int i = 0; i < numChannels; i++) {
+            activeChannels[i] = true;
+        }
     }
 
     // implement mandatory abstract functions
@@ -31,20 +36,33 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
         int[] res = new int[numChannels];
         for (int i = 0; i < numChannels; i++)
         {
-            res[i] = channels[i * (channels.length / numChannels)];
+            res[i] = channels[i];
         }
         return res;
     }
 
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        // Dummy string
-        sendCommand("SYNTHETIC PLACEHOLDER");
+        activeChannels[channelIndex] = active;
     }
 
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
-        return true;
+        return activeChannels[channelIndex];
+    }
+
+    @Override
+    protected double[][] getNewDataInternal() {
+        double[][] data = super.getNewDataInternal();
+        int[] exgChannels = getEXGChannels();
+        for (int i = 0; i < numChannels; i++) {
+            if (!activeChannels[i]) {
+                for (int j = 0; j < data[exgChannels[i]].length; j++) {
+                    data[exgChannels[i]][j] = 0.0;
+                }
+            }
+        }
+        return data;
     }
 
     @Override
