@@ -67,9 +67,6 @@ class SessionSettings {
     //Notch and Bandpass filter variables for save
     int dataProcessingNotchSave = 0;
     int dataProcessingBandpassSave = 3;
-    //Time Series settings
-    int tsVertScaleSave;
-    int tsHorizScaleSave;
     //Accelerometer settings
     int accVertScaleSave;
     int accHorizScaleSave;
@@ -133,10 +130,6 @@ class SessionSettings {
     String [] dataProcessingNotchArray = {"60Hz", "50Hz", "None"};
     String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", "No Filter"};
 
-    // Used to set text in Time Series dropdown settings
-    String[] tsVertScaleArray = {"Auto", "50 uV", "100 uV", "200 uV", "400 uV", "1000 uV", "10000 uV"};
-    String[] tsHorizScaleArray = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
-
     //Used to print the status of each channel in the console when loading settings
     String[] channelsActiveArray = {"Active", "Not Active"};
     String[] gainSettingsArray = { "x1", "x2", "x4", "x6", "x8", "x12", "x24"};
@@ -185,10 +178,6 @@ class SessionSettings {
     int loadLayoutSetting;
     int loadNotchSetting;
     int loadBandpassSetting;
-
-    //Load TS dropdown variables
-    int loadTimeSeriesVertScale;
-    int loadTimeSeriesHorizScale;
 
     //Load Accel. dropdown variables
     int loadAccelVertScale;
@@ -374,8 +363,8 @@ class SessionSettings {
 
         //Make a new JSON Object for Time Series Settings
         JSONObject saveTSSettings = new JSONObject();
-        saveTSSettings.setInt("Time Series Vert Scale", tsVertScaleSave);
-        saveTSSettings.setInt("Time Series Horiz Scale", tsHorizScaleSave);
+        saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getTSVertScale().getIndex());
+        saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getTSHorizScale().getIndex());
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
 
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
@@ -1012,14 +1001,12 @@ class SessionSettings {
     private void loadApplyTimeSeriesSettings() {
 
         JSONObject loadTimeSeriesSettings = loadSettingsJSONData.getJSONObject(kJSONKeyTimeSeries);
-        loadTimeSeriesVertScale = loadTimeSeriesSettings.getInt("Time Series Vert Scale");
-        loadTimeSeriesHorizScale = loadTimeSeriesSettings.getInt("Time Series Horiz Scale");
-
         ////////Apply Time Series widget settings
-        VertScale_TS(loadTimeSeriesVertScale);// changes back-end
-            w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(tsVertScaleArray[loadTimeSeriesVertScale]); //changes front-end
-        Duration(loadTimeSeriesHorizScale);
-            w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(tsHorizScaleArray[loadTimeSeriesHorizScale]);
+        w_timeSeries.setTSVertScale(loadTimeSeriesSettings.getInt("Time Series Vert Scale"));
+        w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString()); //changes front-end
+        
+        w_timeSeries.setTSHorizScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
+        w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString());
             
     } //end loadApplyTimeSeriesSettings
 

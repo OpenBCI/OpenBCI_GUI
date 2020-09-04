@@ -80,7 +80,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
             //sync horiz axis to Time Series by default
-            analogReadBars[i].adjustTimeAxis(TimeSeriesXLim.values()[settings.tsHorizScaleSave].getValue());
+            analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         }
 
         analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
@@ -225,7 +225,7 @@ void Duration_AR(int n) {
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
         if (n == 0) {
-            w_analogRead.analogReadBars[i].adjustTimeAxis(TimeSeriesXLim.values()[settings.tsHorizScaleSave].getValue());
+            w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         } else {
             w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
         }

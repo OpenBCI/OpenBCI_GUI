@@ -12,22 +12,25 @@
 import org.apache.commons.lang3.math.NumberUtils;
 
 interface TimeSeriesAxisEnum {
+    public int getIndex();
     public int getValue();
     public String getString();
 }
 
 public enum TimeSeriesXLim implements TimeSeriesAxisEnum
 {
-    ONE (1, "1 sec"),
-    THREE (3, "3 sec"),
-    FIVE (5, "5 sec"),
-    TEN (10, "10 sec"),
-    TWENTY (20, "20 sec");
+    ONE (0, 1, "1 sec"),
+    THREE (1, 3, "3 sec"),
+    FIVE (2, 5, "5 sec"),
+    TEN (3, 10, "10 sec"),
+    TWENTY (4, 20, "20 sec");
 
+    private int index;
     private int value;
     private String label;
 
-    TimeSeriesXLim(int _value, String _label) {
+    TimeSeriesXLim(int _index, int _value, String _label) {
+        this.index = _index;
         this.value = _value;
         this.label = _label;
     }
@@ -40,23 +43,30 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
     @Override
     public String getString() {
         return label;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
     }
 }
 
 public enum TimeSeriesYLim implements TimeSeriesAxisEnum
 {
-    AUTO (0, "Auto"),
-    UV_50 (50, "50 uV"),
-    UV_100 (100, "100 uV"),
-    UV_200 (200, "200 uV"),
-    UV_400 (400, "400 uV"),
-    UV_1000 (1000, "1000 uV"),
-    UV_10000 (10000, "10000 uV");
+    AUTO (0, 0, "Auto"),
+    UV_50 (1, 50, "50 uV"),
+    UV_100 (2, 100, "100 uV"),
+    UV_200 (3, 200, "200 uV"),
+    UV_400 (4, 400, "400 uV"),
+    UV_1000 (5, 1000, "1000 uV"),
+    UV_10000 (6, 10000, "10000 uV");
 
+    private int index;
     private int value;
     private String label;
 
-    TimeSeriesYLim(int _value, String _label) {
+    TimeSeriesYLim(int _index, int _value, String _label) {
+        this.index = _index;
         this.value = _value;
         this.label = _label;
     }
@@ -69,6 +79,11 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
     @Override
     public String getString() {
         return label;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
     }
 }
 
@@ -96,13 +111,7 @@ class W_timeSeries extends Widget {
     private TimeDisplay timeDisplay;
 
     TimeSeriesXLim xLimit = TimeSeriesXLim.FIVE;
-    TimeSeriesYLim yLimit = TimeSeriesYLim.AUTO;
-
-    //private final int[] XLIM_OPTIONS = {1, 3, 5, 10, 20}; // number of seconds (x axis of graph)
-    //private final int[] YLIM_OPTIONS = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
-
-    //private int xLim = XLIM_OPTIONS[1];  //start at 5s
-    //private int xMax = XLIM_OPTIONS[0];  //start w/ autoscale
+    TimeSeriesYLim yLimit = TimeSeriesYLim.UV_200;
 
     private PImage expand_default;
     private PImage expand_hover;
@@ -139,13 +148,9 @@ class W_timeSeries extends Widget {
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
-        //Time Series settings
-        settings.tsVertScaleSave = 3;
-        settings.tsHorizScaleSave = 2;
-
-        //This is the protocol for setting up dropdowns.
-        addDropdown("VertScale_TS", "Vert Scale", Arrays.asList(settings.tsVertScaleArray), settings.tsVertScaleSave);
-        addDropdown("Duration", "Window", Arrays.asList(settings.tsHorizScaleArray), settings.tsHorizScaleSave);
+        //This is a newer protocol for setting up dropdowns.
+        addDropdown("VertScale_TS", "Vert Scale", getEnumStrings(yLimit.values()), yLimit.getIndex());
+        addDropdown("Duration", "Window", getEnumStrings(xLimit.values()), xLimit.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -238,8 +243,7 @@ class W_timeSeries extends Widget {
 
             //Update channel checkboxes and active channels
             tsChanSelect.update(x, y, w);
-            numChannelBars = tsChanSelect.activeChan.size();
-            channelBarHeight = int((ts_h - chanSelectOffset)/numChannelBars);
+            channelBarHeight = int((ts_h - chanSelectOffset) / tsChanSelect.activeChan.size());
 
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
@@ -455,7 +459,37 @@ class W_timeSeries extends Widget {
             tsChanSelect.activeChan.add(i);
         }
     }
-};
+
+    public List<String> getEnumStrings(TimeSeriesAxisEnum[] enumValues) {
+        List<String> enumStrings = new ArrayList<String>();
+        for (TimeSeriesAxisEnum val : enumValues) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
+
+    public TimeSeriesYLim getTSVertScale() {
+        return yLimit;
+    }
+
+    public TimeSeriesXLim getTSHorizScale() {
+        return xLimit;
+    }
+
+    public void setTSVertScale(int n) {
+        yLimit = yLimit.values()[n];
+        for(int i = 0; i < numChannelBars; i++) {
+            channelBars[i].adjustVertScale(yLimit.getValue());
+        }
+    }
+    
+    public void setTSHorizScale(int n) {
+        xLimit = xLimit.values()[n];
+        for(int i = 0; i < numChannelBars; i++) {
+            channelBars[i].adjustTimeAxis(xLimit.getValue());
+        }
+    }
+ };
 
 void loadSettingsFileSelected(File selection) {
     if (selection == null) {
@@ -488,21 +522,30 @@ void storeSettingsFileSelected(File selection) {
 //These functions are activated when an item from the corresponding dropdown is selected
 //TODO: This doesn't work on all channels when only 1 and 8 are active, since it only tries to set channels 1 and 2
 void VertScale_TS(int n) {
-    settings.tsVertScaleSave = n;
+    //settings.tsVertScaleSave = n;
+    /*
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustVertScale(TimeSeriesYLim.values()[n].getValue());
     }
+    */
+    w_timeSeries.setTSVertScale(n);
 }
 
 //triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
-    settings.tsHorizScaleSave = n;
+    //settings.tsHorizScaleSave = n;
     // println("adjust duration to: " + xLimOptions[n]);
     //set time series x axis to the duration selected from dropdown
+    /*
     int newDuration = TimeSeriesXLim.values()[n].getValue();
     for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
         w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
     }
+    */
+
+    w_timeSeries.setTSHorizScale(n);
+
+    int newDuration = w_timeSeries.getTSHorizScale().getValue();
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     if (settings.accHorizScaleSave == 0) {
         //set accelerometer x axis to the duration selected from dropdown
