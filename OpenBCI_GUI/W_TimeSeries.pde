@@ -315,7 +315,6 @@ class W_timeSeries extends Widget {
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-        println("TSRESIZED!!!!");
 
         tsChanSelect.screenResized(pApplet);
 
