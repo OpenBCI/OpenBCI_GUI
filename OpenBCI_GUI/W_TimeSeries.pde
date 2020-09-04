@@ -315,6 +315,7 @@ class W_timeSeries extends Widget {
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        println("TSRESIZED!!!!");
 
         tsChanSelect.screenResized(pApplet);
 
@@ -345,12 +346,17 @@ class W_timeSeries extends Widget {
         if (tsChanSelect.isVisible()) {
             chanSelectOffset = navHeight;
         }
+        
+        for (ChannelBar cb : channelBars) {
+            cb.updateCP5(ourApplet);
+        }
+        
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
             int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
             channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
         }
-
+        
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
@@ -482,7 +488,7 @@ class W_timeSeries extends Widget {
             channelBars[i].adjustVertScale(yLimit.getValue());
         }
     }
-    
+
     public void setTSHorizScale(int n) {
         xLimit = xLimit.values()[n];
         for(int i = 0; i < numChannelBars; i++) {
@@ -520,29 +526,12 @@ void storeSettingsFileSelected(File selection) {
 }
 
 //These functions are activated when an item from the corresponding dropdown is selected
-//TODO: This doesn't work on all channels when only 1 and 8 are active, since it only tries to set channels 1 and 2
 void VertScale_TS(int n) {
-    //settings.tsVertScaleSave = n;
-    /*
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
-        w_timeSeries.channelBars[i].adjustVertScale(TimeSeriesYLim.values()[n].getValue());
-    }
-    */
     w_timeSeries.setTSVertScale(n);
 }
 
 //triggered when there is an event in the Duration Dropdown
 void Duration(int n) {
-    //settings.tsHorizScaleSave = n;
-    // println("adjust duration to: " + xLimOptions[n]);
-    //set time series x axis to the duration selected from dropdown
-    /*
-    int newDuration = TimeSeriesXLim.values()[n].getValue();
-    for(int i = 0; i < w_timeSeries.numChannelBars; i++) {
-        w_timeSeries.channelBars[i].adjustTimeAxis(newDuration);
-    }
-    */
-
     w_timeSeries.setTSHorizScale(n);
 
     int newDuration = w_timeSeries.getTSHorizScale().getValue();
@@ -558,15 +547,6 @@ void Duration(int n) {
                 w_analogRead.analogReadBars[i].adjustTimeAxis(newDuration);
             }
         }
-    }
-}
-
-//triggered when there is an event in the LogLin Dropdown
-void Spillover(int n) {
-    if (n==0) {
-        w_timeSeries.allowSpillover = false;
-    } else {
-        w_timeSeries.allowSpillover = true;
     }
 }
 
@@ -913,6 +893,10 @@ class ChannelBar{
             impCheckButton.but_x = x + 36;
             impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
         }
+    }
+
+    public void updateCP5(PApplet _parent) {
+        cbCp5.setGraphics(_parent, 0, 0);
     }
 
     public void mousePressed() {
