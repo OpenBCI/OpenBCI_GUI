@@ -822,8 +822,12 @@ class ChannelBar{
         //Early out if autoscale
         if (_vertScaleValue == 0) {
             isAutoscale = true;
+            yAxisMin.lock();
+            yAxisMax.lock();
             return;
         }
+        yAxisMin.unlock();
+        yAxisMax.unlock();
         isAutoscale = false;
         yAxisLowerLim = -_vertScaleValue;
         yAxisUpperLim = _vertScaleValue;
@@ -839,7 +843,7 @@ class ChannelBar{
         tf.setText(positiveSign+limit+"uV");
         //Responsively scale button size based on number of digits
         int n = (int)(log10(abs(limit)));
-        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 6)) * 4 : 0;
+        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 7)) * 4 : 0;
         tf.setSize(tf.autoWidth + padding, yAxisLabel_h);
     }
 
@@ -851,6 +855,8 @@ class ChannelBar{
             }
         }
         plot.setYLim(-yLim, yLim);
+        customYLim(yAxisMin, -yLim);
+        customYLim(yAxisMax, yLim);
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
