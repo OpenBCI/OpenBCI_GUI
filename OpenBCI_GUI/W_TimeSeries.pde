@@ -18,15 +18,16 @@ class W_timeSeries extends Widget {
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
-    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart -- rectangle encompassing all channelBars
     private float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
     private float plotBottomWell;
     private float playbackWidgetHeight;
     private int channelBarHeight;
 
-    private Button_obci hardwareSettingsButton;
-    private Button_obci hardwareSettingsLoadButton;
-    private Button_obci hardwareSettingsStoreButton;
+    private ControlP5 tscp5;
+    private Button hardwareSettings;
+    private Button hardwareSettingsLoad;
+    private Button hardwareSettingsSave;
 
     private ChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
@@ -48,6 +49,10 @@ class W_timeSeries extends Widget {
 
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        tscp5 = new ControlP5(_parent);
+        tscp5.setGraphics(_parent, 0,0);
+        tscp5.setAutoDraw(false);
 
         tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
 
@@ -106,6 +111,7 @@ class W_timeSeries extends Widget {
         }
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
+            /*
             hardwareSettingsButton = new Button_obci((int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
             hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
             hardwareSettingsButton.setFont(p5,12);
@@ -133,6 +139,10 @@ class W_timeSeries extends Widget {
             hardwareSettingsStoreButton.textColorNotActive = color(255);
             hardwareSettingsStoreButton.hasStroke(false);
             hardwareSettingsStoreButton.setHelpText("Save current settings to file.");
+            */
+            createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            createButton(hardwareSettingsLoad, "HardwareSettingsLoad", "Load Settings", (int)hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y + navHeight + 3), 80, navHeight - 6);
+            createButton(hardwareSettingsSave, "HardwareSettingsSave", "Save Settings", (int)hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y + navHeight + 3), 83, navHeight - 6);
         }
 
         int x_hsc = int(ts_x);
@@ -175,15 +185,22 @@ class W_timeSeries extends Widget {
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
+                /*
                 hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
                 hardwareSettingsLoadButton.setPos(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y0 + navHeight + 3));
                 hardwareSettingsStoreButton.setPos(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y0 + navHeight + 3));
+                */
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
                 adsSettingsController.update(); //update channel controller
+
+
                 //ignore top left button interaction when widgetSelector dropdown is active
+                //TODO::REPLICATE THIS AND LOCK THESE NEW BUTTONS
+                /*
                 ignoreButtonCheck(hardwareSettingsButton);
                 ignoreButtonCheck(hardwareSettingsLoadButton);
                 ignoreButtonCheck(hardwareSettingsStoreButton);
+                */
             }
 
             if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -224,13 +241,15 @@ class W_timeSeries extends Widget {
             }
 
             if(currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettingsButton.draw();
-                hardwareSettingsLoadButton.draw();
-                hardwareSettingsStoreButton.draw();
+                hardwareSettings.setVisible(true);
+                hardwareSettingsLoad.setVisible(true);
+                hardwareSettingsSave.setVisible(true);
                 adsSettingsController.draw();
             }
 
             popStyle();
+
+            tscp5.draw();
             
             tsChanSelect.draw();
         }
@@ -250,6 +269,13 @@ class W_timeSeries extends Widget {
         ts_y = yF + (ts_padding);
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
+
+        if(currentBoard instanceof ADS1299SettingsBoard) {
+            hardwareSettings.setPosition((int)(xF + 80), (int)(yF + navHeight + 3));
+            hardwareSettingsLoad.setPosition(hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(yF + navHeight + 3));
+            hardwareSettingsSave.setPosition(hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(yF + navHeight + 3));
+        }
+
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -268,6 +294,7 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
+        /*
         if (!this.dropdownIsActive) {
             if(currentBoard instanceof ADS1299SettingsBoard) {
                 if (hardwareSettingsButton.isMouseHere()) {
@@ -281,6 +308,7 @@ class W_timeSeries extends Widget {
                 }
             }
         }
+        */
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
             if (!this.dropdownIsActive) {
@@ -296,7 +324,9 @@ class W_timeSeries extends Widget {
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
+        
+        /*
+        //TODO::REPLICATE THIS USING CALLBACKS AND CP5 THE RIGHT WAY
         if(currentBoard instanceof ADS1299SettingsBoard) {
             if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
                 println("HardwareSetingsButton: Toggle...");
@@ -316,6 +346,7 @@ class W_timeSeries extends Widget {
             hardwareSettingsLoadButton.setIsActive(false);
             hardwareSettingsStoreButton.setIsActive(false);
         }
+        */
 
         if(adsSettingsController != null && adsSettingsController.isVisible) {
             adsSettingsController.mouseReleased();
@@ -338,10 +369,10 @@ class W_timeSeries extends Widget {
                 return;
             }
 
-            hardwareSettingsButton.setString("Time Series");
+            hardwareSettings.setCaptionLabel("Time Series");
         }
         else {
-            hardwareSettingsButton.setString("Hardware Settings");
+            hardwareSettings.setCaptionLabel("Hardware Settings");
         }
 
         if (adsSettingsController != null) {
@@ -360,6 +391,22 @@ class W_timeSeries extends Widget {
             tsChanSelect.checkList.activate(i);
             tsChanSelect.activeChan.add(i);
         }
+    }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        myButton = tscp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(color(255))
+            .setColorForeground(color(0,0,200))
+            .setColorBackground(color(0,0,50));
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial",12,true))
+            .toUpperCase(false)
+            .setSize(12)
+            .setText(text);
+        return myButton;
     }
 };
 
