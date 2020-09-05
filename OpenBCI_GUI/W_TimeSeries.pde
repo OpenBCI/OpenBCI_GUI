@@ -843,7 +843,7 @@ class ChannelBar{
         tf.setText(positiveSign+limit+"uV");
         //Responsively scale button size based on number of digits
         int n = (int)(log10(abs(limit)));
-        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 7)) * 4 : 0;
+        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 7)) * padding_4 : 0;
         tf.setSize(tf.autoWidth + padding, yAxisLabel_h);
     }
 
