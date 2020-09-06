@@ -142,7 +142,7 @@ void Duration_NovaAux(int n) {
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_novaAux.numAnalogReadBars; i++) {
         if (n == 0) {
-            w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[settings.tsHorizScaleSave]);
+            w_novaAux.analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         } else {
             w_novaAux.analogReadBars[i].adjustTimeAxis(w_novaAux.xLimOptions[n]);
         }
