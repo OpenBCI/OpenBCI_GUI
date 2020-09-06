@@ -366,12 +366,7 @@ void WidgetSelector(int n){
     //set the text of the widgetSelector to the newly selected widget
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//    ChannelSelect is currently used by BandPower and SSVEP Widgets         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+// This is a helpful class that will add a channel select feature to a Widget
 class ChannelSelect {
 
     //----------CHANNEL SELECT INFRASTRUCTURE
