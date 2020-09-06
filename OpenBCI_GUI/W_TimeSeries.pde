@@ -140,9 +140,9 @@ class W_timeSeries extends Widget {
             hardwareSettingsStoreButton.hasStroke(false);
             hardwareSettingsStoreButton.setHelpText("Save current settings to file.");
             */
-            createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
-            createButton(hardwareSettingsLoad, "HardwareSettingsLoad", "Load Settings", (int)hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y + navHeight + 3), 80, navHeight - 6);
-            createButton(hardwareSettingsSave, "HardwareSettingsSave", "Save Settings", (int)hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y + navHeight + 3), 83, navHeight - 6);
+            hardwareSettings = createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hardwareSettingsLoad = createButton(hardwareSettingsLoad, "HardwareSettingsLoad", "Load Settings", (int)hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y + navHeight + 3), 80, navHeight - 6);
+            hardwareSettingsSave = createButton(hardwareSettingsSave, "HardwareSettingsSave", "Save Settings", (int)hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y + navHeight + 3), 80, navHeight - 6);
         }
 
         int x_hsc = int(ts_x);
@@ -271,9 +271,9 @@ class W_timeSeries extends Widget {
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
 
         if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings.setPosition((int)(xF + 80), (int)(yF + navHeight + 3));
-            hardwareSettingsLoad.setPosition(hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(yF + navHeight + 3));
-            hardwareSettingsSave.setPosition(hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(yF + navHeight + 3));
+            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
+            hardwareSettingsLoad.setPosition(hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y0 + navHeight + 3));
+            hardwareSettingsSave.setPosition(hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y0 + navHeight + 3));
         }
 
         
