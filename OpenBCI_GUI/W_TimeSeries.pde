@@ -346,13 +346,6 @@ class W_timeSeries extends Widget {
         ts_y = yF + (ts_padding);
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
-
-        if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            hardwareSettingsLoad.setPosition(hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y0 + navHeight + 3));
-            hardwareSettingsSave.setPosition(hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y0 + navHeight + 3));
-        }
-
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -383,7 +376,9 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
+            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
+            hardwareSettingsLoad.setPosition(hardwareSettings.getPosition()[0] + hardwareSettings.getWidth() + 4, (int)(y0 + navHeight + 3));
+            hardwareSettingsSave.setPosition(hardwareSettingsLoad.getPosition()[0] + hardwareSettingsLoad.getWidth() + 4, (int)(y0 + navHeight + 3));
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
         
@@ -511,7 +506,7 @@ class W_timeSeries extends Widget {
             .setText(text);
         return myButton;
     }
-};
+
     public List<String> getEnumStrings(TimeSeriesAxisEnum[] enumValues) {
         List<String> enumStrings = new ArrayList<String>();
         for (TimeSeriesAxisEnum val : enumValues) {
