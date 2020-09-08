@@ -243,7 +243,6 @@ class AnalogReadBar{
     private int auxValuesPosition;
     private String analogInputString;
     private int x, y, w, h;
-    private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
     private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     private GPointsArray analogReadPoints;
@@ -282,7 +281,6 @@ class AnalogReadBar{
         }
 
         analogInputString = str(analogInputPin);
-        isOn = true;
 
         x = _x;
         y = _y;
