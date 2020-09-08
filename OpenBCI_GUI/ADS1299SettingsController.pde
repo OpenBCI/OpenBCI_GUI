@@ -1,5 +1,5 @@
 
-class ADS1299SettingsController{
+class ADS1299SettingsController {
 
     private boolean isVisible = false;
     private int x, y, w, h;
@@ -248,5 +248,13 @@ class ADS1299SettingsController{
         h = _h;
 
         resizeButtons(_channelBarHeight);
+    }
+
+    public void setIsVisible (boolean v) {
+        isVisible = v;
+    }
+
+    public boolean getIsVisible() {
+        return isVisible;
     }
 };

@@ -286,21 +286,22 @@ class PlotFontInfo {
         int buttonLabel_size = 12;
 };
 
+
 class TextBox {
-    public int x, y;
-    public color textColor;
-    public color backgroundColor;
+    private int x, y;
+    private color textColor;
+    private color backgroundColor;
     private PFont font;
     private int fontSize;
-    public String string;
-    public boolean drawBackground;
-    public int backgroundEdge_pixels;
-    public int alignH,alignV;
+    private String string;
+    private boolean drawBackground = true;
+    private int backgroundEdge_pixels;
+    private int alignH,alignV;
 
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
-        backgroundColor = color(255,255,255);
-        textColor = color(0,0,0);
+        textColor = color(0);
+        backgroundColor = color(255);
         fontSize = 12;
         font = p5;
         backgroundEdge_pixels = 1;
@@ -308,13 +309,24 @@ class TextBox {
         alignH = LEFT;
         alignV = BOTTOM;
     }
-    
-    public void setFontSize(int size) {
-        fontSize = size;
-        font = p5;
+
+    TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _alignH, int _alignV) {
+        this(s, x1, y1);
+        textColor = _textColor;
+        backgroundColor = _backgroundColor;
+        drawBackground = true;
+        alignH = _alignH;
+        alignV = _alignV;
     }
+
+    TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _fontSize, PFont _font, int _alignH, int _alignV) {
+        this(s, x1, y1, _textColor, _backgroundColor, _alignH, _alignV);
+        fontSize = _fontSize;
+        font = _font;
+    }
+    
     public void draw() {
-        //define text
+        pushStyle();
         noStroke();
         textFont(font);
 
@@ -334,15 +346,33 @@ class TextBox {
                     break;
             }
             w = w + 2*backgroundEdge_pixels;
-            int h = int(textAscent())+2*backgroundEdge_pixels;
-            int ybox = y - int(round(textAscent())) - backgroundEdge_pixels -2;
+            
+            int h = int(textAscent()) + backgroundEdge_pixels*2;
+            int ybox = y;
+            if (alignV == CENTER) {
+                ybox -= textAscent() / 2 - backgroundEdge_pixels;
+            } else if (alignV == BOTTOM) {
+                ybox -= textAscent() + backgroundEdge_pixels*3;
+            }
             fill(backgroundColor);
             rect(xbox,ybox,w,h);
         }
         //draw the text itself
+        pushStyle();
+        noStroke();
         fill(textColor);
         textAlign(alignH,alignV);
         text(string,x,y);
         strokeWeight(1);
+        popStyle();
+    }
+
+    public void setPosition(int _x, int _y) {
+        x = _x;
+        y = _y;
+    }
+
+    public void setText(String s) {
+        string = s;
     }
 };
