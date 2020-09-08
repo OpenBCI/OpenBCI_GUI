@@ -4,6 +4,12 @@ class ADS1299SettingsController {
     private boolean isVisible = false;
     private int x, y, w, h;
 
+    private ControlP5 hwsCp5;
+    private Button hardwareSettingsLoad;
+    private Button hardwareSettingsSave;
+    private int button_w = 80;
+    private int button_h = navHeight - 6;
+
     private int spaceBetweenButtons = 5; //space between buttons
 
     private Button_obci[] gainButtons;
@@ -16,11 +22,18 @@ class ADS1299SettingsController {
 
     private List<Integer> activeChannels;
 
-    ADS1299SettingsController(List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight){
+    ADS1299SettingsController(PApplet _parent, List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight){
         x = _x;
         y = _y;
         w = _w;
         h = _h;
+
+        hwsCp5 = new ControlP5(_parent);
+        hwsCp5.setGraphics(_parent, 0,0);
+        hwsCp5.setAutoDraw(false);
+
+        hardwareSettingsLoad = createButton(hardwareSettingsLoad, "HardwareSettingsLoad", "Load Settings", x + (w/4) - button_w/2, y - button_h - 3, button_w, button_h);
+        hardwareSettingsSave = createButton(hardwareSettingsSave, "HardwareSettingsSave", "Save Settings", x + (w/2) + (w/4) - button_w/2, y - button_h - 3, button_w, button_h);
 
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
@@ -67,10 +80,19 @@ class ADS1299SettingsController {
     }
 
     public void draw(){
-        pushStyle();
 
         if (isVisible) {
+            //Load and Save buttons
+            pushStyle();
+            stroke(31,69,110, 50);
+            fill(0, 0, 0, 100);
+            rect(x, y - navHeight, w, navHeight);
+            drawButtonBorder(hardwareSettingsLoad);
+            drawButtonBorder(hardwareSettingsSave);
+            hwsCp5.draw();
+
             //background
+            pushStyle();
             noStroke();
             fill(0, 0, 0, 100);
             rect(x, y, w, h);
@@ -94,6 +116,7 @@ class ADS1299SettingsController {
             text("SRB2", x + (w/10)*7, y-1);
             text("SRB1", x + (w/10)*9, y-1);
         }
+
         popStyle();
     }
 
@@ -248,6 +271,9 @@ class ADS1299SettingsController {
         h = _h;
 
         resizeButtons(_channelBarHeight);
+
+        hardwareSettingsLoad.setPosition(x + (w/4) - button_w/2, y - button_h - 3);
+        hardwareSettingsSave.setPosition(x + (w/2) + (w/4) - button_w/2, y - button_h - 3);
     }
 
     public void setIsVisible (boolean v) {
@@ -257,4 +283,79 @@ class ADS1299SettingsController {
     public boolean getIsVisible() {
         return isVisible;
     }
+
+    void drawButtonBorder(Button b) {
+        pushStyle();
+        fill(bgColor);
+        rect(b.getPosition()[0] - 1, b.getPosition()[1] - 1, b.getWidth() + 2, b.getHeight() + 2);
+    }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        myButton = hwsCp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial",12,true))
+            .toUpperCase(false)
+            .setSize(12)
+            .setText(text)
+            ;
+        switch(name) {
+            case "HardwareSettingsLoad":
+                myButton.onClick(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        if (isRunning) {
+                            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
+                        } else {
+                            selectInput("Select settings file to load", "loadSettingsFileSelected");
+                        }
+                    }
+                });
+                break;
+            case "HardwareSettingsSave":
+                myButton.onClick(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        selectOutput("Save settings to file", "storeSettingsFileSelected");
+                    }
+                });
+                break;
+            default:
+                break;
+        }
+        return myButton;
+    }
 };
+
+void loadSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Hardware Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
+                outputSuccess("Hardware Settings Loaded!");
+            } else {
+                outputError("Failed to load hardware settings.");
+            }
+        }
+    }
+}
+
+void storeSettingsFileSelected(File selection) {
+    if (selection == null) {
+        output("Hardware Settings file not selected.");
+    } else {
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().saveToFile(selection.getAbsolutePath())) {
+                outputSuccess("Hardware Settings Saved!");
+            } else {
+                outputError("Failed to save hardware settings.");
+            }
+        }
+    }
+}
