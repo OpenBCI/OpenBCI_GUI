@@ -1,11 +1,12 @@
 import brainflow.*;
 
 class BoardBrainFlowSynthetic extends BoardBrainFlow
-implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
+implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryInfoCapableBoard {
 
     private int[] accelChannelsCache = null;
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
+    private Integer batteryChannelCache = null;
     private int numChannels = 0;
     private volatile boolean[] activeChannels = null;
 
@@ -141,6 +142,20 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
         return edaChannelsCache;
     }
+
+    @Override
+    public Integer getBatteryChannel() {
+        if (batteryChannelCache == null) {
+            try {
+                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+                
+            }
+        }
+
+        return batteryChannelCache;
+    }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
@@ -153,6 +168,7 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
+        channelNames[getBatteryChannel()] = "Battery Info Channel";
     }
 
     @Override

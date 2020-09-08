@@ -223,7 +223,6 @@ class DigitalReadDot{
     private int digitalInputVal;
     String digitalInputString;
     int padding;
-    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
     TextBox digitalValue;
     TextBox digitalPin;
@@ -251,7 +250,6 @@ class DigitalReadDot{
         digitalInputPin = _digitalInputPin;
         digitalInputString = str(digitalInputPin);
         digitalInputVal = 0;
-        isOn = true;
 
         if (digitalInputPin == 11) {
             dot1Fill = channelColors[0];
