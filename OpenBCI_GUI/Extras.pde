@@ -235,12 +235,12 @@ class DataStatus {
         }
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
+            double scaler =  (4.5 / (pow (2, 23) - 1) / 1.0 * 1000000.);
+            if (((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler()) {
+                scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
+            }
             double maxVal = scaler * pow (2, 23);
-
-            // [todo] it should be done somewhere in data processing once
-            // instead copypasting this logic in all widgets and here
-            int numSeconds = 3; // temp hardcode
+            int numSeconds = 3;
             int nPoints = numSeconds * currentBoard.getSampleRate();
             int endPos = data.length;
             int startPos = Math.max(0, endPos - nPoints);
@@ -253,14 +253,15 @@ class DataStatus {
             }
             percentage = (max / maxVal) * 100.0;
 
-            if (percentage > threshold_railed) {
-                is_railed = true;
-            }
+            notificationString = "Not Railed " + String.format("%1$,.2f", percentage) + "% ";
             if (percentage > threshold_railed_warn) {
                 is_railed_warn = true;
+                notificationString = "Near Railed " + String.format("%1$,.2f", percentage) + "% ";
             }
-
-            notificationString = "RAILED " + String.format("%1$,.2f", percentage) + "% ";
+            if (percentage > threshold_railed) {
+                is_railed = true;
+                notificationString = "Railed " + String.format("%1$,.2f", percentage) + "% ";
+            }
         }
     }
 };
