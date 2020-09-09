@@ -294,36 +294,6 @@ synchronized void mouseReleased() {
 //------------------------------------------------------------------------
 //                       Classes
 //------------------------------------------------------------------------
-/*
-class CustomCp5Button extends Button {
-    CustomCp5Button(ControlP5 cp5, String name) {
-        super(cp5, name);
-    }
-    
-    //Currently not working because ButtonView class is private......
-    public class CustomButtonView extends ButtonView {
-        private CustomCp5Button theButton;
-
-        CustomButtonView(CustomCp5Button _theButton) {
-            super();
-            theButton = _theButton;
-        }
-
-        @Override
-        public void display(PGraphics g , Button b) {
-            drawOutline();
-            super.display(g, b);
-        }
-
-        private void drawOutline() {
-            // draw rect behind the button
-            fill(color(0));
-            rect(-1, -1, theButton.getWidth()+2, theButton.getHeight()+2);
-        }
-    }
-}
-*/
-
 
 class CustomScrollableList extends ScrollableList {
 
