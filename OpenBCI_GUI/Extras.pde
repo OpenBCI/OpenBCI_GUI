@@ -215,6 +215,10 @@ class DataStatus {
     private double threshold_railed_warn;
     private double percentage;
     public String notificationString;
+    private final color default_color = bgColor;
+    private final color yellow = color(254,211,0,255);
+    private final color red = color(255,0,0,255);
+    private color colorIndicator = default_color;
 
     DataStatus(double thresh_railed, double thresh_railed_warn) {
         notificationString = "";
@@ -254,15 +258,21 @@ class DataStatus {
             percentage = (max / maxVal) * 100.0;
 
             notificationString = "Not Railed " + String.format("%1$,.2f", percentage) + "% ";
+            colorIndicator = default_color;
             if (percentage > threshold_railed_warn) {
                 is_railed_warn = true;
                 notificationString = "Near Railed " + String.format("%1$,.2f", percentage) + "% ";
+                colorIndicator = yellow;
             }
             if (percentage > threshold_railed) {
                 is_railed = true;
                 notificationString = "Railed " + String.format("%1$,.2f", percentage) + "% ";
+                colorIndicator = red;
             }
         }
+    }
+    public color getColor() {
+        return colorIndicator;
     }
 };
 
@@ -375,5 +385,9 @@ class TextBox {
 
     public void setText(String s) {
         string = s;
+    }
+
+    public void setTextColor(color c) {
+        textColor = c;
     }
 };
