@@ -313,7 +313,7 @@ class ADS1299SettingsController {
                         if (isRunning) {
                             PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
                         } else {
-                            selectInput("Select settings file to load", "loadHWSettingsFileSelected");
+                            selectInput("Select settings file to load", "loadHardwareSettings");
                         }
                     }
                 });
@@ -321,7 +321,7 @@ class ADS1299SettingsController {
             case "HardwareSettingsSave":
                 myButton.onClick(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
-                        selectOutput("Save settings to file", "storeHWSettingsFileSelected");
+                        selectOutput("Save settings to file", "storeHardwareSettings");
                     }
                 });
                 break;
@@ -332,7 +332,7 @@ class ADS1299SettingsController {
     }
 };
 
-void loadHWSettingsFileSelected(File selection) {
+void loadHardwareSettings(File selection) {
     if (selection == null) {
         output("Hardware Settings file not selected.");
     } else {
@@ -346,7 +346,7 @@ void loadHWSettingsFileSelected(File selection) {
     }
 }
 
-void storeHWSettingsFileSelected(File selection) {
+void storeHardwareSettings(File selection) {
     if (selection == null) {
         output("Hardware Settings file not selected.");
     } else {
