@@ -232,31 +232,41 @@ class ADS1299SettingsController {
                 if(gainButtons[i].isMouseHere() && gainButtons[i].wasPressed) {
                     // loops over the enum
                     boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    boardSettings.commit(i);
+                    if(!boardSettings.commit(i)) {
+                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
+                    }
                     gainButtons[i].wasPressed = false;
                     gainButtons[i].isActive = false; 
                 }
                 if(inputTypeButtons[i].isMouseHere() && inputTypeButtons[i].wasPressed) {
                     boardSettings.values.inputType[i] = boardSettings.values.inputType[i].getNext();
-                    boardSettings.commit(i);
+                    if(!boardSettings.commit(i)) {
+                        boardSettings.values.inputType[i] = boardSettings.values.inputType[i].getPrev();
+                    }
                     inputTypeButtons[i].wasPressed = false;
                     inputTypeButtons[i].isActive = false;  
                 }
                 if(biasButtons[i].isMouseHere() && biasButtons[i].wasPressed) {
                     boardSettings.values.bias[i] = boardSettings.values.bias[i].getNext();
-                    boardSettings.commit(i);
+                    if(!boardSettings.commit(i)) {
+                        boardSettings.values.bias[i] = boardSettings.values.bias[i].getPrev();
+                    }
                     biasButtons[i].wasPressed = false;
                     biasButtons[i].isActive = false;   
                 }
                 if(srb2Buttons[i].isMouseHere() && srb2Buttons[i].wasPressed) {
                     boardSettings.values.srb2[i] = boardSettings.values.srb2[i].getNext();
-                    boardSettings.commit(i);
+                    if(!boardSettings.commit(i)) {
+                        boardSettings.values.srb2[i] = boardSettings.values.srb2[i].getPrev();
+                    }
                     srb2Buttons[i].wasPressed = false;
                     srb2Buttons[i].isActive = false;    
                 }
                 if(srb1Buttons[i].isMouseHere() && srb1Buttons[i].wasPressed) {
                     boardSettings.values.srb1[i] = boardSettings.values.srb1[i].getNext();
-                    boardSettings.commit(i);
+                    if(!boardSettings.commit(i)) {
+                        boardSettings.values.srb1[i] = boardSettings.values.srb1[i].getPrev();
+                    }
                     srb1Buttons[i].wasPressed = false;
                     srb1Buttons[i].isActive = false;  
                 }

@@ -69,13 +69,8 @@ public enum NovaXRMode implements NovaXRSettingsEnum
 
 class NovaXRDefaultSettings extends ADS1299Settings {
     // TODO: modes go here
-    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode, NovaXRSR sampleRate) {
+    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
         super(theBoard);
-
-        // send the mode command to board
-        board.sendCommand(mode.getCommand());
-        // send the sample rate command to the board
-        board.sendCommand(sampleRate.getCommand());
 
         Arrays.fill(values.powerDown, PowerDown.ON);
 
@@ -155,7 +150,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     public BoardNovaXR() {
         super();
 
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
         useDynamicScaler = false;
     }
 
@@ -171,7 +166,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
     }
 
     @Override
@@ -180,7 +175,15 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         if (res) {
             // NovaXRDefaultSettings() will send mode command to board
-            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode, sampleRate);
+            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode);
+        }
+        if (res) {
+            // send the mode command to board
+            res = sendCommand(initialSettingsMode.getCommand());
+        }
+        if (res) {
+            // send the sample rate command to the board
+            res = sendCommand(sampleRate.getCommand());
         }
 
         return res;

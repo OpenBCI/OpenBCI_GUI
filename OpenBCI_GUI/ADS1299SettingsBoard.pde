@@ -6,6 +6,7 @@ import java.io.*;
 interface ADSSettingsEnum {
     public String getName();
     public ADSSettingsEnum getNext();
+    public ADSSettingsEnum getPrev();
 }
 
 enum PowerDown implements ADSSettingsEnum {
@@ -27,6 +28,12 @@ enum PowerDown implements ADSSettingsEnum {
     public PowerDown getNext() {
         PowerDown[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
+    }
+
+    @Override
+    public PowerDown getPrev() {
+        PowerDown[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -60,6 +67,12 @@ enum Gain implements ADSSettingsEnum {
         return vals[(this.ordinal()+1) % vals.length];
     }
 
+    @Override
+    public Gain getPrev() {
+        Gain[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
+
     public double getScalar() {
         return scalar;
     }
@@ -91,6 +104,12 @@ enum InputType implements ADSSettingsEnum {
         InputType[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
     }
+
+    @Override
+    public InputType getPrev() {
+        InputType[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
 }
 
 enum Bias implements ADSSettingsEnum {
@@ -112,6 +131,12 @@ enum Bias implements ADSSettingsEnum {
     public Bias getNext() {
         Bias[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
+    }
+
+    @Override
+    public Bias getPrev() {
+        Bias[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -135,6 +160,12 @@ enum Srb2 implements ADSSettingsEnum {
         Srb2[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
     }
+
+    @Override
+    public Srb2 getPrev() {
+        Srb2[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
 }
 
 enum Srb1 implements ADSSettingsEnum {
@@ -156,6 +187,12 @@ enum Srb1 implements ADSSettingsEnum {
     public Srb1 getNext() {
         Srb1[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
+    }
+
+    @Override
+    public Srb1 getPrev() {
+        Srb1[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -256,11 +293,11 @@ class ADS1299Settings {
     }
 
     public void setChannelActive(int chan, boolean active) {
+        String oldValues = getJson();
         if (active) {
             values.bias[chan] = values.previousBias[chan];
             values.srb2[chan] = values.previousSrb2[chan];
             values.inputType[chan] = values.previousInputType[chan];
-
         } else {
             values.previousBias[chan] = values.bias[chan];
             values.previousSrb2[chan] = values.srb2[chan];
@@ -272,16 +309,21 @@ class ADS1299Settings {
         }
 
         values.powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
-        commit(chan);
+        boolean res = commit(chan);
+        if (!res) {
+            // restore old settings in UI
+            Gson gson = new Gson();
+            values = gson.fromJson(oldValues, ADS1299SettingsValues.class);
+        }
     }
 
-    public void commit(int chan) {
+    public boolean commit(int chan) {
         String command = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
                                         values.powerDown[chan].ordinal(), values.gain[chan].ordinal(),
                                         values.inputType[chan].ordinal(), values.bias[chan].ordinal(),
                                         values.srb2[chan].ordinal(), values.srb1[chan].ordinal());
 
-        board.sendCommand(command);
+        return board.sendCommand(command);
     }
 
     public void commitAll() {
