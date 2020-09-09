@@ -634,7 +634,10 @@ class ChannelBar{
         //update the voltage values
         val = dataProcessing.data_std_uV[channelIndex];
         voltageValue.string = String.format(getFmt(val),val) + " uVrms";
-        voltageValue.string = is_railed[channelIndex].notificationString + voltageValue.string;
+        if (is_railed != null) {
+            voltageValue.setText(is_railed[channelIndex].notificationString + voltageValue.string);
+            voltageValue.setTextColor(is_railed[channelIndex].getColor());
+        }
 
         //update the impedance values
         val = data_elec_imp_ohm[channelIndex]/1000;
