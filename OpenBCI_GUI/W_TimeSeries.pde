@@ -95,15 +95,14 @@ class W_timeSeries extends Widget {
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
-    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart (rectangle encompassing all channelBars)
+    private float ts_x, ts_y, ts_h, ts_w; //values for actual time series chart -- rectangle encompassing all channelBars
     private float pb_x, pb_y, pb_h, pb_w; //values for playback sub-widget
     private float plotBottomWell;
     private float playbackWidgetHeight;
     private int channelBarHeight;
 
-    private Button_obci hardwareSettingsButton;
-    private Button_obci hardwareSettingsLoadButton;
-    private Button_obci hardwareSettingsStoreButton;
+    private ControlP5 tscp5;
+    private Button hardwareSettings;
 
     private ChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
@@ -130,7 +129,11 @@ class W_timeSeries extends Widget {
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        tsChanSelect = new ChannelSelect(_parent, x, y, w, navH, "TS_Channels");
+        tscp5 = new ControlP5(_parent);
+        tscp5.setGraphics(_parent, 0,0);
+        tscp5.setAutoDraw(false);
+
+        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
 
         //activate all channels in channelSelect by default
         activateAllChannels();
@@ -183,43 +186,14 @@ class W_timeSeries extends Widget {
             channelBars[i] = tempBar;
         }
 
-        if(currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton = new Button_obci((int)(x + 80), (int)(y + navHeight + 3), 120, navHeight - 6, "Hardware Settings", 12);
-            hardwareSettingsButton.setCornerRoundess((int)(navHeight-6));
-            hardwareSettingsButton.setFont(p5,12);
-            // hardwareSettingsButton.setStrokeColor((int)(color(150)));
-            // hardwareSettingsButton.setColorNotPressed(openbciBlue);
-            hardwareSettingsButton.setColorNotPressed(color(57,128,204));
-            hardwareSettingsButton.textColorNotActive = color(255);
-            // hardwareSettingsButton.setStrokeColor((int)(color(138, 182, 229, 100)));
-            hardwareSettingsButton.hasStroke(false);
-            // hardwareSettingsButton.setColorNotPressed((int)(color(138, 182, 229)));
-            hardwareSettingsButton.setHelpText("The buttons in this panel allow you to adjust the hardware settings of the OpenBCI Board.");
-
-            hardwareSettingsLoadButton = new Button_obci(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y + navHeight + 3), 80, navHeight - 6, "Load Settings", 12);
-            hardwareSettingsLoadButton.setCornerRoundess((int)(navHeight-6));
-            hardwareSettingsLoadButton.setFont(p5,12);
-            hardwareSettingsLoadButton.setColorNotPressed(color(57,128,204));
-            hardwareSettingsLoadButton.textColorNotActive = color(255);
-            hardwareSettingsLoadButton.hasStroke(false);
-            hardwareSettingsLoadButton.setHelpText("Select settings file to load.");
-        
-            hardwareSettingsStoreButton = new Button_obci(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y + navHeight + 3), 83, navHeight - 6, "Save Settings", 12);
-            hardwareSettingsStoreButton.setCornerRoundess((int)(navHeight-6));
-            hardwareSettingsStoreButton.setFont(p5,12);
-            hardwareSettingsStoreButton.setColorNotPressed(color(57,128,204));
-            hardwareSettingsStoreButton.textColorNotActive = color(255);
-            hardwareSettingsStoreButton.hasStroke(false);
-            hardwareSettingsStoreButton.setHelpText("Save current settings to file.");
-        }
-
-        int x_hsc = int(ts_x);
-        int y_hsc = int(ts_y);
-        int w_hsc = int(ts_w); //width of montage controls (on left of montage)
-        int h_hsc = int(ts_h); //height of montage controls (on left of montage)
+        int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
+        int y_hsc = int(channelBars[0].plot.getPos()[1]);
+        int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
+        int h_hsc = int(ts_h - 4);
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            adsSettingsController = new ADS1299SettingsController(tsChanSelect.activeChan, (int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc - 4, channelBarHeight);
+            hardwareSettings = createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
 
@@ -235,45 +209,40 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            // offset based on whether channel select is open or not.
-            int chanSelectOffset = 0;
-            if (tsChanSelect.isVisible()) {
-                chanSelectOffset = navHeight;
+            // offset based on whether channel select or hardwareSettings are open or not
+            int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
             }
 
-            //Update channel checkboxes and active channels
-            tsChanSelect.update(x, y, w);
+            //Responsively size the channelBarHeight
             channelBarHeight = int((ts_h - chanSelectOffset) / tsChanSelect.activeChan.size());
 
+            //Update channel checkboxes
+            tsChanSelect.update(x, y, w);
+
+            //Update and resize all active channels
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
                 channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+                channelBars[activeChan].update();
             }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
-                hardwareSettingsLoadButton.setPos(hardwareSettingsButton.but_x + hardwareSettingsButton.but_dx + 4, (int)(y0 + navHeight + 3));
-                hardwareSettingsStoreButton.setPos(hardwareSettingsLoadButton.but_x + hardwareSettingsLoadButton.but_dx + 4, (int)(y0 + navHeight + 3));
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
+            
+            //Responsively size and update the HardwareSettingsController
+            if (currentBoard instanceof ADS1299SettingsBoard) {               
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0] - 2, int(ts_h - chanSelectOffset) - 4, channelBarHeight - 2);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettingsButton);
-                ignoreButtonCheck(hardwareSettingsLoadButton);
-                ignoreButtonCheck(hardwareSettingsStoreButton);
+                ignoreButtonCheck(hardwareSettings);
             }
-
+            
+            //Update Playback scrollbar and/or display time
             if((currentBoard instanceof FileBoard) && hasScrollbar) {
                 //scrub playback file
                 scrollbar.update();
             } else {
                 timeDisplay.update();
-            }
-
-            //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-                int activeChan = tsChanSelect.activeChan.get(i);
-                channelBars[activeChan].update();
             }
         }
     }
@@ -300,17 +269,26 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettingsButton.draw();
-                hardwareSettingsLoadButton.draw();
-                hardwareSettingsStoreButton.draw();
+            if(currentBoard instanceof ADS1299SettingsBoard) {
+                //This works for now to draw a 1 pixel border around buttons
+                //Would be better to override the ButtonView inside Button class, but it is private....
+                drawButtonBorder(hardwareSettings);
+                hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
 
-            popStyle();
+            tscp5.draw();
             
             tsChanSelect.draw();
+
+            popStyle();
         }
+    }
+
+    void drawButtonBorder(Button b) {
+        pushStyle();
+        fill(bgColor);
+        rect(b.getPosition()[0] - 1, b.getPosition()[1] - 1, b.getWidth() + 2, b.getHeight() + 2);
     }
 
     void screenResized() {
@@ -357,7 +335,7 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettingsButton.setPos((int)(x0 + 80), (int)(y0 + navHeight + 3));
+            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
         }
         
@@ -366,20 +344,6 @@ class W_timeSeries extends Widget {
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
-
-        if (!this.dropdownIsActive) {
-            if(currentBoard instanceof ADS1299SettingsBoard) {
-                if (hardwareSettingsButton.isMouseHere()) {
-                    hardwareSettingsButton.setIsActive(true);
-                }
-                if (hardwareSettingsLoadButton.isMouseHere()) {
-                    hardwareSettingsLoadButton.setIsActive(true);
-                }
-                if (hardwareSettingsStoreButton.isMouseHere()) {
-                    hardwareSettingsStoreButton.setIsActive(true);
-                }
-            }
-        }
 
         if(adsSettingsController != null && adsSettingsController.getIsVisible()) {
             if (!this.dropdownIsActive) {
@@ -395,31 +359,11 @@ class W_timeSeries extends Widget {
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        if(currentBoard instanceof ADS1299SettingsBoard) {
-            if(hardwareSettingsButton.isActive && hardwareSettingsButton.isMouseHere()) {
-                println("HardwareSetingsButton: Toggle...");
-                setAdsSettingsVisible(!adsSettingsController.getIsVisible());
-            }
-            if(hardwareSettingsLoadButton.isActive && hardwareSettingsLoadButton.isMouseHere()) {
-                if (isRunning) {
-                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
-                } else {
-                    selectInput("Select settings file to load", "loadSettingsFileSelected");
-                }
-            }
-            if(hardwareSettingsStoreButton.isActive && hardwareSettingsStoreButton.isMouseHere()) {
-                selectOutput("Save settings to file", "storeSettingsFileSelected");
-            }
-            hardwareSettingsButton.setIsActive(false);
-            hardwareSettingsLoadButton.setIsActive(false);
-            hardwareSettingsStoreButton.setIsActive(false);
-        }
-
+        
         if(getAdsSettingsVisible()) {
             adsSettingsController.mouseReleased();
         } 
-        
+
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
             channelBars[activeChan].mouseReleased();
@@ -437,10 +381,10 @@ class W_timeSeries extends Widget {
                 return;
             }
 
-            hardwareSettingsButton.setString("Time Series");
+            hardwareSettings.setCaptionLabel("Time Series");
         }
         else {
-            hardwareSettingsButton.setString("Hardware Settings");
+            hardwareSettings.setCaptionLabel("Hardware Settings");
         }
 
         if (adsSettingsController != null) {
@@ -463,6 +407,31 @@ class W_timeSeries extends Widget {
             tsChanSelect.checkList.activate(i);
             tsChanSelect.activeChan.add(i);
         }
+    }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        myButton = tscp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial",12,true))
+            .toUpperCase(false)
+            .setSize(12)
+            .setText(text)
+            ;
+        myButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {         
+                println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());
+                setAdsSettingsVisible(!adsSettingsController.getIsVisible());
+            }
+        });
+        return myButton;
     }
 
     public List<String> getEnumStrings(TimeSeriesAxisEnum[] enumValues) {
@@ -494,35 +463,7 @@ class W_timeSeries extends Widget {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
- };
-
-void loadSettingsFileSelected(File selection) {
-    if (selection == null) {
-        output("Settings file not selected.");
-    } else {
-        if (currentBoard instanceof ADS1299SettingsBoard) {
-            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
-                output("Settings loaded.");
-            } else {
-                output("Failed to load settings.");
-            }
-        }
-    }
-}
-
-void storeSettingsFileSelected(File selection) {
-    if (selection == null) {
-        output("Settings file not selected.");
-    } else {
-        if (currentBoard instanceof ADS1299SettingsBoard) {
-            if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().saveToFile(selection.getAbsolutePath())) {
-                output("Settings saved.");
-            } else {
-                output("Failed to save settings.");
-            }
-        }
-    }
-}
+};
 
 //These functions are activated when an item from the corresponding dropdown is selected
 void VertScale_TS(int n) {
@@ -692,15 +633,8 @@ class ChannelBar{
 
         //update the voltage values
         val = dataProcessing.data_std_uV[channelIndex];
-        fmt = String.format(getFmt(val),val) + " uVrms";
-        if (is_railed != null) {
-            if (is_railed[channelIndex].is_railed == true) {
-                fmt = "RAILED - " + fmt;
-            } else if (is_railed[channelIndex].is_railed_warn == true) {
-                fmt = "NEAR RAILED - " + fmt;
-            }
-        }
-        voltageValue.setText(fmt);
+        voltageValue.string = String.format(getFmt(val),val) + " uVrms";
+        voltageValue.string = is_railed[channelIndex].notificationString + voltageValue.string;
 
         //update the impedance values
         val = data_elec_imp_ohm[channelIndex]/1000;
