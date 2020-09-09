@@ -272,24 +272,14 @@ abstract class AuxReadBar{
     private void updatePlotPoints() {
         int totalPoints = numSeconds * currentBoard.getSampleRate();
         List<double[]> allData = currentBoard.getData(totalPoints);
-        List<double[]> downscaledData = null;
-        if (downscale < 2) {
-            downscaledData = allData;
-        }
-        else {
-            downscaledData = new ArrayList<double[]>();
-            for (int i = 0; i < totalPoints; i+=downscale) {
-                downscaledData.add(allData.get(i));
-            }
-        }
-        
-        double max = downscaledData.get(0)[channel];
+
+        double max = allData.get(0)[channel];
         double min = max;
 
-        for (int i=0; i < nPoints; i++) {
-            float timey = calcTimeAxis(i);
-            double value = downscaledData.get(i)[channel];
-            auxReadPoints.set(i, timey, (float)value, "");
+        for (int i=0, counter=0; i < allData.size(); i+=downscale, counter++) {
+            float timey = calcTimeAxis(counter);
+            double value = allData.get(i)[channel];
+            auxReadPoints.set(counter, timey, (float)value, "");
 
             max = value > max ? value : max;
             min = value < min ? value : min;
