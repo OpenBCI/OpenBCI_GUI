@@ -767,12 +767,12 @@ class ChannelBar{
 
     //Update yAxis text and responsively size Textfield
     private void customYLim(Textfield tf, int limit) {
-        String positiveSign = limit > 0 ? "+" : "";
-        tf.setText(positiveSign+limit+"uV");
+        String s = limit > 0 ? "+" : "";
+        s += limit+"uV";
+        tf.setText(s);
         //Responsively scale button size based on number of digits
-        int n = (int)(log10(abs(limit)));
-        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 7)) * padding_4 : 0;
-        tf.setSize(tf.autoWidth + padding, yAxisLabel_h);
+        int _width =  s.length() * 6;
+        tf.setSize(_width, yAxisLabel_h);
     }
 
     private void autoScale() {
@@ -902,7 +902,7 @@ class ChannelBar{
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(createFont("Arial",12,true))
+            .setFont(createFont("Arial",10,true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -987,32 +987,6 @@ class ChannelBar{
                 int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
                 tf.setText(Integer.toString(i));
             }
-            
-            /*
-            //This method provides full details on user interaction with this controller
-            switch(theEvent.getAction()) {
-                case(ControlP5.ACTION_ENTER): 
-                println("Action:ENTER");
-                break;
-                case(ControlP5.ACTION_LEAVE): 
-                println("Action:LEAVE");
-                break;
-                case(ControlP5.ACTION_PRESSED): 
-                println("Action:PRESSED");
-                break;
-                case(ControlP5.ACTION_RELEASED): 
-                println("Action:RELEASED");
-                break;
-                case(ControlP5.ACTION_RELEASEDOUTSIDE): 
-                println("Action:RELEASED OUTSIDE");
-                break;
-                case(ControlP5.ACTION_BROADCAST): 
-                println("Action:BROADCAST");
-                String s = theEvent.getController().getStringValue();
-                println("string===" + s);
-                break;
-            }
-            */
         }
     }
 };
