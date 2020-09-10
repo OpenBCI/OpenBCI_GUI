@@ -269,10 +269,7 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            if(currentBoard instanceof ADS1299SettingsBoard) {
-                //This works for now to draw a 1 pixel border around buttons
-                //Would be better to override the ButtonView inside Button class, but it is private....
-                drawButtonBorder(hardwareSettings);
+            if (currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
@@ -283,12 +280,6 @@ class W_timeSeries extends Widget {
 
             popStyle();
         }
-    }
-
-    void drawButtonBorder(Button b) {
-        pushStyle();
-        fill(bgColor);
-        rect(b.getPosition()[0] - 1, b.getPosition()[1] - 1, b.getWidth() + 2, b.getHeight() + 2);
     }
 
     void screenResized() {
