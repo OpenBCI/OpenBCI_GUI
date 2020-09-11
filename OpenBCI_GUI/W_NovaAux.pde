@@ -176,13 +176,17 @@ abstract class AuxReadBar{
 
     private boolean drawAnalogValue;
     private int lastProcessedDataPacketInd = 0;
+    private int downscale = 1; // 1 means not downscale
 
-    AuxReadBar(PApplet _parent, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h, float _plotAxisH) {
+    AuxReadBar(PApplet _parent, int targetSamplingRate, int auxChanNum, String label, boolean isBotBar, int _x, int _y, int _w, int _h, float _plotAxisH) {
 
         auxValuesPosition = auxChanNum;
         auxChanLabel = label;
         isBottomBar = isBotBar;
         plotBottomWellH = _plotAxisH;
+        if (targetSamplingRate > 0) {
+            downscale = currentBoard.getSampleRate() / targetSamplingRate;
+        }
 
         x = _x;
         y = _y;
@@ -266,15 +270,16 @@ abstract class AuxReadBar{
     }
 
     private void updatePlotPoints() {
-        List<double[]> allData = currentBoard.getData(nPoints);
-        
+        int totalPoints = numSeconds * currentBoard.getSampleRate();
+        List<double[]> allData = currentBoard.getData(totalPoints);
+
         double max = allData.get(0)[channel];
         double min = max;
 
-        for (int i=0; i < nPoints; i++) {
-            float timey = calcTimeAxis(i);
+        for (int i=0, counter=0; i < allData.size(); i+=downscale, counter++) {
+            float timey = calcTimeAxis(counter);
             double value = allData.get(i)[channel];
-            auxReadPoints.set(i, timey, (float)value, "");
+            auxReadPoints.set(counter, timey, (float)value, "");
 
             max = value > max ? value : max;
             min = value < min ? value : min;
@@ -321,7 +326,7 @@ abstract class AuxReadBar{
     }
 
     private int nPointsBasedOnDataSource() {
-        return numSeconds * currentBoard.getSampleRate();
+        return (int) ((double)numSeconds * currentBoard.getSampleRate() / downscale);
     }
 
     public void adjustTimeAxis(int _newTimeSize) {
@@ -370,7 +375,7 @@ class PPGReadBar extends AuxReadBar {
     private int ppgChan;
 
     public PPGReadBar (PApplet _parent, int auxChanNum, PPGCapableBoard _ppgBoard, int _ppgChan, String _label, boolean isBotBar, int _x, int _y, int _w, int _h, float axisH) {
-        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
+        super(_parent, 50, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
         ppgBoard = _ppgBoard;
         ppgChan = _ppgChan;
     }
@@ -390,7 +395,7 @@ class EDAReadBar extends AuxReadBar {
     private EDACapableBoard edaBoard;
 
     public EDAReadBar (PApplet _parent, int auxChanNum, EDACapableBoard _edaBoard, String _label, boolean isBotBar, int _x, int _y, int _w, int _h, float axisH) {
-        super(_parent, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
+        super(_parent, 0, auxChanNum, _label, isBotBar, _x, _y, _w, _h, axisH);
         edaBoard = _edaBoard;
     }
 
