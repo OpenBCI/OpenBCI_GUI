@@ -571,7 +571,7 @@ class TopNav {
         return version;
     }
 
-    //Convert version string to float using each character as a digit.
+    //Convert version string to float using each segment as a digit.
     //Examples: 5.0.0-alpha.2 -> 500.12, 5.0.1-beta.9 -> 501.29, 5.0.1 -> 501.5
     private float getVersionAsFloat(String s) {
         float val = 0f;
