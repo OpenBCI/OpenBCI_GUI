@@ -368,7 +368,7 @@ void loadHardwareSettings(File selection) {
             if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
                 outputSuccess("Hardware Settings Loaded!");
             } else {
-                outputError("Failed to load hardware settings.");
+                outputError("Failed to load Hardware Settings.");
             }
         }
     }
@@ -382,7 +382,7 @@ void storeHardwareSettings(File selection) {
             if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().saveToFile(selection.getAbsolutePath())) {
                 outputSuccess("Hardware Settings Saved!");
             } else {
-                outputError("Failed to save hardware settings.");
+                outputError("Failed to save Hardware Settings.");
             }
         }
     }
