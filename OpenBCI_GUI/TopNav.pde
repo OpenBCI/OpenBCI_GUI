@@ -525,7 +525,7 @@ class TopNav {
         configSelector.mouseReleased();
     } //end mouseReleased
 
-    //Load data from the latest release page from Github and the info.plist file
+    //Load data from the latest release page using Github API and compare to local version
     void loadCompareGUIVersion() {
         //Copy the local GUI version from OpenBCI_GUI.pde
         float localVersion = getVersionAsFloat(localGUIVersionString);
