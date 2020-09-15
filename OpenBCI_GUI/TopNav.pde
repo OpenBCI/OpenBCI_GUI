@@ -98,7 +98,7 @@ class TopNav {
         updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
         updateGuiVersionButton.setFont(h3, 16);
         
-        loadGUIVersionDataFromInternet();
+        loadCompareGUIVersion();
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
@@ -526,42 +526,34 @@ class TopNav {
     } //end mouseReleased
 
     //Load data from the latest release page from Github and the info.plist file
-    void loadGUIVersionDataFromInternet() {
+    void loadCompareGUIVersion() {
         //Copy the local GUI version from OpenBCI_GUI.pde
-        String localVersionString = localGUIVersionString;
-        localVersionString = removeV(localVersionString);
-        localVersionString = removeAlphaBeta(localVersionString);
-        int[] localVersionCompareArray = int(split(localVersionString, '.'));
-        localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
+        float localVersion = getVersionAsFloat(localGUIVersionString);
 
         internetIsConnected = pingWebsite(guiLatestVersionGithubAPI);
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
             //Get the latest release version from Github
-            String webTitle = getGUIVersionFromInternet(guiLatestVersionGithubAPI);   
-            webGUIVersionString = removeV(webTitle);
-            webGUIVersionString = removeAlphaBeta(webGUIVersionString);
-
-            ///////Perform Comparison (000-1000 format)
-            int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
-            webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
+            String remoteVersionString = getGUIVersionFromInternet(guiLatestVersionGithubAPI);
+            float remoteVersion = getVersionAsFloat(remoteVersionString);   
             
-            println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-            if (localGUIVersionInt < webGUIVersionInt) {
+            println("Local Version: " + localGUIVersionString + ", Latest Version: " + remoteVersionString);
+
+            if (localVersion < remoteVersion) {
                 guiVersionIsUpToDate = false;
                 println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
-                updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-            } else if (localGUIVersionInt >= webGUIVersionInt) {
+                updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+            } else {
                 guiVersionIsUpToDate = true;
                 println("GUI is up to date!");
-                updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
+                updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
             }
             //Pressing the button opens web browser to Github latest release page
             updateGuiVersionButton.setURL(guiLatestReleaseLocation);
         } else {
             println("TopNav: Internet Connection Not Available");
-            println("Local GUI Version: " + localGUIVersionInt);
+            println("Local GUI Version: " + localGUIVersionString);
             updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
         }
     }
@@ -579,20 +571,36 @@ class TopNav {
         return version;
     }
 
-    private String removeV(String s) {
+    //Convert version string to float using each character as a digit.
+    //Examples: 5.0.0-alpha.2 -> 500.12, 5.0.1-beta.9 -> 501.29, 5.0.1 -> 501.5
+    private float getVersionAsFloat(String s) {
+        float val = 0f;
+        
+        //Remove v
         if (s.charAt(0) == 'v') {
             String[] tempArr = split(s, 'v');
             s = tempArr[1];
         }
-        return s;
-    }
-
-    private String removeAlphaBeta(String s) {
+        
+        //Check for minor version
         if (s.length() > 5) {
-            String[] tempArr = split(s, '-');
-            s = tempArr[0];
+            String[] minorVersion = split(s, '-'); //separate the string at the dash between "5.0.0" and "alpha.2"
+            s = minorVersion[0];
+            String[] mv = split(minorVersion[1], '.');
+            if (mv[0].equals("alpha")) {
+                val += .1;
+            } else if (mv[0].equals("beta")) {
+                val += .2;
+            }
+            val += Integer.parseInt(mv[1]) * .01;
+        } else {
+            val += .5; //For stable version, add .5 so that it is greater than all alpha and beta versions
         }
-        return s;
+
+        int[] webVersionCompareArray = int(split(s, '.'));
+        val = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2] + val;
+        
+        return val;
     }
 
     private String getSmoothingString() {
