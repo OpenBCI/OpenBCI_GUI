@@ -534,12 +534,12 @@ class TopNav {
         int[] localVersionCompareArray = int(split(localVersionString, '.'));
         localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
 
-        internetIsConnected = pingWebsite(guiLatestReleaseLocation);
+        internetIsConnected = pingWebsite(guiLatestVersionGithubAPI);
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
             //Get the latest release version from Github
-            String webTitle = getGUIVersionFromInternet(guiLatestReleaseLocation);   
+            String webTitle = getGUIVersionFromInternet(guiLatestVersionGithubAPI);   
             webGUIVersionString = removeV(webTitle);
             webGUIVersionString = removeAlphaBeta(webGUIVersionString);
 
