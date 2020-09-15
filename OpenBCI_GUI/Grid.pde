@@ -27,6 +27,8 @@ class Grid {
         pushStyle();
         textAlign(LEFT);        
         stroke(0);
+        fill(0, 0, 0, 255);
+        textFont(p5, 12);
 
         // draw row lines
         for (int i = 0; i < numRows - 1; i++) {

@@ -54,8 +54,8 @@ class BoardNull extends Board {
     }
 
     @Override
-    public void sendCommand(String command) {
-        // empty
+    public boolean sendCommand(String command) {
+        return false;
     }
 
     protected double[][] getNewDataInternal() {

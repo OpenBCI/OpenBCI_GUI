@@ -1,8 +1,14 @@
 # v5.0.1
 
 ### Improvements
-* add load and store for hardware settings
-* add configurable gain behaviour
+* Add ability to save and load hardware settings
+* Add configurable gain behaviour
+* Add custom vertical scale UI to Time Series
+
+### Bug Fixes
+* Fix #805
+* Covert GUI v4 sample data to GUI v5 format #830
+* Display GUI version in title bar, along with FPS
 
 ### Bug Fixes
 * Check internet connection to Github using a timeout, so the app doesn't stall
