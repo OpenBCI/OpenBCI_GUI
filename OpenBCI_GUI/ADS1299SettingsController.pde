@@ -87,8 +87,6 @@ class ADS1299SettingsController {
             stroke(31,69,110, 50);
             fill(0, 0, 0, 100);
             rect(x, y - navHeight, w, navHeight);
-            drawButtonBorder(hardwareSettingsLoad);
-            drawButtonBorder(hardwareSettingsSave);
             hwsCp5.draw();
 
             //background
@@ -292,12 +290,6 @@ class ADS1299SettingsController {
 
     public boolean getIsVisible() {
         return isVisible;
-    }
-
-    void drawButtonBorder(Button b) {
-        pushStyle();
-        fill(bgColor);
-        rect(b.getPosition()[0] - 1, b.getPosition()[1] - 1, b.getWidth() + 2, b.getHeight() + 2);
     }
 
     private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
