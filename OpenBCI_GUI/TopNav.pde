@@ -98,7 +98,7 @@ class TopNav {
         updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
         updateGuiVersionButton.setFont(h3, 16);
         
-        checkInternetFetchGithubData();
+        loadGUIVersionDataFromInternet();
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
@@ -526,7 +526,7 @@ class TopNav {
     } //end mouseReleased
 
     //Load data from the latest release page from Github and the info.plist file
-    void loadGUIVersionData() {
+    void loadGUIVersionDataFromInternet() {
         //Copy the local GUI version from OpenBCI_GUI.pde
         String localVersionString = localGUIVersionString;
         localVersionString = removeV(localVersionString);
@@ -551,34 +551,20 @@ class TopNav {
             if (localGUIVersionInt < webGUIVersionInt) {
                 guiVersionIsUpToDate = false;
                 println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
+                updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
             } else if (localGUIVersionInt >= webGUIVersionInt) {
                 guiVersionIsUpToDate = true;
                 println("GUI is up to date!");
+                updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
             }
+            //Pressing the button opens web browser to Github latest release page
+            updateGuiVersionButton.setURL(guiLatestReleaseLocation);
+            guiVersionCheckHasOccured = true;
         } else {
             println("TopNav: Internet Connection Not Available");
             println("Local GUI Version: " + localGUIVersionInt);
+            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
         }
-    }
-
-    // This function returns a substring between two substrings (before and after).
-    String giveMeTextBetween(String s, String before, String after) {
-        // Find the index of before
-        int start = s.indexOf(before);
-        if (start == -1) {
-            return "";
-        }
-
-        // Move to the end of the beginning tag
-        // and find the index of the "after" String
-        start += before.length();
-        int end = s.indexOf(after, start);
-        if (end == -1) {
-            return "";
-        }
-
-        // Return the text in between
-        return s.substring(start, end);
     }
 
     String removeV(String s) {
@@ -595,31 +581,6 @@ class TopNav {
             s = tempArr[0];
         }
         return s;
-    }
-
-    void checkInternetFetchGithubData() {
-        try {
-            loadGUIVersionData();
-            //Print the message to the button help text that appears when mouse hovers over button
-            if (!guiVersionCheckHasOccured && internetIsConnected) {
-                if (guiVersionIsUpToDate) {
-                    updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                } else {
-                    updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                }
-                //Pressing the button opens web browser to Github latest release page
-                updateGuiVersionButton.setURL(guiLatestReleaseLocation);
-                guiVersionCheckHasOccured = true;
-            } else {
-                guiVersionIsUpToDate = true;
-                updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.-- Local: " + localGUIVersionString);
-            }
-            
-        } catch (NullPointerException e)  {
-            //e.printStackTrace();
-            //If github is unreachable, catch the error update button help text
-            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
-        }
     }
 
     private String getSmoothingString() {
