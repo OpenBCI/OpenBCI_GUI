@@ -534,22 +534,13 @@ class TopNav {
         int[] localVersionCompareArray = int(split(localVersionString, '.'));
         localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
 
-        internetIsConnected = pingWebsite("https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest");
+        internetIsConnected = pingWebsite(guiLatestReleaseLocation);
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
             //Get the latest release version from Github
-            String webTitle;
-            String[] version;
-            String[] lines = loadStrings(guiLatestReleaseLocation);
-            String html = join(lines, "");
-            String start = "<title>";
-            String end = "</title>";
-            webTitle = giveMeTextBetween(html, start, end);
-            version = split(webTitle, '·'); //split the string in the html title
-            String[] webVersionNumberArray = split(version[0], ' ');
-            
-            webGUIVersionString = removeV(webVersionNumberArray[1]);
+            String webTitle = getGUIVersionFromInternet(guiLatestReleaseLocation);   
+            webGUIVersionString = removeV(webTitle);
             webGUIVersionString = removeAlphaBeta(webGUIVersionString);
 
             ///////Perform Comparison (000-1000 format)

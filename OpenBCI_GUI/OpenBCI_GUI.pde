@@ -57,6 +57,8 @@ import edu.ucsd.sccn.LSL; //for LSL
 //import com.sun.jna.Pointer;
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
+import http.requests.*;
+
 
 //------------------------------------------------------------------------
 //                       Global Variables & Instances
@@ -64,7 +66,7 @@ import org.apache.commons.lang3.time.StopWatch;
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
 String localGUIVersionString = "v5.0.1";
 String localGUIVersionDate = "August 2020";
-String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+String guiLatestReleaseLocation = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiVersionCheckHasOccured = false;
 
 //used to switch between application states

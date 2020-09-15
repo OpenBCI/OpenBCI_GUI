@@ -339,3 +339,16 @@ public boolean pingWebsite(String url) {
 
     }
 }
+
+public String getGUIVersionFromInternet(String _url) {
+    String version = null;
+    try {
+        GetRequest get = new GetRequest(_url);
+        get.send(); // program will wait untill the request is completed
+        JSONObject response = parseJSONObject(get.getContent());
+        version = response.getString("name");
+    } catch (Exception e) {
+        outputError("Network Error: Unable to resolve host @ " + _url);
+    }
+    return version;
+}
