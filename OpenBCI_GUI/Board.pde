@@ -102,7 +102,7 @@ abstract class Board implements DataSource {
 
     public abstract boolean isConnected();
 
-    public abstract void sendCommand(String command);
+    public abstract boolean sendCommand(String command);
 
     // ***************************************
     // protected methods implemented by board

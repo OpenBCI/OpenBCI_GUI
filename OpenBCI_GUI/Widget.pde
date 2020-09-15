@@ -280,6 +280,7 @@ class Widget{
         }
     }
 
+    //For use with old button class
     void ignoreButtonCheck(Button_obci b) {
         //ignore top left button interaction when widgetSelector dropdown is active
         if (dropdownIsActive) {
@@ -287,6 +288,18 @@ class Widget{
         } else {
             if (b.getIgnoreHover()) {
                 b.setIgnoreHover(false);
+            }
+        }
+    }
+
+    //For use with Cp5 Buttons
+    void ignoreButtonCheck(Button b) {
+        //ignore top left button interaction when widgetSelector dropdown is active
+        if (dropdownIsActive) {
+            b.lock();
+        } else {
+            if (b.isLock()) {
+                b.unlock();
             }
         }
     }
@@ -366,12 +379,7 @@ void WidgetSelector(int n){
     //set the text of the widgetSelector to the newly selected widget
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-//    ChannelSelect is currently used by BandPower and SSVEP Widgets         //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-
+// This is a helpful class that will add a channel select feature to a Widget
 class ChannelSelect {
 
     //----------CHANNEL SELECT INFRASTRUCTURE
@@ -528,7 +536,7 @@ class ChannelSelect {
 
         cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
         //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+        checkList.setPosition(x + 2, y + offset);
     }
 
     void showChannelText() {

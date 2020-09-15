@@ -65,7 +65,7 @@ import http.requests.*;
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
 String localGUIVersionString = "v5.0.1";
-String localGUIVersionDate = "August 2020";
+String localGUIVersionDate = "September 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -136,8 +136,9 @@ int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show f
 
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
-final int threshold_railed = int(pow(2, 23)-1000);  //fully railed should be +/- 2^23, so set this threshold close to that value
-final int threshold_railed_warn = int(pow(2, 23)*0.9); //set a somewhat smaller value as the warning threshold
+// thresholds are pecentages of max possible value
+final double threshold_railed = 90.0;
+final double threshold_railed_warn = 75.0;
 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
@@ -511,6 +512,8 @@ void initSystem() {
             break;
         case DATASOURCE_NOVAXR:
             currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
+            // Replace line above with line below to test brainflow synthetic
+            //currentBoard = new BoardBrainFlowSynthetic(16);
             break;
         case DATASOURCE_STREAMING:
             currentBoard = new BoardBrainFlowStreaming(
@@ -801,42 +804,8 @@ void systemDraw() { //for drawing to the screen
     //background(255);  //clear the screen
 
     if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //update the title of the figure;
-        switch (eegDataSource) {
-        case DATASOURCE_CYTON:
-            switch (outputDataSource) {
-            case OUTPUT_SOURCE_ODF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_BDF:
-                surface.setTitle(int(frameRate) + " fps, " + (int)dataLogger.getSecondsWritten() + " secs Saved, Writing to " + output_fname);
-                break;
-            case OUTPUT_SOURCE_NONE:
-            default:
-                surface.setTitle(int(frameRate) + " fps");
-                break;
-            }
-            break;
-        case DATASOURCE_SYNTHETIC:
-            surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
-            break;
-        case DATASOURCE_PLAYBACKFILE:
-            surface.setTitle(int(frameRate) + " fps, Reading from: " + playbackData_fname);
-            break;
-        case DATASOURCE_GANGLION:
-            surface.setTitle(int(frameRate) + " fps, Ganglion!");
-            break;
-        default:
-            surface.setTitle(int(frameRate) + " fps");
-            break;
-        }
-
         wm.draw();
-
         drawContainers();
-    } else { //systemMode != 10
-        //still print title information about fps
-        surface.setTitle(int(frameRate) + " fps - OpenBCI GUI");
     }
 
     if (systemMode >= SYSTEMMODE_PREINIT) {
@@ -858,6 +827,9 @@ void systemDraw() { //for drawing to the screen
     if (midInit) {
         drawOverlay();
     }
+
+    //Display GUI version and FPS in the title bar of the app
+    surface.setTitle("OpenBCI GUI " + localGUIVersionString + " - " + localGUIVersionDate + " - " + int(frameRate) + " fps");
 }
 
 void requestReinit() {
