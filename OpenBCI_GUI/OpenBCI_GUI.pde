@@ -68,7 +68,6 @@ String localGUIVersionString = "v5.0.1";
 String localGUIVersionDate = "August 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
-Boolean guiVersionCheckHasOccured = false;
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;

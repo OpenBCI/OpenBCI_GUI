@@ -559,7 +559,6 @@ class TopNav {
             }
             //Pressing the button opens web browser to Github latest release page
             updateGuiVersionButton.setURL(guiLatestReleaseLocation);
-            guiVersionCheckHasOccured = true;
         } else {
             println("TopNav: Internet Connection Not Available");
             println("Local GUI Version: " + localGUIVersionInt);
@@ -567,7 +566,20 @@ class TopNav {
         }
     }
 
-    String removeV(String s) {
+    private String getGUIVersionFromInternet(String _url) {
+        String version = null;
+        try {
+            GetRequest get = new GetRequest(_url);
+            get.send(); // program will wait untill the request is completed
+            JSONObject response = parseJSONObject(get.getContent());
+            version = response.getString("name");
+        } catch (Exception e) {
+            outputError("Network Error: Unable to resolve host @ " + _url);
+        }
+        return version;
+    }
+
+    private String removeV(String s) {
         if (s.charAt(0) == 'v') {
             String[] tempArr = split(s, 'v');
             s = tempArr[1];
@@ -575,7 +587,7 @@ class TopNav {
         return s;
     }
 
-    String removeAlphaBeta(String s) {
+    private String removeAlphaBeta(String s) {
         if (s.length() > 5) {
             String[] tempArr = split(s, '-');
             s = tempArr[0];
