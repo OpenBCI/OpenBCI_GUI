@@ -35,9 +35,9 @@ class ADS1299SettingsController {
         hwsCp5.setAutoDraw(false);
         
         int colOffset = (w / numControlButtons) / 2;
-        createHWSettingsLoadButton(loadButton, "HardwareSettingsLoad", "Load Settings", x + colOffset - button_w/2, y - button_h - 3, button_w, button_h);
-        createHWSettingsSaveButton(saveButton, "HardwareSettingsSave", "Save Settings", x + colOffset + (w/numControlButtons) - button_w/2, y - button_h - 3, button_w, button_h);
-        createHWSettingsSendButton(saveButton, "HardwareSettingsSend", "Send Settings", x + colOffset + (w/numControlButtons)*2 - button_w/2, y - button_h - 3, button_w, button_h);
+        createHWSettingsLoadButton(loadButton, "HardwareSettingsLoad", "Load", x + colOffset - button_w/2, y - button_h - 3, button_w, button_h);
+        createHWSettingsSaveButton(saveButton, "HardwareSettingsSave", "Save", x + colOffset + (w/numControlButtons) - button_w/2, y - button_h - 3, button_w, button_h);
+        createHWSettingsSendButton(saveButton, "HardwareSettingsSend", "Send", x + colOffset + (w/numControlButtons)*2 - button_w/2, y - button_h - 3, button_w, button_h);
 
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
