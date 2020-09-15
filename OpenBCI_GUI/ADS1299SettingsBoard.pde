@@ -262,7 +262,6 @@ class ADS1299Settings {
             }
             Gson gson = new Gson();
             values = gson.fromJson(fileContents.toString(), ADS1299SettingsValues.class);
-            commitAll();
             return true;
         } catch (IOException e) {
             e.printStackTrace();

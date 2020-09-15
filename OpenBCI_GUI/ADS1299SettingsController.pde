@@ -5,8 +5,10 @@ class ADS1299SettingsController {
     private int x, y, w, h;
 
     private ControlP5 hwsCp5;
-    private Button hardwareSettingsLoad;
-    private Button hardwareSettingsSave;
+    private final int numControlButtons = 3;
+    private Button loadButton;
+    private Button saveButton;
+    private Button sendButton;
     private int button_w = 80;
     private int button_h = navHeight - 6;
 
@@ -31,9 +33,11 @@ class ADS1299SettingsController {
         hwsCp5 = new ControlP5(_parent);
         hwsCp5.setGraphics(_parent, 0,0);
         hwsCp5.setAutoDraw(false);
-
-        hardwareSettingsLoad = createButton(hardwareSettingsLoad, "HardwareSettingsLoad", "Load Settings", x + (w/4) - button_w/2, y - button_h - 3, button_w, button_h);
-        hardwareSettingsSave = createButton(hardwareSettingsSave, "HardwareSettingsSave", "Save Settings", x + (w/2) + (w/4) - button_w/2, y - button_h - 3, button_w, button_h);
+        
+        int colOffset = (w / numControlButtons) / 2;
+        createHWSettingsLoadButton(loadButton, "HardwareSettingsLoad", "Load Settings", x + colOffset - button_w/2, y - button_h - 3, button_w, button_h);
+        createHWSettingsSaveButton(saveButton, "HardwareSettingsSave", "Save Settings", x + colOffset + (w/numControlButtons) - button_w/2, y - button_h - 3, button_w, button_h);
+        createHWSettingsSendButton(saveButton, "HardwareSettingsSend", "Send Settings", x + colOffset + (w/numControlButtons)*2 - button_w/2, y - button_h - 3, button_w, button_h);
 
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
@@ -280,8 +284,10 @@ class ADS1299SettingsController {
 
         resizeButtons(_channelBarHeight);
 
-        hardwareSettingsLoad.setPosition(x + (w/4) - button_w/2, y - button_h - 3);
-        hardwareSettingsSave.setPosition(x + (w/2) + (w/4) - button_w/2, y - button_h - 3);
+        int colOffset = (w / numControlButtons) / 2;
+        loadButton.setPosition(x + colOffset - button_w/2, y - button_h - 3);
+        saveButton.setPosition(x + colOffset + (w/numControlButtons) - button_w/2, y - button_h - 3);
+        sendButton.setPosition(x + colOffset + (w/numControlButtons)*2 - button_w/2, y - button_h - 3);
     }
 
     public void setIsVisible (boolean v) {
@@ -310,27 +316,47 @@ class ADS1299SettingsController {
             ;
         switch(name) {
             case "HardwareSettingsLoad":
-                myButton.onClick(new CallbackListener() {
-                    public void controlEvent(CallbackEvent theEvent) {
-                        if (isRunning) {
-                            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
-                        } else {
-                            selectInput("Select settings file to load", "loadHardwareSettings");
-                        }
-                    }
-                });
+                
                 break;
             case "HardwareSettingsSave":
-                myButton.onClick(new CallbackListener() {
-                    public void controlEvent(CallbackEvent theEvent) {
-                        selectOutput("Save settings to file", "storeHardwareSettings");
-                    }
-                });
+
                 break;
             default:
                 break;
         }
         return myButton;
+    }
+
+    private void createHWSettingsLoadButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        loadButton = createButton(myButton, name, text, _x, _y, _w, _h);
+        loadButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (isRunning) {
+                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
+                } else {
+                    selectInput("Select settings file to load", "loadHardwareSettings");
+                }
+            }
+        });
+    }
+
+    private void createHWSettingsSaveButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        saveButton = createButton(myButton, name, text, _x, _y, _w, _h);
+        saveButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectOutput("Save settings to file", "storeHardwareSettings");
+            }
+        });
+    }
+
+    private void createHWSettingsSendButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+        sendButton = createButton(myButton, name, text, _x, _y, _w, _h);
+        sendButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
+                output("Hardware Settings sent to board!");
+            }
+        });
     }
 };
 
