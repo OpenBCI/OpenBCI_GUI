@@ -100,6 +100,7 @@ class W_timeSeries extends Widget {
     private float plotBottomWell;
     private float playbackWidgetHeight;
     private int channelBarHeight;
+    public final int interChannelBarSpace = 2;
 
     private ControlP5 tscp5;
     private Button hardwareSettings;
@@ -225,13 +226,16 @@ class W_timeSeries extends Widget {
             for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
-                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), channelBarHeight); //bar x, bar y, bar w, bar h
+                //To make room for channel bar separator, subtract space between channel bars from height
+                int cb_h = channelBarHeight - interChannelBarSpace;
+                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), cb_h);
                 channelBars[activeChan].update();
             }
             
             //Responsively size and update the HardwareSettingsController
-            if (currentBoard instanceof ADS1299SettingsBoard) {               
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0] - 2, int(ts_h - chanSelectOffset) - 4, channelBarHeight - 2);
+            if (currentBoard instanceof ADS1299SettingsBoard) {
+                int cb_h = channelBarHeight + interChannelBarSpace - 2;           
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], int(ts_h - chanSelectOffset) - interChannelBarSpace, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
                 ignoreButtonCheck(hardwareSettings);
@@ -258,6 +262,7 @@ class W_timeSeries extends Widget {
                 int activeChan = tsChanSelect.activeChan.get(i);
                 channelBars[activeChan].draw(getAdsSettingsVisible());
             }
+            popStyle();
 
             //Display playback scrollbar or timeDisplay, depending on data source
             if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
@@ -269,10 +274,7 @@ class W_timeSeries extends Widget {
                 timeDisplay.draw();
             }
 
-            if(currentBoard instanceof ADS1299SettingsBoard) {
-                //This works for now to draw a 1 pixel border around buttons
-                //Would be better to override the ButtonView inside Button class, but it is private....
-                drawButtonBorder(hardwareSettings);
+            if (currentBoard instanceof ADS1299SettingsBoard) {
                 hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
@@ -283,12 +285,6 @@ class W_timeSeries extends Widget {
 
             popStyle();
         }
-    }
-
-    void drawButtonBorder(Button b) {
-        pushStyle();
-        fill(bgColor);
-        rect(b.getPosition()[0] - 1, b.getPosition()[1] - 1, b.getWidth() + 2, b.getHeight() + 2);
     }
 
     void screenResized() {
@@ -690,11 +686,6 @@ class ChannelBar{
     public void draw(boolean hardwareSettingsAreOpen) {        
         pushStyle();
 
-        //draw channel holder background
-        stroke(31,69,110, 50);
-        fill(255);
-        rect(x,y,w,h);
-
         //draw onOff Button_obci
         onOffButton.draw();
 
@@ -702,11 +693,27 @@ class ChannelBar{
         plot.drawBox();
         plot.drawGridLines(0);
         plot.drawLines();
-        if(channelIndex == nchan-1) { //only draw the x axis label on the bottom channel bar
+        if (isBottomChannel()) { //only draw the x axis label on the bottom channel bar
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
         plot.endDraw();
+
+        //draw channel holder background
+        pushStyle();
+        stroke(31,69,110, 50);
+        //stroke(255,0,0,255);
+        noFill();
+        rect(x,y,w,h);
+
+        //draw channelBar separator line in the middle of interChannelBarSpace
+        if (!isBottomChannel()) {
+            pushStyle();
+            stroke(bgColor);
+            strokeWeight(1);
+            int separator_y = y + h + int(w_timeSeries.interChannelBarSpace/2);
+            line(x, separator_y, x + w, separator_y);
+        }
 
         //draw impedance check Button_obci
         drawVoltageValue = true;
@@ -776,12 +783,12 @@ class ChannelBar{
 
     //Update yAxis text and responsively size Textfield
     private void customYLim(Textfield tf, int limit) {
-        String positiveSign = limit > 0 ? "+" : "";
-        tf.setText(positiveSign+limit+"uV");
+        String s = limit > 0 ? "+" : "";
+        s += limit+"uV";
+        tf.setText(s);
         //Responsively scale button size based on number of digits
-        int n = (int)(log10(abs(limit)));
-        int padding =  n > 2 ? Math.round(map(n, 0, 10, 0, 7)) * padding_4 : 0;
-        tf.setSize(tf.autoWidth + padding, yAxisLabel_h);
+        int _width =  s.length() * 6;
+        tf.setSize(_width, yAxisLabel_h);
     }
 
     private void autoScale() {
@@ -839,6 +846,10 @@ class ChannelBar{
 
     public void updateCP5(PApplet _parent) {
         cbCp5.setGraphics(_parent, 0, 0);
+    }
+
+    private boolean isBottomChannel() {
+        return channelIndex == nchan - 1;
     }
 
     public void mousePressed() {
@@ -911,7 +922,7 @@ class ChannelBar{
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(createFont("Arial",12,true))
+            .setFont(createFont("Arial",10,true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -996,32 +1007,6 @@ class ChannelBar{
                 int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
                 tf.setText(Integer.toString(i));
             }
-            
-            /*
-            //This method provides full details on user interaction with this controller
-            switch(theEvent.getAction()) {
-                case(ControlP5.ACTION_ENTER): 
-                println("Action:ENTER");
-                break;
-                case(ControlP5.ACTION_LEAVE): 
-                println("Action:LEAVE");
-                break;
-                case(ControlP5.ACTION_PRESSED): 
-                println("Action:PRESSED");
-                break;
-                case(ControlP5.ACTION_RELEASED): 
-                println("Action:RELEASED");
-                break;
-                case(ControlP5.ACTION_RELEASEDOUTSIDE): 
-                println("Action:RELEASED OUTSIDE");
-                break;
-                case(ControlP5.ACTION_BROADCAST): 
-                println("Action:BROADCAST");
-                String s = theEvent.getController().getStringValue();
-                println("string===" + s);
-                break;
-            }
-            */
         }
     }
 };
