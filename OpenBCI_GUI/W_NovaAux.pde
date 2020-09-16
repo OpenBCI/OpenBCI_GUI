@@ -273,26 +273,24 @@ abstract class AuxReadBar{
         int totalPoints = numSeconds * currentBoard.getSampleRate();
         List<double[]> allData = currentBoard.getData(totalPoints);
 
-        double max = allData.get(0)[channel];
-        double min = max;
+        float max = (float)allData.get(0)[channel];
+        float min = (float)max;
 
         for (int i=0, counter=0; i < allData.size(); i+=downscale, counter++) {
             float timey = calcTimeAxis(counter);
-            double value = allData.get(i)[channel];
-            auxReadPoints.set(counter, timey, (float)value, "");
+            float value = (float)allData.get(i)[channel];
+            auxReadPoints.set(counter, timey, value, "");
 
             max = value > max ? value : max;
             min = value < min ? value : min;
         }
-        float minF = (float)Math.floor(min);
-        float maxF = (float)Math.ceil(max);
         //When not using autoscale, center around average value
         if (!isAutoscale) {
-            float avg = (minF + maxF) / 2;
-            minF = avg - yLim;
-            maxF = avg + yLim;
+            float avg = (min + max) / 2;
+            min = avg - yLim;
+            max = avg + yLim;
         }
-        plot.setYLim(minF, maxF);
+        plot.setYLim(min, max);
         plot.setPoints(auxReadPoints);
     }
 
