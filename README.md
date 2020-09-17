@@ -104,7 +104,7 @@ Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_
 #### Platforms
 OpenBCI GUI has been tested on the following platforms:
 - OS X 10.8.5 or later
-- Windows 7, 8.1, and 10 (64-bit)
+- Windows 8.1 and 10 (64-bit)
 - Linux Ubuntu Desktop 18
 
 OpenGL acceleration is required.
