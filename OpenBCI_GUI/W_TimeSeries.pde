@@ -276,7 +276,6 @@ class W_timeSeries extends Widget {
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
 
@@ -343,12 +342,6 @@ class W_timeSeries extends Widget {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
 
-        if(adsSettingsController != null && adsSettingsController.getIsVisible()) {
-            if (!this.dropdownIsActive) {
-                adsSettingsController.mousePressed();
-            }
-        }
-
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
             channelBars[activeChan].mousePressed();
@@ -357,10 +350,6 @@ class W_timeSeries extends Widget {
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        
-        if(getAdsSettingsVisible()) {
-            adsSettingsController.mouseReleased();
-        } 
 
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);

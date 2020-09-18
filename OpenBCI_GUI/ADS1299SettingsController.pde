@@ -34,7 +34,7 @@ class ADS1299SettingsController {
     private int channelCount;
     private List<Integer> activeChannels;
 
-    ADS1299SettingsController(PApplet _parent, List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight){
+    ADS1299SettingsController(PApplet _parent, List<Integer> _activeChannels, int _x, int _y, int _w, int _h, int _channelBarHeight) {
         x = _x;
         y = _y;
         w = _w;
@@ -69,50 +69,11 @@ class ADS1299SettingsController {
         createAllDropdowns(_channelBarHeight);
     }
 
-    public void update(){
-        for (int i=0; i<currentBoard.getNumEXGChannels(); i++) {
-            
-            /*
-            // grab the name out of the enum directly.
-            gainButtons[i].setString(boardSettings.values.gain[i].getName());
-            inputTypeButtons[i].setString(boardSettings.values.inputType[i].getName());
-            biasButtons[i].setString(boardSettings.values.bias[i].getName());
-            srb2Buttons[i].setString(boardSettings.values.srb2[i].getName());
-            srb1Buttons[i].setString(boardSettings.values.srb1[i].getName());
-            */
-
-            /*
-            // grey out buttons when the channel is not active
-            if (boardSettings.isChannelActive(i)) {
-                gainButtons[i].setColorNotPressed(colorNotPressed);
-                inputTypeButtons[i].setColorNotPressed(colorNotPressed);
-                biasButtons[i].setColorNotPressed(colorNotPressed);
-                srb2Buttons[i].setColorNotPressed(colorNotPressed);
-                srb1Buttons[i].setColorNotPressed(colorNotPressed);
-
-                gainButtons[i].setIgnoreHover(false);
-                inputTypeButtons[i].setIgnoreHover(false);
-                biasButtons[i].setIgnoreHover(false);
-                srb2Buttons[i].setIgnoreHover(false);
-                srb1Buttons[i].setIgnoreHover(false);
-            } else {
-                gainButtons[i].setColorNotPressed(color(128));
-                inputTypeButtons[i].setColorNotPressed(color(128));
-                biasButtons[i].setColorNotPressed(color(128));
-                srb2Buttons[i].setColorNotPressed(color(128));
-                srb1Buttons[i].setColorNotPressed(color(128));
-
-                gainButtons[i].setIgnoreHover(true);
-                inputTypeButtons[i].setIgnoreHover(true);
-                biasButtons[i].setIgnoreHover(true);
-                srb2Buttons[i].setIgnoreHover(true);
-                srb1Buttons[i].setIgnoreHover(true);
-            }
-            */
-        }
+    public void update() {
+  
     }
 
-    public void draw(){
+    public void draw() {
 
         if (isVisible) {
             //Control button space above channels
@@ -184,92 +145,7 @@ class ADS1299SettingsController {
         }
     }
 
-
-    public void mousePressed(){
-        if (isVisible) {
-            for (int i : activeChannels) {
-
-                // buttons only work if the channel is active
-                if (boardSettings.isChannelActive(i)) {
-
-                    /*
-                    if(gainButtons[i].isMouseHere()) {
-                        gainButtons[i].wasPressed = true;
-                        gainButtons[i].isActive = true;                    
-                    }
-                    if(inputTypeButtons[i].isMouseHere()) {
-                        inputTypeButtons[i].wasPressed = true;
-                        inputTypeButtons[i].isActive = true;                    
-                    }
-                    if(biasButtons[i].isMouseHere()) {
-                        biasButtons[i].wasPressed = true;
-                        biasButtons[i].isActive = true;                    
-                    }
-                    if(srb2Buttons[i].isMouseHere()) {
-                        srb2Buttons[i].wasPressed = true;
-                        srb2Buttons[i].isActive = true;                    
-                    }
-                    if(srb1Buttons[i].isMouseHere()) {
-                        srb1Buttons[i].wasPressed = true;
-                        srb1Buttons[i].isActive = true;                    
-                    }
-                    */
-                }
-            }
-        }
-    }
-
-    public void mouseReleased(){
-        if (isVisible) {
-            for (int i : activeChannels) {
-                /*
-                if(gainButtons[i].isMouseHere() && gainButtons[i].wasPressed) {
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    gainButtons[i].wasPressed = false;
-                    gainButtons[i].isActive = false; 
-                }
-                if(inputTypeButtons[i].isMouseHere() && inputTypeButtons[i].wasPressed) {
-                    boardSettings.values.inputType[i] = boardSettings.values.inputType[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.inputType[i] = boardSettings.values.inputType[i].getPrev();
-                    }
-                    inputTypeButtons[i].wasPressed = false;
-                    inputTypeButtons[i].isActive = false;  
-                }
-                if(biasButtons[i].isMouseHere() && biasButtons[i].wasPressed) {
-                    boardSettings.values.bias[i] = boardSettings.values.bias[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.bias[i] = boardSettings.values.bias[i].getPrev();
-                    }
-                    biasButtons[i].wasPressed = false;
-                    biasButtons[i].isActive = false;   
-                }
-                if(srb2Buttons[i].isMouseHere() && srb2Buttons[i].wasPressed) {
-                    boardSettings.values.srb2[i] = boardSettings.values.srb2[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.srb2[i] = boardSettings.values.srb2[i].getPrev();
-                    }
-                    srb2Buttons[i].wasPressed = false;
-                    srb2Buttons[i].isActive = false;    
-                }
-                if(srb1Buttons[i].isMouseHere() && srb1Buttons[i].wasPressed) {
-                    boardSettings.values.srb1[i] = boardSettings.values.srb1[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.srb1[i] = boardSettings.values.srb1[i].getPrev();
-                    }
-                    srb1Buttons[i].wasPressed = false;
-                    srb1Buttons[i].isActive = false;  
-                }
-                */
-            }
-        }
-    }
-
-    public void resize(int _x, int _y, int _w, int _h, int _channelBarHeight){
+    public void resize(int _x, int _y, int _w, int _h, int _channelBarHeight) {
         x = _x;
         y = _y;
         w = _w;
@@ -353,7 +229,7 @@ class ADS1299SettingsController {
         });
     }
 
-    private ScrollableList createDropdown(int chanNum, String name, ADSSettingsEnum[] enumValues){
+    private ScrollableList createDropdown(int chanNum, String name, ADSSettingsEnum[] enumValues, ADSSettingsEnum e) {
         int dropdownW = int((w - (spaceBetweenButtons*6)) / 5);
         int dropdownH = 18;
         ScrollableList list = new CustomScrollableList(hwsCp5, name)
@@ -377,7 +253,7 @@ class ADS1299SettingsController {
         //Style the text in the ScrollableList
         list.getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].getName())
+            .setText(e.getName())
             .setFont(h5)
             .setSize(12)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -385,12 +261,13 @@ class ADS1299SettingsController {
             ;
         list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].getName())
+            .setText(e.getName())
             .setFont(p6)
             .setSize(10) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+        list.addCallback(new SLCallbackListener(e, chanNum));
         return list;
     }
 
@@ -404,81 +281,53 @@ class ADS1299SettingsController {
         srb2Lists = new ScrollableList[channelCount];
         srb1Lists = new ScrollableList[channelCount];
 
+        //Init dropdowns in reverse so that chan 1 draws on top of chan 2, etc.
         for (int i = channelCount - 1; i >= 0; i--) {
-
-            gainLists[i] = createDropdown(i, "gain_ch_"+i, boardSettings.values.gain[i].values());
-            gainLists[i].onClick(new CallbackListener() {
-                public void controlEvent(CallbackEvent theEvent) {
-                    /*
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    */
-                }
-            });
-            
-            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+i, boardSettings.values.inputType[i].values());
-            inputTypeLists[i].onClick(new CallbackListener() {
-                public void controlEvent(CallbackEvent theEvent) {
-                    /*
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    */
-                }
-            });
-
-            biasLists[i] = createDropdown(i, "bias_ch_"+i, boardSettings.values.bias[i].values());
-            biasLists[i].onClick(new CallbackListener() {
-                public void controlEvent(CallbackEvent theEvent) {
-                    /*
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    */
-                }
-            });
-
-            srb2Lists[i] = createDropdown(i, "srb2_ch_"+i, boardSettings.values.srb2[i].values());
-            srb2Lists[i].onClick(new CallbackListener() {
-                public void controlEvent(CallbackEvent theEvent) {
-                    /*
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    */
-                }
-            });
-
-            srb1Lists[i] = createDropdown(i, "srb1_ch_"+i, boardSettings.values.srb1[i].values());
-            srb1Lists[i].onClick(new CallbackListener() {
-                public void controlEvent(CallbackEvent theEvent) {
-                    /*
-                    // loops over the enum
-                    boardSettings.values.gain[i] = boardSettings.values.gain[i].getNext();
-                    if(!boardSettings.commit(i)) {
-                        boardSettings.values.gain[i] = boardSettings.values.gain[i].getPrev();
-                    }
-                    */
-                }
-            });
-            /*
-            inputTypeLists[i] = new ScrollableList(0, 0, 0, 0, "Unlabeled");
-            biasLists[i] = new ScrollableList(0, 0, 0, 0, "Unlabeled");
-            srb2Lists[i] = new ScrollableList(0, 0, 0, 0, "Unlabeled");
-            srb1Lists[i] = new ScrollableList(0, 0, 0, 0, "Unlabeled");
-            */
+            gainLists[i] = createDropdown(i, "gain_ch_"+i, boardSettings.values.gain[i].values(), boardSettings.values.gain[i]);
+            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+i, boardSettings.values.inputType[i].values(), boardSettings.values.inputType[i]);
+            biasLists[i] = createDropdown(i, "bias_ch_"+i, boardSettings.values.bias[i].values(), boardSettings.values.bias[i]);
+            srb2Lists[i] = createDropdown(i, "srb2_ch_"+i, boardSettings.values.srb2[i].values(), boardSettings.values.srb2[i]);
+            srb1Lists[i] = createDropdown(i, "srb1_ch_"+i, boardSettings.values.srb1[i].values(), boardSettings.values.srb1[i]);
         }
 
         resizeDropdowns(_channelBarHeight);
+    }
+
+    private class SLCallbackListener implements CallbackListener {
+        private ADSSettingsEnum myEnum;
+        private int channel;
+    
+        SLCallbackListener(ADSSettingsEnum _e, int _i)  {
+            myEnum = _e;
+            channel = _i;
+        }
+        public void controlEvent(CallbackEvent theEvent) {
+            
+            //Selecting an item from ScrollableList triggers Broadcast
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+                verbosePrint("HardwareSettings: Selected " + myEnum.getName() + " for Channel" + channel);
+                int val = (int)(theEvent.getController()).getValue();
+                Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+                myEnum = (ADSSettingsEnum)bob.get("value");
+
+                if (myEnum instanceof Gain) {
+                    boardSettings.values.gain[channel] = (Gain)myEnum;
+                } else if (myEnum instanceof InputType) {
+                    boardSettings.values.inputType[channel] = (InputType)myEnum;
+                } else if (myEnum instanceof Bias) {
+                    boardSettings.values.bias[channel] = (Bias)myEnum;
+                } else if (myEnum instanceof Srb2) {
+                    boardSettings.values.srb2[channel] = (Srb2)myEnum;
+                } else if (myEnum instanceof Srb1) {
+                    boardSettings.values.srb1[channel] = (Srb1)myEnum;
+                }
+                
+                if(!boardSettings.commit(channel)) {
+                    //myEnum = myEnum.getPrev();
+                    //revert settings if fails to commit
+                }
+            }
+        }
     }
 };
 
