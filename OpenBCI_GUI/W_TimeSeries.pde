@@ -190,7 +190,7 @@ class W_timeSeries extends Widget {
         int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
         int y_hsc = int(channelBars[0].plot.getPos()[1]);
         int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
-        int h_hsc = int(ts_h - 4);
+        int h_hsc = channelBarHeight * numChannelBars + navH;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettings = createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
@@ -234,8 +234,9 @@ class W_timeSeries extends Widget {
             
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                int cb_h = channelBarHeight + interChannelBarSpace - 2;           
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], int(ts_h - chanSelectOffset) - interChannelBarSpace, cb_h);
+                int cb_h = channelBarHeight + interChannelBarSpace - 2;
+                int h_hsc = channelBarHeight * numChannelBars + navH;        
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
                 ignoreButtonCheck(hardwareSettings);
@@ -332,7 +333,8 @@ class W_timeSeries extends Widget {
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
+            int h_hsc = channelBarHeight * numChannelBars + navH;
+            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, channelBarHeight);
         }
         
     }
@@ -514,6 +516,7 @@ class ChannelBar{
     int uiSpaceWidth;
     int padding_4 = 4;
     int minimumChannelHeight;
+    int plotBottomWellH = 45;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -580,7 +583,7 @@ class ChannelBar{
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - padding_4 - impButton_diameter, h);
+        plot.setDim(w - uiSpaceWidth, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
@@ -590,6 +593,7 @@ class ChannelBar{
         plot.setAllFontProperties("Arial", 0, 14);
         if(channelIndex == nchan-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
+            plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
         }
         // plot.setBgColor(color(31,69,110));
 
@@ -693,7 +697,8 @@ class ChannelBar{
         plot.drawBox();
         plot.drawGridLines(0);
         plot.drawLines();
-        if (isBottomChannel()) { //only draw the x axis label on the bottom channel bar
+        //Draw the x axis label on the bottom channel bar, hide if hardwareSettings are open
+        if (isBottomChannel() && !hardwareSettingsAreOpen) {
             plot.drawXAxis();
             plot.getXAxis().draw();
         }

@@ -113,8 +113,8 @@ enum InputType implements ADSSettingsEnum {
 }
 
 enum Bias implements ADSSettingsEnum {
-    NO_INCLUDE("Don't Include"),
-    INCLUDE("Include");
+    NO_INCLUDE("No"),
+    INCLUDE("Yes");
 
     private String name;
 
