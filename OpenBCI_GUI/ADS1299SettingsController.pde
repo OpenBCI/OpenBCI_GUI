@@ -2,7 +2,6 @@
 class ADS1299SettingsController {
     private PApplet _parentApplet;
     private boolean isVisible = false;
-    private boolean previousIsVisible = false;
     private int x, y, w, h;
     private final int padding_3 = 3;
     private final int navH = 22;
@@ -55,6 +54,7 @@ class ADS1299SettingsController {
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
         boardSettings = settingsBoard.getADS1299Settings();
+        boardSettings.savePreviousValues(); //Save default board settings upon instantiation
         channelCount = currentBoard.getNumEXGChannels();
 
         color labelBG = color(220);
@@ -71,12 +71,6 @@ class ADS1299SettingsController {
     }
 
     public void update() {
-        
-        //Save values when user opens this view
-        if (previousIsVisible != isVisible && isVisible) {
-            boardSettings.savePreviousValues();
-            previousIsVisible = isVisible;
-        }
   
     }
 

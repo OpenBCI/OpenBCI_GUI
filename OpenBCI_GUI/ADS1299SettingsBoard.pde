@@ -215,7 +215,7 @@ public class ADS1299SettingsValues {
 class ADS1299Settings {
     
     public ADS1299SettingsValues values;
-    public String previousValues;
+    public String defaultValues;
 
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
@@ -254,7 +254,6 @@ class ADS1299Settings {
     }
 
     public boolean loadSettingsValues(String filename) {
-        previousValues = getJson();
         try {
             File file = new File(filename);
             StringBuilder fileContents = new StringBuilder((int)file.length());        
@@ -278,7 +277,6 @@ class ADS1299Settings {
 
     public boolean saveToFile(String filename) {
         String json = getJson();
-        previousValues = getJson();
         try {
             FileWriter writer = new FileWriter(filename);
             writer.write(json);
@@ -341,14 +339,14 @@ class ADS1299Settings {
         return noErrors;
     }
 
-    public void savePreviousValues() {
-        previousValues = getJson();
+    public void saveDefaultValues() {
+        defaultValues = getJson();
     }
 
-    public void loadPreviousValues() {
+    public void loadDefaultValues() {
         // restore old settings in UI
         Gson gson = new Gson();
-        values = gson.fromJson(previousValues, ADS1299SettingsValues.class);
+        values = gson.fromJson(defaultValues, ADS1299SettingsValues.class);
     }
 }
 
