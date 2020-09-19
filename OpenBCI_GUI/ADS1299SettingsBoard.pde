@@ -215,6 +215,7 @@ public class ADS1299SettingsValues {
 class ADS1299Settings {
     
     public ADS1299SettingsValues values;
+    public String previousValues;
 
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
@@ -253,6 +254,7 @@ class ADS1299Settings {
     }
 
     public boolean loadSettingsValues(String filename) {
+        previousValues = getJson();
         try {
             File file = new File(filename);
             StringBuilder fileContents = new StringBuilder((int)file.length());        
@@ -276,6 +278,7 @@ class ADS1299Settings {
 
     public boolean saveToFile(String filename) {
         String json = getJson();
+        previousValues = getJson();
         try {
             FileWriter writer = new FileWriter(filename);
             writer.write(json);
@@ -316,6 +319,7 @@ class ADS1299Settings {
         }
     }
 
+    //Return true if sendCommand is successful
     public boolean commit(int chan) {
         String command = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
                                         values.powerDown[chan].ordinal(), values.gain[chan].ordinal(),
@@ -325,10 +329,26 @@ class ADS1299Settings {
         return board.sendCommand(command);
     }
 
-    public void commitAll() {
+    //Return true if all commits are successful
+    public boolean commitAll() {
+        boolean noErrors = true;
         for (int i=0; i<board.getNumEXGChannels(); i++) {
-            commit(i);
+            boolean res = commit(i);
+            if (!res) {
+                noErrors = false;   
+            }
         }
+        return noErrors;
+    }
+
+    public void savePreviousValues() {
+        previousValues = getJson();
+    }
+
+    public void loadPreviousValues() {
+        // restore old settings in UI
+        Gson gson = new Gson();
+        values = gson.fromJson(previousValues, ADS1299SettingsValues.class);
     }
 }
 

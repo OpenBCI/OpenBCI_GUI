@@ -2,6 +2,7 @@
 class ADS1299SettingsController {
     private PApplet _parentApplet;
     private boolean isVisible = false;
+    private boolean previousIsVisible = false;
     private int x, y, w, h;
     private final int padding_3 = 3;
     private final int navH = 22;
@@ -70,6 +71,12 @@ class ADS1299SettingsController {
     }
 
     public void update() {
+        
+        //Save values when user opens this view
+        if (previousIsVisible != isVisible && isVisible) {
+            boardSettings.savePreviousValues();
+            previousIsVisible = isVisible;
+        }
   
     }
 
@@ -223,8 +230,19 @@ class ADS1299SettingsController {
         sendButton = createButton(myButton, name, text, _x, _y, _w, _h);
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
-                output("Hardware Settings sent to board!");
+                if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll()) {
+                    output("Hardware Settings sent to board!");
+                } else {
+                    PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
+                    boardSettings.loadPreviousValues();
+                    for (int i = 0; i < channelCount; i++) {
+                        gainLists[i].setValue(boardSettings.values.gain[i].ordinal());  
+                        inputTypeLists[i].setValue(boardSettings.values.inputType[i].ordinal());
+                        biasLists[i].setValue(boardSettings.values.bias[i].ordinal());
+                        srb2Lists[i].setValue(boardSettings.values.srb2[i].ordinal());
+                        srb1Lists[i].setValue(boardSettings.values.srb1[i].ordinal());
+                    }
+                }
             }
         });
     }
@@ -308,7 +326,6 @@ class ADS1299SettingsController {
                 ADSSettingsEnum myEnum = (ADSSettingsEnum)bob.get("value");
                 verbosePrint("HardwareSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getName());
 
-                //Update the data model
                 if (myEnum instanceof Gain) {
                     boardSettings.values.gain[channel] = (Gain)myEnum;
                 } else if (myEnum instanceof InputType) {
@@ -319,11 +336,6 @@ class ADS1299SettingsController {
                     boardSettings.values.srb2[channel] = (Srb2)myEnum;
                 } else if (myEnum instanceof Srb1) {
                     boardSettings.values.srb1[channel] = (Srb1)myEnum;
-                }
-                
-                if(!boardSettings.commit(channel)) {
-                    //myEnum = myEnum.getPrev();
-                    //revert settings if fails to commit
                 }
             }
         }
