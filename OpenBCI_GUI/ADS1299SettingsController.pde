@@ -54,7 +54,7 @@ class ADS1299SettingsController {
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
         boardSettings = settingsBoard.getADS1299Settings();
-        boardSettings.savePreviousValues(); //Save default board settings upon instantiation
+        boardSettings.saveDefaultValues(); //Save default board settings upon instantiation
         channelCount = currentBoard.getNumEXGChannels();
 
         color labelBG = color(220);
@@ -228,7 +228,7 @@ class ADS1299SettingsController {
                     output("Hardware Settings sent to board!");
                 } else {
                     PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
-                    boardSettings.loadPreviousValues();
+                    boardSettings.loadDefaultValues();
                     for (int i = 0; i < channelCount; i++) {
                         gainLists[i].setValue(boardSettings.values.gain[i].ordinal());  
                         inputTypeLists[i].setValue(boardSettings.values.inputType[i].ordinal());
