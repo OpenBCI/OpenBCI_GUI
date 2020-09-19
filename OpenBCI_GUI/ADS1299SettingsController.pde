@@ -267,7 +267,7 @@ class ADS1299SettingsController {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-        list.addCallback(new SLCallbackListener(e, chanNum));
+        list.addCallback(new SLCallbackListener(chanNum));
         return list;
     }
 
@@ -283,33 +283,32 @@ class ADS1299SettingsController {
 
         //Init dropdowns in reverse so that chan 1 draws on top of chan 2, etc.
         for (int i = channelCount - 1; i >= 0; i--) {
-            gainLists[i] = createDropdown(i, "gain_ch_"+i, boardSettings.values.gain[i].values(), boardSettings.values.gain[i]);
-            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+i, boardSettings.values.inputType[i].values(), boardSettings.values.inputType[i]);
-            biasLists[i] = createDropdown(i, "bias_ch_"+i, boardSettings.values.bias[i].values(), boardSettings.values.bias[i]);
-            srb2Lists[i] = createDropdown(i, "srb2_ch_"+i, boardSettings.values.srb2[i].values(), boardSettings.values.srb2[i]);
-            srb1Lists[i] = createDropdown(i, "srb1_ch_"+i, boardSettings.values.srb1[i].values(), boardSettings.values.srb1[i]);
+            gainLists[i] = createDropdown(i, "gain_ch_"+(i+1), boardSettings.values.gain[i].values(), boardSettings.values.gain[i]);
+            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+(i+1), boardSettings.values.inputType[i].values(), boardSettings.values.inputType[i]);
+            biasLists[i] = createDropdown(i, "bias_ch_"+(i+1), boardSettings.values.bias[i].values(), boardSettings.values.bias[i]);
+            srb2Lists[i] = createDropdown(i, "srb2_ch_"+(i+1), boardSettings.values.srb2[i].values(), boardSettings.values.srb2[i]);
+            srb1Lists[i] = createDropdown(i, "srb1_ch_"+(i+1), boardSettings.values.srb1[i].values(), boardSettings.values.srb1[i]);
         }
 
         resizeDropdowns(_channelBarHeight);
     }
 
     private class SLCallbackListener implements CallbackListener {
-        private ADSSettingsEnum myEnum;
         private int channel;
     
-        SLCallbackListener(ADSSettingsEnum _e, int _i)  {
-            myEnum = _e;
+        SLCallbackListener(int _i)  {
             channel = _i;
         }
         public void controlEvent(CallbackEvent theEvent) {
             
             //Selecting an item from ScrollableList triggers Broadcast
             if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
-                verbosePrint("HardwareSettings: Selected " + myEnum.getName() + " for Channel" + channel);
                 int val = (int)(theEvent.getController()).getValue();
                 Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-                myEnum = (ADSSettingsEnum)bob.get("value");
+                ADSSettingsEnum myEnum = (ADSSettingsEnum)bob.get("value");
+                verbosePrint("HardwareSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getName());
 
+                //Update the data model
                 if (myEnum instanceof Gain) {
                     boardSettings.values.gain[channel] = (Gain)myEnum;
                 } else if (myEnum instanceof InputType) {
