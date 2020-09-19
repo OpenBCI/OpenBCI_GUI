@@ -5,8 +5,6 @@ import java.io.*;
 
 interface ADSSettingsEnum {
     public String getName();
-    public ADSSettingsEnum getNext();
-    public ADSSettingsEnum getPrev();
 }
 
 enum PowerDown implements ADSSettingsEnum {
@@ -22,18 +20,6 @@ enum PowerDown implements ADSSettingsEnum {
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public PowerDown getNext() {
-        PowerDown[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public PowerDown getPrev() {
-        PowerDown[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -61,18 +47,6 @@ enum Gain implements ADSSettingsEnum {
         return name;
     }
 
-    @Override
-    public Gain getNext() {
-        Gain[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public Gain getPrev() {
-        Gain[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
-    }
-
     public double getScalar() {
         return scalar;
     }
@@ -98,18 +72,6 @@ enum InputType implements ADSSettingsEnum {
     public String getName() {
         return name;
     }
-
-    @Override
-    public InputType getNext() {
-        InputType[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public InputType getPrev() {
-        InputType[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
-    }
 }
 
 enum Bias implements ADSSettingsEnum {
@@ -125,18 +87,6 @@ enum Bias implements ADSSettingsEnum {
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public Bias getNext() {
-        Bias[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public Bias getPrev() {
-        Bias[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -154,18 +104,6 @@ enum Srb2 implements ADSSettingsEnum {
     public String getName() {
         return name;
     }
-
-    @Override
-    public Srb2 getNext() {
-        Srb2[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public Srb2 getPrev() {
-        Srb2[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
-    }
 }
 
 enum Srb1 implements ADSSettingsEnum {
@@ -181,18 +119,6 @@ enum Srb1 implements ADSSettingsEnum {
     @Override
     public String getName() {
         return name;
-    }
-
-    @Override
-    public Srb1 getNext() {
-        Srb1[] vals = values();
-        return vals[(this.ordinal()+1) % vals.length];
-    }
-
-    @Override
-    public Srb1 getPrev() {
-        Srb1[] vals = values();
-        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
