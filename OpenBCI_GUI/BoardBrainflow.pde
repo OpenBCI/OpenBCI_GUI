@@ -70,7 +70,7 @@ abstract class BoardBrainFlow extends Board {
         }
 
         try {
-            boardShim.start_stream (3600);
+            boardShim.start_stream ();
             streaming = true;
         }
         catch (BrainFlowError e) {
