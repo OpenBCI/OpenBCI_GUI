@@ -204,32 +204,75 @@ int[] range(int first, int second) {
 //                            Classes
 //------------------------------------------------------------------------
 
+class RectDimensions {
+    public int x, y, w, h;
+}
+
 class DataStatus {
     public boolean is_railed;
     private double threshold_railed;
     public boolean is_railed_warn;
     private double threshold_railed_warn;
+    private double percentage;
+    public String notificationString;
+    private final color default_color = bgColor;
+    private final color yellow = color(254,211,0,255);
+    private final color red = color(255,0,0,255);
+    private color colorIndicator = default_color;
 
-    DataStatus(int thresh_railed, int thresh_railed_warn) {
-        // convert int24 value to uV
+    DataStatus(double thresh_railed, double thresh_railed_warn) {
+        notificationString = "";
         is_railed = false;
-        // convert thresholds to uV
         threshold_railed = thresh_railed;
         is_railed_warn = false;
         threshold_railed_warn = thresh_railed_warn;
+        percentage = 0.0;
     }
-    public void update(float data_value, int channel) {
+    // here data is a full range for 20sec of data and doesnt take in account window size
+    public void update(float[] data, int channel) {
+        percentage = 0.0;
         is_railed = false;
         is_railed_warn = false;
+
+        if (data.length < 1) {
+            return;
+        }
+
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
-            if (abs(data_value) >= threshold_railed * scaler) {
-                is_railed = true;
+            double scaler =  (4.5 / (pow (2, 23) - 1) / 1.0 * 1000000.);
+            if (((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler()) {
+                scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
             }
-            if (abs(data_value) >= threshold_railed_warn * scaler) {
+            double maxVal = scaler * pow (2, 23);
+            int numSeconds = 3;
+            int nPoints = numSeconds * currentBoard.getSampleRate();
+            int endPos = data.length;
+            int startPos = Math.max(0, endPos - nPoints);
+
+            float max = Math.abs(data[startPos]);
+            for (int i = startPos; i < endPos; i++) {
+                if (Math.abs(data[i]) > max) {
+                    max = Math.abs(data[i]);
+                }
+            }
+            percentage = (max / maxVal) * 100.0;
+
+            notificationString = "Not Railed " + String.format("%1$,.2f", percentage) + "% ";
+            colorIndicator = default_color;
+            if (percentage > threshold_railed_warn) {
                 is_railed_warn = true;
+                notificationString = "Near Railed " + String.format("%1$,.2f", percentage) + "% ";
+                colorIndicator = yellow;
+            }
+            if (percentage > threshold_railed) {
+                is_railed = true;
+                notificationString = "Railed " + String.format("%1$,.2f", percentage) + "% ";
+                colorIndicator = red;
             }
         }
+    }
+    public color getColor() {
+        return colorIndicator;
     }
 };
 
@@ -254,21 +297,22 @@ class PlotFontInfo {
         int buttonLabel_size = 12;
 };
 
+
 class TextBox {
-    public int x, y;
-    public color textColor;
-    public color backgroundColor;
+    private int x, y;
+    private color textColor;
+    private color backgroundColor;
     private PFont font;
     private int fontSize;
-    public String string;
-    public boolean drawBackground;
-    public int backgroundEdge_pixels;
-    public int alignH,alignV;
+    private String string;
+    private boolean drawBackground = true;
+    private int backgroundEdge_pixels;
+    private int alignH,alignV;
 
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
-        backgroundColor = color(255,255,255);
-        textColor = color(0,0,0);
+        textColor = color(0);
+        backgroundColor = color(255);
         fontSize = 12;
         font = p5;
         backgroundEdge_pixels = 1;
@@ -276,13 +320,24 @@ class TextBox {
         alignH = LEFT;
         alignV = BOTTOM;
     }
-    
-    public void setFontSize(int size) {
-        fontSize = size;
-        font = p5;
+
+    TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _alignH, int _alignV) {
+        this(s, x1, y1);
+        textColor = _textColor;
+        backgroundColor = _backgroundColor;
+        drawBackground = true;
+        alignH = _alignH;
+        alignV = _alignV;
     }
+
+    TextBox(String s, int x1, int y1, color _textColor, color _backgroundColor, int _fontSize, PFont _font, int _alignH, int _alignV) {
+        this(s, x1, y1, _textColor, _backgroundColor, _alignH, _alignV);
+        fontSize = _fontSize;
+        font = _font;
+    }
+    
     public void draw() {
-        //define text
+        pushStyle();
         noStroke();
         textFont(font);
 
@@ -302,15 +357,58 @@ class TextBox {
                     break;
             }
             w = w + 2*backgroundEdge_pixels;
-            int h = int(textAscent())+2*backgroundEdge_pixels;
-            int ybox = y - int(round(textAscent())) - backgroundEdge_pixels -2;
+            
+            int h = int(textAscent()) + backgroundEdge_pixels*2;
+            int ybox = y;
+            if (alignV == CENTER) {
+                ybox -= textAscent() / 2 - backgroundEdge_pixels;
+            } else if (alignV == BOTTOM) {
+                ybox -= textAscent() + backgroundEdge_pixels*3;
+            }
             fill(backgroundColor);
             rect(xbox,ybox,w,h);
         }
         //draw the text itself
+        pushStyle();
+        noStroke();
         fill(textColor);
         textAlign(alignH,alignV);
         text(string,x,y);
         strokeWeight(1);
+        popStyle();
+    }
+
+    public void setPosition(int _x, int _y) {
+        x = _x;
+        y = _y;
+    }
+
+    public void setText(String s) {
+        string = s;
+    }
+
+    public void setTextColor(color c) {
+        textColor = c;
     }
 };
+
+public boolean pingWebsite(String url) {
+    int code = 200;
+    try {
+        URL siteURL = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) siteURL.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(2000);
+        connection.connect();
+
+        code = connection.getResponseCode();
+        if (code == 200) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (IOException e) {
+        return false;
+
+    }
+}

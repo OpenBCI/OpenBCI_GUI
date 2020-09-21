@@ -1,7 +1,12 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.io.*;
+
 
 interface ADSSettingsEnum {
     public String getName();
     public ADSSettingsEnum getNext();
+    public ADSSettingsEnum getPrev();
 }
 
 enum PowerDown implements ADSSettingsEnum {
@@ -23,6 +28,12 @@ enum PowerDown implements ADSSettingsEnum {
     public PowerDown getNext() {
         PowerDown[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
+    }
+
+    @Override
+    public PowerDown getPrev() {
+        PowerDown[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -56,6 +67,12 @@ enum Gain implements ADSSettingsEnum {
         return vals[(this.ordinal()+1) % vals.length];
     }
 
+    @Override
+    public Gain getPrev() {
+        Gain[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
+
     public double getScalar() {
         return scalar;
     }
@@ -87,6 +104,12 @@ enum InputType implements ADSSettingsEnum {
         InputType[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
     }
+
+    @Override
+    public InputType getPrev() {
+        InputType[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
 }
 
 enum Bias implements ADSSettingsEnum {
@@ -108,6 +131,12 @@ enum Bias implements ADSSettingsEnum {
     public Bias getNext() {
         Bias[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
+    }
+
+    @Override
+    public Bias getPrev() {
+        Bias[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
     }
 }
 
@@ -131,6 +160,12 @@ enum Srb2 implements ADSSettingsEnum {
         Srb2[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
     }
+
+    @Override
+    public Srb2 getPrev() {
+        Srb2[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
 }
 
 enum Srb1 implements ADSSettingsEnum {
@@ -153,81 +188,142 @@ enum Srb1 implements ADSSettingsEnum {
         Srb1[] vals = values();
         return vals[(this.ordinal()+1) % vals.length];
     }
+
+    @Override
+    public Srb1 getPrev() {
+        Srb1[] vals = values();
+        return vals[(this.ordinal()-1+vals.length) % vals.length];
+    }
+}
+
+public class ADS1299SettingsValues {
+    public PowerDown[] powerDown;
+    public Gain[] gain;
+    public InputType[] inputType;
+    public Bias[] bias;
+    public Srb2[] srb2;
+    public Srb1[] srb1;
+
+    public Bias[] previousBias;
+    public Srb2[] previousSrb2;
+    public InputType[] previousInputType;
+
+    public ADS1299SettingsValues() {
+    }
 }
 
 class ADS1299Settings {
-    protected PowerDown[] powerDown;
-    protected Gain[] gain;
-    protected InputType[] inputType;
-    protected Bias[] bias;
-    protected Srb2[] srb2;
-    protected Srb1[] srb1;
+    
+    public ADS1299SettingsValues values;
 
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
 
-    private Bias[] previousBias;
-    private Srb2[] previousSrb2; 
-
     ADS1299Settings(Board theBoard) {
         board = theBoard;
         settingsBoard = (ADS1299SettingsBoard)theBoard;
+        values = new ADS1299SettingsValues();
 
         int channelCount = board.getNumEXGChannels();
 
         // initialize all arrays with some defaults
         // (which happen to be Cyton defaults, but they don't have to be.
         // we set defaults on board contruction)
-        powerDown = new PowerDown[channelCount];
-        Arrays.fill(powerDown, PowerDown.ON);
+        values.powerDown = new PowerDown[channelCount];
+        Arrays.fill(values.powerDown, PowerDown.ON);
 
-        gain = new Gain[channelCount];
-        Arrays.fill(gain, Gain.X24);
+        values.gain = new Gain[channelCount];
+        Arrays.fill(values.gain, Gain.X24);
 
-        inputType = new InputType[channelCount];
-        Arrays.fill(inputType, InputType.NORMAL);
+        values.inputType = new InputType[channelCount];
+        Arrays.fill(values.inputType, InputType.NORMAL);
         
-        bias = new Bias[channelCount];
-        Arrays.fill(bias, Bias.INCLUDE);
+        values.bias = new Bias[channelCount];
+        Arrays.fill(values.bias, Bias.INCLUDE);
 
-        srb2 = new Srb2[channelCount];
-        Arrays.fill(srb2, Srb2.CONNECT);
+        values.srb2 = new Srb2[channelCount];
+        Arrays.fill(values.srb2, Srb2.CONNECT);
 
-        srb1 = new Srb1[channelCount];
-        Arrays.fill(srb1, Srb1.DISCONNECT);
+        values.srb1 = new Srb1[channelCount];
+        Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
-        previousBias = bias.clone();
-        previousSrb2 = srb2.clone();
+        values.previousBias = values.bias.clone();
+        values.previousSrb2 = values.srb2.clone();
+        values.previousInputType = values.inputType.clone();
+    }
+
+    public boolean loadSettingsValues(String filename) {
+        try {
+            File file = new File(filename);
+            StringBuilder fileContents = new StringBuilder((int)file.length());        
+            Scanner scanner = new Scanner(file);
+            while(scanner.hasNextLine()) {
+                fileContents.append(scanner.nextLine() + System.lineSeparator());
+            }
+            Gson gson = new Gson();
+            values = gson.fromJson(fileContents.toString(), ADS1299SettingsValues.class);
+            commitAll();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public String getJson() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(values);
+    }
+
+    public boolean saveToFile(String filename) {
+        String json = getJson();
+        try {
+            FileWriter writer = new FileWriter(filename);
+            writer.write(json);
+            writer.close();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean isChannelActive(int chan) {
-        return powerDown[chan] == PowerDown.ON;
+        return values.powerDown[chan] == PowerDown.ON;
     }
 
     public void setChannelActive(int chan, boolean active) {
+        String oldValues = getJson();
         if (active) {
-            bias[chan] = previousBias[chan];
-            srb2[chan] = previousSrb2[chan];
-
+            values.bias[chan] = values.previousBias[chan];
+            values.srb2[chan] = values.previousSrb2[chan];
+            values.inputType[chan] = values.previousInputType[chan];
         } else {
-            previousBias[chan] = bias[chan];
-            previousSrb2[chan] = srb2[chan];
+            values.previousBias[chan] = values.bias[chan];
+            values.previousSrb2[chan] = values.srb2[chan];
+            values.previousInputType[chan] = values.inputType[chan];
 
-            bias[chan] = Bias.NO_INCLUDE;
-            srb2[chan] = Srb2.DISCONNECT;
+            values.bias[chan] = Bias.NO_INCLUDE;
+            values.srb2[chan] = Srb2.DISCONNECT;
+            values.inputType[chan] = InputType.SHORTED;
         }
 
-        powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
-        commit(chan);
+        values.powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
+        boolean res = commit(chan);
+        if (!res) {
+            // restore old settings in UI
+            Gson gson = new Gson();
+            values = gson.fromJson(oldValues, ADS1299SettingsValues.class);
+        }
     }
 
-    public void commit(int chan) {
+    public boolean commit(int chan) {
         String command = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
-                                        powerDown[chan].ordinal(), gain[chan].ordinal(),
-                                        inputType[chan].ordinal(), bias[chan].ordinal(),
-                                        srb2[chan].ordinal(), srb1[chan].ordinal());
+                                        values.powerDown[chan].ordinal(), values.gain[chan].ordinal(),
+                                        values.inputType[chan].ordinal(), values.bias[chan].ordinal(),
+                                        values.srb2[chan].ordinal(), values.srb1[chan].ordinal());
 
-        board.sendCommand(command);
+        return board.sendCommand(command);
     }
 
     public void commitAll() {
@@ -237,11 +333,12 @@ class ADS1299Settings {
     }
 }
 
-
 interface ADS1299SettingsBoard {
 
     // Interface methods
     public ADS1299Settings getADS1299Settings();
     public char getChannelSelector(int channel);
     public double getGain(int channel);
+    public void setUseDynamicScaler(boolean val);
+    public boolean getUseDynamicScaler();
 };

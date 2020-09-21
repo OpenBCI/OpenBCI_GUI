@@ -1,3 +1,18 @@
+# v5.0.1
+
+### Improvements
+* Add ability to save and load hardware settings
+* Add configurable gain behaviour
+* Add custom vertical scale UI to Time Series
+
+### Bug Fixes
+* Fix #805
+* Covert GUI v4 sample data to GUI v5 format #830
+* Display GUI version in title bar, along with FPS
+
+### Bug Fixes
+* Check internet connection to Github using a timeout, so the app doesn't stall
+
 # v5.0.0
 
 ### Improvements
@@ -11,6 +26,7 @@
 * Add data smoothing option for live Cyton data
 * Cyton Port manual selection only displays serial ports with a dongle connected.
 * Cyton SD file read works without conversion to playback file
+* Add BrainFlow Streaming Board as Data Source option
 * Use BrainFlow filters, add 1-100 BandPass filter
 * Can Hide/Show channels in time series
 
