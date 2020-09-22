@@ -254,25 +254,29 @@ class ADS1299Settings {
     }
 
     //Return true if all commits are successful
-    public boolean commitAll() {
-        boolean noErrors = true;
-        for (int i=0; i<board.getNumEXGChannels(); i++) {
-            boolean res = commit(i);
-            if (!res) {
-                noErrors = false;   
-            }
+    public boolean[] commitAll() {
+        int numChan = board.getNumEXGChannels();
+        boolean[] success = new boolean[numChan];
+        for (int i=0; i<numChan; i++) {
+            success[i] = commit(i);
         }
-        return noErrors;
+        return success;
     }
 
     public void saveDefaultValues() {
         defaultValues = getJson();
     }
 
-    public void loadDefaultValues() {
+    public void loadDefaultValues(int chan) {
         // restore old settings in UI
         Gson gson = new Gson();
-        values = gson.fromJson(defaultValues, ADS1299SettingsValues.class);
+        ADS1299SettingsValues valuesToLoad = new ADS1299SettingsValues();
+        valuesToLoad = gson.fromJson(defaultValues, ADS1299SettingsValues.class);
+        values.gain[chan] = valuesToLoad.gain[chan];
+        values.inputType[chan] = valuesToLoad.inputType[chan];
+        values.bias[chan] = valuesToLoad.bias[chan];
+        values.srb2[chan] = valuesToLoad.srb2[chan];
+        values.srb1[chan] = valuesToLoad.srb1[chan];
     }
 }
 

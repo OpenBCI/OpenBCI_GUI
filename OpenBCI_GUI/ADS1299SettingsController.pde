@@ -14,6 +14,7 @@ class ADS1299SettingsController {
     private int button_w = 80;
     private int button_h = navH;
     private final int columnLabelH = navH + (padding_3 * 2);
+    private int chanBar_h;
 
     private int spaceBetweenButtons = 5; //space between buttons
 
@@ -28,6 +29,7 @@ class ADS1299SettingsController {
     private ScrollableList[] biasLists;
     private ScrollableList[] srb2Lists;
     private ScrollableList[] srb1Lists;
+    private boolean[] sendCommandSuccess;
 
     private ADS1299Settings boardSettings;
 
@@ -39,6 +41,7 @@ class ADS1299SettingsController {
         y = _y;
         w = _w;
         h = _h;
+        chanBar_h = _channelBarHeight;
         
         _parentApplet = _parent;
         hwsCp5 = new ControlP5(_parentApplet);
@@ -47,15 +50,17 @@ class ADS1299SettingsController {
         
         int colOffset = (w / numControlButtons) / 2;
         int button_y = y - button_h - padding_3;
-        createHWSettingsLoadButton(loadButton, "HardwareSettingsLoad", "Load", x + colOffset - button_w/2, button_y, button_w, button_h);
-        createHWSettingsSaveButton(saveButton, "HardwareSettingsSave", "Save", x + colOffset + (w/numControlButtons) - button_w/2, button_y, button_w, button_h);
-        createHWSettingsSendButton(saveButton, "HardwareSettingsSend", "Send", x + colOffset + (w/numControlButtons)*2 - button_w/2, button_y, button_w, button_h);
+        createHWSettingsLoadButton("HardwareSettingsLoad", "Load", x + colOffset - button_w/2, button_y, button_w, button_h);
+        createHWSettingsSaveButton("HardwareSettingsSave", "Save", x + colOffset + (w/numControlButtons) - button_w/2, button_y, button_w, button_h);
+        createHWSettingsSendButton("HardwareSettingsSend", "Send", x + colOffset + (w/numControlButtons)*2 - button_w/2, button_y, button_w, button_h);
 
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
         boardSettings = settingsBoard.getADS1299Settings();
         boardSettings.saveDefaultValues(); //Save default board settings upon instantiation
         channelCount = currentBoard.getNumEXGChannels();
+        sendCommandSuccess = new boolean[channelCount];
+        Arrays.fill(sendCommandSuccess, Boolean.TRUE);
 
         color labelBG = color(220);
         color labelTxt = bgColor;
@@ -67,7 +72,7 @@ class ADS1299SettingsController {
         srb2Label = new TextBox("SRB2", x + colOffset + (w/5)*3, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
         srb1Label = new TextBox("SRB1", x + colOffset + (w/5)*4, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
 
-        createAllDropdowns(_channelBarHeight);
+        createAllDropdowns(chanBar_h);
     }
 
     public void update() {
@@ -102,6 +107,12 @@ class ADS1299SettingsController {
                 biasLists[i].setVisible(b);
                 srb2Lists[i].setVisible(b);
                 srb1Lists[i].setVisible(b);
+
+                if (!sendCommandSuccess[i]) {
+                    pushStyle();
+                    fill(color(255,0,0,100));
+                    rect(x, y + chanBar_h * i, w, chanBar_h);
+                }
             }
 
             //Draw cp5 objects on top of everything
@@ -151,6 +162,7 @@ class ADS1299SettingsController {
         y = _y;
         w = _w;
         h = _h;
+        chanBar_h = _channelBarHeight;
 
         hwsCp5.setGraphics(_parentApplet, 0, 0);
 
@@ -168,7 +180,7 @@ class ADS1299SettingsController {
         srb2Label.setPosition(x + colOffset + (w/5)*3, label_y);
         srb1Label.setPosition(x + colOffset + (w/5)*4, label_y);
 
-        resizeDropdowns(_channelBarHeight);
+        resizeDropdowns(chanBar_h);
     }
 
     public void setIsVisible (boolean v) {
@@ -198,8 +210,8 @@ class ADS1299SettingsController {
         return myButton;
     }
 
-    private void createHWSettingsLoadButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        loadButton = createButton(myButton, name, text, _x, _y, _w, _h);
+    private void createHWSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
+        loadButton = createButton(loadButton, name, text, _x, _y, _w, _h);
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (isRunning) {
@@ -211,8 +223,8 @@ class ADS1299SettingsController {
         });
     }
 
-    private void createHWSettingsSaveButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        saveButton = createButton(myButton, name, text, _x, _y, _w, _h);
+    private void createHWSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
+        saveButton = createButton(saveButton, name, text, _x, _y, _w, _h);
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectOutput("Save settings to file", "storeHardwareSettings");
@@ -220,16 +232,18 @@ class ADS1299SettingsController {
         });
     }
 
-    private void createHWSettingsSendButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        sendButton = createButton(myButton, name, text, _x, _y, _w, _h);
+    private void createHWSettingsSendButton(String name, String text, int _x, int _y, int _w, int _h) {
+        sendButton = createButton(sendButton, name, text, _x, _y, _w, _h);
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll()) {
-                    output("Hardware Settings sent to board!");
-                } else {
-                    PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
-                    boardSettings.loadDefaultValues();
-                    for (int i = 0; i < channelCount; i++) {
+                
+                sendCommandSuccess = ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
+                boolean noErrors = true;
+
+                for (int i = 0; i < sendCommandSuccess.length; i++) {
+                    if (!sendCommandSuccess[i]) {
+                        noErrors = false;
+                        boardSettings.loadDefaultValues(i);        
                         gainLists[i].setValue(boardSettings.values.gain[i].ordinal());  
                         inputTypeLists[i].setValue(boardSettings.values.inputType[i].ordinal());
                         biasLists[i].setValue(boardSettings.values.bias[i].ordinal());
@@ -237,6 +251,12 @@ class ADS1299SettingsController {
                         srb1Lists[i].setValue(boardSettings.values.srb1[i].ordinal());
                     }
                 }
+
+                if (noErrors) {
+                    output("Hardware Settings sent to board!");
+                } else {
+                    PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
+                }         
             }
         });
     }
