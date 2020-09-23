@@ -1172,7 +1172,10 @@ public void initButtonPressed(){
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 // store the current text field value of "File Name" to be passed along to dataFiles
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText();
-            } else {
+            } else if (eegDataSource == DATASOURCE_NOVAXR) {
+                sessionName = cp5.get(Textfield.class, "fileNameNovaXR").getText();
+            }
+            else {
                 sessionName = directoryManager.getFileNameDateTime();
             }
 
@@ -2187,6 +2190,7 @@ class RecentPlaybackBox {
 
 class NovaXRBox {
     private int x, y, w, h, padding; //size and position
+    private String textfieldName;
     private String boxLabel = "NOVAXR CONFIG";
     private String sampleRateLabel = "SAMPLE RATE";
     private ControlP5 localCP5;
@@ -2197,14 +2201,32 @@ class NovaXRBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 104;
+        h = 131;
         padding = _padding;
         localCP5 = new ControlP5(ourApplet);
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
+        textfieldName = "fileNameNovaXR";
+        localCP5.addTextfield(textfieldName)
+            .setPosition(x + 35, y + h - 26)
+            .setCaptionLabel("")
+            .setSize(187, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(directoryManager.getFileNameDateTime())
+            .align(5, 10, 20, 40)
+            .onDoublePress(cb)
+            .setAutoClear(true);
+
         modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, y + h - 24 - padding);
+        modeList.setPosition(x + padding, y + h - 24 - padding - 24);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
         srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
         srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
