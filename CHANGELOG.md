@@ -1,3 +1,8 @@
+# v5.0.2
+
+### Improvements
+* Update Hardware Settings UI for ADS1299 board
+
 # v5.0.1
 
 ### Improvements
