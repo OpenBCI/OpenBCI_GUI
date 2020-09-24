@@ -293,6 +293,7 @@ class ControlPanel {
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
     NovaXRBox novaXRBox;
+    SessionDataBox dataLogBoxNovaXR;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
     SessionDataBox dataLogBoxGanglion;
@@ -350,7 +351,8 @@ class ControlPanel {
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
         novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
+        dataLogBoxNovaXR = new SessionDataBox(x + w, (novaXRBox.y + novaXRBox.h), w, h, globalPadding, DATASOURCE_NOVAXR);
+        
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
         
         comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
@@ -416,7 +418,9 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
 
+        dataLogBoxNovaXR.update();
         novaXRBox.update();
+
         streamingBoardBox.update();
 
         sdBox.update();
@@ -499,6 +503,7 @@ class ControlPanel {
                     sdBox.draw();
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
+                    cp5.get(Textfield.class, "fileNameNovaXR").setVisible(false);
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -511,6 +516,11 @@ class ControlPanel {
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
             } else if (eegDataSource == DATASOURCE_NOVAXR) {
+                dataLogBoxNovaXR.y = novaXRBox.y + novaXRBox.h;
+                cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
+                cp5.get(Textfield.class, "fileNameNovaXR").setVisible(true);
+                cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
+                dataLogBoxNovaXR.draw();
                 novaXRBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
@@ -541,6 +551,7 @@ class ControlPanel {
                     }
                     dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
                     cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
+                    cp5.get(Textfield.class, "fileNameNovaXR").setVisible(false);
                     cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                 }
             } else if (eegDataSource == DATASOURCE_STREAMING) {
@@ -581,6 +592,8 @@ class ControlPanel {
                 dataLogBoxCyton.cp5_dataLog_dropdown.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol != BoardProtocol.NONE) {
                 dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
+            } else if (eegDataSource == DATASOURCE_NOVAXR) {
+                dataLogBoxNovaXR.cp5_dataLog_dropdown.draw();
             }
         }
 
@@ -601,6 +614,7 @@ class ControlPanel {
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
         cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
+        cp5.get(Textfield.class, "fileNameNovaXR").setVisible(false);
         cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
         comPortBox.serialList.setVisible(false);
@@ -993,8 +1007,10 @@ class ControlPanel {
             outputBDF.setColorNotPressed(colorNotPressed);
             if (eegDataSource == DATASOURCE_CYTON) {
                 controlPanel.dataLogBoxCyton.setToODFHeight();
-            } else {
+            } else if (eegDataSource == DATASOURCE_GANGLION) {
                 controlPanel.dataLogBoxGanglion.setToODFHeight();
+            } else {
+                controlPanel.dataLogBoxNovaXR.setToODFHeight();
             }
         }
 
@@ -1005,8 +1021,10 @@ class ControlPanel {
             outputODF.setColorNotPressed(colorNotPressed);
             if (eegDataSource == DATASOURCE_CYTON) {
                 controlPanel.dataLogBoxCyton.setToBDFHeight();
-            } else {
+            } else if (eegDataSource == DATASOURCE_GANGLION) {
                 controlPanel.dataLogBoxGanglion.setToBDFHeight();
+            } else {
+                controlPanel.dataLogBoxNovaXR.setToBDFHeight();
             }
         }
 
@@ -1729,7 +1747,15 @@ class SessionDataBox {
         if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
         //This textfield is controlled by the global cp5 instance
-        textfieldName = (_dataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";
+        if (_dataSource == DATASOURCE_CYTON) {
+            textfieldName = "fileNameCyton";
+        }
+        if (_dataSource == DATASOURCE_GANGLION) {
+            textfieldName = "fileNameGanglion";
+        }
+        if (_dataSource == DATASOURCE_NOVAXR) {
+            textfieldName = "fileNameNovaXR";
+        }
         cp5.addTextfield(textfieldName)
             .setPosition(x + 60, y + 32)
             .setCaptionLabel("")
@@ -2190,7 +2216,6 @@ class RecentPlaybackBox {
 
 class NovaXRBox {
     private int x, y, w, h, padding; //size and position
-    private String textfieldName;
     private String boxLabel = "NOVAXR CONFIG";
     private String sampleRateLabel = "SAMPLE RATE";
     private ControlP5 localCP5;
@@ -2201,32 +2226,14 @@ class NovaXRBox {
         x = _x;
         y = _y;
         w = _w;
-        h = 131;
+        h = 104;
         padding = _padding;
         localCP5 = new ControlP5(ourApplet);
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
 
-        textfieldName = "fileNameNovaXR";
-        localCP5.addTextfield(textfieldName)
-            .setPosition(x + 35, y + h - 26)
-            .setCaptionLabel("")
-            .setSize(187, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(directoryManager.getFileNameDateTime())
-            .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true);
-
         modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, y + h - 24 - padding - 24);
+        modeList.setPosition(x + padding, y + h - 24 - padding);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
         srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
         srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
