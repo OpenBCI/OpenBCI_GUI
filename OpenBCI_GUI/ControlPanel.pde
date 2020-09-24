@@ -48,6 +48,10 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
         } else if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
             println("CallbackListener: controlEvent: clearing static IP Address");
             cp5.get(Textfield.class, "staticIPAddress").clear();
+
+        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameNovaXR"))){
+            println("CallbackListener: controlEvent: clearing NovaXR");
+            cp5.get(Textfield.class, "fileNameNovaXR").clear();
         }
     }
 };
@@ -1213,6 +1217,7 @@ public void initButtonPressed(){
         initSystemButton.setString("START SESSION");
         cp5.get(Textfield.class, "fileNameCyton").setText(directoryManager.getFileNameDateTime()); //creates new data file name so that you don't accidentally overwrite the old one
         cp5.get(Textfield.class, "fileNameGanglion").setText(directoryManager.getFileNameDateTime()); //creates new data file name so that you don't accidentally overwrite the old one
+        cp5.get(Textfield.class, "fileNameNovaXR").setText(directoryManager.getFileNameDateTime()); //creates new data file name so that you don't accidentally overwrite the old one
         cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
         haltSystem();
     }
