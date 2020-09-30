@@ -646,7 +646,7 @@ class ChannelBar{
             onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
-            onOffButton.setColorNotPressed(50); // power down == false, set color to vibrant
+            onOffButton.setColorNotPressed(50); // power down == true, set to grey
         }
     }
 
@@ -865,6 +865,7 @@ class ChannelBar{
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
             currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
+            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex), channelColors[channelIndex%8]);
         }
 
         onOffButton.setIsActive(false);

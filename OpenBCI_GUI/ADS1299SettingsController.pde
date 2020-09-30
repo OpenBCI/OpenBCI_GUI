@@ -325,6 +325,25 @@ class ADS1299SettingsController {
         resizeDropdowns(_channelBarHeight);
     }
 
+    public void updateChanSettingsDropdowns(int chan, boolean isActive, color defaultColor) {
+        color c = isActive ? defaultColor : color(50);
+        gainLists[chan].setValue(boardSettings.values.gain[chan].ordinal());
+        gainLists[chan].setColorBackground(c);
+        gainLists[chan].setLock(!isActive);
+        inputTypeLists[chan].setValue(boardSettings.values.inputType[chan].ordinal());
+        inputTypeLists[chan].setColorBackground(c);
+        inputTypeLists[chan].setLock(!isActive);
+        biasLists[chan].setValue(boardSettings.values.bias[chan].ordinal());
+        biasLists[chan].setColorBackground(c);
+        biasLists[chan].setLock(!isActive);
+        srb2Lists[chan].setValue(boardSettings.values.srb2[chan].ordinal());
+        srb2Lists[chan].setColorBackground(c);
+        srb2Lists[chan].setLock(!isActive);
+        srb1Lists[chan].setValue(boardSettings.values.srb1[chan].ordinal());
+        srb1Lists[chan].setColorBackground(c);
+        srb1Lists[chan].setLock(!isActive);
+    }
+
     private class SLCallbackListener implements CallbackListener {
         private int channel;
     
