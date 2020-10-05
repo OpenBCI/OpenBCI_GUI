@@ -244,28 +244,12 @@ class ADS1299SettingsController {
                 for (int i = 0; i < sendCommandSuccess.length; i++) {
                     if (!sendCommandSuccess[i]) {
                         noErrors = false;
-                        /*
-                        boardSettings.loadLastValues(i);        
-                        gainLists[i].setValue(boardSettings.values.gain[i].ordinal());  
-                        inputTypeLists[i].setValue(boardSettings.values.inputType[i].ordinal());
-                        biasLists[i].setValue(boardSettings.values.bias[i].ordinal());
-                        srb2Lists[i].setValue(boardSettings.values.srb2[i].ordinal());
-                        srb1Lists[i].setValue(boardSettings.values.srb1[i].ordinal());
-                        */
                     } else {
                         hasUnappliedChanges[i] = false;
                         boardSettings.saveLastValues(i);
                     }
                 }
-                /*
-                It looks like the red highlight means "this channel's settings failed to apply"
-
-                What if we expanded it to mean "this channel has unapplied changes" or "this channel is out of sync with the board"? My thinking is that it would clarify to the user that they have unapplied changes, if they try to close the hardware settings witout sending.
-
-                The difference would be that we would highlight the channel as soon as the user changes something, and only remove the highlight if that channels' settings were successfully sent.
-
-                Ideally, if a channel was unchanged, we should not highlight it in red even if it fails to send, because that channel is not out of sync with the board.
-                */
+                
                 if (noErrors) {
                     output("Hardware Settings sent to board!");
                 } else {
