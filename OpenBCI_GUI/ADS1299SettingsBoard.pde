@@ -130,6 +130,7 @@ public class ADS1299SettingsValues {
     public Srb2[] srb2;
     public Srb1[] srb1;
 
+    //Used for Channel On/Off to reflect what happens in Firmware
     public Bias[] previousBias;
     public Srb2[] previousSrb2;
     public InputType[] previousInputType;
@@ -141,7 +142,7 @@ public class ADS1299SettingsValues {
 class ADS1299Settings {
     
     public ADS1299SettingsValues values;
-    public String defaultValues;
+    public ADS1299SettingsValues previousValues;
 
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
@@ -150,6 +151,7 @@ class ADS1299Settings {
         board = theBoard;
         settingsBoard = (ADS1299SettingsBoard)theBoard;
         values = new ADS1299SettingsValues();
+        previousValues = new ADS1299SettingsValues();
 
         int channelCount = board.getNumEXGChannels();
 
@@ -157,21 +159,27 @@ class ADS1299Settings {
         // (which happen to be Cyton defaults, but they don't have to be.
         // we set defaults on board contruction)
         values.powerDown = new PowerDown[channelCount];
+        previousValues.powerDown = new PowerDown[channelCount];
         Arrays.fill(values.powerDown, PowerDown.ON);
 
         values.gain = new Gain[channelCount];
+        previousValues.gain = new Gain[channelCount];
         Arrays.fill(values.gain, Gain.X24);
 
         values.inputType = new InputType[channelCount];
+        previousValues.inputType = new InputType[channelCount];
         Arrays.fill(values.inputType, InputType.NORMAL);
         
         values.bias = new Bias[channelCount];
+        previousValues.bias = new Bias[channelCount];
         Arrays.fill(values.bias, Bias.INCLUDE);
 
         values.srb2 = new Srb2[channelCount];
+        previousValues.srb2 = new Srb2[channelCount];
         Arrays.fill(values.srb2, Srb2.CONNECT);
 
         values.srb1 = new Srb1[channelCount];
+        previousValues.srb1 = new Srb1[channelCount];
         Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
         values.previousBias = values.bias.clone();
@@ -263,20 +271,28 @@ class ADS1299Settings {
         return success;
     }
 
-    public void saveDefaultValues() {
-        defaultValues = getJson();
+    public void saveAllLastValues() {
+        String lastVals = getJson();
+        Gson gson = new Gson();
+        previousValues = gson.fromJson(lastVals, ADS1299SettingsValues.class);
     }
 
-    public void loadDefaultValues(int chan) {
-        // restore old settings in UI
-        Gson gson = new Gson();
-        ADS1299SettingsValues valuesToLoad = new ADS1299SettingsValues();
-        valuesToLoad = gson.fromJson(defaultValues, ADS1299SettingsValues.class);
-        values.gain[chan] = valuesToLoad.gain[chan];
-        values.inputType[chan] = valuesToLoad.inputType[chan];
-        values.bias[chan] = valuesToLoad.bias[chan];
-        values.srb2[chan] = valuesToLoad.srb2[chan];
-        values.srb1[chan] = valuesToLoad.srb1[chan];
+    public void saveLastValues(int chan) {
+        previousValues.gain[chan] = values.gain[chan];
+        previousValues.inputType[chan] = values.inputType[chan];
+        previousValues.bias[chan] = values.bias[chan];
+        previousValues.srb2[chan] = values.srb2[chan];
+        previousValues.srb1[chan] = values.srb1[chan];
+    }
+
+    public boolean equalsLastValues(int chan) {        
+        boolean equal = previousValues.gain[chan] == values.gain[chan] &&
+                        previousValues.inputType[chan] == values.inputType[chan] &&
+                        previousValues.bias[chan] == values.bias[chan] &&
+                        previousValues.srb2[chan] == values.srb2[chan] &&
+                        previousValues.srb1[chan] == values.srb1[chan]
+                        ;
+        return equal;
     }
 }
 

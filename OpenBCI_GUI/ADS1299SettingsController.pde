@@ -29,7 +29,7 @@ class ADS1299SettingsController {
     private ScrollableList[] biasLists;
     private ScrollableList[] srb2Lists;
     private ScrollableList[] srb1Lists;
-    private boolean[] sendCommandSuccess;
+    private boolean[] hasUnappliedChanges;
 
     private ADS1299Settings boardSettings;
 
@@ -57,10 +57,10 @@ class ADS1299SettingsController {
         activeChannels = _activeChannels;
         ADS1299SettingsBoard settingsBoard = (ADS1299SettingsBoard)currentBoard;
         boardSettings = settingsBoard.getADS1299Settings();
-        boardSettings.saveDefaultValues(); //Save default board settings upon instantiation
+        boardSettings.saveAllLastValues();
         channelCount = currentBoard.getNumEXGChannels();
-        sendCommandSuccess = new boolean[channelCount];
-        Arrays.fill(sendCommandSuccess, Boolean.TRUE);
+        hasUnappliedChanges = new boolean[channelCount];
+        Arrays.fill(hasUnappliedChanges, Boolean.FALSE);
 
         color labelBG = color(220);
         color labelTxt = bgColor;
@@ -108,9 +108,10 @@ class ADS1299SettingsController {
                 srb2Lists[i].setVisible(b);
                 srb1Lists[i].setVisible(b);
 
-                if (!sendCommandSuccess[i]) {
+                if (hasUnappliedChanges[i]) {
                     pushStyle();
-                    fill(color(255,0,0,100));
+                    fill(color(57, 128, 204, 190)); //light blue from TopNav
+                    //fill(color(245, 64, 64, 180)); //light red
                     rect(x, y + chanBar_h * i, w, chanBar_h);
                 }
             }
@@ -237,25 +238,38 @@ class ADS1299SettingsController {
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 
-                sendCommandSuccess = ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
+                boolean[] sendCommandSuccess = ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
                 boolean noErrors = true;
 
                 for (int i = 0; i < sendCommandSuccess.length; i++) {
                     if (!sendCommandSuccess[i]) {
                         noErrors = false;
-                        boardSettings.loadDefaultValues(i);        
+                        /*
+                        boardSettings.loadLastValues(i);        
                         gainLists[i].setValue(boardSettings.values.gain[i].ordinal());  
                         inputTypeLists[i].setValue(boardSettings.values.inputType[i].ordinal());
                         biasLists[i].setValue(boardSettings.values.bias[i].ordinal());
                         srb2Lists[i].setValue(boardSettings.values.srb2[i].ordinal());
                         srb1Lists[i].setValue(boardSettings.values.srb1[i].ordinal());
+                        */
+                    } else {
+                        hasUnappliedChanges[i] = false;
+                        boardSettings.saveLastValues(i);
                     }
                 }
+                /*
+                It looks like the red highlight means "this channel's settings failed to apply"
 
+                What if we expanded it to mean "this channel has unapplied changes" or "this channel is out of sync with the board"? My thinking is that it would clarify to the user that they have unapplied changes, if they try to close the hardware settings witout sending.
+
+                The difference would be that we would highlight the channel as soon as the user changes something, and only remove the highlight if that channels' settings were successfully sent.
+
+                Ideally, if a channel was unchanged, we should not highlight it in red even if it fails to send, because that channel is not out of sync with the board.
+                */
                 if (noErrors) {
                     output("Hardware Settings sent to board!");
                 } else {
-                    PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
+                    PopupMessage msg = new PopupMessage("Info", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
                 }         
             }
         });
@@ -342,6 +356,7 @@ class ADS1299SettingsController {
         srb1Lists[chan].setValue(boardSettings.values.srb1[chan].ordinal());
         srb1Lists[chan].setColorBackground(c);
         srb1Lists[chan].setLock(!isActive);
+        hasUnappliedChanges[chan] = false;
     }
 
     private class SLCallbackListener implements CallbackListener {
@@ -360,16 +375,24 @@ class ADS1299SettingsController {
                 verbosePrint("HardwareSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getName());
 
                 if (myEnum instanceof Gain) {
+                    //verbosePrint("HardwareSettings: previousVal == " + boardSettings.previousValues.gain[channel]);
+                    hasUnappliedChanges[channel] = (Gain)myEnum != boardSettings.values.gain[channel];
                     boardSettings.values.gain[channel] = (Gain)myEnum;
                 } else if (myEnum instanceof InputType) {
+                    hasUnappliedChanges[channel] = (InputType)myEnum != boardSettings.values.inputType[channel];
                     boardSettings.values.inputType[channel] = (InputType)myEnum;
                 } else if (myEnum instanceof Bias) {
+                    hasUnappliedChanges[channel] = (Bias)myEnum != boardSettings.values.bias[channel];
                     boardSettings.values.bias[channel] = (Bias)myEnum;
                 } else if (myEnum instanceof Srb2) {
+                    hasUnappliedChanges[channel] = (Srb2)myEnum != boardSettings.values.srb2[channel];
                     boardSettings.values.srb2[channel] = (Srb2)myEnum;
                 } else if (myEnum instanceof Srb1) {
+                    hasUnappliedChanges[channel] = (Srb1)myEnum != boardSettings.values.srb1[channel];
                     boardSettings.values.srb1[channel] = (Srb1)myEnum;
                 }
+
+                hasUnappliedChanges[channel] = !boardSettings.equalsLastValues(channel);
             }
         }
     }
