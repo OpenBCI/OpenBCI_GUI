@@ -185,6 +185,23 @@ class ADS1299SettingsController {
     }
 
     public void setIsVisible (boolean v) {
+        
+        //Check if there are unapplied settings when trying to close Hardware Settings Controller
+        if (!v) {
+            boolean allChannelsInSync = true;
+
+            for (int i = 0; i < hasUnappliedChanges.length; i++) {
+                if (hasUnappliedChanges[i]) {
+                    allChannelsInSync = false;
+                }
+            }
+
+            if (!allChannelsInSync) {
+                PopupMessage msg = new PopupMessage("Info", "Highlighted channels have unapplied Hardware Settings. Please press \"Send\" button to sync with board or revert settings.");
+                return;
+            }
+        }
+
         isVisible = v;
     }
 
@@ -249,11 +266,11 @@ class ADS1299SettingsController {
                         boardSettings.saveLastValues(i);
                     }
                 }
-                
+
                 if (noErrors) {
                     output("Hardware Settings sent to board!");
                 } else {
-                    PopupMessage msg = new PopupMessage("Info", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
+                    PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
                 }         
             }
         });
