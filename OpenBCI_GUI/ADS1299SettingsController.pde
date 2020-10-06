@@ -184,7 +184,8 @@ class ADS1299SettingsController {
         resizeDropdowns(chanBar_h);
     }
 
-    public void setIsVisible (boolean v) {
+    //Returns true if board and UI are in sync
+    public boolean setIsVisible (boolean v) {
         
         //Check if there are unapplied settings when trying to close Hardware Settings Controller
         if (!v) {
@@ -198,11 +199,12 @@ class ADS1299SettingsController {
 
             if (!allChannelsInSync) {
                 PopupMessage msg = new PopupMessage("Info", "Highlighted channels have unapplied Hardware Settings. Please press \"Send\" button to sync with board or revert settings.");
-                return;
+                return false;
             }
         }
 
         isVisible = v;
+        return true;
     }
 
     public boolean getIsVisible() {

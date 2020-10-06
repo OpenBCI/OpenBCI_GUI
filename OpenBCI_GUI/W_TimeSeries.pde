@@ -362,21 +362,19 @@ class W_timeSeries extends Widget {
             return;
         }
 
-        if(visible) {
-            if (isRunning) {
-                PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
-                return;
-            }
+        String buttonText = "Time Series";
 
-            hwSettingsButton.setCaptionLabel("Time Series");
-        }
-        else {
-            hwSettingsButton.setCaptionLabel("Hardware Settings");
+        if (visible && isRunning) {
+            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
+            return;
         }
 
-        if (adsSettingsController != null) {
-            adsSettingsController.setIsVisible(visible);
+        boolean inSync = adsSettingsController.setIsVisible(visible);
+        
+        if (!visible && adsSettingsController != null && inSync) {
+            buttonText = "Hardware Settings";         
         }
+        hwSettingsButton.setCaptionLabel(buttonText);
     }
 
     private boolean getAdsSettingsVisible() {
