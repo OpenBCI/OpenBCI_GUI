@@ -43,7 +43,7 @@ class TopNav {
     int webGUIVersionInt;
     int localGUIVersionInt;
     Boolean guiVersionIsUpToDate;
-    Boolean internetIsConnected;
+    Boolean internetIsConnected = false;
 
     //constructor
     TopNav() {
@@ -98,7 +98,7 @@ class TopNav {
         updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
         updateGuiVersionButton.setFont(h3, 16);
         
-        checkInternetFetchGithubData();
+        loadCompareGUIVersion();
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
@@ -525,115 +525,82 @@ class TopNav {
         configSelector.mouseReleased();
     } //end mouseReleased
 
-    //Load data from the latest release page from Github and the info.plist file
-    void loadGUIVersionData() {
+    //Load data from the latest release page using Github API and compare to local version
+    void loadCompareGUIVersion() {
         //Copy the local GUI version from OpenBCI_GUI.pde
-        String localVersionString = localGUIVersionString;
-        localVersionString = removeV(localVersionString);
-        localVersionString = removeAlphaBeta(localVersionString);
-        int[] localVersionCompareArray = int(split(localVersionString, '.'));
-        localGUIVersionInt = localVersionCompareArray[0]*100 + localVersionCompareArray[1]*10 + localVersionCompareArray[2];
-        
-        try {
-            Process process = java.lang.Runtime.getRuntime().exec("ping -c 1 www.github.com"); 
-            internetIsConnected = (process.waitFor() == 0) ? true : false;
-        } catch (Exception e) {
-            println("TopNav::loadGUIVersionData: Exception " + e.getMessage());
-        }
+        float localVersion = getVersionAsFloat(localGUIVersionString);
+
+        internetIsConnected = pingWebsite(guiLatestVersionGithubAPI);
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
             //Get the latest release version from Github
-            String webTitle;
-            String[] version;
-            String[] lines = loadStrings(guiLatestReleaseLocation);
-            String html = join(lines, "");
-            String start = "<title>";
-            String end = "</title>";
-            webTitle = giveMeTextBetween(html, start, end);
-            version = split(webTitle, '·'); //split the string in the html title
-            String[] webVersionNumberArray = split(version[0], ' ');
+            String remoteVersionString = getGUIVersionFromInternet(guiLatestVersionGithubAPI);
+            float remoteVersion = getVersionAsFloat(remoteVersionString);   
             
-            webGUIVersionString = removeV(webVersionNumberArray[1]);
-            webGUIVersionString = removeAlphaBeta(webGUIVersionString);
+            println("Local Version: " + localGUIVersionString + ", Latest Version: " + remoteVersionString);
 
-            ///////Perform Comparison (000-1000 format)
-            int[] webVersionCompareArray = int(split(webGUIVersionString, '.'));
-            webGUIVersionInt = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2];
-            
-            println("Local Version: " + localGUIVersionInt + ", Latest Version: " + webGUIVersionInt);
-            if (localGUIVersionInt < webGUIVersionInt) {
+            if (localVersion < remoteVersion) {
                 guiVersionIsUpToDate = false;
                 println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
-            } else if (localGUIVersionInt >= webGUIVersionInt) {
+                updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+            } else {
                 guiVersionIsUpToDate = true;
                 println("GUI is up to date!");
+                updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
             }
+            //Pressing the button opens web browser to Github latest release page
+            updateGuiVersionButton.setURL(guiLatestReleaseLocation);
         } else {
             println("TopNav: Internet Connection Not Available");
-            println("Local GUI Version: " + localGUIVersionInt);
+            println("Local GUI Version: " + localGUIVersionString);
+            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
         }
     }
 
-    // This function returns a substring between two substrings (before and after).
-    String giveMeTextBetween(String s, String before, String after) {
-        // Find the index of before
-        int start = s.indexOf(before);
-        if (start == -1) {
-            return "";
+    private String getGUIVersionFromInternet(String _url) {
+        String version = null;
+        try {
+            GetRequest get = new GetRequest(_url);
+            get.send(); // program will wait untill the request is completed
+            JSONObject response = parseJSONObject(get.getContent());
+            version = response.getString("name");
+        } catch (Exception e) {
+            outputError("Network Error: Unable to resolve host @ " + _url);
         }
-
-        // Move to the end of the beginning tag
-        // and find the index of the "after" String
-        start += before.length();
-        int end = s.indexOf(after, start);
-        if (end == -1) {
-            return "";
-        }
-
-        // Return the text in between
-        return s.substring(start, end);
+        return version;
     }
 
-    String removeV(String s) {
+    //Convert version string to float using each segment as a digit.
+    //Examples: 5.0.0-alpha.2 -> 500.12, 5.0.1-beta.9 -> 501.29, 5.0.1 -> 501.5
+    private float getVersionAsFloat(String s) {
+        float val = 0f;
+        
+        //Remove v
         if (s.charAt(0) == 'v') {
             String[] tempArr = split(s, 'v');
             s = tempArr[1];
         }
-        return s;
-    }
-
-    String removeAlphaBeta(String s) {
+        
+        //Check for minor version
         if (s.length() > 5) {
-            String[] tempArr = split(s, '-');
-            s = tempArr[0];
-        }
-        return s;
-    }
-
-    void checkInternetFetchGithubData() {
-        try {
-            loadGUIVersionData();
-            //Print the message to the button help text that appears when mouse hovers over button
-            if (!guiVersionCheckHasOccured && internetIsConnected) {
-                if (guiVersionIsUpToDate) {
-                    updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                } else {
-                    updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: v" + webGUIVersionString);
-                }
-                //Pressing the button opens web browser to Github latest release page
-                updateGuiVersionButton.setURL(guiLatestReleaseLocation);
-                guiVersionCheckHasOccured = true;
-            } else {
-                guiVersionIsUpToDate = true;
-                updateGuiVersionButton.setHelpText("Connect to internet to check GUI version.-- Local: " + localGUIVersionString);
+            String[] minorVersion = split(s, '-'); //separate the string at the dash between "5.0.0" and "alpha.2"
+            s = minorVersion[0];
+            String[] mv = split(minorVersion[1], '.');
+            if (mv[0].equals("alpha")) {
+                val += .1;
+            } else if (mv[0].equals("beta")) {
+                val += .2;
             }
-            
-        } catch (NullPointerException e)  {
-            //e.printStackTrace();
-            //If github is unreachable, catch the error update button help text
-            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
+            val += Integer.parseInt(mv[1]) * .01;
+        } else {
+            val += .5; //For stable version, add .5 so that it is greater than all alpha and beta versions
         }
+
+        int[] webVersionCompareArray = int(split(s, '.'));
+        val = webVersionCompareArray[0]*100 + webVersionCompareArray[1]*10 + webVersionCompareArray[2] + val;
+        
+        return val;
     }
 
     private String getSmoothingString() {

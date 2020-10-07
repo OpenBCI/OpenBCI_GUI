@@ -400,3 +400,24 @@ class TextBox {
         return h;
     }
 };
+
+public boolean pingWebsite(String url) {
+    int code = 200;
+    try {
+        URL siteURL = new URL(url);
+        HttpURLConnection connection = (HttpURLConnection) siteURL.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setConnectTimeout(2000);
+        connection.connect();
+
+        code = connection.getResponseCode();
+        if (code == 200) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (IOException e) {
+        return false;
+
+    }
+}

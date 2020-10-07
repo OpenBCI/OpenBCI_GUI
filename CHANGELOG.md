@@ -18,6 +18,9 @@
 * Covert GUI v4 sample data to GUI v5 format #830
 * Display GUI version in title bar, along with FPS
 
+### Bug Fixes
+* Check internet connection to Github using a timeout, so the app doesn't stall
+
 # v5.0.0
 
 ### Improvements
