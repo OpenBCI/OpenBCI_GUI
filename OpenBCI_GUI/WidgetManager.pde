@@ -1,6 +1,3 @@
-
-int navHeight = 22;
-
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
 //========================================================================================
@@ -167,6 +164,8 @@ color[] channelColors = {
     color(162, 82, 49)
 };
 
+//Global variable for general navigation bar height
+int navHeight = 22;
 
 class WidgetManager{
 
