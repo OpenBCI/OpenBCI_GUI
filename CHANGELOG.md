@@ -1,7 +1,10 @@
 # v5.0.2
 
 ### Improvements
-* Update Hardware Settings UI for ADS1299 board
+* Update hardware settings UI for ADS1299 boards
+* Highlight channels in hardware settings that are out of sync with board
+* Require users to send or revert hardware settings before closing UI
+* Add "send" button to hardware settings
 
 # v5.0.1
 
