@@ -103,7 +103,7 @@ class W_timeSeries extends Widget {
     public final int interChannelBarSpace = 2;
 
     private ControlP5 tscp5;
-    private Button hardwareSettings;
+    private Button hwSettingsButton;
 
     private ChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
@@ -190,10 +190,10 @@ class W_timeSeries extends Widget {
         int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
         int y_hsc = int(channelBars[0].plot.getPos()[1]);
         int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
-        int h_hsc = int(ts_h - 4);
+        int h_hsc = channelBarHeight * numChannelBars + navH;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings = createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
@@ -210,7 +210,7 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            // offset based on whether channel select or hardwareSettings are open or not
+            // offset based on whether channel select or hardware settings are open or not
             int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
@@ -234,11 +234,12 @@ class W_timeSeries extends Widget {
             
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                int cb_h = channelBarHeight + interChannelBarSpace - 2;           
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], int(ts_h - chanSelectOffset) - interChannelBarSpace, cb_h);
+                int cb_h = channelBarHeight + interChannelBarSpace - 2;
+                int h_hsc = channelBarHeight * numChannelBars + navH;        
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettings);
+                ignoreButtonCheck(hwSettingsButton);
             }
             
             //Update Playback scrollbar and/or display time
@@ -275,7 +276,6 @@ class W_timeSeries extends Widget {
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
 
@@ -331,8 +331,9 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
+            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
+            int h_hsc = channelBarHeight * numChannelBars + navH;
+            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, channelBarHeight);
         }
         
     }
@@ -340,12 +341,6 @@ class W_timeSeries extends Widget {
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
-
-        if(adsSettingsController != null && adsSettingsController.getIsVisible()) {
-            if (!this.dropdownIsActive) {
-                adsSettingsController.mousePressed();
-            }
-        }
 
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
@@ -355,10 +350,6 @@ class W_timeSeries extends Widget {
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        
-        if(getAdsSettingsVisible()) {
-            adsSettingsController.mouseReleased();
-        } 
 
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
@@ -371,21 +362,19 @@ class W_timeSeries extends Widget {
             return;
         }
 
-        if(visible) {
-            if (isRunning) {
-                PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
-                return;
-            }
+        String buttonText = "Time Series";
 
-            hardwareSettings.setCaptionLabel("Time Series");
-        }
-        else {
-            hardwareSettings.setCaptionLabel("Hardware Settings");
+        if (visible && isRunning) {
+            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
+            return;
         }
 
-        if (adsSettingsController != null) {
-            adsSettingsController.setIsVisible(visible);
+        boolean inSync = adsSettingsController.setIsVisible(visible);
+        
+        if (!visible && adsSettingsController != null && inSync) {
+            buttonText = "Hardware Settings";         
         }
+        hwSettingsButton.setCaptionLabel(buttonText);
     }
 
     private boolean getAdsSettingsVisible() {
@@ -405,7 +394,7 @@ class W_timeSeries extends Widget {
         }
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+    private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
         myButton = tscp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
@@ -422,7 +411,7 @@ class W_timeSeries extends Widget {
             .setText(text)
             ;
         myButton.onClick(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {         
+            public void controlEvent(CallbackEvent theEvent) {    
                 println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());
                 setAdsSettingsVisible(!adsSettingsController.getIsVisible());
             }
@@ -514,6 +503,7 @@ class ChannelBar{
     int uiSpaceWidth;
     int padding_4 = 4;
     int minimumChannelHeight;
+    int plotBottomWellH = 45;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -580,7 +570,7 @@ class ChannelBar{
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - padding_4 - impButton_diameter, h);
+        plot.setDim(w - uiSpaceWidth, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
@@ -590,6 +580,7 @@ class ChannelBar{
         plot.setAllFontProperties("Arial", 0, 14);
         if(channelIndex == nchan-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
+            plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
         }
         // plot.setBgColor(color(31,69,110));
 
@@ -653,7 +644,7 @@ class ChannelBar{
             onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
-            onOffButton.setColorNotPressed(50); // power down == false, set color to vibrant
+            onOffButton.setColorNotPressed(50); // power down == true, set to grey
         }
     }
 
@@ -693,7 +684,8 @@ class ChannelBar{
         plot.drawBox();
         plot.drawGridLines(0);
         plot.drawLines();
-        if (isBottomChannel()) { //only draw the x axis label on the bottom channel bar
+        //Draw the x axis label on the bottom channel bar, hide if hardware settings are open
+        if (isBottomChannel() && !hardwareSettingsAreOpen) {
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
@@ -729,7 +721,7 @@ class ChannelBar{
             voltageValue.draw();
         }
         
-        //Hide yAxisButtons when hardwareSettings are open, labels would start to overlap, or using autoscale
+        //Hide yAxisButtons when hardware settings are open, labels would start to overlap, or using autoscale
         boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2 + 2) && !isAutoscale;
         yScaleButton_pos.setVisible(b);
         yScaleButton_neg.setVisible(b);
@@ -871,6 +863,7 @@ class ChannelBar{
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
             currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
+            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex), channelColors[channelIndex%8]);
         }
 
         onOffButton.setIsActive(false);
