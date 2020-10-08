@@ -35,23 +35,9 @@ ControlP5 cp5; //program-wide instance of ControlP5
 ControlP5 cp5Popup;
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
     public void controlEvent(CallbackEvent theEvent) {
-
-        if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameCyton"))){
-            println("CallbackListener: controlEvent: clearing cyton");
-            cp5.get(Textfield.class, "fileNameCyton").clear();
-            // cp5.get(Textfield.class, "fileNameGanglion").clear();
-
-        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
-            println("CallbackListener: controlEvent: clearing ganglion");
-            cp5.get(Textfield.class, "fileNameGanglion").clear();
-
-        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
+        if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
             println("CallbackListener: controlEvent: clearing static IP Address");
             cp5.get(Textfield.class, "staticIPAddress").clear();
-
-        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameNovaXR"))){
-            println("CallbackListener: controlEvent: clearing NovaXR");
-            cp5.get(Textfield.class, "fileNameNovaXR").clear();
         }
     }
 };
@@ -222,24 +208,6 @@ public void controlEvent(ControlEvent theEvent) {
         }
     }
 
-    //Check for event in NovaXR Mode List in Control Panel
-    if (theEvent.isFrom("novaXR_SampleRates")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        // this will retrieve the enum object stored in the dropdown!
-        novaXR_sampleRate = (NovaXRSR)bob.get("value");
-        println("ControlPanel: User selected NovaXR Sample Rate: " + novaXR_sampleRate.getName());
-    }
-
-    //Check for event in NovaXR Mode List in Control Panel
-    if (theEvent.isFrom("novaXR_Modes")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        // this will retrieve the enum object stored in the dropdown!
-        novaXR_boardSetting = (NovaXRMode)bob.get("value");
-        println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
-    }
-
     //Check control events from widgets
     if (systemMode >= SYSTEMMODE_POSTINIT) {
         //Check for event in PlaybackHistory Widget MenuList
@@ -280,17 +248,17 @@ class ControlPanel {
     DataSourceBox dataSourceBox;
     SerialBox serialBox;
     ComPortBox comPortBox;
-    SessionDataBox dataLogBoxCyton;
+    public SessionDataBox dataLogBoxCyton;
     ChannelCountBox channelCountBox;
     InitBox initBox;
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
     NovaXRBox novaXRBox;
-    SessionDataBox dataLogBoxNovaXR;
+    public SessionDataBox dataLogBoxNovaXR;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
-    SessionDataBox dataLogBoxGanglion;
+    public SessionDataBox dataLogBoxGanglion;
     WifiBox wifiBox;
     InterfaceBoxCyton interfaceBoxCyton;
     InterfaceBoxGanglion interfaceBoxGanglion;
@@ -306,7 +274,6 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
-    String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
@@ -333,7 +300,7 @@ class ControlPanel {
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
 
-        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON, "sessionNameCyton");
+        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON, dataLogger.getDataLoggerOutputFormat(), "sessionNameCyton");
         channelCountBox = new ChannelCountBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding);
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
@@ -345,7 +312,7 @@ class ControlPanel {
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
         novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        dataLogBoxNovaXR = new SessionDataBox(x + w, (novaXRBox.y + novaXRBox.h), w, h, globalPadding, DATASOURCE_NOVAXR, "sessionNameNovaXR");
+        dataLogBoxNovaXR = new SessionDataBox(x + w, (novaXRBox.y + novaXRBox.h), w, h, globalPadding, DATASOURCE_NOVAXR, dataLogger.getDataLoggerOutputFormat(), "sessionNameNovaXR");
         
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
         
@@ -358,7 +325,7 @@ class ControlPanel {
 
         // Ganglion
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
-        dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION, "sessionNameGanglion");
+        dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION, dataLogger.getDataLoggerOutputFormat(), "sessionNameGanglion");
         sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     }
 
@@ -471,7 +438,6 @@ class ControlPanel {
                                 pollPopup.draw();
                                 cp5Popup.get(MenuList.class, "pollList").setVisible(true);
                                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-                                cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
                                 cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
@@ -495,9 +461,6 @@ class ControlPanel {
                     sampleRateCytonBox.y = channelCountBox.y;
                     channelCountBox.draw();
                     sdBox.draw();
-                    cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                    cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
-                    cp5.get(Textfield.class, "fileNameNovaXR").setVisible(false);
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -1016,8 +979,6 @@ class ControlPanel {
                                 "OpenBCI-sampleData-2-meditation.txt"));
         }
 
-        novaXRBox.mouseReleased();
-
         //reset all buttons to false
         refreshPort.setIsActive(false);
         refreshPort.wasPressed = false;
@@ -1065,6 +1026,7 @@ class ControlPanel {
         sampleDataButton.wasPressed = false;
     }
 
+    //This is the primary method called when Start/Stop Session Button is pressed in Control Panel
     protected void initButtonPressed() {
         if (initSystemButton.but_txt == "START SESSION") {
             if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
@@ -1108,16 +1070,16 @@ class ControlPanel {
                 // Global steps to START SESSION
                 // Prepare the serial port
                 if (eegDataSource == DATASOURCE_CYTON) {
-                    sessionName = dataLogBoxCyton.getSessionTextfieldString(); // store the current text field value of "File Name" to be passed along to dataFiles
+                    // Store the current text field value of "Session Name" to be passed along to dataFiles
+                    dataLogger.setSessionName(dataLogBoxCyton.getSessionTextfieldString());
                     serialBox.autoConnect.setIgnoreHover(false); //reset the auto-connect button
                     serialBox.autoConnect.setColorNotPressed(255);
                 } else if (eegDataSource == DATASOURCE_GANGLION) {
-                    // store the current text field value of "File Name" to be passed along to dataFiles
-                    sessionName = dataLogBoxGanglion.getSessionTextfieldString();
+                    dataLogger.setSessionName(dataLogBoxGanglion.getSessionTextfieldString());
                 } else if (eegDataSource == DATASOURCE_NOVAXR) {
-                    sessionName = dataLogBoxNovaXR.getSessionTextfieldString();
+                    dataLogger.setSessionName(dataLogBoxNovaXR.getSessionTextfieldString());
                 } else {
-                    sessionName = directoryManager.getFileNameDateTime();
+                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
                 }
 
                 if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
@@ -1641,7 +1603,7 @@ class InterfaceBoxGanglion {
 
 class SessionDataBox {
     public int x, y, w, h, padding; //size and position
-    private int i; //0 for Cyton, 1 for Ganglion
+    private int datasource;
     private final int bdfModeHeight = 127;
     private int odfModeHeight;
 
@@ -1649,12 +1611,15 @@ class SessionDataBox {
     private int maxDurTextWidth = 82;
     private int maxDurText_x = 0;
     private Textfield sessionNameTextfield;
-    private ScrollableList maxDurationDropdown;
     private Button autoSessionName;
     private Button outputODF;
     private Button outputBDF;
+    private ScrollableList maxDurationDropdown;
+    private String odfMessage = "Output has been set to OpenBCI Data Format (CSV).";
+    private String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
-    SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource, String textfieldName) {
+    SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource, int output, String textfieldName) {
+        datasource = _dataSource;
         odfModeHeight = bdfModeHeight + 24 + _padding;
         x = _x;
         y = _y;
@@ -1664,44 +1629,25 @@ class SessionDataBox {
         maxDurText_x = x + padding;
         maxDurTextWidth += padding*5 + 1;
 
-        //button to autogenerate file name based on time/date
-        autoSessionName = new Button(x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
-        autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
-        outputODF = new Button(x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
-        //Output source is ODF by default
-        if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        outputBDF = new Button(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
-        outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
-        if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        
         //Instantiate local cp5 for this box
         sessionData_cp5 = new ControlP5(ourApplet);
         sessionData_cp5.setGraphics(ourApplet, 0,0);
         sessionData_cp5.setAutoDraw(false);
-        
-        //Create textfield to allow user to type custom session folder name
-        sessionNameTextfield = sessionData_cp5.addTextfield(textfieldName)
-            .setPosition(x + 60, y + 32)
-            .setCaptionLabel("")
-            .setSize(187, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(directoryManager.getFileNameDateTime())
-            .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true);
 
-        //The OpenBCI data format max duration dropdown is controlled by the local cp5 instance
-        maxDurationDropdown = createDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
-        maxDurationDropdown.setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
-        maxDurationDropdown.setSize((w-padding*3)/2, (settings.fileDurations.length + 1) * 24);
+        createSessionNameTextfield(textfieldName);
+
+        //button to autogenerate file name based on time/date
+        createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24, fontInfo.buttonLabel_size);
+        //autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
+        createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        //outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
+        //Output source is ODF by default
+        //if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        //outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
+        //if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+
+        createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
         
     }
 
@@ -1723,19 +1669,20 @@ class SessionDataBox {
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
         sessionNameTextfield.setPosition(x + 60, y + 32);
-        autoSessionName.but_y = y + 66;
-        autoSessionName.draw();
-        outputODF.but_y = y + padding*2 + 18 + 58;
-        outputODF.draw();
-        outputBDF.but_y = y + padding*2 + 18 + 58;
-        outputBDF.draw();
-        if (outputDataSource == OUTPUT_SOURCE_ODF) {
+        //autoSessionName.but_y = y + 66;
+        //autoSessionName.draw();
+        //outputODF.but_y = y + padding*2 + 18 + 58;
+        //outputODF.draw();
+        //outputBDF.but_y = y + padding*2 + 18 + 58;
+        //outputBDF.draw();
+        boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
+        maxDurationDropdown.setVisible(odfIsSelected);
+        if (odfIsSelected) {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
             //Dropdown is drawn at the end of ControlPanel.draw()
             fill(bgColor);
-            maxDurationDropdown.setVisible(true);
-            maxDurationDropdown.setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
+            maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
             int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
                 ? 20 
@@ -1744,14 +1691,54 @@ class SessionDataBox {
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
             popStyle();
-            
         }
         sessionData_cp5.draw();
     }
 
-    private ScrollableList createDropdown(String name, List<String> _items){
+    private void createSessionNameTextfield(String name) {
+        //Create textfield to allow user to type custom session folder name
+        sessionNameTextfield = sessionData_cp5.addTextfield(name)
+            .setPosition(x + 60, y + 32)
+            .setCaptionLabel("")
+            .setSize(187, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(directoryManager.getFileNameDateTime())
+            .align(5, 10, 20, 40)
+            .setAutoClear(false); //Don't clear textfield when pressing Enter key
+        //Clear textfield on double click
+        sessionNameTextfield.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("SessionData: Enter your custom session name.");
+                sessionNameTextfield.clear();
+            }
+        });
+        //Autogenerate session name if user presses Enter key and textfield value is null
+        sessionNameTextfield.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && sessionNameTextfield.getText().equals("")) {
+                    autogenerateSessionName();
+                }
+            }
+        });
+        //Autogenerate session name if user leaves textfield and value is null
+        sessionNameTextfield.onReleaseOutside(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!sessionNameTextfield.isActive() && sessionNameTextfield.getText().equals("")) {
+                    autogenerateSessionName();
+                }
+            }
+        });
+    }
 
-        ScrollableList scrollList = new CustomScrollableList(sessionData_cp5, name)
+    private void createMaxDurationDropdown(String name, List<String> _items){
+        maxDurationDropdown = new CustomScrollableList(sessionData_cp5, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
@@ -1763,14 +1750,14 @@ class SessionDataBox {
             .setColorActive(color(150, 170, 200))       // border color when selected
             */
             // .setColorCursor(color(26,26,26))
-
-            .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+            .setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding)
+            .setSize((w-padding*3)/2, (_items.size() + 1) * 24)// + maxFreqList.size())
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(false)
             ;
-        scrollList
+        maxDurationDropdown
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
@@ -1779,7 +1766,7 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        scrollList
+        maxDurationDropdown
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
@@ -1788,29 +1775,23 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-        scrollList.addCallback(new CallbackListener() {
+        maxDurationDropdown.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {    
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     int n = (int)(theEvent.getController()).getValue();
                     settings.setLogFileDurationChoice(n);
                     println("ControlPanel: Chosen Recording Duration: " + n);
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                    lockElements(true);
+                    lockOutsideElements(true);
                 } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
                     ScrollableList theList = (ScrollableList)(theEvent.getController());
-                    lockElements(theList.isOpen());
+                    lockOutsideElements(theList.isOpen());
                 }
             }
         });
-        return scrollList;
     }
 
-    private Button createButton(Button myButton) {
-        myButton.
-        return myButton;   
-    }
-
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
         myButton = sessionData_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
@@ -1821,49 +1802,59 @@ class SessionDataBox {
             ;
         myButton
             .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
+            .setFont(createFont("Arial", _fontSize, true))
             .toUpperCase(false)
-            .setSize(12)
+            .setSize(_fontSize)
             .setText(text)
             ;
         return myButton;
     }
 
-    private void createAutoSessionNameButton() {
-        autoSessionName = createButton(autoSessionName);
-        myButton.onClick(new CallbackListener() {
+    private void createAutoSessionNameButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        autoSessionName = createButton(autoSessionName, name, text, _x, _y, _w, _h, _fontSize);
+        autoSessionName.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (isRunning) {
-                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
-                } else {
-                    selectInput("Select settings file to load", "loadHardwareSettings");
-                }
+                autogenerateSessionName();
             }
         });
     }
 
-    private void createODFButton() {
-        outputODF = createButton(outputODF);
-        myButton.onClick(new CallbackListener() {
+    private void createODFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
+        boolean formatIsODF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_ODF;
+        outputODF = createButton(outputODF, name, text, _x, _y, _w, _h, _fontSize);
+        outputODF.setSwitch(true);
+        if (formatIsODF) {
+            outputODF.setOn();
+        } else {
+            outputODF.setOff();
+        }
+        outputODF.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (isRunning) {
-                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
-                } else {
-                    selectInput("Select settings file to load", "loadHardwareSettings");
-                }
+                output(odfMessage);
+                dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
+                outputODF.setOn();
+                outputBDF.setOff();
+                setToODFHeight();
             }
         });
     }
 
-    private void createBDFButton() {
-        autoSessionName = createButton(autoSessionName);
-        myButton.onClick(new CallbackListener() {
+    private void createBDFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
+        boolean formatIsBDF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_BDF;
+        outputBDF = createButton(outputBDF, name, text, _x, _y, _w, _h, _fontSize);
+        outputBDF.setSwitch(true);
+        if (formatIsBDF) {
+            outputBDF.setOn();
+        } else {
+            outputBDF.setOff();
+        }
+        outputBDF.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (isRunning) {
-                    PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
-                } else {
-                    selectInput("Select settings file to load", "loadHardwareSettings");
-                }
+                output(bdfMessage);
+                dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
+                outputBDF.setOn();
+                outputODF.setOff();
+                setToBDFHeight();
             }
         });
     }
@@ -1906,10 +1897,10 @@ class SessionDataBox {
             }
         }
     */
-
-    //Returns: 0 for Cyton, 1 for Ganglion
-    public int getBoardType() {
-        return i;
+    private void autogenerateSessionName() {
+        String _board = datasource == DATASOURCE_CYTON ? "Cyton" : "Ganglion";
+        output("Autogenerated " + _board + " Session Name based on current date & time.");
+        sessionNameTextfield.setText(directoryManager.getFileNameDateTime());
     }
 
     public void setToODFHeight() {
@@ -1929,7 +1920,7 @@ class SessionDataBox {
     }
 
     // True locks elements, False unlocks elements
-    private void lockElements (boolean _toggle) {
+    private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             chanButton8.setIgnoreHover(_toggle);
@@ -1945,6 +1936,13 @@ class SessionDataBox {
             sampleRate200.setIgnoreHover(_toggle);
             sampleRate1600.setIgnoreHover(_toggle);
         }
+    }
+
+    public void lockSessionDataBoxCp5Elements(boolean b) {
+        sessionNameTextfield.setLock(b);
+        autoSessionName.setLock(b);
+        outputODF.setLock(b);
+        outputBDF.setLock(b);
     }
 };
 
@@ -2265,13 +2263,8 @@ class NovaXRBox {
         localCP5 = new ControlP5(ourApplet);
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
-
-        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, y + h - 24 - padding);
-        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
-        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
+        createModeListDropdown();
+        createSampleRateDropdown(); //Create this last so it draws on top of Mode List Dropdown
     }
 
     public void update() {
@@ -2338,8 +2331,51 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
         return list;
+    }
+
+    private void createSampleRateDropdown() {
+        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
+        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
+        srList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)srList.getValue();
+                    Map bob = srList.getItem(val);
+                    // this will retrieve the enum object stored in the dropdown!
+                    novaXR_sampleRate = (NovaXRSR)bob.get("value");
+                    println("ControlPanel: User selected NovaXR Sample Rate: " + novaXR_sampleRate.getName());
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    //Lock the box below this one when user is interacting with this dropdown
+                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(false);
+                }
+            }
+        });
+    }
+
+    private void createModeListDropdown() {
+        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
+        modeList.setPosition(x + padding, y + h - 24 - padding);
+        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
+        modeList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)modeList.getValue();
+                    Map bob = modeList.getItem(val);
+                    // this will retrieve the enum object stored in the dropdown!
+                    novaXR_boardSetting = (NovaXRMode)bob.get("value");
+                    println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    //Lock the box below this one when user is interacting with this dropdown
+                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(false);
+                }
+            }
+        });
     }
 };
 
