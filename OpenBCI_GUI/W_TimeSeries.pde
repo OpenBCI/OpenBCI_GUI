@@ -514,9 +514,8 @@ class ChannelBar {
     color channelColor; //color of plot trace
 
     boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    float autoscaleMin;
-    float autoscaleMax;
-
+    int prevMillis;
+    
     TextBox voltageValue;
     TextBox impValue;
 
@@ -660,10 +659,23 @@ class ChannelBar {
     }
 
     private void updatePlotPoints() {
+/*
+            private void autoScale() {
+        int yLim = 0;
+        for(int i = 0; i < nPoints; i++) {
+            if(int(abs(channelPoints.getY(i))) > yLim) {
+                yLim = int(abs(channelPoints.getY(i)));
+            }
+        }
+        plot.setYLim(-yLim, yLim);
 
-        float newDataPoint = dataProcessingFilteredBuffer[channelIndex][0];
-        autoscaleMax = newDataPoint > autoscaleMax ? newDataPoint : autoscaleMax;
-        autoscaleMin = autoscaleMax;
+    }
+*/  
+        int elapsedTime = millis() - prevMillis;
+        boolean performAutoscale = isAutoscale && elapsedTime > 1000;
+        float autoscaleMax = dataProcessingFilteredBuffer[channelIndex][0];
+        float autoscaleMin = 0;
+        println(dataProcessingFilteredBuffer[channelIndex].length);
 
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
@@ -673,11 +685,16 @@ class ChannelBar {
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
-                autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
-                autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
+                if (performAutoscale) {
+                    autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
+                    autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
+                }
             }
-            if (isAutoscale) {
+            if (performAutoscale) {
+                prevMillis = millis();
                 plot.setYLim(autoscaleMin, autoscaleMax);
+                customYLim(yAxisMin, (int)Math.floor(autoscaleMin));
+                customYLim(yAxisMax, (int)Math.ceil(autoscaleMax));
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
@@ -790,18 +807,6 @@ class ChannelBar {
         //Responsively scale button size based on number of digits
         int _width =  s.length() * 6;
         tf.setSize(_width, yAxisLabel_h);
-    }
-
-    private void autoScale() {
-        int yLim = 0;
-        for(int i = 0; i < nPoints; i++) {
-            if(int(abs(channelPoints.getY(i))) > yLim) {
-                yLim = int(abs(channelPoints.getY(i)));
-            }
-        }
-        plot.setYLim(-yLim, yLim);
-        customYLim(yAxisMin, -yLim);
-        customYLim(yAxisMax, yLim);
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
