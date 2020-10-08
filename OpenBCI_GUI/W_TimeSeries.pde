@@ -513,7 +513,9 @@ class ChannelBar {
 
     color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    float autoscaleMin;
+    float autoscaleMax;
 
     TextBox voltageValue;
     TextBox impValue;
@@ -659,8 +661,9 @@ class ChannelBar {
 
     private void updatePlotPoints() {
 
-        float max = (float)allData.get(0)[channel];
-        float min = (float)max;
+        float newDataPoint = dataProcessingFilteredBuffer[channelIndex][0];
+        autoscaleMax = newDataPoint > autoscaleMax ? newDataPoint : autoscaleMax;
+        autoscaleMin = autoscaleMax;
 
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
@@ -670,10 +673,12 @@ class ChannelBar {
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
-                max = filt_uV_value > max ? filt_uV_value : max;
-                min = filt_uV_value < min ? filt_uV_value : min;
+                autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
+                autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
             }
-            plot.setYLim(min, max);
+            if (isAutoscale) {
+                plot.setYLim(autoscaleMin, autoscaleMax);
+            }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
