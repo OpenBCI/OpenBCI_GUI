@@ -3,7 +3,7 @@
 //                       This sketch saves and loads User Settings that appear during Sessions.
 //                       -- All Time Series widget settings in Live, Playback, and Synthetic modes
 //                       -- All FFT widget settings
-//                       -- Default Layout, Notch, Bandpass Filter, Framerate, Board Mode, and other Global Settings
+//                       -- Default Layout, Notch, Bandpass Filter, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
 //                       -- Accelerometer, Analog Read, Head Plot, EMG, Band Power, and Spectrogram
 //                       -- Widget/Container Pairs
@@ -373,7 +373,6 @@ class SessionSettings {
         saveGlobalSettings.setInt("Current Layout", currentLayout);
         saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
-        saveGlobalSettings.setInt("Framerate", frameRateCounter);
         saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
         saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
@@ -584,7 +583,6 @@ class SessionSettings {
         loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
         loadNotchSetting = loadGlobalSettings.getInt("Notch");
         loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
-        loadFramerate = loadGlobalSettings.getInt("Framerate");
         Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
         loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
@@ -760,23 +758,6 @@ class SessionSettings {
             topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
             println("LoadGUISettings: Expert Mode Off");
             expertModeToggle = false;
-        }
-
-        //Apply Framerate
-        frameRateCounter = loadFramerate;
-        switch (frameRateCounter) {
-            case 0:
-                setFrameRate(24);
-                break;
-            case 1:
-                setFrameRate(30);
-                break;
-            case 2:
-                setFrameRate(45);
-                break;
-            case 3:
-                setFrameRate(60);
-                break;
         }
 
         //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.

@@ -17,7 +17,6 @@ TopNav topNav;
 class TopNav {
 
     Button_obci controlPanelCollapser;
-    Button_obci fpsButton;
     Button_obci debugButton;
 
     Button_obci stopButton;
@@ -53,22 +52,6 @@ class TopNav {
         controlPanelCollapser.setIsActive(true);
         controlPanelCollapser.isDropdownButton = true;
 
-        fpsButton = new Button_obci(controlPanelCollapser.but_x + controlPanelCollapser.but_dx + 3, 3, 73, 26, "XX" + " fps", fontInfo.buttonLabel_size);
-        if (frameRateCounter==0) {
-            fpsButton.setString("24 fps");
-        }
-        if (frameRateCounter==1) {
-            fpsButton.setString("30 fps");
-        }
-        if (frameRateCounter==2) {
-            fpsButton.setString("45 fps");
-        }
-        if (frameRateCounter==3) {
-            fpsButton.setString("60 fps");
-        }
-
-        fpsButton.setFont(h3, 16);
-        fpsButton.setHelpText("If you're having latency issues, try adjusting the frame rate and see if it helps!");
         //highRezButton = new Button_obci(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
         controlPanelCollapser.setFont(h3, 16);
 
@@ -150,7 +133,6 @@ class TopNav {
     void updateNavButtonsBasedOnColorScheme() {
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
             controlPanelCollapser.setColorNotPressed(color(255));
-            fpsButton.setColorNotPressed(color(255));
             debugButton.setColorNotPressed(color(255));
             //highRezButton.setColorNotPressed(color(255));
             issuesButton.setColorNotPressed(color(255));
@@ -160,7 +142,6 @@ class TopNav {
             configButton.setColorNotPressed(color(255));
 
             controlPanelCollapser.textColorNotActive = color(bgColor);
-            fpsButton.textColorNotActive = color(bgColor);
             debugButton.textColorNotActive = color(bgColor);
             //highRezButton.textColorNotActive = color(bgColor);
             issuesButton.textColorNotActive = color(bgColor);
@@ -170,7 +151,6 @@ class TopNav {
             configButton.textColorNotActive = color(bgColor);
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             controlPanelCollapser.setColorNotPressed(openbciBlue);
-            fpsButton.setColorNotPressed(openbciBlue);
             debugButton.setColorNotPressed(openbciBlue);
             //highRezButton.setColorNotPressed(openbciBlue);
             issuesButton.setColorNotPressed(openbciBlue);
@@ -180,7 +160,6 @@ class TopNav {
             configButton.setColorNotPressed(color(57, 128, 204));
 
             controlPanelCollapser.textColorNotActive = color(255);
-            fpsButton.textColorNotActive = color(255);
             debugButton.textColorNotActive = color(255);
             //highRezButton.textColorNotActive = color(255);
             issuesButton.textColorNotActive = color(255);
@@ -309,7 +288,6 @@ class TopNav {
         }
 
         controlPanelCollapser.draw();
-        fpsButton.draw();
         debugButton.draw();
         configButton.draw();
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
@@ -392,10 +370,6 @@ class TopNav {
             controlPanelCollapser.setIsActive(true);
         }
 
-        if (fpsButton.isMouseHere()) {
-            fpsButton.setIsActive(true);
-        }
-
         if (debugButton.isMouseHere()) {
             debugButton.setIsActive(true);
         }
@@ -429,9 +403,6 @@ class TopNav {
 
     void mouseReleased() {
 
-        if (fpsButton.isMouseHere() && fpsButton.isActive()) {
-            toggleFrameRate();
-        }
         if (debugButton.isMouseHere() && debugButton.isActive()) {
             ConsoleWindow.display();
         }
@@ -510,7 +481,6 @@ class TopNav {
             
         }
 
-        fpsButton.setIsActive(false);
         debugButton.setIsActive(false);
         //highRezButton.setIsActive(false);
         tutorialsButton.setIsActive(false);

@@ -724,31 +724,6 @@ void openURLInBrowser(String _url){
     }
 }
 
-void toggleFrameRate(){
-    if(frameRateCounter<3){
-        frameRateCounter++;
-    } else {
-        frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
-    }
-    if(frameRateCounter==0){
-        setFrameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==1){
-        setFrameRate(30);
-    }
-    if(frameRateCounter==2){
-        setFrameRate(45);
-    }
-    if(frameRateCounter==3){
-        setFrameRate(60);
-    }
-}
-
-void setFrameRate(int fps) {
-    frameRate(fps);
-    topNav.fpsButton.setString(fps + " fps");
-}
-
 //loop through networking textfields and find out if any are active
 boolean isNetworkingTextActive(){
     boolean isAFieldActive = false;

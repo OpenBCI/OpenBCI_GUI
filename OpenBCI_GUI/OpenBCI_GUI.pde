@@ -160,7 +160,7 @@ float dataProcessingFilteredBuffer[][];
 float data_elec_imp_ohm[];
 
 int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
+int dataBuff_len_sec = displayTime_sec; //needs to be wider than actual display so that filter startup is hidden
 
 StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
@@ -242,8 +242,6 @@ DirectoryManager directoryManager;
 
 //========================SETUP============================//
 
-int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
-
 void settings() {
     //LINUX GFX FIX #816
     System.setProperty("jogl.disable.openglcore", "false");
@@ -258,6 +256,8 @@ void settings() {
 }
 
 void setup() {
+    frameRate(120);
+
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
     f2 = createFont("fonts/Raleway-Regular.otf", 15);
@@ -313,19 +313,6 @@ void setup() {
 
     //open window
     ourApplet = this;
-
-    if(frameRateCounter==0) {
-        frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==1) {
-        frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==2) {
-        frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==3) {
-        frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
 
     // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
     // moving the setup to a separate thread solves this. We just have to make sure not to

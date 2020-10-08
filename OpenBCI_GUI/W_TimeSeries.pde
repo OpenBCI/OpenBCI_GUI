@@ -120,9 +120,6 @@ class W_timeSeries extends Widget {
 
     private ADS1299SettingsController adsSettingsController;
 
-    private Timer autoscaleTimer;
-    private boolean previousIsRunning = false;
-
     private boolean allowSpillover = false;
     private TextBox[] impValuesMontage;
     private boolean visible = true;
@@ -250,8 +247,6 @@ class W_timeSeries extends Widget {
             } else {
                 timeDisplay.update();
             }
-
-            autoscaleTimerCheck();
         }
     }
 
@@ -451,31 +446,6 @@ class W_timeSeries extends Widget {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
-
-    private class AutoScaleTimer extends TimerTask {
-        public void run() {
-            for (int i = 0; i < numChannelBars; i++) {
-                channelBars[i].applyAutoscale();
-            }
-            println("DOING AUTOSCALE - " + millis());
-        }
-    }
-
-    private void autoscaleTimerCheck() {
-        //Check for state change to create and destroy timer
-        if (isRunning != previousIsRunning) {
-            previousIsRunning = isRunning;
-            if (isRunning && autoscaleTimer == null) {
-                println("SCHEDULE NEW TIMER\n________\n___________\n________");
-                autoscaleTimer = new Timer();
-                autoscaleTimer.schedule(new AutoScaleTimer(), 0, 1000);
-            } else if (!isRunning && autoscaleTimer != null) {
-                println("PURGING TIMER!\n+++++++++++++++++");
-                autoscaleTimer.cancel();
-                autoscaleTimer = null;
-            }
-        }
-    }
 };
 
 //These functions are activated when an item from the corresponding dropdown is selected
@@ -544,7 +514,7 @@ class ChannelBar {
     boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
     float autoscaleMin;
     float autoscaleMax;
-    boolean previousIsRunning;
+    int previousMillis = 0;
     
     TextBox voltageValue;
     TextBox impValue;
@@ -704,7 +674,7 @@ class ChannelBar {
         autoscaleMax = 0;
         autoscaleMin = 0;
 
-        double[][] newData = currentBoard.getFrameData();
+        //double[][] newData = currentBoard.getFrameData();
 
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
@@ -714,9 +684,10 @@ class ChannelBar {
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
-                autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
-                autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
+                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
+                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
             }
+            applyAutoscale();
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
@@ -831,13 +802,17 @@ class ChannelBar {
     }
 
     public void applyAutoscale() {
-        if (isAutoscale) {
-            autoscaleMin = Math.min(autoscaleMin, -5);
-            autoscaleMax = Math.max(autoscaleMax, 5);
-            float limit = Math.max(abs(autoscaleMin), abs(autoscaleMax));
-            plot.setYLim(-limit, limit);
-            customYLim(yAxisMin, (int)-limit);
-            customYLim(yAxisMax, (int)limit);
+        if (isAutoscale && isRunning) {
+            //if (millis() > previousMillis + 3000) {
+            if (true) {
+                previousMillis = millis();
+                float limit = Math.max(abs(autoscaleMin), autoscaleMax);
+                limit = Math.max(limit, 5);
+                plot.setYLim(-limit, limit);
+                customYLim(yAxisMin, (int)-limit);
+                customYLim(yAxisMax, (int)limit);
+                //println("CH " + channelIndex + "__DOING AUTOSCALE - " + previousMillis);
+            }
         }
     }
 
