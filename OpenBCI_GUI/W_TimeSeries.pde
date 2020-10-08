@@ -659,25 +659,12 @@ class ChannelBar {
     }
 
     private void updatePlotPoints() {
-/*
-            private void autoScale() {
-        int yLim = 0;
-        for(int i = 0; i < nPoints; i++) {
-            if(int(abs(channelPoints.getY(i))) > yLim) {
-                yLim = int(abs(channelPoints.getY(i)));
-            }
-        }
-        plot.setYLim(-yLim, yLim);
 
-    }
-*/  
         autoscaleMax = 0;
         autoscaleMin = 0;
 
-        //double[][] newData = currentBoard.getFrameData();
-
         // update data in plot
-        if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
+        if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
@@ -803,11 +790,12 @@ class ChannelBar {
 
     public void applyAutoscale() {
         if (isAutoscale && isRunning) {
-            //if (millis() > previousMillis + 3000) {
-            if (true) {
+            if (millis() > previousMillis + 1000) {
+            //if (true) {
                 previousMillis = millis();
                 float limit = Math.max(abs(autoscaleMin), autoscaleMax);
                 limit = Math.max(limit, 5);
+                //float limit = 50f;
                 plot.setYLim(-limit, limit);
                 customYLim(yAxisMin, (int)-limit);
                 customYLim(yAxisMax, (int)limit);

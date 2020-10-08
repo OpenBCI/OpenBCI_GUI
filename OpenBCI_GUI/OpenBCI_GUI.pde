@@ -159,8 +159,8 @@ float dataProcessingRawBuffer[][]; //2D array to handle multiple data channels, 
 float dataProcessingFilteredBuffer[][];
 float data_elec_imp_ohm[];
 
-int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-int dataBuff_len_sec = displayTime_sec; //needs to be wider than actual display so that filter startup is hidden
+//define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+int dataBuff_len_sec = 20;
 
 StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
