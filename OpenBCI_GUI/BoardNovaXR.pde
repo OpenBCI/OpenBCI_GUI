@@ -193,6 +193,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
+        //params.ip_address = "127.0.0.1"; // add this line
         return params;
     }
 
