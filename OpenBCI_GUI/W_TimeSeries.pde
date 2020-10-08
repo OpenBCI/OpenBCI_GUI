@@ -480,7 +480,7 @@ void Duration(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class ChannelBar{
+class ChannelBar {
 
     int channelIndex; //duh
     String channelString;
@@ -636,9 +636,6 @@ class ChannelBar{
 
         // update data in plot
         updatePlotPoints();
-        if(isAutoscale) {
-            autoScale();
-        }
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
             onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
@@ -661,6 +658,10 @@ class ChannelBar{
     }
 
     private void updatePlotPoints() {
+
+        float max = (float)allData.get(0)[channel];
+        float min = (float)max;
+
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
@@ -669,7 +670,10 @@ class ChannelBar{
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
+                max = filt_uV_value > max ? filt_uV_value : max;
+                min = filt_uV_value < min ? filt_uV_value : min;
             }
+            plot.setYLim(min, max);
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
