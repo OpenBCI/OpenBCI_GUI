@@ -608,7 +608,7 @@ class TopNav {
     }
 
     private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Conv\nBody uV" : "Gain Conv\n Classic";
+        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\nBody uV" : "Gain Mode\n Classic";
     }
 }
 

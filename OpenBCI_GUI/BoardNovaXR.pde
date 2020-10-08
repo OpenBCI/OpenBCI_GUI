@@ -152,7 +152,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         super();
 
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-        useDynamicScaler = false;
+        useDynamicScaler = true;
     }
 
     public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
