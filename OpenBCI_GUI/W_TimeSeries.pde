@@ -705,7 +705,6 @@ class ChannelBar {
         //draw channel holder background
         pushStyle();
         stroke(31,69,110, 50);
-        //stroke(255,0,0,255);
         noFill();
         rect(x,y,w,h);
 
@@ -791,11 +790,9 @@ class ChannelBar {
     public void applyAutoscale() {
         if (isAutoscale && isRunning) {
             if (millis() > previousMillis + 1000) {
-            //if (true) {
                 previousMillis = millis();
                 float limit = Math.max(abs(autoscaleMin), autoscaleMax);
                 limit = Math.max(limit, 5);
-                //float limit = 50f;
                 plot.setYLim(-limit, limit);
                 customYLim(yAxisMin, (int)-limit);
                 customYLim(yAxisMax, (int)limit);
