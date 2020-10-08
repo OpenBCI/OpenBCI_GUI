@@ -88,10 +88,8 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
 }
 
 class W_timeSeries extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
@@ -121,6 +119,9 @@ class W_timeSeries extends Widget {
     private PImage contract_active;
 
     private ADS1299SettingsController adsSettingsController;
+
+    private Timer autoscaleTimer;
+    private boolean previousIsRunning = false;
 
     private boolean allowSpillover = false;
     private TextBox[] impValuesMontage;
@@ -249,6 +250,8 @@ class W_timeSeries extends Widget {
             } else {
                 timeDisplay.update();
             }
+
+            autoscaleTimerCheck();
         }
     }
 
@@ -437,15 +440,40 @@ class W_timeSeries extends Widget {
 
     public void setTSVertScale(int n) {
         yLimit = yLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustVertScale(yLimit.getValue());
         }
     }
 
     public void setTSHorizScale(int n) {
         xLimit = xLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
+        }
+    }
+
+    private class AutoScaleTimer extends TimerTask {
+        public void run() {
+            for (int i = 0; i < numChannelBars; i++) {
+                channelBars[i].applyAutoscale();
+            }
+            println("DOING AUTOSCALE - " + millis());
+        }
+    }
+
+    private void autoscaleTimerCheck() {
+        //Check for state change to create and destroy timer
+        if (isRunning != previousIsRunning) {
+            previousIsRunning = isRunning;
+            if (isRunning && autoscaleTimer == null) {
+                println("SCHEDULE NEW TIMER\n________\n___________\n________");
+                autoscaleTimer = new Timer();
+                autoscaleTimer.schedule(new AutoScaleTimer(), 0, 1000);
+            } else if (!isRunning && autoscaleTimer != null) {
+                println("PURGING TIMER!\n+++++++++++++++++");
+                autoscaleTimer.cancel();
+                autoscaleTimer = null;
+            }
         }
     }
 };
@@ -514,7 +542,9 @@ class ChannelBar {
     color channelColor; //color of plot trace
 
     boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-    int prevMillis;
+    float autoscaleMin;
+    float autoscaleMax;
+    boolean previousIsRunning;
     
     TextBox voltageValue;
     TextBox impValue;
@@ -671,11 +701,10 @@ class ChannelBar {
 
     }
 */  
-        int elapsedTime = millis() - prevMillis;
-        boolean performAutoscale = isAutoscale && elapsedTime > 1000;
-        float autoscaleMax = dataProcessingFilteredBuffer[channelIndex][0];
-        float autoscaleMin = 0;
-        println(dataProcessingFilteredBuffer[channelIndex].length);
+        autoscaleMax = 0;
+        autoscaleMin = 0;
+
+        double[][] newData = currentBoard.getFrameData();
 
         // update data in plot
         if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
@@ -685,16 +714,8 @@ class ChannelBar {
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
-                if (performAutoscale) {
-                    autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
-                    autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
-                }
-            }
-            if (performAutoscale) {
-                prevMillis = millis();
-                plot.setYLim(autoscaleMin, autoscaleMax);
-                customYLim(yAxisMin, (int)Math.floor(autoscaleMin));
-                customYLim(yAxisMax, (int)Math.ceil(autoscaleMax));
+                autoscaleMax = filt_uV_value > autoscaleMax ? filt_uV_value : autoscaleMax;
+                autoscaleMin = filt_uV_value < autoscaleMin ? filt_uV_value : autoscaleMin;
             }
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
@@ -709,7 +730,13 @@ class ChannelBar {
         plot.beginDraw();
         plot.drawBox();
         plot.drawGridLines(0);
-        plot.drawLines();
+        try {
+            plot.drawLines();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("PLOT ERROR ON CHANNEL " + channelIndex);
+            
+        }
         //Draw the x axis label on the bottom channel bar, hide if hardware settings are open
         if (isBottomChannel() && !hardwareSettingsAreOpen) {
             plot.drawXAxis();
@@ -756,8 +783,12 @@ class ChannelBar {
         yAxisMax.setVisible(b);
 
         popStyle();
-
-        cbCp5.draw();
+        try {
+            cbCp5.draw();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("CP5 ERROR ON CHANNEL " + channelIndex);
+        }
     }
 
     private int nPointsBasedOnDataSource() {
@@ -797,6 +828,17 @@ class ChannelBar {
         //Update button text
         customYLim(yAxisMin, yAxisLowerLim);
         customYLim(yAxisMax, yAxisUpperLim);
+    }
+
+    public void applyAutoscale() {
+        if (isAutoscale) {
+            autoscaleMin = Math.min(autoscaleMin, -5);
+            autoscaleMax = Math.max(autoscaleMax, 5);
+            float limit = Math.max(abs(autoscaleMin), abs(autoscaleMax));
+            plot.setYLim(-limit, limit);
+            customYLim(yAxisMin, (int)-limit);
+            customYLim(yAxisMax, (int)limit);
+        }
     }
 
     //Update yAxis text and responsively size Textfield
@@ -1288,4 +1330,3 @@ class TimeDisplay {
         return time.format(formatter);
     }
 };//end TimeDisplay class
-
