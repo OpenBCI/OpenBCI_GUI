@@ -1550,7 +1550,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 for (int i=0; i<nPointsPerUpdate;i++) {
                     for (int j=0;j<numChan;j++) {
-                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][i];
+                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][start+i];
                     }
                 }
                 // Add timestamp to LSL Stream

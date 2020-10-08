@@ -3,6 +3,7 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = false;
+final boolean usingNovaXREmulator = false;
 
 interface NovaXRSettingsEnum {
     public String getName();
@@ -193,6 +194,9 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
+        if (usingNovaXREmulator) {
+            params.ip_address = "127.0.0.1";
+        }
         return params;
     }
 

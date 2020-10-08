@@ -64,8 +64,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.1";
-String localGUIVersionDate = "September 2020";
+String localGUIVersionString = "v5.0.2-alpha.1";
+String localGUIVersionDate = "October 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -166,12 +166,6 @@ StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
 
 String output_fname;
-String sessionName = "N/A";
-final int OUTPUT_SOURCE_NONE = 0;
-final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
-final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
-public int outputDataSource = OUTPUT_SOURCE_ODF;
-// public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
