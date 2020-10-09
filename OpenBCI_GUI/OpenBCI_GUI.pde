@@ -160,7 +160,7 @@ float dataProcessingFilteredBuffer[][];
 float data_elec_imp_ohm[];
 
 //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-int dataBuff_len_sec = 20;
+int dataBuff_len_sec = 20 + 2; //Add two seconds to max buffer to account for filter artifact on the left of the graph
 
 StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
