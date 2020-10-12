@@ -2,9 +2,15 @@ class DataLogger {
     //variables for writing EEG data out to a file
     private DataWriterODF fileWriterODF;
     private DataWriterBDF fileWriterBDF;
+    private String sessionName = "N/A";
+    public final int OUTPUT_SOURCE_NONE = 0;
+    public final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
+    public final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
+    private int outputDataSource;
 
     DataLogger() {
-
+        //Default to OpenBCI CSV Data Format
+        outputDataSource = OUTPUT_SOURCE_ODF;
     }
 
     public void initialize() {
@@ -166,5 +172,17 @@ class DataLogger {
             fileWriterODF.closeFile();
         }
         fileWriterODF = null;
+    }
+
+    public int getDataLoggerOutputFormat() {
+        return outputDataSource;
+    }
+
+    public void setDataLoggerOutputFormat(int outputSource) {
+        outputDataSource = outputSource;
+    }
+
+    public void setSessionName(String s) {
+        sessionName = s;
     }
 };

@@ -166,12 +166,6 @@ StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
 
 String output_fname;
-String sessionName = "N/A";
-final int OUTPUT_SOURCE_NONE = 0;
-final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
-final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
-public int outputDataSource = OUTPUT_SOURCE_ODF;
-// public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;

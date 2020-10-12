@@ -5,6 +5,7 @@
 * Highlight channels in hardware settings that are out of sync with board
 * Require users to send or revert hardware settings before closing UI
 * Add "send" button to hardware settings
+* Update SessionData UI in Control Panel
 
 # v5.0.1
 
