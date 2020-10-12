@@ -2,7 +2,7 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-final boolean novaXREnabled = false;
+final boolean novaXREnabled = true;
 final boolean usingNovaXREmulator = false;
 
 interface NovaXRSettingsEnum {
