@@ -2,8 +2,8 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-final boolean novaXREnabled = false;
-final boolean usingNovaXREmulator = false;
+final boolean novaXREnabled = true;
+final boolean usingNovaXREmulator = true;
 
 interface NovaXRSettingsEnum {
     public String getName();

@@ -23,7 +23,7 @@ class W_BandPower extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
-        bpChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "BP_Channels");
+        bpChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
         
         //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde

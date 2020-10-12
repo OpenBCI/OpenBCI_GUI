@@ -132,7 +132,7 @@ class W_timeSeries extends Widget {
         tscp5.setGraphics(_parent, 0,0);
         tscp5.setAutoDraw(false);
 
-        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
+        tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
 
         //activate all channels in channelSelect by default
         activateAllChannels();
@@ -237,7 +237,7 @@ class W_timeSeries extends Widget {
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hwSettingsButton);
+                lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
             }
             
             //Update Playback scrollbar and/or display time
@@ -659,10 +659,8 @@ class ChannelBar {
     }
 
     private void updatePlotPoints() {
-
         autoscaleMax = 0;
         autoscaleMin = 0;
-
         // update data in plot
         if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {

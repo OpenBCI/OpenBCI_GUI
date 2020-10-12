@@ -281,7 +281,7 @@ class Widget{
     }
 
     //For use with old button class
-    void ignoreButtonCheck(Button_obci b) {
+    public void ignoreButtonCheck(Button_obci b) {
         //ignore top left button interaction when widgetSelector dropdown is active
         if (dropdownIsActive) {
             b.setIgnoreHover(true);
@@ -291,15 +291,23 @@ class Widget{
             }
         }
     }
+    
+    //For use with Cp5 Elements
+    protected void lockElementOnOverlapCheck(controlP5.Controller c) {
+        if (dropdownIsActive && !c.isLock()) {
+            c.lock();
+        } else if (dropdownIsActive && c.isLock()) {
+            c.unlock();
+        }
+    }
 
-    //For use with Cp5 Buttons
-    void ignoreButtonCheck(Button b) {
-        //ignore top left button interaction when widgetSelector dropdown is active
-        if (dropdownIsActive) {
-            b.lock();
-        } else {
-            if (b.isLock()) {
-                b.unlock();
+    //For use with Cp5 Elements
+    protected void lockElementOnOverlapCheck(controlP5.CheckBox c) {
+        if (c.isVisible()) {
+            if (dropdownIsActive) {
+                c.activateEvent(false);
+            } else if (dropdownIsActive) {
+                c.activateEvent(true);
             }
         }
     }
@@ -381,8 +389,7 @@ void WidgetSelector(int n){
 
 // This is a helpful class that will add a channel select feature to a Widget
 class ChannelSelect {
-
-    //----------CHANNEL SELECT INFRASTRUCTURE
+    private Widget widget;
     private int x, y, w, navH;
     public float tri_xpos = 0;
     private float chanSelectXPos = 0;
@@ -396,7 +403,8 @@ class ChannelSelect {
     private boolean showChannelText = true;
     private boolean wasOpen = false;
 
-    ChannelSelect(PApplet _parent, int _x, int _y, int _w, int _navH, String checkBoxName) {
+    ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
+        widget = _widget;
         x = _x;
         y = _y;
         w = _w;
@@ -428,11 +436,11 @@ class ChannelSelect {
                 activeChan.add(i);
             }
         }
-        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+        checkList.setPosition(x + 2, y + offset);
+        widget.lockElementOnOverlapCheck(checkList);
     }
 
     void draw() {
-
         if (showChannelText) {
             //change "Channels" text color and triangle color on hover
             if (channelSelectHover) {
@@ -474,13 +482,12 @@ class ChannelSelect {
                 rect(x,y,w,navH);
             }
         }
-
         cp5_channelCheckboxes.draw();
     }
 
     void screenResized(PApplet _parent) {
         cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
-        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
+        checkList.setPosition(x + 2, y + offset);
     }
 
     void mousePressed(boolean dropdownIsActive) {
@@ -527,9 +534,7 @@ class ChannelSelect {
         //nchan is a global variable, so we can use it here with no problems
         for (int i = 0; i < _nchan; i++) {
             int chNum = i+1;
-            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
-                            .addItem(String.valueOf(chNum), chNum)
-                            ;
+            checkList.addItem(String.valueOf(chNum), chNum);
             //start all items as invisible until user clicks dropdown to show checkboxes
             checkList.getItem(i).setVisible(false);
         }
