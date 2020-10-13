@@ -492,7 +492,11 @@ void initSystem() {
             }
             break;
         case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
+            currentBoard = new BoardNovaXR(
+                    controlPanel.novaXRBox.getIPAddress(),
+                    novaXR_boardSetting,
+                    novaXR_sampleRate
+                    );
             // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic(16);
             break;

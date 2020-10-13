@@ -3,7 +3,6 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = true;
-final boolean usingNovaXREmulator = true;
 
 interface NovaXRSettingsEnum {
     public String getName();
@@ -143,6 +142,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
     private NovaXRSR sampleRate;
+    private String ipAddress;
 
     private final NovaXRDefaultSettings defaultSettings;
     private boolean useDynamicScaler;
@@ -155,12 +155,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         useDynamicScaler = true;
     }
 
-    public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
+    public BoardNovaXR(String _ip, NovaXRMode mode, NovaXRSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
+        ipAddress = _ip;
         initialSettingsMode = mode;
         sampleRate = _sampleRate;
         samplingRateCache = sampleRate.getValue();
@@ -194,9 +195,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        if (usingNovaXREmulator) {
-            params.ip_address = "127.0.0.1";
-        }
+        params.ip_address = ipAddress;
         return params;
     }
 
