@@ -499,21 +499,6 @@ class ChannelSelect {
         buttonW = checkSize;
         buttonH = buttonW;
 
-        /*
-        //Name the checkbox the same as the text display on screen
-        checkList = cp5_chanSelect.addCheckBox(chanDropdownName)
-                        .setPosition(x + 5, y + offset)
-                        .setSize(checkSize, checkSize)
-                        .setItemsPerRow(nchan)
-                        .setSpacingColumn(13)
-                        .setSpacingRow(2)
-                        .setColorLabel(color(0)) //Set the color of the text label
-                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
-                        .setColorBackground(color(150)) //checkbox background color
-                        .setColorActive(color(57, 128, 204)) //checkbox color when active
-                        ;
-        */
-
         for (int i = 0; i < _nchan; i++) {
             //start all items as invisible until user clicks dropdown to show checkboxes
             channelButtons.add(
@@ -555,7 +540,7 @@ class ChannelSelect {
                 } else {
                     activeChan.remove(Integer.valueOf(chan));
                 }
-                println(widget + " || " + activeChan);
+                //println(widget + " || " + activeChan);
             }
         });
         return myButton;
