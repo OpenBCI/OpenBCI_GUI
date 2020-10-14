@@ -460,6 +460,18 @@ class ChannelSelect {
             }
         }
         cp5_chanSelect.draw();
+        if (isVisible) {
+            pushStyle();
+            int weight = 1;
+            strokeWeight(weight);
+            noFill();
+            for (int i = 0; i < nchan; i++) {
+                color c = currentBoard.isEXGChannelActive(i) ? color(0,255,0,255) : color(255,0,0,255);
+                stroke(c);
+                rect(x + (button_spacer*(i+1)) + (buttonW*i) - weight, y + offset - weight, channelButtons.get(i).getWidth() + weight, channelButtons.get(i).getHeight() + weight);
+            }
+            popStyle();
+        }
     }
 
     public void screenResized(PApplet _parent) {
