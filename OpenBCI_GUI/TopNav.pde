@@ -244,31 +244,39 @@ class TopNav {
     void draw() {
         pushStyle();
 
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            noStroke();
-            fill(229);
-            rect(0, 0, width, topNav_h);
-            stroke(bgColor);
-            fill(255);
-            rect(-1, 0, width+2, navBarHeight);
-            //hide the center logo if buttons would overlap it
-            if (width > 860) {
-                //this is the center logo
-                image(logo_blue, width/2 - (128/2) - 2, 6, 128, 22);
-            }
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            noStroke();
-            fill(100);
-            fill(57, 128, 204);
-            rect(0, 0, width, topNav_h);
-            stroke(bgColor);
-            fill(31, 69, 110);
-            rect(-1, 0, width+2, navBarHeight);
-            //hide the center logo if buttons would overlap it
-            if (width > 860) {
-                //this is the center logo
-                image(logo_white, width/2 - (128/2) - 2, 6, 128, 22);
-            }
+        color topNavBg;
+        color subNavBg;
+        color strokeColor = bgColor;
+        PImage logo;
+
+        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+            topNavBg = color(31, 69, 110);
+            subNavBg = color(57, 128, 204);
+            logo = logo_white;
+        } else {
+            topNavBg = color(255);
+            subNavBg = color(229);
+            logo = logo_blue;
+        }
+
+        if (eegDataSource == DATASOURCE_NOVAXR) {
+            topNavBg = color(3, 10, 18);
+            subNavBg = topNavBg;
+            strokeColor = color(255);
+        }
+
+        //stroke(bgColor);
+        fill(topNavBg);
+        rect(0, 0, width, navBarHeight);
+        //noStroke();
+        stroke(strokeColor);
+        fill(subNavBg);
+        rect(-1, navBarHeight, width+2, navBarHeight);
+
+        //hide the center logo if buttons would overlap it
+        if (width > 860) {
+            //this is the center logo
+            image(logo, width/2 - (128/2) - 2, 6, 128, 22);
         }
 
         popStyle();

@@ -585,7 +585,7 @@ class ChannelSelect {
         } else {
             activeChan.remove((Integer)chan);
         }
-        println("SET BUTTON TOGGLE -- " + widget + " || " + activeChan);
+        //print("SET BUTTON TOGGLE -- " + widget + " || " + activeChan);
     }
 
     private void setAllButtonsVisibility(boolean b) {

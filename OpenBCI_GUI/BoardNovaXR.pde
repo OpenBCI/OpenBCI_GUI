@@ -152,7 +152,6 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         super();
 
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-        useDynamicScaler = true;
     }
 
     public BoardNovaXR(String _ip, NovaXRMode mode, NovaXRSR _sampleRate) {
@@ -169,6 +168,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
+        setUseDynamicScaler(true);
     }
 
     @Override
