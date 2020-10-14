@@ -24,6 +24,7 @@ class W_BandPower extends Widget {
 
         //Add channel select dropdown to this widget
         bpChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
+        bpChanSelect.activateAllButtons();
         
         //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
@@ -60,9 +61,6 @@ class W_BandPower extends Widget {
 
             }
         );
-
-        //activate all channels in channelSelect by default
-        activateAllChannels();
     } //end of constructor
 
     void update() {
@@ -144,15 +142,6 @@ class W_BandPower extends Widget {
         } else {
             bp_plot.setPos(x, y - navHeight);
             bp_plot.setOuterDim(w, h + navHeight);
-        }
-    }
-
-    void activateAllChannels() {
-        bpChanSelect.activeChan.clear();
-        //Activate all channel checkboxes by default for this widget
-        for (int i = 0; i < nchan; i++) {
-            bpChanSelect.checkList.activate(i);
-            bpChanSelect.activeChan.add(i);
         }
     }
 };

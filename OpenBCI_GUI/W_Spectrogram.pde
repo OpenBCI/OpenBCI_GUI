@@ -363,10 +363,8 @@ class W_Spectrogram extends Widget {
         }
 
         for (int i = 0; i < topChansToActivate.length; i++) {
-            spectChanSelectTop.checkList.activate(topChansToActivate[i]);
-            spectChanSelectTop.activeChan.add(topChansToActivate[i]);
-            spectChanSelectBot.checkList.activate(botChansToActivate[i]);
-            spectChanSelectBot.activeChan.add(botChansToActivate[i]);
+            spectChanSelectTop.setToggleState(topChansToActivate[i], true);
+            spectChanSelectBot.setToggleState(botChansToActivate[i], true);
         }
     }
 

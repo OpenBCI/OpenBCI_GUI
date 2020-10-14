@@ -365,6 +365,14 @@ class SessionSettings {
         JSONObject saveTSSettings = new JSONObject();
         saveTSSettings.setInt("Time Series Vert Scale", w_timeSeries.getTSVertScale().getIndex());
         saveTSSettings.setInt("Time Series Horiz Scale", w_timeSeries.getTSHorizScale().getIndex());
+        //Save data from the Active channel checkBoxes
+        JSONArray saveActiveChanTS = new JSONArray();
+        int numActiveTSChan = w_timeSeries.tsChanSelect.activeChan.size();
+        for (int i = 0; i < numActiveTSChan; i++) {
+            int activeChan = w_timeSeries.tsChanSelect.activeChan.get(i);
+            saveActiveChanTS.setInt(i, activeChan);
+        }
+        saveTSSettings.setJSONArray("activeChannels", saveActiveChanTS);
         saveSettingsJSONData.setJSONObject(kJSONKeyTimeSeries, saveTSSettings);
 
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
@@ -482,7 +490,7 @@ class SessionSettings {
         JSONArray saveActiveChanBP = new JSONArray();
         int numActiveBPChan = w_bandPower.bpChanSelect.activeChan.size();
         for (int i = 0; i < numActiveBPChan; i++) {
-            int activeChan = w_bandPower.bpChanSelect.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            int activeChan = w_bandPower.bpChanSelect.activeChan.get(i);
             saveActiveChanBP.setInt(i, activeChan);
         }
         saveBPSettings.setJSONArray("activeChannels", saveActiveChanBP);
@@ -494,7 +502,7 @@ class SessionSettings {
         JSONArray saveActiveChanSpectTop = new JSONArray();
         int numActiveSpectChanTop = w_spectrogram.spectChanSelectTop.activeChan.size();
         for (int i = 0; i < numActiveSpectChanTop; i++) {
-            int activeChan = w_spectrogram.spectChanSelectTop.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            int activeChan = w_spectrogram.spectChanSelectTop.activeChan.get(i);
             saveActiveChanSpectTop.setInt(i, activeChan);
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsTop", saveActiveChanSpectTop);
@@ -502,7 +510,7 @@ class SessionSettings {
         JSONArray saveActiveChanSpectBot = new JSONArray();
         int numActiveSpectChanBot = w_spectrogram.spectChanSelectBot.activeChan.size();
         for (int i = 0; i < numActiveSpectChanBot; i++) {
-            int activeChan = w_spectrogram.spectChanSelectBot.activeChan.get(i) + 1; //add 1 here so channel numbers are correct
+            int activeChan = w_spectrogram.spectChanSelectBot.activeChan.get(i);
             saveActiveChanSpectBot.setInt(i, activeChan);
         }
         saveSpectrogramSettings.setJSONArray("activeChannelsBot", saveActiveChanSpectBot);
@@ -698,7 +706,7 @@ class SessionSettings {
                 loadSpectActiveChanTop.add(loadSpectChanTop.getInt(i));
             }
             JSONArray loadSpectChanBot = loadSpectSettings.getJSONArray("activeChannelsBot");
-            for (int i = 0; i < loadSpectChanTop.size(); i++) {
+            for (int i = 0; i < loadSpectChanBot.size(); i++) {
                 loadSpectActiveChanBot.add(loadSpectChanBot.getInt(i));
             }
             spectMaxFrqLoad = loadSpectSettings.getInt("Spectrogram_Max Freq");
@@ -850,18 +858,9 @@ class SessionSettings {
         ////////////////////////////Apply Band Power settings
         try {
             //apply channel checkbox settings
-            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").deactivateAll();
-            if (loadBPActiveChans.size() > 0) {
-                int activeChanCounterBP = 0;
-                for (int i = 0; i < nchan; i++) {
-                    if (activeChanCounterBP  < loadBPActiveChans.size()) {
-                        //subtract 1 because cp5 starts count from 0
-                        if (i == (loadBPActiveChans.get(activeChanCounterBP) - 1)) {
-                            w_bandPower.bpChanSelect.cp5_channelCheckboxes.get(CheckBox.class, "BP_Channels").activate(i);
-                            activeChanCounterBP++;
-                        }
-                    }
-                }
+            w_bandPower.bpChanSelect.deactivateAllButtons();;
+            for (int i = 0; i < loadBPActiveChans.size(); i++) {
+                w_bandPower.bpChanSelect.setToggleState(loadBPActiveChans.get(i), true);
             }
         } catch (Exception e) {
             println("Settings: Exception caught applying band power settings " + e);
@@ -876,6 +875,20 @@ class SessionSettings {
             w_spectrogram.cp5_widget.getController("SpectrogramSampleRate").getCaptionLabel().setText(spectSampleRateArray[spectSampleRateLoad]);
         SpectrogramLogLin(spectLogLinLoad);
             w_spectrogram.cp5_widget.getController("SpectrogramLogLin").getCaptionLabel().setText(fftLogLinArray[spectLogLinLoad]);
+        try {
+            //apply channel checkbox settings
+            w_spectrogram.spectChanSelectTop.deactivateAllButtons();
+            w_spectrogram.spectChanSelectBot.deactivateAllButtons();
+            for (int i = 0; i < loadSpectActiveChanTop.size(); i++) {
+                w_spectrogram.spectChanSelectTop.setToggleState(loadSpectActiveChanTop.get(i), true);
+            }
+            for (int i = 0; i < loadSpectActiveChanBot.size(); i++) {
+                w_spectrogram.spectChanSelectBot.setToggleState(loadSpectActiveChanBot.get(i), true);
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying spectrogram settings channel bar " + e);
+        }
+        println("Settings: Spectrogram Active Channels: TOP - " + loadSpectActiveChanTop + " || BOT - " + loadSpectActiveChanBot);
 
         ///////////Apply Networking Settings
         //Update protocol with loaded value
@@ -988,6 +1001,17 @@ class SessionSettings {
         
         w_timeSeries.setTSHorizScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
         w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString());
+
+        JSONArray loadTSChan = loadTimeSeriesSettings.getJSONArray("activeChannels");
+        w_timeSeries.tsChanSelect.deactivateAllButtons();
+        try {
+            for (int i = 0; i < loadTSChan.size(); i++) {
+                w_timeSeries.tsChanSelect.setToggleState(loadTSChan.getInt(i), true);
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying time series settings " + e);
+        }
+        verbosePrint("Settings: Time Series Active Channels: " + loadBPActiveChans);
             
     } //end loadApplyTimeSeriesSettings
 

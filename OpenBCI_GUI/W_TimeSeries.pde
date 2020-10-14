@@ -133,9 +133,8 @@ class W_timeSeries extends Widget {
         tscp5.setAutoDraw(false);
 
         tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
-
-        //activate all channels in channelSelect by default
-        activateAllChannels();
+        //activate all channels in channelSelect by default for this widget
+        tsChanSelect.activateAllButtons();
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -381,15 +380,6 @@ class W_timeSeries extends Widget {
 
     public void closeADSSettings() {
         setAdsSettingsVisible(false);
-    }
-
-    private void activateAllChannels() {
-        tsChanSelect.activeChan.clear();
-        //Activate all channel checkboxes by default for this widget
-        for (int i = 0; i < nchan; i++) {
-            tsChanSelect.checkList.activate(i);
-            tsChanSelect.activeChan.add(i);
-        }
     }
 
     private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
@@ -989,7 +979,7 @@ class ChannelBar {
         public void controlEvent(CallbackEvent theEvent) {
             
             //Pressing ENTER in the Textfield triggers a "Broadcast"
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                 
                 //Try to clean up typing accidents from user input in Textfield
                 rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");

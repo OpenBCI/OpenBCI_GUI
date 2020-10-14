@@ -2270,12 +2270,9 @@ class NovaXRBox {
         });
         ipAddressTF.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
                     ipAddress = ipAddressTF.getText();
-                    println("ControlPanel: User entered NovaXR IP Address: " + ipAddressTF.getText());
-                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    println("User left novaxr ip address textfield");
-                    ipAddress = ipAddressTF.getText();
+                    ipAddressTF.setFocus(false);
                 }
             }
         });
