@@ -7,6 +7,7 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 class Widget{
 
     protected PApplet pApplet;
@@ -51,7 +52,6 @@ class Widget{
 
     public void setIsActive(boolean isActive) {
         isWidgetActive = isActive;
-        //mapToCurrentContainer();
     }
 
     public void update(){
@@ -224,6 +224,7 @@ class Widget{
 
     private void resizeWidgetSelector() {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
+        //println("Widget " + widgetTitle +  " || show num dropdowns = " + dropdownsItemsToShow);
         widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
         if (wm != null) {
             int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
@@ -280,8 +281,7 @@ class Widget{
         }
     }
 
-    //For use with old button class
-    public void ignoreButtonCheck(Button_obci b) {
+    void ignoreButtonCheck(Button_obci b) {
         //ignore top left button interaction when widgetSelector dropdown is active
         if (dropdownIsActive) {
             b.setIgnoreHover(true);
@@ -290,11 +290,6 @@ class Widget{
                 b.setIgnoreHover(false);
             }
         }
-    }
-    
-    //For use with Cp5 Elements
-    protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        c.setLock(dropdownIsActive);
     }
 };
 
@@ -372,27 +367,29 @@ void WidgetSelector(int n){
     //set the text of the widgetSelector to the newly selected widget
 }
 
-// This is a helpful class that will add a channel select feature to a Widget
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+//    ChannelSelect is currently used by BandPower and SSVEP Widgets         //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+
 class ChannelSelect {
-    private Widget widget;
+
+    //----------CHANNEL SELECT INFRASTRUCTURE
     private int x, y, w, navH;
     public float tri_xpos = 0;
     private float chanSelectXPos = 0;
-    private final int button_spacer = 10;
-    public ControlP5 cp5_chanSelect;   //ControlP5 to contain our checkboxes
-    private List<Toggle> channelButtons;
+    public ControlP5 cp5_channelCheckboxes;   //ControlP5 to contain our checkboxes
+    public CheckBox checkList;
     private int offset;  //offset on nav bar of checkboxes
-    private int buttonW;
-    private int buttonH;
     private boolean channelSelectHover;
-    private boolean isVisible;
+    private boolean channelSelectPressed;
     public List<Integer> activeChan;
     public String chanDropdownName;
     private boolean showChannelText = true;
-    private boolean wasVisible = false;
+    private boolean wasOpen = false;
 
-    ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
-        widget = _widget;
+    ChannelSelect(PApplet _parent, int _x, int _y, int _w, int _navH, String checkBoxName) {
         x = _x;
         y = _y;
         w = _w;
@@ -401,13 +398,12 @@ class ChannelSelect {
         chanDropdownName = checkBoxName;
 
         //setup for checkboxes
-        cp5_chanSelect = new ControlP5(_parent);
-        cp5_chanSelect.setGraphics(_parent, 0, 0);
-        cp5_chanSelect.setAutoDraw(false); //draw only when specified
-        createButtons(nchan);
+        cp5_channelCheckboxes = new ControlP5(_parent);
+
+        createCheckList(nchan);
     }
 
-    public void update(int _x, int _y, int _w) {
+    void update(int _x, int _y, int _w) {
         //update the x,y,w for this class using the parent class
         x = _x;
         y = _y;
@@ -418,14 +414,18 @@ class ChannelSelect {
         } else {
             channelSelectHover = false;
         }
-        //Update position of buttons on every update and check for UI overlap
+        //Update the active channels to include in data processing
+        activeChan.clear();
         for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setPosition(x + (button_spacer*(i+1)) + (buttonW*i), y + offset);
-            widget.lockElementOnOverlapCheck(channelButtons.get(i));
+            if(checkList.getState(i)){
+                activeChan.add(i);
+            }
         }
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
     }
 
-    public void draw() {
+    void draw() {
+
         if (showChannelText) {
             //change "Channels" text color and triangle color on hover
             if (channelSelectHover) {
@@ -439,7 +439,7 @@ class ChannelSelect {
             tri_xpos = x + textWidth("Channels") + 7;
 
             //draw triangle as pointing up or down, depending on if channel Select is active or closed
-            if (!isVisible) {
+            if (!channelSelectPressed) {
                 triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
             } else {
                 triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
@@ -449,101 +449,87 @@ class ChannelSelect {
             }
         } else { //This is the case in Spectrogram where we need a second channel selector
             //check for state change
-            if (isVisible != wasVisible) {
-                wasVisible = isVisible;
-                setAllButtonsVisibility(isVisible);
+            if (channelSelectPressed != wasOpen) {
+                wasOpen = channelSelectPressed;
+                if (channelSelectPressed) {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
             }
             //this draws extra grey space behind the checklist buttons
-            if (isVisible) {
+            if (channelSelectPressed) {
                 fill(180);
                 rect(x,y,w,navH);
             }
         }
-        cp5_chanSelect.draw();
-        if (isVisible) {
-            pushStyle();
-            int weight = 1;
-            strokeWeight(weight);
-            noFill();
-            for (int i = 0; i < nchan; i++) {
-                color c = currentBoard.isEXGChannelActive(i) ? color(0,255,0,255) : color(255,0,0,255);
-                stroke(c);
-                rect(x + (button_spacer*(i+1)) + (buttonW*i) - weight, y + offset - weight, channelButtons.get(i).getWidth() + weight, channelButtons.get(i).getHeight() + weight);
-            }
-            popStyle();
-        }
+
+        cp5_channelCheckboxes.draw();
     }
 
-    public void screenResized(PApplet _parent) {
-        cp5_chanSelect.setGraphics(_parent, 0, 0);
+    void screenResized(PApplet _parent) {
+        cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
     }
 
-    public void mousePressed(boolean dropdownIsActive) {
+    void mousePressed(boolean dropdownIsActive) {
         if (!dropdownIsActive && showChannelText) {
             if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-                isVisible = !isVisible;
-                setAllButtonsVisibility(isVisible);
+                channelSelectPressed = !channelSelectPressed;
+                if (channelSelectPressed) {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(true);
+                    }
+                } else {
+                    for (int i = 0; i < nchan; i++) {
+                        checkList.getItem(i).setVisible(false);
+                    }
+                }
             }
         }
     }
 
-    private void createButtons(int _nchan) {
-        channelButtons = new ArrayList<Toggle>();
-        
+    boolean isVisible() {
+        return channelSelectPressed;
+    }
+
+    void createCheckList(int _nchan) {
         int checkSize = navH - 4;
         offset = (navH - checkSize)/2;
 
         channelSelectHover = false;
-        isVisible = false;
+        channelSelectPressed = false;
 
-        buttonW = checkSize;
-        buttonH = buttonW;
+        //Name the checkbox the same as the text display on screen
+        checkList = cp5_channelCheckboxes.addCheckBox(chanDropdownName)
+                        .setPosition(x + 5, y + offset)
+                        .setSize(checkSize, checkSize)
+                        .setItemsPerRow(nchan)
+                        .setSpacingColumn(13)
+                        .setSpacingRow(2)
+                        .setColorLabel(color(0)) //Set the color of the text label
+                        .setColorForeground(color(120)) //checkbox color when mouse is hovering over it
+                        .setColorBackground(color(150)) //checkbox background color
+                        .setColorActive(color(57, 128, 204)) //checkbox color when active
+                        ;
 
+        //nchan is a global variable, so we can use it here with no problems
         for (int i = 0; i < _nchan; i++) {
+            int chNum = i+1;
+            cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName)
+                            .addItem(String.valueOf(chNum), chNum)
+                            ;
             //start all items as invisible until user clicks dropdown to show checkboxes
-            channelButtons.add(
-                createButton("ch"+(i+1), (i+1), false, x + (button_spacer*(i+1)) + (buttonW*i), y + offset, buttonW, buttonH)
-            );
+            checkList.getItem(i).setVisible(false);
         }
-    }
 
-    private Toggle createButton(String name, int chan, boolean _isVisible, int _x, int _y, int _w, int _h) {
-        int _fontSize = 12;
-        int marginLeftOffset = chan > 9 ? -8 : -5;
-        Toggle myButton = cp5_chanSelect.addToggle(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(color(120))
-            .setColorBackground(color(150))
-            .setColorActive(color(57, 128, 204))
-            .setVisible(_isVisible)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(String.valueOf(chan))
-            .getStyle() //need to grab style before affecting margin and padding
-            .setMargin(-_h - 3, 0, 0, marginLeftOffset)
-            .setPaddingLeft(10)
-            ;
-        myButton.onPress(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                int chan = Integer.parseInt(((Toggle)theEvent.getController()).getCaptionLabel().getText()) - 1;  
-                if (((Toggle)theEvent.getController()).getBooleanValue()) {
-                    if (!activeChan.contains(chan)) {
-                        activeChan.add(chan);
-                        Collections.sort(activeChan);
-                    }
-                } else {
-                    activeChan.remove(Integer.valueOf(chan));
-                }
-                //println(widget + " || " + activeChan);
-            }
-        });
-        return myButton;
+        cp5_channelCheckboxes.setAutoDraw(false); //draw only when specified
+        //cp5_channelCheckboxes.setGraphics(_parent, 0, 0);
+        cp5_channelCheckboxes.get(CheckBox.class, chanDropdownName).setPosition(x + 2, y + offset);
     }
 
     void showChannelText() {
@@ -554,44 +540,7 @@ class ChannelSelect {
         showChannelText = false;
     }
 
-    boolean isVisible() {
-        return isVisible;
-    }
-
     void setIsVisible(boolean b) {
-        isVisible = b;
+        channelSelectPressed = b;
     }
-
-    public void deactivateAllButtons() {
-        activeChan.clear();
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setState(false);
-        }
-    }
-
-    public void activateAllButtons() {
-        activeChan.clear();
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setState(true);
-            activeChan.add(i); //already sorted
-        }
-    }
-
-    public void setToggleState(Integer chan, boolean b) {
-        channelButtons.get(chan).setState(b);
-        if (b) {
-            activeChan.add(chan);
-            Collections.sort(activeChan);
-        } else {
-            activeChan.remove((Integer)chan);
-        }
-        //print("SET BUTTON TOGGLE -- " + widget + " || " + activeChan);
-    }
-
-    private void setAllButtonsVisibility(boolean b) {
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setVisible(b);
-        }
-    }
-
 } //end of ChannelSelect class

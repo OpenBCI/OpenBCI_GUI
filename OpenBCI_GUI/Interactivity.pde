@@ -193,9 +193,9 @@ void parseKey(char val) {
             break;
 
         case 'm':
-            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
+            String picfname = "OpenBCI-" + DirectoryManager.getFileNameDateTime() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
+            saveFrame(settings.guiDataPath + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
             break;
             
@@ -297,8 +297,6 @@ synchronized void mouseReleased() {
 
 class CustomScrollableList extends ScrollableList {
 
-    private boolean drawOutlineWhenClosed = true;
-
     CustomScrollableList(ControlP5 cp5, String name) {
         super(cp5, name);
     }
@@ -323,43 +321,20 @@ class CustomScrollableList extends ScrollableList {
         super.updateDisplayMode(theMode);
 
         if (theMode == DEFAULT) {
-            _myControllerView = new CustomScrollableListView(this);
+            _myControllerView = new CustomScrollableListView( );
         }
         
         return this;
     }
 
-    public boolean getDrawOutlineWhenClosed() {
-        return drawOutlineWhenClosed;
-    }
-
-    public CustomScrollableList setDrawOutlineWhenClosed(boolean shouldDraw) {
-        drawOutlineWhenClosed = shouldDraw;
-        return this;
-    }
-
     public class CustomScrollableListView extends ScrollableListView {
-        private CustomScrollableList theList;
-
-        CustomScrollableListView(CustomScrollableList _theList) {
-            super();
-            theList = _theList;
-        }
-
         @Override
         public void display(PGraphics g , ScrollableList c) {
-            drawOutline();
-            super.display(g, c);
-        }
-
-        private void drawOutline() {
-            if (!theList.isOpen() && !theList.getDrawOutlineWhenClosed()) {
-                return; // don't draw outline
-            }
-
             // draw rect behind the dropdown 
-            fill(theList.getBackgroundColor());
-            rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
+            fill(c.getBackgroundColor());
+            rect(-1, -1, c.getWidth()+2, c.getHeight()+2);
+
+            super.display(g, c);
         }
     }
 }
@@ -722,6 +697,31 @@ void openURLInBrowser(String _url){
             //println(e.getMessage());
             println("Error launching url in browser: " + _url);
     }
+}
+
+void toggleFrameRate(){
+    if(frameRateCounter<3){
+        frameRateCounter++;
+    } else {
+        frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
+    }
+    if(frameRateCounter==0){
+        setFrameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
+    }
+    if(frameRateCounter==1){
+        setFrameRate(30);
+    }
+    if(frameRateCounter==2){
+        setFrameRate(45);
+    }
+    if(frameRateCounter==3){
+        setFrameRate(60);
+    }
+}
+
+void setFrameRate(int fps) {
+    frameRate(fps);
+    topNav.fpsButton.setString(fps + " fps");
 }
 
 //loop through networking textfields and find out if any are active

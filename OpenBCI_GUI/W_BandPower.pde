@@ -23,8 +23,7 @@ class W_BandPower extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
-        bpChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
-        bpChanSelect.activateAllButtons();
+        bpChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "BP_Channels");
         
         //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
@@ -44,7 +43,6 @@ class W_BandPower extends Widget {
         bp_plot.setAllFontProperties("Arial", 0, 14);
         bp_plot.getYAxis().getAxisLabel().setText("Power — (uV)^2 / Hz");
         bp_plot.getXAxis().setAxisLabelText("EEG Power Bands");
-        bp_plot.getXAxis().getAxisLabel().setOffset(42f);
         bp_plot.startHistograms(GPlot.VERTICAL);
         bp_plot.getHistogram().setDrawLabels(true);
 
@@ -61,6 +59,9 @@ class W_BandPower extends Widget {
 
             }
         );
+
+        //activate all channels in channelSelect by default
+        activateAllChannels();
     } //end of constructor
 
     void update() {
@@ -88,11 +89,11 @@ class W_BandPower extends Widget {
         }
 
         GPointsArray bp_points = new GPointsArray(dataProcessing.headWidePower.length);
-        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA\n0.5-4Hz");
-        bp_points.add(THETA + 0.5, activePower[THETA], "THETA\n4-8Hz");
-        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA\n8-13Hz");
-        bp_points.add(BETA + 0.5, activePower[BETA], "BETA\n13-32Hz");
-        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA\n32-100Hz");
+        bp_points.add(DELTA + 0.5, activePower[DELTA], "DELTA");
+        bp_points.add(THETA + 0.5, activePower[THETA], "THETA");
+        bp_points.add(ALPHA + 0.5, activePower[ALPHA], "ALPHA");
+        bp_points.add(BETA + 0.5, activePower[BETA], "BETA");
+        bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA");
         bp_plot.setPoints(bp_points);
     } //end of update
 
@@ -116,6 +117,7 @@ class W_BandPower extends Widget {
 
         popStyle();
         bpChanSelect.draw();
+        pushStyle();
     }
 
     void screenResized() {
@@ -142,6 +144,15 @@ class W_BandPower extends Widget {
         } else {
             bp_plot.setPos(x, y - navHeight);
             bp_plot.setOuterDim(w, h + navHeight);
+        }
+    }
+
+    void activateAllChannels() {
+        bpChanSelect.activeChan.clear();
+        //Activate all channel checkboxes by default for this widget
+        for (int i = 0; i < nchan; i++) {
+            bpChanSelect.checkList.activate(i);
+            bpChanSelect.activeChan.add(i);
         }
     }
 };

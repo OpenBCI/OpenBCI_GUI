@@ -19,6 +19,16 @@ class BoardNull extends Board {
         // empty
     }
 
+    @Override
+    public void startStreaming() {
+        println("WARNING: calling 'startStreaming' on a NULL board!");
+    }
+
+    @Override
+    public void stopStreaming() {
+        println("WARNING: calling 'stopStreaming' on a NULL board!");
+    }
+
     public boolean isConnected() {
         return false;
     }
@@ -39,7 +49,7 @@ class BoardNull extends Board {
     }
     
     @Override
-    public int getSampleIndexChannel() {
+    public int getSampleNumberChannel() {
         return 0;
     }
 
@@ -54,8 +64,8 @@ class BoardNull extends Board {
     }
 
     @Override
-    public boolean sendCommand(String command) {
-        return false;
+    public void sendCommand(String command) {
+        // empty
     }
 
     protected double[][] getNewDataInternal() {
@@ -69,10 +79,5 @@ class BoardNull extends Board {
 
     protected void addChannelNamesInternal(String[] channelNames) {
         // nothing
-    }
-    
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        return null;
     }
 };

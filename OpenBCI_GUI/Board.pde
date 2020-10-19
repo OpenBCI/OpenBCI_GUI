@@ -3,7 +3,6 @@ abstract class Board implements DataSource {
 
     private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
     private double[][] dataThisFrame;
-    private PacketLossTracker packetLossTracker;
 
     // accessible by all boards, can be returned as valid empty data
     protected double[][] emptyData;
@@ -18,25 +17,12 @@ abstract class Board implements DataSource {
 
         emptyData = new double[getTotalChannelCount()][0];
 
-        packetLossTracker = setupPacketLossTracker();
-
         return res;
     }
 
     @Override
     public void uninitialize() {
         uninitializeInternal();
-    }
-
-    @Override
-    public void startStreaming() {
-        packetLossTracker.onStreamStart();
-    }
-
-    @Override
-    public void stopStreaming() {
-        
-        // empty
     }
 
     @Override
@@ -52,12 +38,6 @@ abstract class Board implements DataSource {
             }
 
             accumulatedData.push(newEntry);
-        }
-
-        if( packetLossTracker != null) {
-            //TODO: make all API including getNewDataInternal() return List<double[]> 
-            // and we can just pass dataThisFrame here.
-            packetLossTracker.addSamples(getData(dataThisFrame[0].length));
         }
     }
 
@@ -85,7 +65,7 @@ abstract class Board implements DataSource {
         Arrays.fill(names, "Other");
 
         names[getTimestampChannel()] = "Timestamp";
-        names[getSampleIndexChannel()] = "Sample Index";
+        names[getSampleNumberChannel()] = "Sample Index";
 
         int[] exgChannels = getEXGChannels();
         for (int i=0; i<exgChannels.length; i++) {
@@ -96,13 +76,9 @@ abstract class Board implements DataSource {
         return names;
     }
 
-    public PacketLossTracker getPacketLossTracker() {
-        return packetLossTracker;
-    }
-
     public abstract boolean isConnected();
 
-    public abstract boolean sendCommand(String command);
+    public abstract void sendCommand(String command);
 
     // ***************************************
     // protected methods implemented by board
@@ -119,5 +95,4 @@ abstract class Board implements DataSource {
 
     protected abstract void addChannelNamesInternal(String[] channelNames);
 
-    protected abstract PacketLossTracker setupPacketLossTracker();
 };

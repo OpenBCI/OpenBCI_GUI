@@ -5,17 +5,17 @@ public class Buffer<T> extends LinkedList<T> {
 
     private int samplingRate;
     private int maxSize;
-    private Long timeOfLastCallMS;
+    private Long msSinceLastCall;
 
     Buffer(int samplingRate, int maxSize) {
         this.samplingRate = samplingRate;
         this.maxSize = maxSize;
-        timeOfLastCallMS = null;
+        msSinceLastCall = null;
     }
 
     Buffer(int samplingRate) {
-        // max delay 1 second
-        this(samplingRate, samplingRate /*max size*/);
+        // max delay smth like 2 seconds
+        this(samplingRate, samplingRate * 2);
     }
 
     public void addNewEntry(T object) {
@@ -30,12 +30,11 @@ public class Buffer<T> extends LinkedList<T> {
         long currentTime = millis();
         int numSamples = 0;
         // skip first call to set time
-        if (timeOfLastCallMS != null) {
-            float deltaTimeSeconds = (currentTime - timeOfLastCallMS.longValue()) / 1000.0;
-            // for safety, err on the side of delivering more samples (hence the use of ceil())
-            numSamples = ceil(samplingRate * deltaTimeSeconds);
+        if (msSinceLastCall != null) {
+            double deltaTimeSeconds = (currentTime - msSinceLastCall.longValue()) / 1000.0;
+            numSamples = (int)(samplingRate * deltaTimeSeconds);
         }
-        timeOfLastCallMS = currentTime;
+        msSinceLastCall = currentTime;
         // ensure that buffer is not bigger than maxSize
         if (this.size() > maxSize) {
             numSamples += this.size() - maxSize;

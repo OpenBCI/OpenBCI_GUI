@@ -76,18 +76,14 @@ class W_Accelerometer extends Widget {
 
         //create our channel bar and populate our accelerometerBar array!
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
-        accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
+        accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]); //sync horiz axis to Time Series by default
 
         accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
-        accelModeButton.setColorNotPressed(color(57,128,204));
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
-        if(!accelBoard.canDeactivateAccelerometer()) {
-            accelModeButton.setColorNotPressed(color(128));
-        }
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -137,10 +133,14 @@ class W_Accelerometer extends Widget {
         if (accelBoard.isAccelerometerActive()) {	
             accelModeButton.setString("Turn Accel. Off");	
             accelModeButton.setIgnoreHover(!accelBoard.canDeactivateAccelerometer());
+            if(!accelBoard.canDeactivateAccelerometer()) {
+                accelModeButton.setColorNotPressed(color(128));
+            }
         }
         else {
             accelModeButton.setString("Turn Accel. On");	
             accelModeButton.setIgnoreHover(false);
+            accelModeButton.setColorNotPressed(color(57,128,204));
         }
     }
 
@@ -204,8 +204,10 @@ class W_Accelerometer extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (accelModeButton.isMouseHere()) {
-            accelModeButton.setIsActive(true);
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_GANGLION) {
+            if (accelModeButton.isMouseHere()) {
+                accelModeButton.setIsActive(true);
+            }
         }
     }
 
@@ -269,7 +271,7 @@ void accelDuration(int n) {
 
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     if (n == 0) {
-        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
+        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
     } else {
         //set accelerometer x axis to the duration selected from dropdown
         w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
@@ -282,6 +284,7 @@ void accelDuration(int n) {
 class AccelerometerBar {
     //this class contains the plot for the 2d graph of accelerometer data
     int x, y, w, h;
+    boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
     int accBarPadding = 30;
     int xOffset;
 
@@ -312,6 +315,7 @@ class AccelerometerBar {
         
         // This widget is only instantiated when the board is accel capable, so we don't need to check
         accelBoard = (AccelerometerCapableBoard)currentBoard;
+        isOn = true;
 
         x = _x;
         y = _y;

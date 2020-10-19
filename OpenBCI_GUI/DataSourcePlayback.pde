@@ -137,10 +137,6 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         timeOfLastUpdateMS += numNewSamplesThisFrame / sampleRateMS;
 
         currentSample += numNewSamplesThisFrame;
-        
-        if (endOfFileReached()) {
-            stopButtonWasPressed();
-        }
 
         // don't go beyond raw data array size
         currentSample = min(currentSample, getTotalSamples());
@@ -188,8 +184,8 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
-    public int getSampleIndexChannel() {
-        return underlyingBoard.getSampleIndexChannel();
+    public int getSampleNumberChannel() {
+        return underlyingBoard.getSampleNumberChannel();
     }
 
     public int getTotalSamples() {
@@ -353,10 +349,5 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         }
 
         return new int[0];
-    }
-
-    @Override
-    public boolean endOfFileReached() {
-        return currentSample >= getTotalSamples();
     }
 }

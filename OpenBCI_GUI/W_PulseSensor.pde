@@ -161,6 +161,8 @@ class W_PulseSensor extends Widget {
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
+        println("Pulse Sensor Widget -- Screen Resized.");
+
         setPulseWidgetVariables();
         analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
     }

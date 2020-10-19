@@ -8,9 +8,15 @@
 */
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-import java.io.FileReader;
-
 ControlP5 cp5_playback;
+
+//Used mostly in W_playback.pde
+JSONObject savePlaybackHistoryJSON;
+JSONObject loadPlaybackHistoryJSON;
+final String userPlaybackHistoryFile = settings.settingsPath+"UserPlaybackHistory.json";
+boolean playbackHistoryFileExists = false;
+String playbackData_ShortName;
+boolean recentPlaybackFilesHaveUpdated = false;
 
 class W_playback extends Widget {
     //allow access to dataProcessing
@@ -40,7 +46,7 @@ class W_playback extends Widget {
         //make a MenuList
         int initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);
-        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p3);
+        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p4);
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(initialWidth, h - padding*2);
         playbackMenuList.scrollerLength = 40;
@@ -81,8 +87,9 @@ class W_playback extends Widget {
     }
 
     void draw() {
-        //Only draw if the widget is visible
-        if(visible) {
+        //Only draw if the widget is visible and User settings have been loaded
+        //settingsLoadedCheck is set to true after default settings are saved between Init checkpoints 4 and 5
+        if(visible && settings.settingsLoaded) {
             super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
             //x,y,w,h are the positioning variables of the Widget class
@@ -178,7 +185,33 @@ class W_playback extends Widget {
 // GLOBAL FUNCTIONS BELOW THIS LINE //
 //////////////////////////////////////
 
-//Called when user selects a playback file from controlPanel dialog box
+//Activated when user selects a file using the "Select Playback File" button in PlaybackHistory
+void playbackSelectedWidgetButton(File selection) {
+    if (selection == null) {
+        println("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
+    } else {
+        println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
+        playbackFileSelected(selection.getAbsolutePath(), selection.getName());
+        reInitAfterPlaybackSelected();
+    }
+}
+
+//Activated when user selects a file using the recent file MenuList
+void userSelectedPlaybackMenuList (String filePath, int listItem) {
+    if (new File(filePath).isFile()) {
+        playbackFileSelected(filePath, listItem);
+        reInitAfterPlaybackSelected();
+    } else {
+        outputError("W_Playback: Selected file does not exist. Try another file or clear settings to remove this entry.");
+    }
+}
+
+void reInitAfterPlaybackSelected() {
+    // restart the session with the new file
+    requestReinit();
+}
+
+//Called when user selects a playback file from dialog box
 void playbackFileSelected(File selection) {
     if (selection == null) {
         println("DataLogging: playbackSelected: Window was closed or the user hit cancel.");
@@ -189,34 +222,8 @@ void playbackFileSelected(File selection) {
     }
 }
 
-
-//Activated when user selects a file using the "Select Playback File" button in PlaybackHistory
-void playbackSelectedWidgetButton(File selection) {
-    if (selection == null) {
-        println("W_Playback: playbackSelected: Window was closed or the user hit cancel.");
-    } else {
-        println("W_Playback: playbackSelected: User selected " + selection.getAbsolutePath());
-        if (playbackFileSelected(selection.getAbsolutePath(), selection.getName())) {
-            // restart the session with the new file
-            requestReinit();
-        }
-    }
-}
-
-//Activated when user selects a file using the recent file MenuList
-void userSelectedPlaybackMenuList (String filePath, int listItem) {
-    if (new File(filePath).isFile()) {
-        playbackFileFromList(filePath, listItem);
-        // restart the session with the new file
-        requestReinit();
-    } else {
-        verbosePrint("Playback: " + filePath);
-        outputError("Playback: Selected file does not exist. Try another file or clear settings to remove this entry.");
-    }
-}
-
 //Called when user selects a playback file from a list
-void playbackFileFromList (String longName, int listItem) {
+void playbackFileSelected (String longName, int listItem) {
     String shortName = "";
     //look at the JSON file to set the range menu using number of recent file entries
     try {
@@ -232,46 +239,11 @@ void playbackFileFromList (String longName, int listItem) {
     playbackFileSelected(longName, shortName);
 }
 
-//Handles the work for the above cases
-boolean playbackFileSelected (String longName, String shortName) {
+//Handles the work for the above two cases
+void playbackFileSelected (String longName, String shortName) {
     playbackData_fname = longName;
     playbackData_ShortName = shortName;
-    //Process the playback file, check if SD card file or something else
-    try {
-        BufferedReader brTest = new BufferedReader(new FileReader(longName));
-        String line = brTest.readLine();
-        if (line.equals("%OpenBCI Raw EEG Data")) {
-            verbosePrint("PLAYBACK: Found OpenBCI Header in File!");
-            sdData_fname = "N/A";
-            for (int i = 0; i < 3; i++) {
-                line = brTest.readLine();
-                verbosePrint("PLAYBACK: " + line);
-            }
-            if (!line.startsWith("%Board")) {
-                playbackData_fname = "N/A";
-                playbackData_ShortName = "N/A";
-                outputError("Found GUI v4 or earlier file. Please convert this file using the provided Python script.");
-                PopupMessage msg = new PopupMessage("GUI v4 to v5 File Converter", "Found GUI v4 or earlier file. Please convert this file using the provided Python script. Press the button below to access this open-source fix.", "LINK", "https://github.com/OpenBCI/OpenBCI_GUI/tree/development/tools");
-                return false;
-            }    
-        } else if (line.equals("%STOP AT")) {
-            verbosePrint("PLAYBACK: Found SD File Header in File!");
-            playbackData_fname = "N/A";
-            sdData_fname = longName;
-        } else {
-            outputError("ERROR: Tried to load an unsupported file for playback! Please try a valid file.");
-            playbackData_fname = "N/A";
-            playbackData_ShortName = "N/A";
-            sdData_fname = "N/A";   
-            return false;
-        }
-    } catch (FileNotFoundException e) {
-        e.printStackTrace();
-        return false;
-    } catch (IOException e) {
-        e.printStackTrace();
-        return false;
-    }
+    //Process the playback file
 
     //Output new playback settings to GUI as success
     outputSuccess("You have selected \""
@@ -293,7 +265,6 @@ boolean playbackFileSelected (String longName, String shortName) {
     }
     //add playback file that was processed to the JSON history
     savePlaybackFileToHistory(longName);
-    return true;
 }
 
 void savePlaybackFileToHistory(String fileName) {

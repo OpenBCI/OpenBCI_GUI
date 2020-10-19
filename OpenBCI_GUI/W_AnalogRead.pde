@@ -80,7 +80,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i] = tempBar;
             analogReadBars[i].adjustVertScale(yLimOptions[arInitialVertScaleIndex]);
             //sync horiz axis to Time Series by default
-            analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
+            analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         }
 
         analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
@@ -225,7 +225,7 @@ void Duration_AR(int n) {
     //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
     for(int i = 0; i < w_analogRead.numAnalogReadBars; i++) {
         if (n == 0) {
-            w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
+            w_analogRead.analogReadBars[i].adjustTimeAxis(w_timeSeries.xLimOptions[settings.tsHorizScaleSave]);
         } else {
             w_analogRead.analogReadBars[i].adjustTimeAxis(w_analogRead.xLimOptions[n]);
         }
@@ -243,6 +243,7 @@ class AnalogReadBar{
     private int auxValuesPosition;
     private String analogInputString;
     private int x, y, w, h;
+    private boolean isOn; //true means data is streaming and channel is active on hardware ... this will send message to OpenBCI Hardware
 
     private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     private GPointsArray analogReadPoints;
@@ -254,7 +255,7 @@ class AnalogReadBar{
 
     private boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
     private int autoScaleYLim = 0;
-    
+
     private TextBox analogValue;
     private TextBox analogPin;
     private TextBox digitalPin;
@@ -281,6 +282,7 @@ class AnalogReadBar{
         }
 
         analogInputString = str(analogInputPin);
+        isOn = true;
 
         x = _x;
         y = _y;
@@ -309,12 +311,11 @@ class AnalogReadBar{
         }
 
         initArrays();
-        
-        
+
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
         analogValue.textColor = color(bgColor);
         analogValue.alignH = RIGHT;
-        analogValue.alignV = BOTTOM;
+        // analogValue.alignV = TOP;
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
@@ -357,20 +358,20 @@ class AnalogReadBar{
         }
 
         //Fetch the last value in the buffer to display on screen
-        float val = analogReadPoints.getLastPoint().getY();
+        float val = analogReadPoints.getY(nPoints-1);
         analogValue.string = String.format(getFmt(val),val);
     }
 
     private String getFmt(float val) {
         String fmt;
-        if (val > 100.0f) {
-            fmt = "%.0f";
-        } else if (val > 10.0f) {
-            fmt = "%.1f";
-        } else {
-            fmt = "%.2f";
-        }
-        return fmt;
+            if (val > 100.0f) {
+                fmt = "%.0f";
+            } else if (val > 10.0f) {
+                fmt = "%.1f";
+            } else {
+                fmt = "%.2f";
+            }
+            return fmt;
     }
 
     float calcTimeAxis(int sampleIndex) {

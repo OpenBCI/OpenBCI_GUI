@@ -18,8 +18,6 @@ import shutil
 import platform
 import subprocess
 import argparse
-import requests
-from bs4 import  BeautifulSoup
 
 ### Define platform-specific strings
 ###########################################################
@@ -40,73 +38,9 @@ data_dir_names = {
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
 }
 
-def get_timestamp_ci():
-    repo_slug = None
-    commit_id = None
-
-    repo_slug = os.getenv("TRAVIS_REPO_SLUG")
-    if repo_slug is None:
-        repo_slug = os.getenv("APPVEYOR_REPO_NAME")
-
-    commit_id = os.getenv("TRAVIS_COMMIT")
-    if commit_id is None:
-        commit_id = os.getenv("APPVEYOR_REPO_COMMIT")
-
-    if repo_slug and commit_id:
-        url = "http://github.com/" + repo_slug + "/commit/" + commit_id;
-
-        page = requests.get(url)
-        soup = BeautifulSoup(page.content, features="html.parser")
-
-        timestamp = soup.find("relative-time")["datetime"]
-        timestamp = timestamp.replace(":", "-")
-        timestamp = timestamp.replace("T", "_")
-        timestamp = timestamp.replace("Z", "")
-
-        # write timestamp to file for use in CI
-        with open("temp/timestamp.txt", 'w') as tempFile:
-            tempFile.write(timestamp)
-
-        return timestamp
-
-    return ""
-
-### Function: Pretty format for timestamp
-###########################################################
-def make_timestamp_pretty(timestamp):
-    dateAndTime = timestamp.split("_")
-
-    date = dateAndTime[0]
-    time = dateAndTime[1]
-
-    dateString = "/".join(date.split("-"))
-    timeString = ":".join(time.split("-"))
-
-    return dateString + " " + timeString
-
-### Function: Apply timestamp in code
-###########################################################
-def apply_timestamp(sketch_dir, timestamp):
-    main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
-
-    pretty_timestamp = make_timestamp_pretty(timestamp)
-
-    data = []
-    with open(main_file_dir, 'r') as sketch_file:
-        data = sketch_file.readlines()
-
-    for i in range(0, len(data)):
-        if data[i].startswith("String localGUIVersionDate"):
-            print(data[i])
-            data[i] = "String localGUIVersionDate = \"" + pretty_timestamp + "\";\n"
-            break
-
-    with open(main_file_dir, 'w') as sketch_file:
-        sketch_file.writelines(data)
-
 ### Function: Rename flavor with GUI version
 ###########################################################
-def get_release_dir_name(sketch_dir, flavor, timestamp):
+def get_release_dir_name(sketch_dir, flavor):
     main_file_dir = os.path.join(sketch_dir, "OpenBCI_GUI.pde")
     version_str = "VERSION.NOT.FOUND"
     with open(main_file_dir, 'r') as sketch_file:
@@ -117,13 +51,7 @@ def get_release_dir_name(sketch_dir, flavor, timestamp):
                 print(version_str)
                 break
 
-    # write version string to file for use in CI
-    with open("temp/versionstring.txt", 'w') as tempFile:
-        tempFile.write(version_str)
-
     new_name = "openbcigui_" + version_str + "_"
-    if timestamp:
-        new_name = new_name + timestamp + "_"
     return flavor.replace("application.", new_name)
 
 ### Function: Find the sketch directory
@@ -178,18 +106,18 @@ def build_app(sketch_dir, flavor):
     # so we can't reliably check for success or failure
     # https://github.com/processing/processing/issues/5468
     print ("Using sketch: " + sketch_dir)
-    subprocess.check_call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
+    subprocess.call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
 
 ### Function: Package the app in the expected file structure
 ###########################################################
-def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
+def package_app(sketch_dir, flavor, windows_signing=False, windows_pfx_path = '', windows_pfx_password = ''):
     # sanity check: is the build output there?
     build_dir = os.path.join(os.getcwd(), flavor)
     if not os.path.isdir(build_dir):
         sys.exit("ERROR: Could not find build ouput: " + build_dir)
 
     # rename the build dir
-    release_dir_name = get_release_dir_name(sketch_dir, flavor, timestamp)
+    release_dir_name = get_release_dir_name(sketch_dir, flavor)
     new_build_dir = os.path.join(os.getcwd(), release_dir_name)
     os.rename(build_dir, new_build_dir)
     build_dir = new_build_dir
@@ -312,11 +240,11 @@ def main ():
 
     # ask about signing
     windows_signing = False
-    windows_pfx_path = args.pfx_path
-    windows_pfx_password = args.pfx_password
+    windows_pfx_path = args.pfx_path;
+    windows_pfx_password = args.pfx_password;
 
     if windows_pfx_path and windows_pfx_password:
-        windows_signing = True
+        windows_signing = True;
     elif(not args.no_prompts):
         windows_signing, windows_pfx_path, windows_pfx_password = ask_windows_signing()
 
@@ -325,15 +253,11 @@ def main ():
 
     flavor = flavors[LOCAL_OS]
 
-    timestamp = get_timestamp_ci()
-    if timestamp:
-        apply_timestamp(sketch_dir, timestamp)
-
     # run the build (processing-java)
     build_app(sketch_dir, flavor)
 
     #package it up
-    package_app(sketch_dir, flavor, timestamp, windows_signing, windows_pfx_path, windows_pfx_password)
+    package_app(sketch_dir, flavor, windows_signing, windows_pfx_path, windows_pfx_password)
 
 if __name__ == "__main__":
     main ()

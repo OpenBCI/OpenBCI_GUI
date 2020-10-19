@@ -69,48 +69,50 @@ public enum NovaXRMode implements NovaXRSettingsEnum
 
 class NovaXRDefaultSettings extends ADS1299Settings {
     // TODO: modes go here
-    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
+    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode, NovaXRSR sampleRate) {
         super(theBoard);
 
-        Arrays.fill(values.powerDown, PowerDown.ON);
+        // send the mode command to board
+        board.sendCommand(mode.getCommand());
+        // send the sample rate command to the board
+        board.sendCommand(sampleRate.getCommand());
+
+        Arrays.fill(powerDown, PowerDown.ON);
 
         switch(mode) {
             case DEFAULT:
-                Arrays.fill(values.gain, 0, 8, Gain.X8);
-                Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X12;
-                values.gain[14] = Gain.X12;
+                Arrays.fill(gain, 0, 8, Gain.X8); // channels 1-8 with gain x8
+                Arrays.fill(gain, 8, 14, Gain.X4); // 9-14 with gain x4
+                Arrays.fill(gain, 14, 16, Gain.X12); // 15-16 with gain x12
                 
-                Arrays.fill(values.inputType, InputType.NORMAL);
+                Arrays.fill(inputType, InputType.NORMAL);
 
-                Arrays.fill(values.bias, Bias.INCLUDE);
-                Arrays.fill(values.bias, 8, 16, Bias.NO_INCLUDE);
-                values.bias[9] = Bias.INCLUDE;
-                values.bias[14] = Bias.INCLUDE;
+                // channels 9-14 don't include, all other channels include
+                Arrays.fill(bias, Bias.INCLUDE);
+                Arrays.fill(bias, 8, 14, Bias.NO_INCLUDE);
 
-                Arrays.fill(values.srb2, Srb2.CONNECT);
-                Arrays.fill(values.srb2, 8, 16, Srb2.DISCONNECT);
-                values.srb2[9] = Srb2.CONNECT;
-                values.srb2[14] = Srb2.CONNECT;
+                // channels 9-14 Connect, all other channels disconnect
+                Arrays.fill(srb2, Srb2.CONNECT);
+                Arrays.fill(srb2, 8, 14, Srb2.DISCONNECT);
 
-                Arrays.fill(values.srb1, Srb1.DISCONNECT);
+                Arrays.fill(srb1, Srb1.DISCONNECT);
 
                 break;
 
             case INTERNAL_SIGNAL:
-                Arrays.fill(values.gain, Gain.X1);
-                Arrays.fill(values.inputType, InputType.TEST);
-                Arrays.fill(values.bias, Bias.NO_INCLUDE);
-                Arrays.fill(values.srb2, Srb2.DISCONNECT);
-                Arrays.fill(values.srb1, Srb1.DISCONNECT);
+                Arrays.fill(gain, Gain.X1);
+                Arrays.fill(inputType, InputType.TEST);
+                Arrays.fill(bias, Bias.NO_INCLUDE);
+                Arrays.fill(srb2, Srb2.DISCONNECT);
+                Arrays.fill(srb1, Srb1.DISCONNECT);
                 break;
 
             case EXTERNAL_SIGNAL:
-                Arrays.fill(values.gain, Gain.X1);
-                Arrays.fill(values.inputType, InputType.NORMAL);
-                Arrays.fill(values.bias, Bias.NO_INCLUDE);
-                Arrays.fill(values.srb2, Srb2.DISCONNECT);
-                Arrays.fill(values.srb1, Srb1.DISCONNECT);
+                Arrays.fill(gain, Gain.X1);
+                Arrays.fill(inputType, InputType.NORMAL);
+                Arrays.fill(bias, Bias.NO_INCLUDE);
+                Arrays.fill(srb2, Srb2.DISCONNECT);
+                Arrays.fill(srb1, Srb1.DISCONNECT);
                 break;
 
             case PRESET4:
@@ -128,7 +130,7 @@ class NovaXRDefaultSettings extends ADS1299Settings {
 }
 
 class BoardNovaXR extends BoardBrainFlow
-implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard{
+implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, ADS1299SettingsBoard{
 
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
@@ -137,38 +139,26 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
-    private Integer batteryChannelCache = null;
 
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
     private NovaXRSR sampleRate;
-    private String ipAddress;
 
     private final NovaXRDefaultSettings defaultSettings;
-    private boolean useDynamicScaler;
 
-    // needed for playback
-    public BoardNovaXR() {
-        super();
-
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-    }
-
-    public BoardNovaXR(String _ip, NovaXRMode mode, NovaXRSR _sampleRate) {
+    public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
-        ipAddress = _ip;
         initialSettingsMode = mode;
         sampleRate = _sampleRate;
         samplingRateCache = sampleRate.getValue();
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-        setUseDynamicScaler(true);
+        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT, NovaXRSR.SR_250);
     }
 
     @Override
@@ -177,15 +167,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         if (res) {
             // NovaXRDefaultSettings() will send mode command to board
-            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode);
-        }
-        if (res) {
-            // send the mode command to board
-            res = sendCommand(initialSettingsMode.getCommand());
-        }
-        if (res) {
-            // send the sample rate command to the board
-            res = sendCommand(sampleRate.getCommand());
+            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode, sampleRate);
         }
 
         return res;
@@ -195,7 +177,6 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.ip_address = ipAddress;
         return params;
     }
 
@@ -220,7 +201,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         char n = '0';
 
         if (active) {
-            Srb2 srb2sSetting = currentADS1299Settings.values.srb2[channel];
+            Srb2 srb2sSetting = currentADS1299Settings.srb2[channel];
             if (srb2sSetting == Srb2.CONNECT) {
                 n = '1';
             }
@@ -248,12 +229,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         for (int i = 0; i < exgChannels.length; i++) {
             for (int j = 0; j < data[exgChannels[i]].length; j++) {
                 // brainflow assumes default gain. Undo brainflow's scaling and apply new scale.
-                double brainflowGain = defaultSettings.values.gain[i].getScalar();
-                double currentGain = 1.0;
-                if (useDynamicScaler) {
-                    currentGain = currentADS1299Settings.values.gain[i].getScalar();
-                }
-                double scalar = brainflowGain / currentGain;
+                double brainflowGain = defaultSettings.gain[i].getScalar();
+                double scalar = brainflowGain / currentADS1299Settings.gain[i].getScalar();
                 data[exgChannels[i]][j] *= scalar;
             }
         }
@@ -315,19 +292,6 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         return edaChannelsCache;
     }
-
-    @Override
-    public Integer getBatteryChannel() {
-        if (batteryChannelCache == null) {
-            try {
-                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-            }
-        }
-
-        return batteryChannelCache;
-    }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
@@ -341,24 +305,6 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     @Override
     public double getGain(int channel) {
-        return getADS1299Settings().values.gain[channel].getScalar();
-    }
-
-    @Override
-    public boolean getUseDynamicScaler() {
-        return useDynamicScaler;
-    }
-
-    @Override
-    public void setUseDynamicScaler(boolean val) {
-        useDynamicScaler = val;
-    }
-    
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        final int minSampleIndex = 0;
-        final int maxSampleIndex = 255;
-        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
-                                    minSampleIndex, maxSampleIndex);
+        return getADS1299Settings().gain[channel].getScalar();
     }
 };

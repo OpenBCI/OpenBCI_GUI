@@ -78,6 +78,7 @@ void drawContainers() {
 
     //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
     if (widthOfLastScreen_C != width || heightOfLastScreen_C != height) {
+        println("OpenBCI_GUI: setup: RESIZED");
         setupContainers();
         //setupVizs(); //container extension example (more below)
         settings.widthOfLastScreen = width;

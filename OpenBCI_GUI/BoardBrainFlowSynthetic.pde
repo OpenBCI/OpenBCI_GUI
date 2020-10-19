@@ -1,22 +1,14 @@
 import brainflow.*;
 
 class BoardBrainFlowSynthetic extends BoardBrainFlow
-implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryInfoCapableBoard {
+implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard {
 
     private int[] accelChannelsCache = null;
     private int[] edaChannelsCache = null;
     private int[] ppgChannelsCache = null;
-    private Integer batteryChannelCache = null;
-    private int numChannels = 0;
-    private volatile boolean[] activeChannels = null;
 
-    public BoardBrainFlowSynthetic(int numChannels) {
+    public BoardBrainFlowSynthetic() {
         super();
-        this.numChannels = numChannels;
-        activeChannels = new boolean[numChannels];
-        for (int i = 0; i < numChannels; i++) {
-            activeChannels[i] = true;
-        }
     }
 
     // implement mandatory abstract functions
@@ -32,38 +24,14 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
     }
 
     @Override
-    public int[] getEXGChannels() {
-        int[] channels = super.getEXGChannels();
-        int[] res = new int[numChannels];
-        for (int i = 0; i < numChannels; i++)
-        {
-            res[i] = channels[i];
-        }
-        return res;
-    }
-
-    @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        activeChannels[channelIndex] = active;
+        // Dummy string
+        sendCommand("SYNTHETIC PLACEHOLDER");
     }
 
     @Override
     public boolean isEXGChannelActive(int channelIndex) {
-        return activeChannels[channelIndex];
-    }
-
-    @Override
-    protected double[][] getNewDataInternal() {
-        double[][] data = super.getNewDataInternal();
-        int[] exgChannels = getEXGChannels();
-        for (int i = 0; i < numChannels; i++) {
-            if (!activeChannels[i]) {
-                for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                    data[exgChannels[i]][j] = 0.0;
-                }
-            }
-        }
-        return data;
+        return true;
     }
 
     @Override
@@ -142,20 +110,6 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
 
         return edaChannelsCache;
     }
-
-    @Override
-    public Integer getBatteryChannel() {
-        if (batteryChannelCache == null) {
-            try {
-                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-                
-            }
-        }
-
-        return batteryChannelCache;
-    }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
@@ -168,14 +122,5 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-        channelNames[getBatteryChannel()] = "Battery Info Channel";
-    }
-
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        final int minSampleIndex = 0;
-        final int maxSampleIndex = 255;
-        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
-                                    minSampleIndex, maxSampleIndex);
     }
 };

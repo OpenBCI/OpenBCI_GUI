@@ -1,3 +1,6 @@
+
+int navHeight = 22;
+
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
 //========================================================================================
@@ -24,7 +27,6 @@ W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_NovaAux w_novaAux;
-W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -121,12 +123,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_analogRead.setTitle("Analog Read");
         addWidget(w_analogRead, w);
     }
-
-    if (currentBoard instanceof Board) {
-        w_packetLoss = new W_PacketLoss(_this);
-        w_packetLoss.setTitle("Packet Loss");
-        addWidget(w_packetLoss, w);
-    }
     
     //Cyton Widget_11, Synthetic Widget_8, Ganglion/Playback Widget_9
     //DEVELOPERS: Here is an example widget with the essentials/structure in place
@@ -164,8 +160,6 @@ color[] channelColors = {
     color(162, 82, 49)
 };
 
-//Global variable for general navigation bar height
-int navHeight = 22;
 
 class WidgetManager{
 

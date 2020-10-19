@@ -67,8 +67,8 @@ class W_Spectrogram extends Widget {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
-        spectChanSelectTop = new ChannelSelect(pApplet, this, x, y, w, navH, "Spectrogram_Channels_Top");
-        spectChanSelectBot = new ChannelSelect(pApplet, this, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
+        spectChanSelectTop = new ChannelSelect(pApplet, x, y, w, navH, "Spectrogram_Channels_Top");
+        spectChanSelectBot = new ChannelSelect(pApplet, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
         activateDefaultChannels();
         spectChanSelectBot.hideChannelText();
 
@@ -88,8 +88,6 @@ class W_Spectrogram extends Widget {
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
-        //Fetch/calculate the time strings for the horizontal axis ticks
-        fetchTimeStrings(numHorizAxisDivs);
 
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -363,8 +361,10 @@ class W_Spectrogram extends Widget {
         }
 
         for (int i = 0; i < topChansToActivate.length; i++) {
-            spectChanSelectTop.setToggleState(topChansToActivate[i], true);
-            spectChanSelectBot.setToggleState(botChansToActivate[i], true);
+            spectChanSelectTop.checkList.activate(topChansToActivate[i]);
+            spectChanSelectTop.activeChan.add(topChansToActivate[i]);
+            spectChanSelectBot.checkList.activate(botChansToActivate[i]);
+            spectChanSelectBot.activeChan.add(botChansToActivate[i]);
         }
     }
 

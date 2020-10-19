@@ -717,6 +717,7 @@ class W_Networking extends Widget {
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
         
         int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
+        println("Networking Data Types || show num dropdowns = " + dropdownsItemsToShow);
         int dropdownHeight = (dropdownsItemsToShow + 1) * (this.navH - 4);
         int maxDropdownHeight = (settings.nwDataTypesArray.length + 1) * (this.navH - 4);
         if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
@@ -1550,7 +1551,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 for (int i=0; i<nPointsPerUpdate;i++) {
                     for (int j=0;j<numChan;j++) {
-                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][start+i];
+                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][i];
                     }
                 }
                 // Add timestamp to LSL Stream

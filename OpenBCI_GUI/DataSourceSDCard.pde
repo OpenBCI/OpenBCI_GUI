@@ -135,10 +135,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
 
         currentSample += numNewSamplesThisFrame;
 
-        if (endOfFileReached()) {
-            stopButtonWasPressed();
-        }
-
         // don't go beyond raw data array size
         currentSample = min(currentSample, data.size() - 1);
     }
@@ -185,7 +181,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
     @Override
-    public int getSampleIndexChannel() {
+    public int getSampleNumberChannel() {
         return 0;
     }
 
@@ -267,11 +263,6 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         return new int[]{totalChannels - 4, totalChannels - 3, totalChannels - 2};
     }
 
-    @Override
-    public boolean endOfFileReached() {
-        return currentSample >= getTotalSamples();
-    }
-
     private int parseInt24Hex(String hex) {
         if (hex.charAt(0) > '7') {  // if the number is negative
             hex = "FF" + hex;   // keep it negative
@@ -292,4 +283,15 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         return unhex(hex);
     }
 
+}
+
+
+void sdFileSelected(File selection) {
+    if (selection == null) {
+        println("Window was closed or the user hit cancel.");
+    } else {
+        println("User selected " + selection.getAbsolutePath());
+        playbackData_fname = "N/A"; // to create instance of DataSourceSDCard
+        sdData_fname = selection.getAbsolutePath();
+    }
 }
