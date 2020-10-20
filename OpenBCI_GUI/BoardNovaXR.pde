@@ -168,7 +168,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-        setUseDynamicScaler(true);
+        useDynamicScaler = true;
     }
 
     @Override

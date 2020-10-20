@@ -449,9 +449,11 @@ void Duration(int n) {
 
     int newDuration = w_timeSeries.getTSHorizScale().getValue();
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (settings.accHorizScaleSave == 0) {
-        //set accelerometer x axis to the duration selected from dropdown
-        w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        if (settings.accHorizScaleSave == 0) {
+            //set accelerometer x axis to the duration selected from dropdown
+            w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+        }
     }
     if (currentBoard instanceof AnalogCapableBoard) {
         if (settings.arHorizScaleSave == 0) {
@@ -776,16 +778,15 @@ class ChannelBar {
     }
 
     public void applyAutoscale() {
-        if (isAutoscale && isRunning) {
-            if (millis() > previousMillis + 1000) {
-                previousMillis = millis();
-                float limit = Math.max(abs(autoscaleMin), autoscaleMax);
-                limit = Math.max(limit, 5);
-                plot.setYLim(-limit, limit);
-                customYLim(yAxisMin, (int)-limit);
-                customYLim(yAxisMax, (int)limit);
-                //println("CH " + channelIndex + "__DOING AUTOSCALE - " + previousMillis);
-            }
+        //Do this once a second for all TimeSeries ChannelBars to save on resources
+        boolean doAutoscale = millis() > previousMillis + 1000;
+        if (isAutoscale && isRunning && doAutoscale) {
+            previousMillis = millis();
+            float limit = Math.max(abs(autoscaleMin), autoscaleMax);
+            limit = Math.max(limit, 5);
+            plot.setYLim(-limit, limit); //<---- This is a very expensive method. Here is the bottleneck.
+            customYLim(yAxisMin, (int)-limit);
+            customYLim(yAxisMax, (int)limit);
         }
     }
 
