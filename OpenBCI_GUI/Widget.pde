@@ -60,7 +60,7 @@ class Widget{
 
     public void draw(){
         pushStyle();
-
+        noStroke();
         fill(255);
         rect(x,y-1,w,h+1); //draw white widget background
 
@@ -426,6 +426,8 @@ class ChannelSelect {
     }
 
     public void draw() {
+        pushStyle();
+        noStroke();
         if (showChannelText) {
             //change "Channels" text color and triangle color on hover
             if (channelSelectHover) {
@@ -444,7 +446,7 @@ class ChannelSelect {
             } else {
                 triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
                 //if active, draw a grey background for the channel select checkboxes
-                fill(180);
+                fill(200);
                 rect(x,y,w,navH);
             }
         } else { //This is the case in Spectrogram where we need a second channel selector
@@ -455,11 +457,15 @@ class ChannelSelect {
             }
             //this draws extra grey space behind the checklist buttons
             if (isVisible) {
-                fill(180);
+                fill(200);
                 rect(x,y,w,navH);
             }
         }
+
+        //Draw channel select buttons
         cp5_chanSelect.draw();
+
+        //Draw a border around toggle buttons to indicate if channel is on or off
         if (isVisible) {
             pushStyle();
             int weight = 1;
@@ -490,7 +496,7 @@ class ChannelSelect {
     private void createButtons(int _nchan) {
         channelButtons = new ArrayList<Toggle>();
         
-        int checkSize = navH - 4;
+        int checkSize = navH - 6;
         offset = (navH - checkSize)/2;
 
         channelSelectHover = false;
@@ -502,14 +508,14 @@ class ChannelSelect {
         for (int i = 0; i < _nchan; i++) {
             //start all items as invisible until user clicks dropdown to show checkboxes
             channelButtons.add(
-                createButton("ch"+(i+1), (i+1), false, x + (button_spacer*(i+1)) + (buttonW*i), y + offset, buttonW, buttonH)
+                createButton("ch"+(i+1), (i+1), false, x + (button_spacer*(i+2)) + (buttonW*i), y + offset, buttonW, buttonH)
             );
         }
     }
 
     private Toggle createButton(String name, int chan, boolean _isVisible, int _x, int _y, int _w, int _h) {
         int _fontSize = 12;
-        int marginLeftOffset = chan > 9 ? -8 : -5;
+        int marginLeftOffset = chan > 9 ? -9 : -6;
         Toggle myButton = cp5_chanSelect.addToggle(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)

@@ -261,8 +261,8 @@ class TopNav {
 
         if (eegDataSource == DATASOURCE_NOVAXR) {
             topNavBg = color(3, 10, 18);
-            subNavBg = topNavBg;
-            strokeColor = color(255);
+            subNavBg = color(33, 49, 65);
+            strokeColor = subNavBg;
         }
 
         //stroke(bgColor);

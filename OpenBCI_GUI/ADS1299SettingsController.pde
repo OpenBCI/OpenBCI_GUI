@@ -63,7 +63,8 @@ class ADS1299SettingsController {
         hasUnappliedChanges = new boolean[channelCount];
         Arrays.fill(hasUnappliedChanges, Boolean.FALSE);
 
-        color labelBG = color(220);
+        //color labelBG = color(220);
+        color labelBG = color(255,255,255,0);
         color labelTxt = bgColor;
         colOffset = (w / 5) / 2;
         int label_y = y - 14 - padding_3;
