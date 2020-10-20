@@ -184,6 +184,7 @@ PlotFontInfo fontInfo;
 //program variables
 boolean isRunning = false;
 StringBuilder board_message;
+boolean textFieldIsActive = false;
 
 //set window size
 int win_x = 1024;  //window width
@@ -739,6 +740,7 @@ void systemUpdate() { // for updating data values and variables
     //prepare for updating the GUI
     win_x = width;
     win_y = height;
+    textFieldIsActive = false;
 
     currentBoard.update();
 

@@ -26,7 +26,9 @@ synchronized void keyPressed() {
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
-    if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
+    boolean anyActiveTextfields = isNetworkingTextActive() || textFieldIsActive;
+
+    if(!controlPanel.isOpen && !anyActiveTextfields){ //don't parse the key if the control panel is open
         if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);

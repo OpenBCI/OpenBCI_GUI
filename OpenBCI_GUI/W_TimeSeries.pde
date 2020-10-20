@@ -636,6 +636,10 @@ class ChannelBar {
         else {
             onOffButton.setColorNotPressed(50); // power down == true, set to grey
         }
+
+        if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
+            textFieldIsActive = true;
+        }
     }
 
     private String getFmt(float val) {

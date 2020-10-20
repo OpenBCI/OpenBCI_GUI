@@ -32,6 +32,11 @@ class ADS1299SettingsController {
     private ScrollableList[] srb1Lists;
     private boolean[] hasUnappliedChanges;
 
+    private Textfield customCommandTF;
+    private Button sendCustomCmdButton;
+    private int customCmdUI_x;
+    private int customCmdUI_w;
+
     private ADS1299Settings boardSettings;
 
     private int channelCount;
@@ -75,10 +80,15 @@ class ADS1299SettingsController {
         srb1Label = new TextBox("SRB1", x + colOffset + (w/5)*4, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
 
         createAllDropdowns(chanBar_h);
+
+        createCustomCommandUI();
     }
 
     public void update() {
-  
+        boolean tfactive = customCommandTF.isFocus();
+        if (tfactive) {
+            textFieldIsActive = true;
+        }
     }
 
     public void draw() {
@@ -118,9 +128,16 @@ class ADS1299SettingsController {
                 }
             }
 
+            //Draw background behind command buttons
             pushStyle();
             fill(0, 0, 0, 100);
             rect(x, y + h, w + 1, commandBarH);
+
+            customCommandTF.setVisible(settings.expertModeToggle);
+            sendCustomCmdButton.setVisible(settings.expertModeToggle);
+            if (settings.expertModeToggle) {
+                rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons
+            }
 
             //Draw cp5 objects on top of everything
             hwsCp5.draw();
@@ -188,6 +205,8 @@ class ADS1299SettingsController {
         srb1Label.setPosition(x + colOffset + (w/5)*4, label_y);
 
         resizeDropdowns(chanBar_h);
+
+        resizeCustomCommandUI();
     }
 
     //Returns true if board and UI are in sync
@@ -346,6 +365,83 @@ class ADS1299SettingsController {
         }
 
         resizeDropdowns(_channelBarHeight);
+    }
+
+    private void createCustomCommandUI() {
+        customCommandTF = hwsCp5.addTextfield("customCommand")
+            .setPosition(0, 0)
+            .setCaptionLabel("")
+            .setSize(10, 10)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(color(26))  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText("Type Command Here...")
+            .align(5, 10, 20, 40)
+            .setAutoClear(false) //Don't clear textfield when pressing Enter key
+            ;
+        //Clear textfield on double click
+        customCommandTF.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("[ExpertMode] Enter the custom command you would like to send to the board.");
+                customCommandTF.clear();
+            }
+        });
+        customCommandTF.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
+                    customCommandTF.setFocus(false);
+                }
+            }
+        });
+
+        sendCustomCmdButton = hwsCp5.addButton("sendCustomCommand")
+            .setPosition(0, 0)
+            .setSize(10, 10)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        sendCustomCmdButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial",12,true))
+            .toUpperCase(false)
+            .setSize(12)
+            .setText("Send")
+            ;
+        sendCustomCmdButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                String text = customCommandTF.getText();
+                boolean res = ((BoardBrainFlow)currentBoard).sendCommand(text);
+                if (res) {
+                    outputSuccess("[ExpertMode] Success sending command to board: " + text);
+                } else {
+                    outputError("[ExpertMode] Failure sending command to board: " + text);
+                }
+            }
+        });
+
+        resizeCustomCommandUI();
+    }
+
+    private void resizeCustomCommandUI() {
+        customCmdUI_x = x + Math.round(w / 6f) - 24;
+        customCmdUI_w = (int)Math.ceil(w * (2f/3f)) + 24;
+        int tf_x = customCmdUI_x + padding_3;
+        int tf_y = y + h + commandBarH + padding_3;
+        int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
+        int tf_h = commandBarH - padding_3*2;
+        customCommandTF.setPosition(tf_x, tf_y);
+        customCommandTF.setSize(tf_w, tf_h);
+        int but_x = tf_x + customCommandTF.getWidth() + padding_3;
+        int but_w = customCmdUI_w - customCommandTF.getWidth() - padding_3*3;
+        sendCustomCmdButton.setPosition(but_x, tf_y);
+        sendCustomCmdButton.setSize(but_w, tf_h);
     }
 
     public void updateChanSettingsDropdowns(int chan, boolean isActive, color defaultColor) {
