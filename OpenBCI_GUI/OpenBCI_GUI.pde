@@ -328,11 +328,12 @@ void delayedSetup() {
     settings.heightOfLastScreen = height;
 
     setupContainers();
-
+    
     //listen for window resize ... used to adjust elements in application
+    //Doesn't seem to work...
     frame.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
-            if (e.getSource()==frame) {
+            if (e.getSource().equals(frame)) {
                 settings.screenHasBeenResized = true;
                 settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
@@ -760,7 +761,8 @@ void systemUpdate() { // for updating data values and variables
     if (systemMode == SYSTEMMODE_POSTINIT) {
         processNewData();
         
-        //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
+        //alternative component listener function (line 177 mouseReleased- 187 frame.addComponentListener) for processing 3,
+        //Component listener doesn't seem to work, so staying with this method for now
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
             settings.screenHasBeenResized = true;
             settings.timeOfLastScreenResize = millis();
@@ -769,11 +771,12 @@ void systemUpdate() { // for updating data values and variables
         }
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
-        if (settings.screenHasBeenResized) {
+        if (settings.screenHasBeenResized && settings.timeOfLastScreenResize + 500 > millis()) {
             ourApplet = this; //reset PApplet...
             imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
+            settings.screenHasBeenResized = false;
         }
 
         if (wm.isWMInitialized) {

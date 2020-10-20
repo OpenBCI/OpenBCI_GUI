@@ -284,11 +284,6 @@ synchronized void mouseReleased() {
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
         wm.mouseReleased();
     }
-
-    if (settings.screenHasBeenResized) {
-        println("OpenBCI_GUI: mouseReleased: screen has been resized...");
-        settings.screenHasBeenResized = false;
-    }
 }
 
 //------------------------------------------------------------------------
