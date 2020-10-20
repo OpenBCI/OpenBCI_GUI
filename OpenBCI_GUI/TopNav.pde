@@ -1086,6 +1086,20 @@ class ConfigSelector {
         }
         //println("TopNav: ConfigSelector: Button Positions Updated");
     }
+
+    public void toggleExpertMode(boolean b) {
+        if (b) {
+            configOptions.get(0).setString("Turn Expert Mode Off");
+            configOptions.get(0).setColorNotPressed(expertPurple);
+            println("LoadGUISettings: Expert Mode On");
+            settings.expertModeToggle = true;
+        } else {
+            configOptions.get(0).setString("Turn Expert Mode On");
+            configOptions.get(0).setColorNotPressed(newGreen);
+            println("LoadGUISettings: Expert Mode Off");
+            settings.expertModeToggle = false;
+        }
+    } 
 }
 
 class TutorialSelector {

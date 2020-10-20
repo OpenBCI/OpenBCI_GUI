@@ -571,6 +571,9 @@ void initSystem() {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
+    } else if (eegDataSource == DATASOURCE_NOVAXR) {
+        //After TopNav has been instantiated, default to Expert mode for NovaXR
+        topNav.configSelector.toggleExpertMode(true);
     }
 
     midInit = false;

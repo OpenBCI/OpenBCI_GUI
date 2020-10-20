@@ -756,17 +756,7 @@ class SessionSettings {
         //}//end case for all objects in JSON
 
         //Apply Expert Mode toggle
-        if (loadExpertModeToggle) {
-            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode Off");
-            topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.expertPurple);
-            println("LoadGUISettings: Expert Mode On");
-            expertModeToggle = true;
-        } else {
-            topNav.configSelector.configOptions.get(0).setString("Turn Expert Mode On");
-            topNav.configSelector.configOptions.get(0).setColorNotPressed(topNav.configSelector.newGreen);
-            println("LoadGUISettings: Expert Mode Off");
-            expertModeToggle = false;
-        }
+        topNav.configSelector.toggleExpertMode(loadExpertModeToggle);
 
         //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
         loadApplyWidgetDropdownText();
