@@ -232,7 +232,7 @@ class W_timeSeries extends Widget {
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 int cb_h = channelBarHeight + interChannelBarSpace - 2;
-                int h_hsc = channelBarHeight * numChannelBars + navH;        
+                int h_hsc = channelBarHeight * numChannelBars;        
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
@@ -329,7 +329,7 @@ class W_timeSeries extends Widget {
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            int h_hsc = channelBarHeight * numChannelBars + navH;
+            int h_hsc = channelBarHeight * numChannelBars;
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, channelBarHeight);
         }
         

@@ -13,7 +13,8 @@ class ADS1299SettingsController {
     private Button sendButton;
     private int button_w = 80;
     private int button_h = navH;
-    private final int columnLabelH = navH + (padding_3 * 2);
+    private final int columnLabelH = navH;
+    private final int commandBarH = navH + padding_3 * 2;
     private int chanBar_h;
 
     private int spaceBetweenButtons = 5; //space between buttons
@@ -49,7 +50,7 @@ class ADS1299SettingsController {
         hwsCp5.setAutoDraw(false);
         
         int colOffset = (w / numControlButtons) / 2;
-        int button_y = y - button_h - padding_3;
+        int button_y = y + h + padding_3;
         createHWSettingsLoadButton("HardwareSettingsLoad", "Load", x + colOffset - button_w/2, button_y, button_w, button_h);
         createHWSettingsSaveButton("HardwareSettingsSave", "Save", x + colOffset + (w/numControlButtons) - button_w/2, button_y, button_w, button_h);
         createHWSettingsSendButton("HardwareSettingsSend", "Send", x + colOffset + (w/numControlButtons)*2 - button_w/2, button_y, button_w, button_h);
@@ -65,7 +66,7 @@ class ADS1299SettingsController {
         color labelBG = color(220);
         color labelTxt = bgColor;
         colOffset = (w / 5) / 2;
-        int label_y = y + h - navH + padding_3;
+        int label_y = y - 14 - padding_3;
         gainLabel = new TextBox("PGA Gain", x + colOffset, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
         inputTypeLabel = new TextBox("Input Type", x + colOffset + (w/5), label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
         biasLabel = new TextBox("Bias Include", x + colOffset + (w/5)*2, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
@@ -92,7 +93,7 @@ class ADS1299SettingsController {
             pushStyle();
             noStroke();
             fill(0, 0, 0, 100);
-            rect(x, y, w, h);
+            rect(x, y, w + 1, h);
 
             gainLabel.draw();
             inputTypeLabel.draw();
@@ -115,6 +116,10 @@ class ADS1299SettingsController {
                     rect(x, y + chanBar_h * i, w, chanBar_h);
                 }
             }
+
+            pushStyle();
+            fill(0, 0, 0, 100);
+            rect(x, y + h, w + 1, commandBarH);
 
             //Draw cp5 objects on top of everything
             hwsCp5.draw();
@@ -168,13 +173,13 @@ class ADS1299SettingsController {
         hwsCp5.setGraphics(_parentApplet, 0, 0);
 
         int colOffset = (w / numControlButtons) / 2;
-        int button_y = y - button_h - padding_3;
+        int button_y = y + h + padding_3;
         loadButton.setPosition(x + colOffset - button_w/2, button_y);
         saveButton.setPosition(x + colOffset + (w/numControlButtons) - button_w/2, button_y);
         sendButton.setPosition(x + colOffset + (w/numControlButtons)*2 - button_w/2, button_y);
 
         colOffset = (w / 5) / 2;
-        int label_y = y + h - navH + padding_3;
+        int label_y = y - 14 - padding_3;
         gainLabel.setPosition(x + colOffset, label_y);
         inputTypeLabel.setPosition(x + colOffset + (w/5), label_y);
         biasLabel.setPosition(x + colOffset + (w/5)*2, label_y);
