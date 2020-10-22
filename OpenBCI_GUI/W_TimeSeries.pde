@@ -187,7 +187,7 @@ class W_timeSeries extends Widget {
         int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
         int y_hsc = int(channelBars[0].plot.getPos()[1]);
         int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
-        int h_hsc = channelBarHeight * numChannelBars + navH;
+        int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
@@ -232,7 +232,7 @@ class W_timeSeries extends Widget {
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 int cb_h = channelBarHeight + interChannelBarSpace - 2;
-                int h_hsc = channelBarHeight * numChannelBars;        
+                int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
@@ -329,8 +329,6 @@ class W_timeSeries extends Widget {
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            int h_hsc = channelBarHeight * numChannelBars;
-            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, channelBarHeight);
         }
         
     }
