@@ -88,10 +88,8 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
 }
 
 class W_timeSeries extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
@@ -134,10 +132,9 @@ class W_timeSeries extends Widget {
         tscp5.setGraphics(_parent, 0,0);
         tscp5.setAutoDraw(false);
 
-        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
-
-        //activate all channels in channelSelect by default
-        activateAllChannels();
+        tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
+        //activate all channels in channelSelect by default for this widget
+        tsChanSelect.activateAllButtons();
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -190,7 +187,7 @@ class W_timeSeries extends Widget {
         int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
         int y_hsc = int(channelBars[0].plot.getPos()[1]);
         int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
-        int h_hsc = channelBarHeight * numChannelBars + navH;
+        int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
@@ -235,11 +232,11 @@ class W_timeSeries extends Widget {
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 int cb_h = channelBarHeight + interChannelBarSpace - 2;
-                int h_hsc = channelBarHeight * numChannelBars + navH;        
+                int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
                 adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hwSettingsButton);
+                lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
             }
             
             //Update Playback scrollbar and/or display time
@@ -332,8 +329,6 @@ class W_timeSeries extends Widget {
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            int h_hsc = channelBarHeight * numChannelBars + navH;
-            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, channelBarHeight);
         }
         
     }
@@ -385,15 +380,6 @@ class W_timeSeries extends Widget {
         setAdsSettingsVisible(false);
     }
 
-    private void activateAllChannels() {
-        tsChanSelect.activeChan.clear();
-        //Activate all channel checkboxes by default for this widget
-        for (int i = 0; i < nchan; i++) {
-            tsChanSelect.checkList.activate(i);
-            tsChanSelect.activeChan.add(i);
-        }
-    }
-
     private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
         myButton = tscp5.addButton(name)
             .setPosition(_x, _y)
@@ -437,14 +423,14 @@ class W_timeSeries extends Widget {
 
     public void setTSVertScale(int n) {
         yLimit = yLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustVertScale(yLimit.getValue());
         }
     }
 
     public void setTSHorizScale(int n) {
         xLimit = xLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
@@ -461,9 +447,11 @@ void Duration(int n) {
 
     int newDuration = w_timeSeries.getTSHorizScale().getValue();
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (settings.accHorizScaleSave == 0) {
-        //set accelerometer x axis to the duration selected from dropdown
-        w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        if (settings.accHorizScaleSave == 0) {
+            //set accelerometer x axis to the duration selected from dropdown
+            w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+        }
     }
     if (currentBoard instanceof AnalogCapableBoard) {
         if (settings.arHorizScaleSave == 0) {
@@ -480,7 +468,7 @@ void Duration(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class ChannelBar{
+class ChannelBar {
 
     int channelIndex; //duh
     String channelString;
@@ -513,8 +501,11 @@ class ChannelBar{
 
     color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-
+    boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    float autoscaleMin;
+    float autoscaleMax;
+    int previousMillis = 0;
+    
     TextBox voltageValue;
     TextBox impValue;
 
@@ -636,15 +627,16 @@ class ChannelBar{
 
         // update data in plot
         updatePlotPoints();
-        if(isAutoscale) {
-            autoScale();
-        }
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
             onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
             onOffButton.setColorNotPressed(50); // power down == true, set to grey
+        }
+
+        if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
+            textFieldIsActive = true;
         }
     }
 
@@ -661,15 +653,20 @@ class ChannelBar{
     }
 
     private void updatePlotPoints() {
+        autoscaleMax = 0;
+        autoscaleMin = 0;
         // update data in plot
-        if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
+        if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
+                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
+                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
             }
+            applyAutoscale();
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
@@ -683,7 +680,13 @@ class ChannelBar{
         plot.beginDraw();
         plot.drawBox();
         plot.drawGridLines(0);
-        plot.drawLines();
+        try {
+            plot.drawLines();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("PLOT ERROR ON CHANNEL " + channelIndex);
+            
+        }
         //Draw the x axis label on the bottom channel bar, hide if hardware settings are open
         if (isBottomChannel() && !hardwareSettingsAreOpen) {
             plot.drawXAxis();
@@ -694,7 +697,6 @@ class ChannelBar{
         //draw channel holder background
         pushStyle();
         stroke(31,69,110, 50);
-        //stroke(255,0,0,255);
         noFill();
         rect(x,y,w,h);
 
@@ -730,8 +732,12 @@ class ChannelBar{
         yAxisMax.setVisible(b);
 
         popStyle();
-
-        cbCp5.draw();
+        try {
+            cbCp5.draw();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("CP5 ERROR ON CHANNEL " + channelIndex);
+        }
     }
 
     private int nPointsBasedOnDataSource() {
@@ -773,6 +779,19 @@ class ChannelBar{
         customYLim(yAxisMax, yAxisUpperLim);
     }
 
+    public void applyAutoscale() {
+        //Do this once a second for all TimeSeries ChannelBars to save on resources
+        boolean doAutoscale = millis() > previousMillis + 1000;
+        if (isAutoscale && isRunning && doAutoscale) {
+            previousMillis = millis();
+            float limit = Math.max(abs(autoscaleMin), autoscaleMax);
+            limit = Math.max(limit, 5);
+            plot.setYLim(-limit, limit); //<---- This is a very expensive method. Here is the bottleneck.
+            customYLim(yAxisMin, (int)-limit);
+            customYLim(yAxisMax, (int)limit);
+        }
+    }
+
     //Update yAxis text and responsively size Textfield
     private void customYLim(Textfield tf, int limit) {
         String s = limit > 0 ? "+" : "";
@@ -781,18 +800,6 @@ class ChannelBar{
         //Responsively scale button size based on number of digits
         int _width =  s.length() * 6;
         tf.setSize(_width, yAxisLabel_h);
-    }
-
-    private void autoScale() {
-        int yLim = 0;
-        for(int i = 0; i < nPoints; i++) {
-            if(int(abs(channelPoints.getY(i))) > yLim) {
-                yLim = int(abs(channelPoints.getY(i)));
-            }
-        }
-        plot.setYLim(-yLim, yLim);
-        customYLim(yAxisMin, -yLim);
-        customYLim(yAxisMax, yLim);
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
@@ -975,7 +982,7 @@ class ChannelBar{
         public void controlEvent(CallbackEvent theEvent) {
             
             //Pressing ENTER in the Textfield triggers a "Broadcast"
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                 
                 //Try to clean up typing accidents from user input in Textfield
                 rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
@@ -1274,4 +1281,3 @@ class TimeDisplay {
         return time.format(formatter);
     }
 };//end TimeDisplay class
-

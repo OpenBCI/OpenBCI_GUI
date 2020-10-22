@@ -3,7 +3,6 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 
 final boolean novaXREnabled = false;
-final boolean usingNovaXREmulator = false;
 
 interface NovaXRSettingsEnum {
     public String getName();
@@ -143,6 +142,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     private BoardIds boardId = BoardIds.NOVAXR_BOARD;
     private NovaXRMode initialSettingsMode;
     private NovaXRSR sampleRate;
+    private String ipAddress;
 
     private final NovaXRDefaultSettings defaultSettings;
     private boolean useDynamicScaler;
@@ -152,15 +152,15 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         super();
 
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
-        useDynamicScaler = false;
     }
 
-    public BoardNovaXR(NovaXRMode mode, NovaXRSR _sampleRate) {
+    public BoardNovaXR(String _ip, NovaXRMode mode, NovaXRSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
+        ipAddress = _ip;
         initialSettingsMode = mode;
         sampleRate = _sampleRate;
         samplingRateCache = sampleRate.getValue();
@@ -168,6 +168,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
         defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
+        useDynamicScaler = true;
     }
 
     @Override
@@ -194,9 +195,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        if (usingNovaXREmulator) {
-            params.ip_address = "127.0.0.1";
-        }
+        params.ip_address = ipAddress;
         return params;
     }
 

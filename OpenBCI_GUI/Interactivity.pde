@@ -26,7 +26,9 @@ synchronized void keyPressed() {
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
-    if(!controlPanel.isOpen && !isNetworkingTextActive()){ //don't parse the key if the control panel is open
+    boolean anyActiveTextfields = isNetworkingTextActive() || textFieldIsActive;
+
+    if(!controlPanel.isOpen && !anyActiveTextfields){ //don't parse the key if the control panel is open
         if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
@@ -283,11 +285,6 @@ synchronized void mouseReleased() {
 
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
         wm.mouseReleased();
-    }
-
-    if (settings.screenHasBeenResized) {
-        println("OpenBCI_GUI: mouseReleased: screen has been resized...");
-        settings.screenHasBeenResized = false;
     }
 }
 
@@ -722,31 +719,6 @@ void openURLInBrowser(String _url){
             //println(e.getMessage());
             println("Error launching url in browser: " + _url);
     }
-}
-
-void toggleFrameRate(){
-    if(frameRateCounter<3){
-        frameRateCounter++;
-    } else {
-        frameRateCounter = 1; // until we resolve the latency issue with 24hz, only allow 30hz minimum (aka frameRateCounter = 1)
-    }
-    if(frameRateCounter==0){
-        setFrameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==1){
-        setFrameRate(30);
-    }
-    if(frameRateCounter==2){
-        setFrameRate(45);
-    }
-    if(frameRateCounter==3){
-        setFrameRate(60);
-    }
-}
-
-void setFrameRate(int fps) {
-    frameRate(fps);
-    topNav.fpsButton.setString(fps + " fps");
 }
 
 //loop through networking textfields and find out if any are active

@@ -2190,21 +2190,27 @@ class RecentPlaybackBox {
 
 class NovaXRBox {
     private int x, y, w, h, padding; //size and position
-    private String boxLabel = "NOVAXR CONFIG";
-    private String sampleRateLabel = "SAMPLE RATE";
+    private final String boxLabel = "NOVAXR CONFIG";
+    private final String ipAddressLabel = "IP Address";
+    private final String sampleRateLabel = "Sample Rate";
+    private String ipAddress = "192.168.4.1";
     private ControlP5 localCP5;
+    private Textfield ipAddressTF;
     private ScrollableList srList;
     private ScrollableList modeList;
+    private final int titleH = 14;
+    private final int uiElementH = 24;
 
     NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 104;
+        h = titleH + uiElementH*3 + _padding*5;
         padding = _padding;
         localCP5 = new ControlP5(ourApplet);
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
+        createIPTextfield();
         createModeListDropdown();
         createSampleRateDropdown(); //Create this last so it draws on top of Mode List Dropdown
     }
@@ -2230,11 +2236,46 @@ class NovaXRBox {
         text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
-        text(sampleRateLabel, x + padding, y + padding*2 + 18);
+        text(sampleRateLabel, x + padding, srList.getPosition()[1] + 2);
+        text(ipAddressLabel, x + padding, ipAddressTF.getPosition()[1] + 2);
         popStyle();
         
         //draw cp5 last, on top of everything in this box
         localCP5.draw();
+    }
+
+    private void createIPTextfield() {
+        ipAddressTF = localCP5.addTextfield("ipAddress")
+            .setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2)
+            .setCaptionLabel("")
+            .setSize(120 + padding, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(ipAddress)
+            .align(5, 10, 20, 40)
+            .setAutoClear(false) //Don't clear textfield when pressing Enter key
+            ;
+        //Clear textfield on double click
+        ipAddressTF.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("ControlPanel: Enter IP address of the NovaXR you wish to connect to.");
+                ipAddressTF.clear();
+            }
+        });
+        ipAddressTF.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
+                    ipAddress = ipAddressTF.getText();
+                    ipAddressTF.setFocus(false);
+                }
+            }
+        });
     }
 
     private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
@@ -2246,7 +2287,7 @@ class NovaXRBox {
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
             .setBackgroundColor(150)
-            .setSize(w - padding*2, 24)//temporary size
+            .setSize(w - padding*2, uiElementH)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .setVisible(true)
@@ -2278,8 +2319,8 @@ class NovaXRBox {
 
     private void createSampleRateDropdown() {
         srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
+        srList.setPosition(x + w - padding*2 - 60*2, y + titleH + uiElementH + padding*3);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*uiElementH);
         srList.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
@@ -2300,8 +2341,8 @@ class NovaXRBox {
 
     private void createModeListDropdown() {
         modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, y + h - 24 - padding);
-        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
+        modeList.setPosition(x + padding, y + titleH + uiElementH*2 + padding*4);
+        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*uiElementH);
         modeList.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
@@ -2318,6 +2359,10 @@ class NovaXRBox {
                 }
             }
         });
+    }
+
+    public String getIPAddress() {
+        return ipAddress;
     }
 };
 

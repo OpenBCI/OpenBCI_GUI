@@ -1,11 +1,13 @@
 # v5.0.2
 
 ### Improvements
-* Update hardware settings UI for ADS1299 boards
-* Highlight channels in hardware settings that are out of sync with board
-* Require users to send or revert hardware settings before closing UI
+* Update Hardware Settings UI for ADS1299 boards
+* Highlight channels in Hardware Settings that are out of sync with board
+* Require users to send or revert Hardware Settings before closing UI
 * Add "send" button to hardware settings
 * Update SessionData UI in Control Panel
+* Update ChannelSelect Feature in Widget Class to show what channels are on or off
+* Improve Time Series y-axis autoscale performance
 
 # v5.0.1
 
