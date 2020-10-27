@@ -142,7 +142,7 @@ public void controlEvent(ControlEvent theEvent) {
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
-        } else if (eegDataSource == DATASOURCE_NOVAXR) {
+        } else if (eegDataSource == DATASOURCE_AURAXR) {
             selectedSamplingRate = 250; //default sampling rate
         } else if (eegDataSource == DATASOURCE_STREAMING) {
             //do nothing for now
@@ -248,8 +248,8 @@ class ControlPanel {
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
-    NovaXRBox novaXRBox;
-    public SessionDataBox dataLogBoxNovaXR;
+    AuraXRBox auraXRBox;
+    public SessionDataBox dataLogBoxAuraXR;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
     public SessionDataBox dataLogBoxGanglion;
@@ -305,8 +305,8 @@ class ControlPanel {
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
-        novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        dataLogBoxNovaXR = new SessionDataBox(x + w, (novaXRBox.y + novaXRBox.h), w, h, globalPadding, DATASOURCE_NOVAXR, dataLogger.getDataLoggerOutputFormat(), "sessionNameNovaXR");
+        auraXRBox = new AuraXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        dataLogBoxAuraXR = new SessionDataBox(x + w, (auraXRBox.y + auraXRBox.h), w, h, globalPadding, DATASOURCE_AURAXR, dataLogger.getDataLoggerOutputFormat(), "sessionNameAuraXR");
         
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
         
@@ -373,8 +373,8 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
 
-        dataLogBoxNovaXR.update();
-        novaXRBox.update();
+        dataLogBoxAuraXR.update();
+        auraXRBox.update();
 
         streamingBoardBox.update();
 
@@ -466,10 +466,10 @@ class ControlPanel {
                 cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
                 cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
-            } else if (eegDataSource == DATASOURCE_NOVAXR) {
-                dataLogBoxNovaXR.y = novaXRBox.y + novaXRBox.h;  
-                dataLogBoxNovaXR.draw();
-                novaXRBox.draw();
+            } else if (eegDataSource == DATASOURCE_AURAXR) {
+                dataLogBoxAuraXR.y = auraXRBox.y + auraXRBox.h;  
+                dataLogBoxAuraXR.draw();
+                auraXRBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -1057,8 +1057,8 @@ class ControlPanel {
                     serialBox.autoConnect.setColorNotPressed(255);
                 } else if (eegDataSource == DATASOURCE_GANGLION) {
                     dataLogger.setSessionName(dataLogBoxGanglion.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_NOVAXR) {
-                    dataLogger.setSessionName(dataLogBoxNovaXR.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_AURAXR) {
+                    dataLogger.setSessionName(dataLogBoxAuraXR.getSessionTextfieldString());
                 } else {
                     dataLogger.setSessionName(directoryManager.getFileNameDateTime());
                 }
@@ -1080,7 +1080,7 @@ class ControlPanel {
             //creates new data file name so that you don't accidentally overwrite the old one
             dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            dataLogBoxNovaXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            dataLogBoxAuraXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
             haltSystem();
         }
@@ -1106,7 +1106,7 @@ class DataSourceBox {
     int spacing = 43;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = novaXREnabled ? 6 : 5;
+        numItems = auraXREnabled ? 6 : 5;
         x = _x;
         y = _y;
         w = _w;
@@ -1119,8 +1119,8 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("CYTON (live)", DATASOURCE_CYTON));
         sourceList.addItem(makeItem("GANGLION (live)", DATASOURCE_GANGLION));
-        if (novaXREnabled) {
-            sourceList.addItem(makeItem("NOVAXR (live)", DATASOURCE_NOVAXR));
+        if (auraXREnabled) {
+            sourceList.addItem(makeItem("AURAXR (live)", DATASOURCE_AURAXR));
         }
         sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
@@ -2188,9 +2188,9 @@ class RecentPlaybackBox {
     }
 };
 
-class NovaXRBox {
+class AuraXRBox {
     private int x, y, w, h, padding; //size and position
-    private final String boxLabel = "NOVAXR CONFIG";
+    private final String boxLabel = "AURAXR CONFIG";
     private final String ipAddressLabel = "IP Address";
     private final String sampleRateLabel = "Sample Rate";
     private String ipAddress = "192.168.4.1";
@@ -2201,7 +2201,7 @@ class NovaXRBox {
     private final int titleH = 14;
     private final int uiElementH = 24;
 
-    NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
+    AuraXRBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
@@ -2264,7 +2264,7 @@ class NovaXRBox {
         //Clear textfield on double click
         ipAddressTF.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                output("ControlPanel: Enter IP address of the NovaXR you wish to connect to.");
+                output("ControlPanel: Enter IP address of the AuraXR you wish to connect to.");
                 ipAddressTF.clear();
             }
         });
@@ -2278,7 +2278,7 @@ class NovaXRBox {
         });
     }
 
-    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
+    private ScrollableList createDropdown(String name, AuraXRSettingsEnum[] enumValues){
         ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
@@ -2293,7 +2293,7 @@ class NovaXRBox {
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
-        for (NovaXRSettingsEnum value : enumValues) {
+        for (AuraXRSettingsEnum value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
             list.addItem(value.getName(), value);
         }
@@ -2318,7 +2318,7 @@ class NovaXRBox {
     }
 
     private void createSampleRateDropdown() {
-        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
+        srList = createDropdown("auraXR_SampleRates", AuraXRSR.values());
         srList.setPosition(x + w - padding*2 - 60*2, y + titleH + uiElementH + padding*3);
         srList.setSize(120 + padding,(srList.getItems().size()+1)*uiElementH);
         srList.addCallback(new CallbackListener() {
@@ -2327,20 +2327,20 @@ class NovaXRBox {
                     int val = (int)srList.getValue();
                     Map bob = srList.getItem(val);
                     // this will retrieve the enum object stored in the dropdown!
-                    novaXR_sampleRate = (NovaXRSR)bob.get("value");
-                    println("ControlPanel: User selected NovaXR Sample Rate: " + novaXR_sampleRate.getName());
+                    auraXR_sampleRate = (AuraXRSR)bob.get("value");
+                    println("ControlPanel: User selected AuraXR Sample Rate: " + auraXR_sampleRate.getName());
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(true);
+                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(true);
                 } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(false);
+                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(false);
                 }
             }
         });
     }
 
     private void createModeListDropdown() {
-        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
+        modeList = createDropdown("auraXR_Modes", AuraXRMode.values());
         modeList.setPosition(x + padding, y + titleH + uiElementH*2 + padding*4);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*uiElementH);
         modeList.addCallback(new CallbackListener() {
@@ -2349,13 +2349,13 @@ class NovaXRBox {
                     int val = (int)modeList.getValue();
                     Map bob = modeList.getItem(val);
                     // this will retrieve the enum object stored in the dropdown!
-                    novaXR_boardSetting = (NovaXRMode)bob.get("value");
-                    println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
+                    auraXR_boardSetting = (AuraXRMode)bob.get("value");
+                    println("ControlPanel: User selected AuraXR Mode: " + auraXR_boardSetting.getName());
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(true);
+                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(true);
                 } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxNovaXR.lockSessionDataBoxCp5Elements(false);
+                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(false);
                 }
             }
         });

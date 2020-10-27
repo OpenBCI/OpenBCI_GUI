@@ -2,14 +2,14 @@ import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-final boolean novaXREnabled = false;
+final boolean auraXREnabled = false;
 
-interface NovaXRSettingsEnum {
+interface AuraXRSettingsEnum {
     public String getName();
     public String getCommand();
 }
 
-public enum NovaXRSR implements NovaXRSettingsEnum
+public enum AuraXRSR implements AuraXRSettingsEnum
 {
     SR_250("250Hz", "~6", 250),
     SR_500("500Hz", "~5", 500),
@@ -19,7 +19,7 @@ public enum NovaXRSR implements NovaXRSettingsEnum
     private String command;
     private int value;
  
-    NovaXRSR(String _name, String _command, int _value) {
+    AuraXRSR(String _name, String _command, int _value) {
         this.name = _name;
         this.command = _command;
         this.value = _value;
@@ -40,7 +40,7 @@ public enum NovaXRSR implements NovaXRSettingsEnum
     }
 }
 
-public enum NovaXRMode implements NovaXRSettingsEnum
+public enum AuraXRMode implements AuraXRSettingsEnum
 {
     DEFAULT("Default Mode", "d"), 
     INTERNAL_SIGNAL("Internal Signal", "f"), 
@@ -51,7 +51,7 @@ public enum NovaXRMode implements NovaXRSettingsEnum
     private String name;
     private String command;
  
-    NovaXRMode(String _name, String _command) {
+    AuraXRMode(String _name, String _command) {
         this.name = _name;
         this.command = _command;
     }
@@ -67,9 +67,9 @@ public enum NovaXRMode implements NovaXRSettingsEnum
     }
 }
 
-class NovaXRDefaultSettings extends ADS1299Settings {
+class AuraXRDefaultSettings extends ADS1299Settings {
     // TODO: modes go here
-    NovaXRDefaultSettings(Board theBoard, NovaXRMode mode) {
+    AuraXRDefaultSettings(Board theBoard, AuraXRMode mode) {
         super(theBoard);
 
         Arrays.fill(values.powerDown, PowerDown.ON);
@@ -114,11 +114,11 @@ class NovaXRDefaultSettings extends ADS1299Settings {
                 break;
 
             case PRESET4:
-                // TODO[NovaXR] This mode is not defined yet
+                // TODO[AuraXR] This mode is not defined yet
                 break;
 
             case PRESET5:
-                // TODO[NovaXR] This mode is not defined yet
+                // TODO[AuraXR] This mode is not defined yet
                 break;
 
             default:
@@ -127,7 +127,7 @@ class NovaXRDefaultSettings extends ADS1299Settings {
     }
 }
 
-class BoardNovaXR extends BoardBrainFlow
+class BoardAuraXR extends BoardBrainFlow
 implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard{
 
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -139,22 +139,22 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     private int[] ppgChannelsCache = null;
     private Integer batteryChannelCache = null;
 
-    private BoardIds boardId = BoardIds.NOVAXR_BOARD;
-    private NovaXRMode initialSettingsMode;
-    private NovaXRSR sampleRate;
+    private BoardIds boardId = BoardIds.AURAXR_BOARD;
+    private AuraXRMode initialSettingsMode;
+    private AuraXRSR sampleRate;
     private String ipAddress;
 
-    private final NovaXRDefaultSettings defaultSettings;
+    private final AuraXRDefaultSettings defaultSettings;
     private boolean useDynamicScaler;
 
     // needed for playback
-    public BoardNovaXR() {
+    public BoardAuraXR() {
         super();
 
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
+        defaultSettings = new AuraXRDefaultSettings(this, AuraXRMode.DEFAULT);
     }
 
-    public BoardNovaXR(String _ip, NovaXRMode mode, NovaXRSR _sampleRate) {
+    public BoardAuraXR(String _ip, AuraXRMode mode, AuraXRSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
@@ -167,7 +167,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
-        defaultSettings = new NovaXRDefaultSettings(this, NovaXRMode.DEFAULT);
+        defaultSettings = new AuraXRDefaultSettings(this, AuraXRMode.DEFAULT);
         useDynamicScaler = true;
     }
 
@@ -176,8 +176,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         boolean res = super.initializeInternal();
 
         if (res) {
-            // NovaXRDefaultSettings() will send mode command to board
-            currentADS1299Settings = new NovaXRDefaultSettings(this, initialSettingsMode);
+            // AuraXRDefaultSettings() will send mode command to board
+            currentADS1299Settings = new AuraXRDefaultSettings(this, initialSettingsMode);
         }
         if (res) {
             // send the mode command to board
@@ -277,7 +277,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     @Override
     public void setPPGActive(boolean active) {
-        outputWarn("PPG is always active for BoardNovaXR");
+        outputWarn("PPG is always active for BoardAuraXR");
     }
 
     @Override
@@ -300,7 +300,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     @Override
     public void setEDAActive(boolean active) {
-        outputWarn("EDA is always active for BoardNovaXR");
+        outputWarn("EDA is always active for BoardAuraXR");
     }
 
     @Override

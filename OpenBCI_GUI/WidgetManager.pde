@@ -23,7 +23,7 @@ W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
-W_NovaAux w_novaAux;
+W_AuraAux w_auraAux;
 W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -49,11 +49,11 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_accelerometer, w);
     }
 
-    if (novaXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
-        //NovaXR_Widget_2
-        w_novaAux = new W_NovaAux(_this);
-        w_novaAux.setTitle("NovaXR Aux");
-        addWidget(w_novaAux, w);
+    if (auraXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
+        //AuraXR_Widget_2
+        w_auraAux = new W_AuraAux(_this);
+        w_auraAux.setTitle("AuraXR Aux");
+        addWidget(w_auraAux, w);
     }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
