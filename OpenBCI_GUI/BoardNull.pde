@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /* This class does nothing, it serves as a signal that the board we are using
  * is null, but does not crash if we use it.
@@ -54,8 +56,8 @@ class BoardNull extends Board {
     }
 
     @Override
-    public boolean sendCommand(String command) {
-        return false;
+    public Pair<Boolean, String> sendCommand(String command) {
+        return new ImmutablePair<Boolean, String>(Boolean.valueOf(true), "");
     }
 
     protected double[][] getNewDataInternal() {
