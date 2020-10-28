@@ -1,5 +1,7 @@
 import brainflow.*;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public enum BrainFlowStreaming_Boards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),

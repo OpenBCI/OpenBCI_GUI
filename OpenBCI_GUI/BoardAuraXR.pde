@@ -1,6 +1,7 @@
 import brainflow.*;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 final boolean auraXREnabled = false;
 
@@ -181,11 +182,11 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         }
         if (res) {
             // send the mode command to board
-            res = sendCommand(initialSettingsMode.getCommand());
+            res = sendCommand(initialSettingsMode.getCommand()).getKey().booleanValue();
         }
         if (res) {
             // send the sample rate command to the board
-            res = sendCommand(sampleRate.getCommand());
+            res = sendCommand(sampleRate.getCommand()).getKey().booleanValue();
         }
 
         return res;
