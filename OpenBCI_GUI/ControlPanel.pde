@@ -1272,6 +1272,10 @@ class ComPortBox {
         for (SerialPort comPort : comPorts) {
             for (String name : names) {
                 if (comPort.toString().startsWith(name)) {
+                    // on macos need to drop tty ports
+                    if (isMac() && comPort.getSystemPortName().startsWith("tty")) {
+                        continue;
+                    }
                     String found = "";
                     if (isMac() || isLinux()) found += "/dev/";
                     found += comPort.getSystemPortName();
