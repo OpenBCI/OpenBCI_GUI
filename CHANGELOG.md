@@ -9,6 +9,9 @@
 * Update ChannelSelect Feature in Widget Class to show what channels are on or off
 * Improve Time Series y-axis autoscale performance
 
+### Bug Fixes
+* Exit session init when current board fails to initialize
+
 # v5.0.1
 
 ### Improvements
