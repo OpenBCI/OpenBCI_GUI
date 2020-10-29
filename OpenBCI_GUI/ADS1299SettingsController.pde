@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.tuple.Pair;
+
 
 class ADS1299SettingsController {
     private PApplet _parentApplet;
@@ -417,12 +419,13 @@ class ADS1299SettingsController {
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = customCommandTF.getText();
-                boolean res = ((BoardBrainFlow)currentBoard).sendCommand(text);
-                if (res) {
+                Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand(text);
+                if (res.getKey().booleanValue()) {
                     outputSuccess("[ExpertMode] Success sending command to board: " + text);
                 } else {
                     outputError("[ExpertMode] Failure sending command to board: " + text);
                 }
+                println(res.getValue());
             }
         });
 

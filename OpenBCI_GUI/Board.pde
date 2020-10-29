@@ -1,3 +1,4 @@
+import org.apache.commons.lang3.tuple.Pair;
 
 abstract class Board implements DataSource {
 
@@ -102,7 +103,7 @@ abstract class Board implements DataSource {
 
     public abstract boolean isConnected();
 
-    public abstract boolean sendCommand(String command);
+    public abstract Pair <Boolean, String> sendCommand(String command);
 
     // ***************************************
     // protected methods implemented by board

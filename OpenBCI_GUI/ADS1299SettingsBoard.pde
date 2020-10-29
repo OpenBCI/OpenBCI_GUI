@@ -258,7 +258,7 @@ class ADS1299Settings {
                                         values.inputType[chan].ordinal(), values.bias[chan].ordinal(),
                                         values.srb2[chan].ordinal(), values.srb1[chan].ordinal());
 
-        return board.sendCommand(command);
+        return board.sendCommand(command).getKey().booleanValue();
     }
 
     //Return true if all commits are successful

@@ -259,7 +259,7 @@ class TopNav {
             logo = logo_blue;
         }
 
-        if (eegDataSource == DATASOURCE_NOVAXR) {
+        if (eegDataSource == DATASOURCE_AURAXR) {
             topNavBg = color(3, 10, 18);
             subNavBg = color(33, 49, 65);
             strokeColor = subNavBg;

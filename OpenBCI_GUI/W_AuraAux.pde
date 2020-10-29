@@ -1,6 +1,6 @@
 import java.util.*;
 
-class W_NovaAux extends Widget {
+class W_AuraAux extends Widget {
     private EDACapableBoard edaBoard;
     private PPGCapableBoard ppgBoard;
     private BatteryInfoCapableBoard batteryBoard;
@@ -29,7 +29,7 @@ class W_NovaAux extends Widget {
     private int naInitialVertScaleIndex = 0;
     private int naInitialHorizScaleIndex = 2;
 
-    W_NovaAux(PApplet _parent) {
+    W_AuraAux(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         // todo add check that current board implements these interfaces before casting
@@ -38,8 +38,8 @@ class W_NovaAux extends Widget {
         ppgBoard = (PPGCapableBoard) currentBoard;
         batteryBoard = (BatteryInfoCapableBoard) currentBoard;
 
-        addDropdown("VertScale_NovaAux", "Vert Scale", Arrays.asList(vertScaleOptions), naInitialVertScaleIndex);
-        addDropdown("Duration_NovaAux", "Window", Arrays.asList(horizScaleOptions), naInitialHorizScaleIndex);
+        addDropdown("VertScale_AuraAux", "Vert Scale", Arrays.asList(vertScaleOptions), naInitialVertScaleIndex);
+        addDropdown("Duration_AuraAux", "Window", Arrays.asList(horizScaleOptions), naInitialHorizScaleIndex);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -134,14 +134,14 @@ class W_NovaAux extends Widget {
 };
 
 //triggered when there is an event in the LogLin Dropdown
-void Duration_NovaAux(int n) {
-    w_novaAux.adjustTimeAxisAllPlots(w_novaAux.xLimOptions[n]);
+void Duration_AuraAux(int n) {
+    w_auraAux.adjustTimeAxisAllPlots(w_auraAux.xLimOptions[n]);
 }
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 //^^^not true. we can do this in the class above with a CallbackListener
-void VertScale_NovaAux(int n) {
-    w_novaAux.adjustVertScaleAllPlots(w_novaAux.yLimOptions[n]);
+void VertScale_AuraAux(int n) {
+    w_auraAux.adjustVertScaleAllPlots(w_auraAux.yLimOptions[n]);
 }
 
 //========================================================================================================================

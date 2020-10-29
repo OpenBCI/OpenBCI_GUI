@@ -1,6 +1,9 @@
 import brainflow.*;
 import java.util.*;
+
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 abstract class BoardBrainFlow extends Board {
 
@@ -209,20 +212,20 @@ abstract class BoardBrainFlow extends Board {
     }
 
     @Override
-    public boolean sendCommand(String command) {
+    public Pair<Boolean, String> sendCommand(String command) {
         if (command != null && isConnected()) {
             try {
                 println("Sending config string to board: " + command);
-                boardShim.config_board(command);
-                return true;
+                String resp = boardShim.config_board(command);
+                return new ImmutablePair<Boolean, String>(Boolean.valueOf(true), resp);
             }
             catch (BrainFlowError e) {
                 outputError("ERROR: " + e + " when sending command: " + command);
                 e.printStackTrace();
-                return false;
+                return new ImmutablePair<Boolean, String>(Boolean.valueOf(false), "");
             }
         }
-        return false;
+        return new ImmutablePair<Boolean, String>(Boolean.valueOf(false), "");
     }
     
     @Override
