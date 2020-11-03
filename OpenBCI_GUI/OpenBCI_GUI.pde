@@ -537,31 +537,15 @@ void initSystem() {
 
     if (abandonInit) {
         haltSystem();
-        println("Failed to connect to data source... 1");
-        outputError("Failed to connect to data source fail point 1");
+        outputError("Failed to initialize board. Please check that the board is on and has power.");
+        controlPanel.open();
+        return;
     } else {
-        //initilize the GUI
+        //initilize the secondary topnav and all applicable widgets
         topNav.initSecondaryNav();
-
         wm = new WidgetManager(this);
-
-        if (!abandonInit) {
-            nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-
-            systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-
-            if (!abandonInit) {
-                controlPanel.close();
-            } else {
-                haltSystem();
-                println("Failed to connect to data source... 2");
-                // output("Failed to connect to data source...");
-            }
-        } else {
-            haltSystem();
-            println("Failed to connect to data source... 3");
-            // output("Failed to connect to data source...");
-        }
+        nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+        systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
