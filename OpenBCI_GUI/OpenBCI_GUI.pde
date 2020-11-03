@@ -621,34 +621,43 @@ void initFFTObjectsAndBuffer() {
 }
 
 void startRunning() {
-    verbosePrint("startRunning...");
-    output("Data stream started.");
-
+    output("OpenBCI_GUI: stopRunning: stop running...");
     // start streaming on the chosen board
     currentBoard.startStreaming();
     isRunning = currentBoard.isStreaming();
     if (isRunning)
     {
+        output("Data stream started.");
         dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
         w_timeSeries.closeADSSettings();
-        streamTimeElapsed.reset();
-        streamTimeElapsed.start();
-        sessionTimeElapsed.resume();
+        try {
+            streamTimeElapsed.reset();
+            streamTimeElapsed.start();
+            sessionTimeElapsed.resume();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            outputError("Failed to start Timer.");
+        }
     }
 }
 
 void stopRunning() {
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-    verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
+    output("OpenBCI_GUI: stopRunning: stop running...");
     currentBoard.stopStreaming();
     isRunning = currentBoard.isStreaming();
     if (!isRunning) {
         output("Data stream stopped.");
-        streamTimeElapsed.stop();
-        sessionTimeElapsed.suspend();
-        dataLogger.onStopStreaming();
+        try {
+            streamTimeElapsed.stop();
+            sessionTimeElapsed.suspend();
+            dataLogger.onStopStreaming();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            outputError("Failed to stop Timer.");
+        }
     }
 }
 
