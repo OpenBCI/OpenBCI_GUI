@@ -21,7 +21,13 @@ class BoardNull extends Board {
         // empty
     }
 
+    @Override
     public boolean isConnected() {
+        return false;
+    }
+
+    @Override
+    public boolean isStreaming() {
         return false;
     }
 

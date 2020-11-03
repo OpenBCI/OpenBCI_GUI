@@ -103,6 +103,8 @@ abstract class Board implements DataSource {
 
     public abstract boolean isConnected();
 
+    public abstract boolean isStreaming();
+
     public abstract Pair <Boolean, String> sendCommand(String command);
 
     // ***************************************

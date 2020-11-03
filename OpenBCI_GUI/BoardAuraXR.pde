@@ -3,7 +3,7 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-final boolean auraXREnabled = false;
+final boolean auraXREnabled = true;
 
 interface AuraXRSettingsEnum {
     public String getName();

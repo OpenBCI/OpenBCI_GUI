@@ -640,53 +640,52 @@ void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
 
-    dataLogger.onStartStreaming();
-
     // start streaming on the chosen board
     currentBoard.startStreaming();
-    isRunning = true;
-
-    // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
-    // close hardware settings if user starts streaming
-    w_timeSeries.closeADSSettings();
-
-    streamTimeElapsed.reset();
-    streamTimeElapsed.start();
-    sessionTimeElapsed.resume();
+    isRunning = currentBoard.isStreaming();
+    if (isRunning)
+    {
+        dataLogger.onStartStreaming();
+        // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
+        // close hardware settings if user starts streaming
+        w_timeSeries.closeADSSettings();
+        streamTimeElapsed.reset();
+        streamTimeElapsed.start();
+        sessionTimeElapsed.resume();
+    }
 }
 
 void stopRunning() {
     // openBCI.changeState(0); //make sure it's no longer interpretting as binary
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-    if (isRunning) {
+    currentBoard.stopStreaming();
+    isRunning = currentBoard.isStreaming();
+    if (!isRunning) {
         output("Data stream stopped.");
-
         streamTimeElapsed.stop();
         sessionTimeElapsed.suspend();
+        dataLogger.onStopStreaming();
     }
-
-    dataLogger.onStopStreaming();
-
-    // stop streaming on chosen board
-    currentBoard.stopStreaming();
-    isRunning = false;
 }
 
 //execute this function whenver the stop button is pressed
 void stopButtonWasPressed() {
     //toggle the data transfer state of the ADS1299...stop it or start it...
     if (isRunning) {
-        verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
+        output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
         stopRunning();
-        topNav.stopButton.setString(stopButton_pressToStart_txt);
-        topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+        if (!isRunning) {
+            topNav.stopButton.setString(stopButton_pressToStart_txt);
+            topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+        }
     } else { //not running
-        verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-
+        output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
         startRunning();
-        topNav.stopButton.setString(stopButton_pressToStop_txt);
-        topNav.stopButton.setColorNotPressed(color(224, 56, 45));
-        nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+        if (isRunning) {
+            topNav.stopButton.setString(stopButton_pressToStop_txt);
+            topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+            nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+        }
     }
 }
 

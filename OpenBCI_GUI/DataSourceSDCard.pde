@@ -155,6 +155,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
     @Override
+    public boolean isStreaming() {
+        return streaming;
+    }
+
+    @Override
     public int getSampleRate() {
         return samplingRate;
     }

@@ -158,6 +158,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
+    public boolean isStreaming() {
+        return streaming;
+    }
+
+    @Override
     public int getSampleRate() {
         return sampleRate;
     }
