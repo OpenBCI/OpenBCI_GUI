@@ -360,7 +360,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     public Integer getBatteryChannel() {
         if (batteryChannelCache == null && underlyingBoard instanceof BatteryInfoCapableBoard) {
             try {
-                batteryChannelCache = BoardShim.get_battery_channel(BoardIds.AURAXR_BOARD.get_code());
+                batteryChannelCache = BoardShim.get_battery_channel(((BoardBrainFlow)underlyingBoard).getBoardIdInt());
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
