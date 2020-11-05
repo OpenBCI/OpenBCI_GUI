@@ -621,12 +621,10 @@ void initFFTObjectsAndBuffer() {
 }
 
 void startRunning() {
-    output("OpenBCI_GUI: stopRunning: stop running...");
     // start streaming on the chosen board
     currentBoard.startStreaming();
     isRunning = currentBoard.isStreaming();
-    if (isRunning)
-    {
+    if (isRunning) {
         output("Data stream started.");
         dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
@@ -640,28 +638,31 @@ void startRunning() {
             e.printStackTrace();
             outputError("Failed to start Timer.");
         }
+    } else {
+        outputError("Failed to start data stream. Please check hardware. See Console Log or BrainFlow Log for more details.");
     }
 }
 
 void stopRunning() {
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-    output("OpenBCI_GUI: stopRunning: stop running...");
-    currentBoard.stopStreaming();
-    isRunning = currentBoard.isStreaming();
-    if (!isRunning) {
-        output("Data stream stopped.");
-        try {
-            streamTimeElapsed.stop();
-            sessionTimeElapsed.suspend();
-            dataLogger.onStopStreaming();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-            outputError("Failed to stop Timer.");
+    if (isRunning) {
+        currentBoard.stopStreaming();
+        isRunning = currentBoard.isStreaming();
+        if (!isRunning) {
+            output("Data stream stopped.");
+            try {
+                streamTimeElapsed.stop();
+                sessionTimeElapsed.suspend();
+                dataLogger.onStopStreaming();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+                outputError("Failed to stop Timer.");
+            }
         }
     }
 }
 
 //execute this function whenver the stop button is pressed
+//todo: this should be done as a callback in Control Panel when button is changed to Cp5 Button class
 void stopButtonWasPressed() {
     //toggle the data transfer state of the ADS1299...stop it or start it...
     if (isRunning) {
