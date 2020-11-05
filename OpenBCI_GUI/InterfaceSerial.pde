@@ -12,9 +12,12 @@
 //
 // Note: this class now expects the data format produced by OpenBCI V3.
 //
-// Update July 2019:
-//      - Portions of this are DEPRECATED
-//      - serialEvent() is still used when checking Cyton status from Control Panel
+// Update Nov 2020 (RW):
+//      - Large Portions of this are DEPRECATED
+//      - Code in interfaceSerial.pde should be seen as old, clunky, messy code
+//      - Do not copy any style or build upon this code
+//      - serialEvent() is still used when checking Cyton status from Control Panel in Manual Radio Config
+//      - This code should be refactored to work in a predictable way to provide Radio Config with board_message from Cyton
 //
 /////////////////////////////////////////////////////////////////////////////
 
@@ -40,7 +43,6 @@ int numPacketsDroppedSerial = 0;
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
-
 void serialEvent(Serial port){
     //check to see which serial port it is
     if (iSerial.isOpenBCISerial(port)) {
@@ -353,7 +355,7 @@ class InterfaceSerial {
             // print("hardwareSyncStep: "); println(hardwareSyncStep);
             // print(".");
             char inASCII = char(inByte);
-            if (isRunning == false && (millis() - timeSinceStopRunning) > 500) {
+            if (currentBoard.isStreaming() == false && (millis() - timeSinceStopRunning) > 500) {
                 print(char(inByte));
             }
 

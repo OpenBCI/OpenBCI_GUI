@@ -1,10 +1,12 @@
 import brainflow.*;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public enum BrainFlowStreaming_Boards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),
     GANGLION("Ganglion", BoardIds.GANGLION_BOARD),
-    NOVAXR("NovaXR", BoardIds.NOVAXR_BOARD),
+    AURAXR("AuraXR", BoardIds.AURAXR_BOARD),
     SYNTHETIC("Synthetic", BoardIds.SYNTHETIC_BOARD);
 
     private String name;

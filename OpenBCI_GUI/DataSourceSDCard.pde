@@ -136,7 +136,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         currentSample += numNewSamplesThisFrame;
 
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
@@ -152,6 +152,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     @Override
     public void stopStreaming() {
         streaming = false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override

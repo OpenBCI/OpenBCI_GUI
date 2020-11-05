@@ -1,9 +1,10 @@
-class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard, FileBoard  {
+class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, FileBoard  {
     private String playbackFilePath;
     private ArrayList<double[]> rawData;
     private int currentSample;
     private int timeOfLastUpdateMS;
     private String underlyingClassName;
+    private Integer batteryChannelCache = null;
 
     private boolean initialized = false;
     private boolean streaming = false;
@@ -139,7 +140,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         currentSample += numNewSamplesThisFrame;
         
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
@@ -155,6 +156,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     @Override
     public void stopStreaming() {
         streaming = false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override
@@ -353,6 +359,19 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         }
 
         return new int[0];
+    }
+
+    @Override
+    public Integer getBatteryChannel() {
+        if (batteryChannelCache == null && underlyingBoard instanceof BatteryInfoCapableBoard) {
+            try {
+                batteryChannelCache = BoardShim.get_battery_channel(((BoardBrainFlow)underlyingBoard).getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return batteryChannelCache;
     }
 
     @Override

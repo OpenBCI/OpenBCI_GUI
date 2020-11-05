@@ -1347,7 +1347,7 @@ class Stream extends Thread {
         if (!this.protocol.equals("LSL")) {
             openNetwork();
             while(this.isStreaming) {
-                if (!isRunning) {
+                if (!currentBoard.isStreaming()) {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -1367,7 +1367,7 @@ class Stream extends Thread {
                     }
                 }
         } else if (this.protocol.equals("LSL")) {
-            if (!isRunning) {
+            if (!currentBoard.isStreaming()) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
@@ -1550,7 +1550,7 @@ class Stream extends Thread {
             } else if (this.protocol.equals("LSL")) {
                 for (int i=0; i<nPointsPerUpdate;i++) {
                     for (int j=0;j<numChan;j++) {
-                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][i];
+                        dataToSend[j+numChan*i] = dataProcessingFilteredBuffer[j][start+i];
                     }
                 }
                 // Add timestamp to LSL Stream

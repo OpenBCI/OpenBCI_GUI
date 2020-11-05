@@ -88,10 +88,8 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
 }
 
 class W_timeSeries extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-
     private int numChannelBars;
     private float xF, yF, wF, hF;
     private float ts_padding;
@@ -103,7 +101,7 @@ class W_timeSeries extends Widget {
     public final int interChannelBarSpace = 2;
 
     private ControlP5 tscp5;
-    private Button hardwareSettings;
+    private Button hwSettingsButton;
 
     private ChannelSelect tsChanSelect;
     private ChannelBar[] channelBars;
@@ -134,10 +132,9 @@ class W_timeSeries extends Widget {
         tscp5.setGraphics(_parent, 0,0);
         tscp5.setAutoDraw(false);
 
-        tsChanSelect = new ChannelSelect(pApplet, x, y, w, navH, "TS_Channels");
-
-        //activate all channels in channelSelect by default
-        activateAllChannels();
+        tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
+        //activate all channels in channelSelect by default for this widget
+        tsChanSelect.activateAllButtons();
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -190,10 +187,10 @@ class W_timeSeries extends Widget {
         int x_hsc = int(channelBars[0].plot.getPos()[0] + 2);
         int y_hsc = int(channelBars[0].plot.getPos()[1]);
         int w_hsc = int(channelBars[0].plot.getOuterDim()[0]);
-        int h_hsc = int(ts_h - 4);
+        int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings = createButton(hardwareSettings, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
@@ -210,7 +207,7 @@ class W_timeSeries extends Widget {
         if(visible) {
             super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            // offset based on whether channel select or hardwareSettings are open or not
+            // offset based on whether channel select or hardware settings are open or not
             int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
             if (currentBoard instanceof ADS1299SettingsBoard) {
                 chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
@@ -234,11 +231,12 @@ class W_timeSeries extends Widget {
             
             //Responsively size and update the HardwareSettingsController
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                int cb_h = channelBarHeight + interChannelBarSpace - 2;           
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], int(ts_h - chanSelectOffset) - interChannelBarSpace, cb_h);
+                int cb_h = channelBarHeight + interChannelBarSpace - 2;
+                int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
+                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
                 adsSettingsController.update(); //update channel controller
                 //ignore top left button interaction when widgetSelector dropdown is active
-                ignoreButtonCheck(hardwareSettings);
+                lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
             }
             
             //Update Playback scrollbar and/or display time
@@ -275,7 +273,6 @@ class W_timeSeries extends Widget {
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                hardwareSettings.setVisible(true);
                 adsSettingsController.draw();
             }
 
@@ -331,8 +328,7 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hardwareSettings.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
-            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0] + 2, (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], (int)ts_h - 4, channelBarHeight);
+            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
         }
         
     }
@@ -340,12 +336,6 @@ class W_timeSeries extends Widget {
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
-
-        if(adsSettingsController != null && adsSettingsController.getIsVisible()) {
-            if (!this.dropdownIsActive) {
-                adsSettingsController.mousePressed();
-            }
-        }
 
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
@@ -355,10 +345,6 @@ class W_timeSeries extends Widget {
     
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        
-        if(getAdsSettingsVisible()) {
-            adsSettingsController.mouseReleased();
-        } 
 
         for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
             int activeChan = tsChanSelect.activeChan.get(i);
@@ -371,21 +357,19 @@ class W_timeSeries extends Widget {
             return;
         }
 
-        if(visible) {
-            if (isRunning) {
-                PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing hardware settings");
-                return;
-            }
+        String buttonText = "Time Series";
 
-            hardwareSettings.setCaptionLabel("Time Series");
-        }
-        else {
-            hardwareSettings.setCaptionLabel("Hardware Settings");
+        if (visible && currentBoard.isStreaming()) {
+            PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
+            return;
         }
 
-        if (adsSettingsController != null) {
-            adsSettingsController.setIsVisible(visible);
+        boolean inSync = adsSettingsController.setIsVisible(visible);
+        
+        if (!visible && adsSettingsController != null && inSync) {
+            buttonText = "Hardware Settings";         
         }
+        hwSettingsButton.setCaptionLabel(buttonText);
     }
 
     private boolean getAdsSettingsVisible() {
@@ -396,16 +380,7 @@ class W_timeSeries extends Widget {
         setAdsSettingsVisible(false);
     }
 
-    private void activateAllChannels() {
-        tsChanSelect.activeChan.clear();
-        //Activate all channel checkboxes by default for this widget
-        for (int i = 0; i < nchan; i++) {
-            tsChanSelect.checkList.activate(i);
-            tsChanSelect.activeChan.add(i);
-        }
-    }
-
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
+    private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
         myButton = tscp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
@@ -422,7 +397,7 @@ class W_timeSeries extends Widget {
             .setText(text)
             ;
         myButton.onClick(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {         
+            public void controlEvent(CallbackEvent theEvent) {    
                 println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());
                 setAdsSettingsVisible(!adsSettingsController.getIsVisible());
             }
@@ -448,14 +423,14 @@ class W_timeSeries extends Widget {
 
     public void setTSVertScale(int n) {
         yLimit = yLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustVertScale(yLimit.getValue());
         }
     }
 
     public void setTSHorizScale(int n) {
         xLimit = xLimit.values()[n];
-        for(int i = 0; i < numChannelBars; i++) {
+        for (int i = 0; i < numChannelBars; i++) {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
@@ -472,9 +447,11 @@ void Duration(int n) {
 
     int newDuration = w_timeSeries.getTSHorizScale().getValue();
     //If selected by user, sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (settings.accHorizScaleSave == 0) {
-        //set accelerometer x axis to the duration selected from dropdown
-        w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+    if (currentBoard instanceof AccelerometerCapableBoard) {
+        if (settings.accHorizScaleSave == 0) {
+            //set accelerometer x axis to the duration selected from dropdown
+            w_accelerometer.accelerometerBar.adjustTimeAxis(newDuration);
+        }
     }
     if (currentBoard instanceof AnalogCapableBoard) {
         if (settings.arHorizScaleSave == 0) {
@@ -491,7 +468,7 @@ void Duration(int n) {
 //========================================================================================================================
 //this class contains the plot and buttons for a single channel of the Time Series widget
 //one of these will be created for each channel (4, 8, or 16)
-class ChannelBar{
+class ChannelBar {
 
     int channelIndex; //duh
     String channelString;
@@ -514,6 +491,7 @@ class ChannelBar{
     int uiSpaceWidth;
     int padding_4 = 4;
     int minimumChannelHeight;
+    int plotBottomWellH = 45;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray channelPoints;
@@ -523,8 +501,11 @@ class ChannelBar{
 
     color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
-
+    boolean isAutoscale = false; //when isAutoscale equals true, the y-axis of each channelBar will automatically update to scale to the largest visible amplitude
+    float autoscaleMin;
+    float autoscaleMax;
+    int previousMillis = 0;
+    
     TextBox voltageValue;
     TextBox impValue;
 
@@ -580,7 +561,7 @@ class ChannelBar{
         numSeconds = 5;
         plot = new GPlot(_parent);
         plot.setPos(x + uiSpaceWidth, y);
-        plot.setDim(w - 36 - padding_4 - impButton_diameter, h);
+        plot.setDim(w - uiSpaceWidth, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[channelIndex%8]);
         plot.setXLim(-5,0);
@@ -590,6 +571,7 @@ class ChannelBar{
         plot.setAllFontProperties("Arial", 0, 14);
         if(channelIndex == nchan-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
+            plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
         }
         // plot.setBgColor(color(31,69,110));
 
@@ -645,15 +627,16 @@ class ChannelBar{
 
         // update data in plot
         updatePlotPoints();
-        if(isAutoscale) {
-            autoScale();
-        }
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
             onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
-            onOffButton.setColorNotPressed(50); // power down == false, set color to vibrant
+            onOffButton.setColorNotPressed(50); // power down == true, set to grey
+        }
+
+        if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
+            textFieldIsActive = true;
         }
     }
 
@@ -670,15 +653,20 @@ class ChannelBar{
     }
 
     private void updatePlotPoints() {
+        autoscaleMax = 0;
+        autoscaleMin = 0;
         // update data in plot
-        if(dataProcessingFilteredBuffer[channelIndex].length > nPoints) {
+        if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
                 float time = -(float)numSeconds + (float)(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints))*timeBetweenPoints;
                 float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
 
                 // update channel point in place
                 channelPoints.set(i-(dataProcessingFilteredBuffer[channelIndex].length-nPoints), time, filt_uV_value, "");
+                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
+                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
             }
+            applyAutoscale();
             plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
@@ -692,8 +680,15 @@ class ChannelBar{
         plot.beginDraw();
         plot.drawBox();
         plot.drawGridLines(0);
-        plot.drawLines();
-        if (isBottomChannel()) { //only draw the x axis label on the bottom channel bar
+        try {
+            plot.drawLines();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("PLOT ERROR ON CHANNEL " + channelIndex);
+            
+        }
+        //Draw the x axis label on the bottom channel bar, hide if hardware settings are open
+        if (isBottomChannel() && !hardwareSettingsAreOpen) {
             plot.drawXAxis();
             plot.getXAxis().draw();
         }
@@ -702,7 +697,6 @@ class ChannelBar{
         //draw channel holder background
         pushStyle();
         stroke(31,69,110, 50);
-        //stroke(255,0,0,255);
         noFill();
         rect(x,y,w,h);
 
@@ -729,7 +723,7 @@ class ChannelBar{
             voltageValue.draw();
         }
         
-        //Hide yAxisButtons when hardwareSettings are open, labels would start to overlap, or using autoscale
+        //Hide yAxisButtons when hardware settings are open, labels would start to overlap, or using autoscale
         boolean b = !hardwareSettingsAreOpen && (h > yScaleButton_h + yAxisLabel_h*2 + 2) && !isAutoscale;
         yScaleButton_pos.setVisible(b);
         yScaleButton_neg.setVisible(b);
@@ -738,8 +732,12 @@ class ChannelBar{
         yAxisMax.setVisible(b);
 
         popStyle();
-
-        cbCp5.draw();
+        try {
+            cbCp5.draw();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            println("CP5 ERROR ON CHANNEL " + channelIndex);
+        }
     }
 
     private int nPointsBasedOnDataSource() {
@@ -781,6 +779,19 @@ class ChannelBar{
         customYLim(yAxisMax, yAxisUpperLim);
     }
 
+    public void applyAutoscale() {
+        //Do this once a second for all TimeSeries ChannelBars to save on resources
+        boolean doAutoscale = millis() > previousMillis + 1000;
+        if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
+            previousMillis = millis();
+            float limit = Math.max(abs(autoscaleMin), autoscaleMax);
+            limit = Math.max(limit, 5);
+            plot.setYLim(-limit, limit); //<---- This is a very expensive method. Here is the bottleneck.
+            customYLim(yAxisMin, (int)-limit);
+            customYLim(yAxisMax, (int)limit);
+        }
+    }
+
     //Update yAxis text and responsively size Textfield
     private void customYLim(Textfield tf, int limit) {
         String s = limit > 0 ? "+" : "";
@@ -789,18 +800,6 @@ class ChannelBar{
         //Responsively scale button size based on number of digits
         int _width =  s.length() * 6;
         tf.setSize(_width, yAxisLabel_h);
-    }
-
-    private void autoScale() {
-        int yLim = 0;
-        for(int i = 0; i < nPoints; i++) {
-            if(int(abs(channelPoints.getY(i))) > yLim) {
-                yLim = int(abs(channelPoints.getY(i)));
-            }
-        }
-        plot.setYLim(-yLim, yLim);
-        customYLim(yAxisMin, -yLim);
-        customYLim(yAxisMax, yLim);
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
@@ -871,6 +870,7 @@ class ChannelBar{
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
             currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
+            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex), channelColors[channelIndex%8]);
         }
 
         onOffButton.setIsActive(false);
@@ -982,7 +982,7 @@ class ChannelBar{
         public void controlEvent(CallbackEvent theEvent) {
             
             //Pressing ENTER in the Textfield triggers a "Broadcast"
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                 
                 //Try to clean up typing accidents from user input in Textfield
                 rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
@@ -1242,7 +1242,7 @@ class TimeDisplay {
 
     /////////////// Update loop for TimeDisplay when data stream is running
     void update() {
-        if (isRunning) {
+        if (currentBoard.isStreaming()) {
             //Fetch Local time
             try {
                 currentAbsoluteTimeToDisplay = fetchCurrentTimeString();
@@ -1281,4 +1281,3 @@ class TimeDisplay {
         return time.format(formatter);
     }
 };//end TimeDisplay class
-

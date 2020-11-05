@@ -300,6 +300,7 @@ class PlotFontInfo {
 
 class TextBox {
     private int x, y;
+    private int w, h;
     private color textColor;
     private color backgroundColor;
     private PFont font;
@@ -343,7 +344,7 @@ class TextBox {
 
         //draw the box behind the text
         if (drawBackground == true) {
-            int w = int(round(textWidth(string)));
+            w = int(round(textWidth(string)));
             int xbox = x - backgroundEdge_pixels;
             switch (alignH) {
                 case LEFT:
@@ -358,7 +359,7 @@ class TextBox {
             }
             w = w + 2*backgroundEdge_pixels;
             
-            int h = int(textAscent()) + backgroundEdge_pixels*2;
+            h = int(textAscent()) + backgroundEdge_pixels*2;
             int ybox = y;
             if (alignV == CENTER) {
                 ybox -= textAscent() / 2 - backgroundEdge_pixels;
@@ -389,6 +390,14 @@ class TextBox {
 
     public void setTextColor(color c) {
         textColor = c;
+    }
+
+    public int getWidth() {
+        return w;
+    }
+
+    public int getHeight() {
+        return h;
     }
 };
 
