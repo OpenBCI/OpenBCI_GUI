@@ -121,7 +121,7 @@ DataSource currentBoard = new BoardNull();
 DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
-//InterfaceSerial iSerial = new InterfaceSerial();
+InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
