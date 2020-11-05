@@ -657,6 +657,8 @@ void stopRunning() {
                 outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
             }
         }
+    } else {
+        output("Data stream is already stopped.");
     }
 }
 
