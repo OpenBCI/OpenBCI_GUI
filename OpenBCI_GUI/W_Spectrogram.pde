@@ -31,9 +31,9 @@ class W_Spectrogram extends Widget {
     int graphH = 0;
     int midLineY = 0;
 
-    int lastShift = 0;
+    private int lastShift = 0;
     private int scrollSpeed = 100; // == 10Hz
-    boolean wasRunning = false;
+    private boolean wasRunning = false;
 
     int paddingLeft = 54;
     int paddingRight = 26;   
@@ -41,7 +41,7 @@ class W_Spectrogram extends Widget {
     int paddingBottom = 50;
     int numHorizAxisDivs = 3;
     int numVertAxisDivs = 8;
-    int[][] vertAxisLabels = {
+    final int[][] vertAxisLabels = {
         {20, 15, 10, 5, 0, 5, 10, 15, 20},
         {40, 30, 20, 10, 0, 10, 20, 30, 40},
         {60, 45, 30, 15, 0, 15, 30, 45, 60},
@@ -50,7 +50,7 @@ class W_Spectrogram extends Widget {
         {250, 188, 125, 63, 0, 63, 125, 188, 250}
     };
     int[] vertAxisLabel;
-    float[][] horizAxisLabels = {
+    final float[][] horizAxisLabels = {
         {30, 25, 20, 15, 10, 5, 0},
         {6, 5, 4, 3, 2, 1, 0},
         {3, 2, 1, 0},
@@ -115,7 +115,7 @@ class W_Spectrogram extends Widget {
         
         
         
-        if (isRunning) {
+        if (currentBoard.isStreaming()) {
             //Make sure we are always draw new pixels on the right
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
@@ -123,23 +123,23 @@ class W_Spectrogram extends Widget {
         }
         
         //State change check
-        if (isRunning && !wasRunning) {
+        if (currentBoard.isStreaming() && !wasRunning) {
             onStartRunning();
-        } else if (!isRunning && wasRunning) {
+        } else if (!currentBoard.isStreaming() && wasRunning) {
             onStopRunning();
         }
     }
 
-    void onStartRunning() {
+    private void onStartRunning() {
         wasRunning = true;
         lastShift = millis();
     }
 
-    void onStopRunning() {
+    private void onStopRunning() {
         wasRunning = false;
     }
 
-    void draw(){
+    public void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
         //put your code here... //remember to refer to x,y,w,h which are the positioning variables of the Widget class
@@ -153,8 +153,8 @@ class W_Spectrogram extends Widget {
         rect(x, y, w, h); //draw a black background for the widget
         popStyle();
 
-        //draw the spectrogram if the widget is open, and update pixels if isRunning
-        if (isRunning) {
+        //draw the spectrogram if the widget is open, and update pixels if board is streaming data
+        if (currentBoard.isStreaming()) {
             pushStyle();
             dataImg.loadPixels();
 
@@ -228,7 +228,7 @@ class W_Spectrogram extends Widget {
         drawCenterLine();
     }
 
-    void screenResized(){
+    public void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         spectChanSelectTop.screenResized(pApplet);

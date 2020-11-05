@@ -92,13 +92,14 @@ abstract class BoardBrainFlow extends Board {
             println("Already stopped streaming, do nothing");
             return;
         }
-        streaming = false;
         try {
             boardShim.stop_stream();
+            streaming = false;
         }
         catch (BrainFlowError e) {
             println("ERROR: Exception when stoppping stream");
             e.printStackTrace();
+            streaming = true;
         }
     }
 
@@ -113,6 +114,11 @@ abstract class BoardBrainFlow extends Board {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override

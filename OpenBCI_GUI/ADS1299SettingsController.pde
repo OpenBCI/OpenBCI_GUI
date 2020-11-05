@@ -261,7 +261,7 @@ class ADS1299SettingsController {
         loadButton = createButton(loadButton, name, text, _x, _y, _w, _h);
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (isRunning) {
+                if (currentBoard.isStreaming()) {
                     PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before loading hardware settings.");
                 } else {
                     selectInput("Select settings file to load", "loadHardwareSettings");

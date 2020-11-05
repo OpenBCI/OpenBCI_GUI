@@ -506,9 +506,8 @@ class ControlPanel {
                 hideAllBoxes();
             }
         } else {
-            cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
+            cp5.setVisible(false);
             cp5Popup.setVisible(false);
-            // cp5Serial.setVisible(false);    //%%%
         }
 
         //draw the box that tells you to stop the system in order to edit control settings

@@ -140,7 +140,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         currentSample += numNewSamplesThisFrame;
         
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
@@ -156,6 +156,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     @Override
     public void stopStreaming() {
         streaming = false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override
