@@ -642,10 +642,10 @@ void startRunning() {
 }
 
 void stopRunning() {
+    //Check again if board is streaming to avoid IllegalStateException
     if (currentBoard.isStreaming()) {
-
+        //If streaming, attempt to stop stream
         currentBoard.stopStreaming();
-
         if (!currentBoard.isStreaming()) {
             output("Data stream stopped.");
             try {
@@ -654,7 +654,7 @@ void stopRunning() {
                 dataLogger.onStopStreaming();
             } catch (IllegalStateException e) {
                 e.printStackTrace();
-                outputError("Failed to stop Timer.");
+                outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
             }
         }
     }
@@ -672,7 +672,7 @@ void haltSystem() {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
         }
-
+        
         stopRunning();  //stop data transfer
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
