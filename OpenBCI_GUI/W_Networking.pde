@@ -1347,7 +1347,7 @@ class Stream extends Thread {
         if (!this.protocol.equals("LSL")) {
             openNetwork();
             while(this.isStreaming) {
-                if (!isRunning) {
+                if (!currentBoard.isStreaming()) {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
@@ -1367,7 +1367,7 @@ class Stream extends Thread {
                     }
                 }
         } else if (this.protocol.equals("LSL")) {
-            if (!isRunning) {
+            if (!currentBoard.isStreaming()) {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {

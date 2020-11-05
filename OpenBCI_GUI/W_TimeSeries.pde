@@ -359,7 +359,7 @@ class W_timeSeries extends Widget {
 
         String buttonText = "Time Series";
 
-        if (visible && isRunning) {
+        if (visible && currentBoard.isStreaming()) {
             PopupMessage msg = new PopupMessage("Info", "Streaming needs to be stopped before accessing Hardware Settings");
             return;
         }
@@ -782,7 +782,7 @@ class ChannelBar {
     public void applyAutoscale() {
         //Do this once a second for all TimeSeries ChannelBars to save on resources
         boolean doAutoscale = millis() > previousMillis + 1000;
-        if (isAutoscale && isRunning && doAutoscale) {
+        if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
             previousMillis = millis();
             float limit = Math.max(abs(autoscaleMin), autoscaleMax);
             limit = Math.max(limit, 5);
@@ -1242,7 +1242,7 @@ class TimeDisplay {
 
     /////////////// Update loop for TimeDisplay when data stream is running
     void update() {
-        if (isRunning) {
+        if (currentBoard.isStreaming()) {
             //Fetch Local time
             try {
                 currentAbsoluteTimeToDisplay = fetchCurrentTimeString();

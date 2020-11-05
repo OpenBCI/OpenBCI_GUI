@@ -140,7 +140,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         currentSample += numNewSamplesThisFrame;
         
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size

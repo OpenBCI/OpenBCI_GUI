@@ -588,6 +588,28 @@ class TopNav {
     private String getGainString() {
         return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\nBody uV" : "Gain Mode\n Classic";
     }
+
+    //execute this function whenver the stop button is pressed
+    //todo: this should be done as a callback in TopNav when button is changed to Cp5 Button class
+    public void stopButtonWasPressed() {
+        //toggle the data transfer state of the ADS1299...stop it or start it...
+        if (currentBoard.isStreaming()) {
+            output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
+            stopRunning();
+            if (!currentBoard.isStreaming()) {
+                topNav.stopButton.setString(stopButton_pressToStart_txt);
+                topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+            }
+        } else { //not running
+            output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
+            startRunning();
+            if (currentBoard.isStreaming()) {
+                topNav.stopButton.setString(stopButton_pressToStop_txt);
+                topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+                nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+            }
+        }
+    }
 }
 
 //=============== OLD STUFF FROM Gui_Manger.pde ===============//

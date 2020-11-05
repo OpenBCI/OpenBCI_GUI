@@ -121,7 +121,7 @@ DataSource currentBoard = new BoardNull();
 DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
-InterfaceSerial iSerial = new InterfaceSerial();
+InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
@@ -182,7 +182,6 @@ Serial serial_output;
 PlotFontInfo fontInfo;
 
 //program variables
-boolean isRunning = false;
 StringBuilder board_message;
 boolean textFieldIsActive = false;
 
@@ -621,12 +620,9 @@ void initFFTObjectsAndBuffer() {
 }
 
 void startRunning() {
-    output("OpenBCI_GUI: stopRunning: stop running...");
     // start streaming on the chosen board
     currentBoard.startStreaming();
-    isRunning = currentBoard.isStreaming();
-    if (isRunning)
-    {
+    if (currentBoard.isStreaming()) {
         output("Data stream started.");
         dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
@@ -640,48 +636,31 @@ void startRunning() {
             e.printStackTrace();
             outputError("Failed to start Timer.");
         }
+    } else {
+        outputError("Failed to start data stream. Please check hardware. See Console Log or BrainFlow Log for more details.");
     }
 }
 
 void stopRunning() {
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-    output("OpenBCI_GUI: stopRunning: stop running...");
-    currentBoard.stopStreaming();
-    isRunning = currentBoard.isStreaming();
-    if (!isRunning) {
-        output("Data stream stopped.");
-        try {
-            streamTimeElapsed.stop();
-            sessionTimeElapsed.suspend();
-            dataLogger.onStopStreaming();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
-            outputError("Failed to stop Timer.");
+    //Check again if board is streaming to avoid IllegalStateException
+    if (currentBoard.isStreaming()) {
+        //If streaming, attempt to stop stream
+        currentBoard.stopStreaming();
+        if (!currentBoard.isStreaming()) {
+            output("Data stream stopped.");
+            try {
+                streamTimeElapsed.stop();
+                sessionTimeElapsed.suspend();
+                dataLogger.onStopStreaming();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+                outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
+            }
         }
+    } else {
+        output("Data stream is already stopped.");
     }
 }
-
-//execute this function whenver the stop button is pressed
-void stopButtonWasPressed() {
-    //toggle the data transfer state of the ADS1299...stop it or start it...
-    if (isRunning) {
-        output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
-        stopRunning();
-        if (!isRunning) {
-            topNav.stopButton.setString(stopButton_pressToStart_txt);
-            topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-        }
-    } else { //not running
-        output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
-        startRunning();
-        if (isRunning) {
-            topNav.stopButton.setString(stopButton_pressToStop_txt);
-            topNav.stopButton.setColorNotPressed(color(224, 56, 45));
-            nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        }
-    }
-}
-
 
 //halt the data collection
 void haltSystem() {
@@ -695,7 +674,7 @@ void haltSystem() {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
         }
-
+        
         stopRunning();  //stop data transfer
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.

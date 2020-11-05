@@ -46,7 +46,7 @@ void parseKey(char val) {
     switch (val) {
         case ' ':
             // space to start/stop the stream
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
             break;
         case ',':
             drawContainers = !drawContainers;
@@ -164,12 +164,10 @@ void parseKey(char val) {
         //other controls
         case 's':
             stopRunning();
-            //stopButtonWasPressed();
             break;
 
         case 'b':
             startRunning();
-            //stopButtonWasPressed();
             break;
 
         ///////////////////// Save User settings lowercase n
