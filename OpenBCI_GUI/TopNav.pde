@@ -590,7 +590,7 @@ class TopNav {
     }
 
     //execute this function whenver the stop button is pressed
-    //todo: this should be done as a callback in Control Panel when button is changed to Cp5 Button class
+    //todo: this should be done as a callback in TopNav when button is changed to Cp5 Button class
     public void stopButtonWasPressed() {
         //toggle the data transfer state of the ADS1299...stop it or start it...
         if (currentBoard.isStreaming()) {
