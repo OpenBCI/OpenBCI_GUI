@@ -121,7 +121,7 @@ DataSource currentBoard = new BoardNull();
 DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
-InterfaceSerial iSerial = new InterfaceSerial();
+//InterfaceSerial iSerial = new InterfaceSerial();
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
@@ -182,7 +182,6 @@ Serial serial_output;
 PlotFontInfo fontInfo;
 
 //program variables
-boolean isRunning = false;
 StringBuilder board_message;
 boolean textFieldIsActive = false;
 
@@ -623,8 +622,7 @@ void initFFTObjectsAndBuffer() {
 void startRunning() {
     // start streaming on the chosen board
     currentBoard.startStreaming();
-    isRunning = currentBoard.isStreaming();
-    if (isRunning) {
+    if (currentBoard.isStreaming()) {
         output("Data stream started.");
         dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
@@ -644,10 +642,11 @@ void startRunning() {
 }
 
 void stopRunning() {
-    if (isRunning) {
+    if (currentBoard.isStreaming()) {
+
         currentBoard.stopStreaming();
-        isRunning = currentBoard.isStreaming();
-        if (!isRunning) {
+
+        if (!currentBoard.isStreaming()) {
             output("Data stream stopped.");
             try {
                 streamTimeElapsed.stop();
@@ -660,29 +659,6 @@ void stopRunning() {
         }
     }
 }
-
-//execute this function whenver the stop button is pressed
-//todo: this should be done as a callback in Control Panel when button is changed to Cp5 Button class
-void stopButtonWasPressed() {
-    //toggle the data transfer state of the ADS1299...stop it or start it...
-    if (isRunning) {
-        output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
-        stopRunning();
-        if (!isRunning) {
-            topNav.stopButton.setString(stopButton_pressToStart_txt);
-            topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-        }
-    } else { //not running
-        output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
-        startRunning();
-        if (isRunning) {
-            topNav.stopButton.setString(stopButton_pressToStop_txt);
-            topNav.stopButton.setColorNotPressed(color(224, 56, 45));
-            nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-        }
-    }
-}
-
 
 //halt the data collection
 void haltSystem() {

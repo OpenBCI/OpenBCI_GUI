@@ -40,7 +40,7 @@ int numPacketsDroppedSerial = 0;
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
-
+/*
 void serialEvent(Serial port){
     //check to see which serial port it is
     if (iSerial.isOpenBCISerial(port)) {
@@ -112,6 +112,7 @@ void serialEvent(Serial port){
         }
     }
 }
+*/
 
 //------------------------------------------------------------------------
 //                       Classes
@@ -353,7 +354,7 @@ class InterfaceSerial {
             // print("hardwareSyncStep: "); println(hardwareSyncStep);
             // print(".");
             char inASCII = char(inByte);
-            if (isRunning == false && (millis() - timeSinceStopRunning) > 500) {
+            if (currentBoard.isStreaming() == false && (millis() - timeSinceStopRunning) > 500) {
                 print(char(inByte));
             }
 
