@@ -513,6 +513,9 @@ void loadHardwareSettings(File selection) {
         if (currentBoard instanceof ADS1299SettingsBoard) {
             if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
                 outputSuccess("Hardware Settings Loaded!");
+                for (int i = 0; i < nchan; i++) {
+                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i), channelColors[i%8]);
+                }
             } else {
                 outputError("Failed to load Hardware Settings.");
             }

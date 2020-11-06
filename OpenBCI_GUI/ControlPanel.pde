@@ -1652,15 +1652,17 @@ class SessionDataBox {
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
+        
+        //Update the position of UI elements here, as this changes when user selects WiFi mode
         sessionNameTextfield.setPosition(x + 60, y + 32);
-        //autoSessionName.but_y = y + 66;
-        //autoSessionName.draw();
-        //outputODF.but_y = y + padding*2 + 18 + 58;
-        //outputODF.draw();
-        //outputBDF.but_y = y + padding*2 + 18 + 58;
-        //outputBDF.draw();
+        autoSessionName.setPosition(x + padding, y + 66);
+        outputODF.setPosition(x + padding, y + padding*2 + 18 + 58);
+        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58);
+        maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
+        
         boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
         maxDurationDropdown.setVisible(odfIsSelected);
+        
         if (odfIsSelected) {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
