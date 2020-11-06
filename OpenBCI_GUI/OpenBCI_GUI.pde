@@ -186,8 +186,8 @@ StringBuilder board_message;
 boolean textFieldIsActive = false;
 
 //set window size
-int win_w = 1024;  //window width
-int win_h = 768; //window height
+int win_w;  //window width
+int win_h; //window height
 
 PImage logo_blue;
 PImage logo_white;
@@ -245,6 +245,9 @@ DirectoryManager directoryManager;
 void settings() {
     //LINUX GFX FIX #816
     System.setProperty("jogl.disable.openglcore", "false");
+
+    win_w = 1024;
+    win_h = 768;
 
     // If less than 1366x768, set smaller minimum GUI size
     // Nov 2020 - Accomodate as low as 1024 X 640
