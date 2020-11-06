@@ -297,22 +297,12 @@ class W_Networking extends Widget {
 
         cp5_networking.draw();
 
-        //draw dropdown strokes
-        pushStyle();
-        fill(255);
         if (protocolMode.equals("Serial")) {
-            rect(cp5_networking_portName.getController("port_name").getPosition()[0] - 1, cp5_networking_portName.getController("port_name").getPosition()[1] - 1, cp5_networking_portName.getController("port_name").getWidth() + 2, cp5_networking_portName.getController("port_name").getHeight()+2);
             cp5_networking_portName.draw();
-            rect(cp5_networking_baudRate.getController("baud_rate").getPosition()[0] - 1, cp5_networking_baudRate.getController("baud_rate").getPosition()[1] - 1, cp5_networking_baudRate.getController("baud_rate").getWidth() + 2, cp5_networking_baudRate.getController("baud_rate").getHeight()+2);
             cp5_networking_baudRate.draw();
-            rect(cp5_networking_dropdowns.getController("dataType1").getPosition()[0] - 1, cp5_networking_dropdowns.getController("dataType1").getPosition()[1] - 1, cp5_networking_dropdowns.getController("dataType1").getWidth() + 2, cp5_networking_dropdowns.getController("dataType1").getHeight()+2);
-        } else {
-            for (int i = 0; i < datatypeNames.length; i++) {
-                rect(cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[0] - 1, cp5_networking_dropdowns.getController(datatypeNames[i]).getPosition()[1] - 1, itemWidth + 2, cp5_networking_dropdowns.getController(datatypeNames[i]).getHeight()+2);
-            }
         }
+        
         cp5_networking_dropdowns.draw();
-        popStyle();
 
         int headerFontSize = 18;
         fill(0,0,0);// Background fill: white
