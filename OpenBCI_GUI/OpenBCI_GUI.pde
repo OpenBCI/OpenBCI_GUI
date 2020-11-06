@@ -253,8 +253,7 @@ void settings() {
     // Nov 2020 - Accomodate as low as 1024 X 640
     if (displayWidth <= 1366 || displayHeight <= 768) {
         win_w = 980;
-        win_h = 742; //lower option is 580
-        println("LOW RESOLUTION SCREEN");
+        win_h = 580;
     }
     size(win_w, win_h, P2D);
 }
@@ -731,7 +730,6 @@ void systemUpdate() { // for updating data values and variables
         controlPanel.update();
 
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             settings.widthOfLastScreen = width;
             settings.heightOfLastScreen = height;
@@ -753,7 +751,6 @@ void systemUpdate() { // for updating data values and variables
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
         if (settings.screenHasBeenResized && settings.timeOfLastScreenResize + 500 > millis()) {
             ourApplet = this; //reset PApplet...
-            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
             settings.screenHasBeenResized = false;

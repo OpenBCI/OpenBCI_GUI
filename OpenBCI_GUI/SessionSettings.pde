@@ -40,9 +40,6 @@
 class SessionSettings {
     //Current version to save to JSON
     String settingsVersion = "3.0.0";
-    //impose minimum gui width and height in openBCI_GUI.pde
-    int minGUIWidth = win_w;
-    int minGUIHeight = win_h;
     //for screen resizing
     boolean screenHasBeenResized = false;
     float timeOfLastScreenResize = 0;
@@ -1149,16 +1146,6 @@ class SessionSettings {
     }
 
 } //end of Software Settings class
-
-void imposeMinimumGUIDimensions() {
-    //impose minimum gui dimensions
-    if (width < settings.minGUIWidth || height < settings.minGUIHeight) {
-        if (width < settings.minGUIWidth) win_w = settings.minGUIWidth;
-        if (height < settings.minGUIHeight) win_h = settings.minGUIHeight;
-        surface.setSize(win_w, win_h);
-    }
-}
-
 
 //////////////////////////////////////////
 //  Global Functions                    //
