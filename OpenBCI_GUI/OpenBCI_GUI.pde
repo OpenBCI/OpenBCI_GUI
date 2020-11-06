@@ -186,8 +186,8 @@ StringBuilder board_message;
 boolean textFieldIsActive = false;
 
 //set window size
-int win_x = 1024;  //window width
-int win_y = 768; //window height
+int win_w = 1024;  //window width
+int win_h = 768; //window height
 
 PImage logo_blue;
 PImage logo_white;
@@ -246,13 +246,14 @@ void settings() {
     //LINUX GFX FIX #816
     System.setProperty("jogl.disable.openglcore", "false");
 
-    // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
-    // Later changed to 976x742 so users can access full control panel
-    if (displayWidth == 1366 && displayHeight == 768) {
-        win_x = 976;
-        win_y = 742;
+    // If less than 1366x768, set smaller minimum GUI size
+    // Nov 2020 - Accomodate as low as 1024 X 640
+    if (displayWidth <= 1366 || displayHeight <= 768) {
+        win_w = 980;
+        win_h = 742; //lower option is 580
+        println("LOW RESOLUTION SCREEN");
     }
-    size(win_x, win_y, P2D);
+    size(win_w, win_h, P2D);
 }
 
 void setup() {
@@ -343,7 +344,7 @@ void delayedSetup() {
     );
 
     fontInfo = new PlotFontInfo();
-    helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
+    helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
 
     //setup topNav
     topNav = new TopNav();
@@ -712,8 +713,8 @@ void haltSystem() {
 
 void systemUpdate() { // for updating data values and variables
     //prepare for updating the GUI
-    win_x = width;
-    win_y = height;
+    win_w = width;
+    win_h = height;
     textFieldIsActive = false;
 
     currentBoard.update();
