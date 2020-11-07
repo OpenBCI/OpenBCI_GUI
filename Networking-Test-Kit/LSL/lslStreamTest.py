@@ -25,6 +25,7 @@ def testLSLSamplingRate():
             numChunks += 1
             print( len(samples) )
             numSamples += len(samples)
+            # print(samples);
 
     print( "Number of Chunks == {}".format(numChunks) )
     print( "Avg Sampling Rate == {}".format(numSamples / duration) )
