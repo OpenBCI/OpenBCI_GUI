@@ -11,6 +11,9 @@
 
 ### Bug Fixes
 * Exit session init when current board fails to initialize
+* Fix drawing error on lower resolution screens #900
+* Save BDF start time in 24hr format instead of 12hr #904
+* Fix TimeSeries Unfiltered Networking Output #891 #889
 
 # v5.0.1
 
