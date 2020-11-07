@@ -258,7 +258,7 @@ class W_Networking extends Widget {
             
             double[] sample = new double[exgChannels.length];
             for (int iChan = 0; iChan < exgChannels.length; iChan++) {
-                sample[iChan] = newData[iChan][iSample];
+                sample[iChan] = newData[exgChannels[iChan]][iSample];
             }
 
             dataAccumulationQueue.add(sample);
