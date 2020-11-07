@@ -245,22 +245,28 @@ class W_Networking extends Widget {
             previousCP5State = cp5ElementsAreActive;
         }
 
-        accumulateNewData();
+        if (currentBoard.isStreaming()) {
+            accumulateNewData();
 
-        checkIfEnoughDataToSend();
+            checkIfEnoughDataToSend();
+        }
     }
 
     private void accumulateNewData() {
         // accumulate data
         double[][] newData = currentBoard.getFrameData();
         int[] exgChannels = currentBoard.getEXGChannels();
-        for (int iSample = 0; iSample < newData[0].length; iSample ++) {
-            
+        
+        if (newData[exgChannels[0]].length == 0) {
+            return;
+        }
+
+        for (int iSample = 0; iSample < newData[exgChannels[0]].length; iSample++) {
             double[] sample = new double[exgChannels.length];
             for (int iChan = 0; iChan < exgChannels.length; iChan++) {
                 sample[iChan] = newData[exgChannels[iChan]][iSample];
+                //println("CHAN== "+iChan+"  || SAMPLE== "+iSample+"   DATA=="+sample[iChan]);
             }
-
             dataAccumulationQueue.add(sample);
         }
     }

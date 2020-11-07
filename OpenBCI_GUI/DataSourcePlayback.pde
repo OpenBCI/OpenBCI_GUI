@@ -5,6 +5,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     private int timeOfLastUpdateMS;
     private String underlyingClassName;
     private Integer batteryChannelCache = null;
+    private int numNewSamplesThisFrame;
 
     private boolean initialized = false;
     private boolean streaming = false;
@@ -130,7 +131,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         float sampleRateMS = getSampleRate() / 1000.f;
 
         int timeElapsedMS = millis() - timeOfLastUpdateMS;
-        int numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
+        numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
 
         // account for the fact that each update will not coincide with a sample exactly. 
         // to keep the streaming rate accurate, we increment the time of last update
@@ -225,8 +226,14 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     @Override
     public double[][] getFrameData() {
-        // empty data (for now?)
-        return new double[getTotalChannelCount()][0];
+        double[][] array = new double[getTotalChannelCount()][numNewSamplesThisFrame];
+        List<double[]> list = getData(numNewSamplesThisFrame);
+        for (int i = 0; i < numNewSamplesThisFrame; i++) {
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                array[j][i] = list.get(i)[j];
+            }
+        }
+        return array;
     }
 
     @Override
