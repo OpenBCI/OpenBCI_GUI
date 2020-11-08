@@ -2704,8 +2704,8 @@ class RadioConfigBox {
 class ChannelPopup {
     private int x, y, w, h, padding; //size and position
     private boolean clicked;
-    private final String changeChanString = "Change Channel";
-    private final String ovrDongleString = "Override Dongle";
+    private final String CHANGE_CHAN = "Change Channel";
+    private final String OVR_DONGLE = "Override Dongle";
     private String title = "";
     private ControlP5 cp_cp5;
     private MenuList channelList;
@@ -2733,9 +2733,9 @@ class ChannelPopup {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     int setChannelInt = (int)(theEvent.getController()).getValue() + 1;
                     setClicked(false);
-                    if (title.equals(changeChanString)) {
+                    if (title.equals(CHANGE_CHAN)) {
                         controlPanel.rcBox.setChannel(setChannelInt);
-                    } else if (title.equals(ovrDongleString)) {
+                    } else if (title.equals(OVR_DONGLE)) {
                         controlPanel.rcBox.setChannelOverride(setChannelInt);
                     }
                 }
@@ -2762,8 +2762,8 @@ class ChannelPopup {
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
-    public void setTitleChangeChannel() { title = changeChanString; }
-    public void setTitlteOvrDongle() { title = ovrDongleString; }
+    public void setTitleChangeChannel() { title = CHANGE_CHAN; }
+    public void setTitlteOvrDongle() { title = OVR_DONGLE; }
 };
 
 //This class holds the "Start Session" button
