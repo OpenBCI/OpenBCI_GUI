@@ -8,7 +8,7 @@
 * Update SessionData UI in Control Panel
 * Update ChannelSelect Feature in Widget Class to show what channels are on or off
 * Improve Time Series y-axis autoscale performance
-* Improved Cyton Auto-Connect button w/ Autoscan
+* Improved Cyton Auto-Connect button w/ Auto-Scan
 
 ### Bug Fixes
 * Exit session init when current board fails to initialize
@@ -16,7 +16,7 @@
 * Save BDF start time in 24hr format instead of 12hr #904
 * Fix TimeSeries Unfiltered Networking Output #891 #889
 * Fix TimeSeries Networking Output when using Playback Mode w/ GUI or SD file #906
-* Let users know when Cyton Autoscan is happening
+* Let users know when Cyton Auto-Scan is happening with an overlay
 
 # v5.0.1
 

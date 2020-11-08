@@ -1083,6 +1083,8 @@ class ComPortBox {
     public boolean isShowing;
     public MenuList serialList;
     RadioConfig cytonRadioCfg;
+    private boolean midAutoScan = false;
+    private boolean midAutoScanCheck2 = false;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1100,6 +1102,16 @@ class ComPortBox {
 
     public void update() {
         serialList.updateMenu();
+        //Allow two drawing/update cycles to pass so that overlay can be drawn
+        //This lets users know that auto-scan is working and GUI is not frozen
+        if (midAutoScan) {
+            if (midAutoScanCheck2) {
+                cytonAutoConnect_AutoScan();
+                midAutoScanCheck2 = false;
+                midAutoScan = midAutoScanCheck2;
+            }
+            midAutoScanCheck2 = midAutoScan;
+        }
     }
 
     public void draw() {
@@ -1125,17 +1137,21 @@ class ComPortBox {
                 controlPanel.initButtonPressed();
                 buttonHelpText.setVisible(false);
             } else {                
-                outputWarn("Found a Cyton dongle, but could not connect to the board. AutoScanning now...");
-                if (cytonRadioCfg.scan_channels()) {
-                    println("Successfully connected to Cyton using " + openBCI_portName);
-                    controlPanel.initButtonPressed();
-                    buttonHelpText.setVisible(false);
-                } else {
-                    outputError("Unable to connect to Cyton. Please check hardware and power source.");
-                }
+                outputWarn("Found a Cyton dongle, but could not connect to the board. Auto-Scanning now...");
+                midAutoScan = true;
             }
         } else {
             outputWarn("No Cyton dongles were found.");
+        }
+    }
+
+    public void cytonAutoConnect_AutoScan() {
+        if (cytonRadioCfg.scan_channels()) {
+            println("Successfully connected to Cyton using " + openBCI_portName);
+            controlPanel.initButtonPressed();
+            buttonHelpText.setVisible(false);
+        } else {
+            outputError("Unable to connect to Cyton. Please check hardware and power source.");
         }
     }
 
@@ -1182,6 +1198,9 @@ class ComPortBox {
         return results;
     }
 
+    public boolean isAutoScanningForCytonSerial() {
+        return midAutoScan;
+    }
 };
 
 class BLEBox {
@@ -2550,7 +2569,7 @@ class SDBox {
 
 class RadioConfigBox {
     private int x, y, w, h, padding; //size and position
-    private String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    private String initial_message = "Having trouble connecting to your Cyton? Try Auto-Scan!\n\nUse this tool to get Cyton status or change settings.";
     private String last_message = initial_message;
     public boolean isShowing;
     private RadioConfig cytonRadioCfg;
@@ -2578,7 +2597,7 @@ class RadioConfigBox {
         rcb_cp5.setGraphics(ourApplet, 0,0);
         rcb_cp5.setAutoDraw(false);
 
-        createAutoscanButton("CytonRadioAutoscan", "AUTOSCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH,  fontInfo.buttonLabel_size);
+        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH,  fontInfo.buttonLabel_size);
         createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH, fontInfo.buttonLabel_size);
         createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
         createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, fontInfo.buttonLabel_size);

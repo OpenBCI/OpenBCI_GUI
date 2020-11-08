@@ -24,7 +24,7 @@ class RadioConfig {
     RadioConfig() {
 
     }
-    //=========== AUTOSCAN ============
+    //=========== AUTO-SCAN ============
     //= Scans through channels until a success message has been found
     //= Used to align Cyton and Dongle on the same radio channel, in case there is a mismatch.
     public void scan_channels(RadioConfigBox rcConfig){
@@ -95,7 +95,7 @@ class RadioConfig {
                 if (s[0].equals("Success")) {
                     outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
                 } else {
-                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                 }
             }
         } else {
@@ -127,7 +127,7 @@ class RadioConfig {
                     verbosePrint("Cyton Auto-Connect Button: Successfully connected to Cyton using " + openBCI_portName);
                     return true;
                 } else {
-                    verbosePrint("Cyton Auto-Connect Button: Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    verbosePrint("Cyton Auto-Connect Button: Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -191,7 +191,7 @@ class RadioConfig {
                     println(rcStringReceived + " using COM port: " + openBCI_portName);
                     return true;
                 } else {
-                    verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -375,11 +375,11 @@ class RadioConfig {
             println("Radios_Config: " + board_message.toString());
             rcStringReceived = board_message.toString();
             if(rcStringReceived.equals("Failure: System is Down")) {
-                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? \n\nTry pressing AUTOSCAN.";
+                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? \n\nTry pressing Auto-Scan.";
             } else if (rcStringReceived.equals("Success: System is Up")) {
                 rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
             } else if (!overridePressed && autoscanPressed && rcStringReceived.startsWith("Success: Host override")) {
-                rcStringReceived = "Please press AUTOSCAN one more time.";
+                rcStringReceived = "Please press Auto-Scan one more time.";
             }
             rc.print_onscreen(rcStringReceived);
             return true;
@@ -395,11 +395,11 @@ class RadioConfig {
             verbosePrint("Radios_Config: " + board_message.toString());
             rcStringReceived = board_message.toString();
             if(rcStringReceived.equals("Failure: System is Down")) {
-                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing Auto-Scan.";
             } else if (rcStringReceived.equals("Success: System is Up")) {
                 rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
             } else if (rcStringReceived.startsWith("Success: Host override")) {
-                rcStringReceived = "Please press AUTOSCAN one more time.";
+                rcStringReceived = "Please press Auto-Scan one more time.";
             }
             return true;
         } else {
