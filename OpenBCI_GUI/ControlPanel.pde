@@ -1117,7 +1117,7 @@ class ComPortBox {
     }
 
     public void attemptAutoConnectCyton() {
-        println("ControlPanel: Attempting to Auto-Connect to Cyton");
+        println("\n-------------------------------------------------\nControlPanel: Attempting to Auto-Connect to Cyton\n-------------------------------------------------\n");
         LinkedList<String> comPorts = getCytonComPorts();
         if (!comPorts.isEmpty()) {
             openBCI_portName = comPorts.getFirst();
@@ -1127,7 +1127,7 @@ class ComPortBox {
             } else {                
                 outputWarn("Found a Cyton dongle, but could not connect to the board. AutoScanning now...");
                 if (cytonRadioCfg.scan_channels()) {
-                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    println("Successfully connected to Cyton using " + openBCI_portName);
                     controlPanel.initButtonPressed();
                     buttonHelpText.setVisible(false);
                 } else {
