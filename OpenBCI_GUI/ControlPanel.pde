@@ -509,13 +509,6 @@ class ControlPanel {
 
     private void hideChannelListCP() {
         channelPopup.setClicked(false);
-        /*
-        if (setChannel.wasPressed) {
-            setChannel.wasPressed = false;
-        } else if(ovrChannel.wasPressed) {
-            ovrChannel.wasPressed = false;
-        }
-        */
     }
 
     //mouse pressed in control panel
