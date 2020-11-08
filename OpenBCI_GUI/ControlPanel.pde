@@ -32,7 +32,6 @@ import com.vmichalak.protocol.ssdp.SSDPClient;
 ControlPanel controlPanel;
 
 ControlP5 cp5; //program-wide instance of ControlP5
-ControlP5 cp5Popup;
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
     public void controlEvent(CallbackEvent theEvent) {
         if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
@@ -48,8 +47,6 @@ MenuList sourceList;
 MenuList bleList;
 MenuList wifiList;
 MenuList sdTimes;
-MenuList channelList;
-MenuList pollList;
 
 color boxColor = color(200);
 color boxStrokeColor = color(bgColor);
@@ -73,13 +70,6 @@ Button_obci chanButton16;
 Button_obci selectPlaybackFile;
 Button_obci popOutRadioConfigButton;
 
-//Radio Button_obci Definitions
-Button_obci getChannel;
-Button_obci setChannel;
-Button_obci ovrChannel;
-Button_obci autoscan;
-Button_obci systemStatus;
-
 Button_obci sampleRate200; //Ganglion
 Button_obci sampleRate250; //Cyton
 Button_obci sampleRate500; //Cyton
@@ -91,10 +81,6 @@ Button_obci wifiIPAddressStatic;
 Button_obci synthChanButton4;
 Button_obci synthChanButton8;
 Button_obci synthChanButton16;
-
-ChannelPopup channelPopup;
-PollPopup pollPopup;
-RadioConfigBox rcBox;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 int selectedSamplingRate = -1;
@@ -181,20 +167,6 @@ public void controlEvent(ControlEvent theEvent) {
         verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
     }
 
-    if (theEvent.isFrom("channelListCP")) {
-        int setChannelInt = int(theEvent.getValue()) + 1;
-        //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        channelPopup.setClicked(false);
-        if (setChannel.wasPressed) {
-            rcBox.setChannel(setChannelInt);
-            setChannel.wasPressed = false;
-        } else if(ovrChannel.wasPressed) {
-            rcBox.setChannelOverride(setChannelInt);
-            ovrChannel.wasPressed = false;
-        }
-    }
-
     //Check for event in PlaybackHistory Dropdown List in Control Panel
     if (theEvent.isFrom("recentFiles")) {
         int s = (int)(theEvent.getController()).getValue();
@@ -260,6 +232,9 @@ class ControlPanel {
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
 
+    ChannelPopup channelPopup;
+    RadioConfigBox rcBox;
+
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
     final public String WIFI_STATIC = "static";
@@ -282,9 +257,7 @@ class ControlPanel {
         globalPadding = 10;  //controls the padding of all elements on the control panel
 
         cp5 = new ControlP5(mainClass);
-        cp5Popup = new ControlP5(mainClass);
         cp5.setAutoDraw(false);
-        cp5Popup.setAutoDraw(false);
 
         //boxes active when eegDataSource = Normal (OpenBCI)
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
@@ -313,7 +286,6 @@ class ControlPanel {
         comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
         rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
-        pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
         initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
@@ -352,12 +324,10 @@ class ControlPanel {
         if (isOpen) { // if control panel is open
             if (!cp5.isVisible()) {  //and cp5 is not visible
                 cp5.show(); // shot it
-                cp5Popup.show();
             }
         } else { //the opposite of above
             if (cp5.isVisible()) {
                 cp5.hide();
-                cp5Popup.hide();
             }
         }
 
@@ -409,7 +379,6 @@ class ControlPanel {
             dataSourceBox.draw();
             drawStopInstructions = false;
             cp5.setVisible(true);//make sure controlP5 elements are visible
-            cp5Popup.setVisible(true);
 
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
                 if (selectedProtocol == BoardProtocol.NONE) {
@@ -426,13 +395,6 @@ class ControlPanel {
                             comPortBox.serialList.setVisible(true);
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
-                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
-                                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-                            } else if (pollPopup.wasClicked()) {
-                                pollPopup.draw();
-                                cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-                                cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
@@ -463,8 +425,6 @@ class ControlPanel {
 
                 //set other CP5 controllers invisible
                 comPortBox.serialList.setVisible(false);
-                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
 
             } else if (eegDataSource == DATASOURCE_AURAXR) {
                 dataLogBoxAuraXR.y = auraXRBox.y + auraXRBox.h;  
@@ -507,7 +467,6 @@ class ControlPanel {
             }
         } else {
             cp5.setVisible(false);
-            cp5Popup.setVisible(false);
         }
 
         //draw the box that tells you to stop the system in order to edit control settings
@@ -527,7 +486,6 @@ class ControlPanel {
 
         //draw the ControlP5 stuff
         textFont(p4, 14);
-        cp5Popup.draw();
         cp5.draw();
 
         popStyle();
@@ -536,9 +494,6 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         comPortBox.isShowing = false;
-        cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
         comPortBox.serialList.setVisible(false);
         popOutRadioConfigButton.setString("Manual >");
         rcBox.closeSerialPort();
@@ -550,18 +505,17 @@ class ControlPanel {
         comPortBox.serialList.setVisible(false);
         cp5.get(MenuList.class, "bleList").setVisible(false);
         cp5.get(MenuList.class, "wifiList").setVisible(false);
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
     }
 
     private void hideChannelListCP() {
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
+        /*
         if (setChannel.wasPressed) {
             setChannel.wasPressed = false;
         } else if(ovrChannel.wasPressed) {
             ovrChannel.wasPressed = false;
         }
+        */
     }
 
     //mouse pressed in control panel
@@ -608,23 +562,6 @@ class ControlPanel {
                     chanButton16.setColorNotPressed(isSelected_color);
                 }
 
-                if (getChannel.isMouseHere()){
-                    getChannel.setIsActive(true);
-                    getChannel.wasPressed = true;
-                }
-
-                if (setChannel.isMouseHere()){
-                    setChannel.setIsActive(true);
-                    setChannel.wasPressed = true;
-                    ovrChannel.wasPressed = false;
-                }
-
-                if (ovrChannel.isMouseHere()){
-                    ovrChannel.setIsActive(true);
-                    ovrChannel.wasPressed = true;
-                    setChannel.wasPressed = false;
-                }
-
                 if (protocolWifiCyton.isMouseHere()) {
                     protocolWifiCyton.setIsActive(true);
                     protocolWifiCyton.wasPressed = true;
@@ -637,16 +574,6 @@ class ControlPanel {
                     protocolSerialCyton.wasPressed = true;
                     protocolWifiCyton.setColorNotPressed(colorNotPressed);
                     protocolSerialCyton.setColorNotPressed(isSelected_color);
-                }
-
-                if (autoscan.isMouseHere()){
-                    autoscan.setIsActive(true);
-                    autoscan.wasPressed = true;
-                }
-
-                if (systemStatus.isMouseHere()){
-                    systemStatus.setIsActive(true);
-                    systemStatus.wasPressed = true;
                 }
 
                 if (sampleRate250.isMouseHere()) {
@@ -795,43 +722,6 @@ class ControlPanel {
             serialBox.autoConnect.wasPressed = false;
             serialBox.autoConnect.setIsActive(false);
             comPortBox.attemptAutoConnectCyton();
-        }
-
-        if (rcBox.isShowing) {
-            if(getChannel.isMouseHere() && getChannel.wasPressed){
-                rcBox.getChannel();
-                getChannel.wasPressed = false;
-                getChannel.setIsActive(false);
-                hideChannelListCP();
-            }
-
-            if (setChannel.isMouseHere() && setChannel.wasPressed){
-                channelPopup.setClicked(true);
-                channelPopup.setTitle("Change Channel");
-                pollPopup.setClicked(false);
-                setChannel.setIsActive(false);
-            }
-
-            if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
-                channelPopup.setClicked(true);
-                channelPopup.setTitle("Override Dongle");
-                pollPopup.setClicked(false);
-                ovrChannel.setIsActive(false);
-            }
-
-            if(autoscan.isMouseHere() && autoscan.wasPressed){
-                rcBox.scanChannels();
-                autoscan.wasPressed = false;
-                autoscan.setIsActive(false);
-                hideChannelListCP();
-            }
-
-            if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-                rcBox.getSystemStatus();
-                systemStatus.setIsActive(false);
-                systemStatus.wasPressed = false;
-                hideChannelListCP();
-            }
         }
 
         if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
@@ -2663,6 +2553,11 @@ class RadioConfigBox {
     private int autoscanH = 45;
     private int buttonH = 24;
     private int statusWindowH = 115;
+    private ControlP5 rcb_cp5;
+    private Button autoscanButton;
+    private Button systemStatusButton;
+    private Button setChannelButton;
+    private Button ovrChannelButton;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2673,22 +2568,23 @@ class RadioConfigBox {
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
 
-        //typical button height + 20 for larger autoscan button, full box width minus padding
-        autoscan = new Button_obci(x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH, "AUTOSCAN", fontInfo.buttonLabel_size);
-        //smaller buttons below autoscan - left column
-        systemStatus = new Button_obci(x + padding, y + padding*3 + headerH + autoscanH, (w-padding*4)/2, buttonH, "STATUS", fontInfo.buttonLabel_size);
-        getChannel = new Button_obci(x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*4)/2, buttonH, "GET CHANNEL", fontInfo.buttonLabel_size);
-        //right column
-        setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + headerH + autoscanH, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
-        
+        //Instantiate local cp5 for this box
+        rcb_cp5 = new ControlP5(ourApplet);
+        rcb_cp5.setGraphics(ourApplet, 0,0);
+        rcb_cp5.setAutoDraw(false);
 
+        createAutoscanButton("CytonRadioAutoscan", "AUTOSCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH,  fontInfo.buttonLabel_size);
+        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH, fontInfo.buttonLabel_size);
+        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, fontInfo.buttonLabel_size);
+        /*
         //Set help text
         getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
         setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
         ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
         autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
         systemStatus.setHelpText("Get the connection status of your Cyton system.");
+        */
     }
     public void update() {}
 
@@ -2703,12 +2599,8 @@ class RadioConfigBox {
         textAlign(LEFT, TOP);
         text("RADIO CONFIGURATION", x + padding, y + padding);
         popStyle();
-        getChannel.draw();
-        setChannel.draw();
-        ovrChannel.draw();
-        systemStatus.draw();
-        autoscan.draw();
 
+        rcb_cp5.draw();
         this.print_onscreen(last_message);
     }
 
@@ -2748,12 +2640,75 @@ class RadioConfigBox {
         print_onscreen("");
         cytonRadioCfg.closeSerialPort();
     }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = rcb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        return myButton;
+    }
+
+    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        autoscanButton = createButton(autoscanButton, name, text, _x, _y, _w, _h, _fontSize);
+        autoscanButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                scanChannels();
+                controlPanel.hideChannelListCP();
+            }
+        });
+    }
+
+    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        systemStatusButton = createButton(systemStatusButton, name, text, _x, _y, _w, _h, _fontSize);
+        systemStatusButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                getChannel();
+                controlPanel.hideChannelListCP();
+            }
+        });
+    }
+
+    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        setChannelButton = createButton(setChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+        setChannelButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.channelPopup.setClicked(true);
+                controlPanel.channelPopup.setTitleChangeChannel();
+            }
+        });
+    }
+
+    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        ovrChannelButton = createButton(ovrChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+        ovrChannelButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.channelPopup.setClicked(true);
+                controlPanel.channelPopup.setTitlteOvrDongle();
+            }
+        });
+    }
 };
 
 class ChannelPopup {
-    int x, y, w, h, padding; //size and position
-    boolean clicked;
-    String title = "";
+    private int x, y, w, h, padding; //size and position
+    private boolean clicked;
+    private final String changeChanString = "Change Channel";
+    private final String ovrDongleString = "Override Dongle";
+    private String title = "";
+    private ControlP5 cp_cp5;
+    private MenuList channelList;
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w * 2;
@@ -2763,12 +2718,29 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p3);
-        channelList.setPosition(x+padding, y+padding*3);
+        //Instantiate local cp5 for this box
+        cp_cp5 = new ControlP5(ourApplet);
+        cp_cp5.setGraphics(ourApplet, 0,0);
+        cp_cp5.setAutoDraw(false);
 
+        channelList = new MenuList(cp_cp5, "channelListCP", w - padding*2, 140, p3);
+        channelList.setPosition(x+padding, y+padding*3);
         for (int i = 1; i < 26; i++) {
             channelList.addItem(makeItem(String.valueOf(i)));
         }
+        channelList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int setChannelInt = (int)(theEvent.getController()).getValue() + 1;
+                    setClicked(false);
+                    if (title.equals(changeChanString)) {
+                        controlPanel.rcBox.setChannel(setChannelInt);
+                    } else if (title.equals(ovrDongleString)) {
+                        controlPanel.rcBox.setChannelOverride(setChannelInt);
+                    }
+                }
+            }
+        });
     }
 
     public void update() {
@@ -2785,53 +2757,16 @@ class ChannelPopup {
         textAlign(LEFT, TOP);
         text(title, x + padding, y + padding);
         popStyle();
+        cp_cp5.draw();
     }
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
-    public void setTitle(String s) { title = s; }
+    public void setTitleChangeChannel() { title = changeChanString; }
+    public void setTitlteOvrDongle() { title = ovrDongleString; }
 };
 
-class PollPopup {
-    int x, y, w, h, padding; //size and position
-    boolean clicked;
-
-    PollPopup(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x + _w * 2;
-        y = _y;
-        w = _w;
-        h = 171 + _padding;
-        padding = _padding;
-        clicked = false;
-
-        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p3);
-        pollList.setPosition(x+padding, y+padding*3);
-
-        for (int i = 0; i < 256; i++) {
-            pollList.addItem(makeItem(String.valueOf(i)));
-        }
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("POLL SELECTION", x + padding, y + padding);
-        popStyle();
-    }
-
-    public void setClicked(boolean click) { this.clicked = click; }
-    public boolean wasClicked() { return this.clicked; }
-};
-
+//This class holds the "Start Session" button
 class InitBox {
     int x, y, w, h, padding; //size and position
 
