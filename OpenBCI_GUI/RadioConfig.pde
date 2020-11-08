@@ -45,6 +45,27 @@ class RadioConfig {
         autoscanPressed = false;
         closeSerialPort();
     }
+    
+    public boolean scan_channels(){
+        println("Cyton AutoConnect Button: scan_channels");
+        if(serial_direct_board == null){
+            if(!connect_to_portName()){
+                return false;
+            }
+        }
+        for(int i = 1; i < NUM_RADIO_CHAN; i++){
+            set_channel_over(i);
+            system_status();
+            if (board_message != null && board_message.toString().toLowerCase().contains("success")) {
+                autoscanPressed = false;
+                closeSerialPort();
+                return true;
+            }
+        }
+        autoscanPressed = false;
+        closeSerialPort();
+        return false;
+    }
 
     //=========== GET SYSTEM STATUS ============
     //= Get's the current status of the system
@@ -115,10 +136,6 @@ class RadioConfig {
             return false;
         }
     }
-
-
-
-
 
     //============== GET CHANNEL ===============
     //= Gets channel information from the radio.
@@ -258,6 +275,31 @@ class RadioConfig {
         else {
             println("Error, no board connected");
             rcConfig.print_onscreen("No board connected!");
+        }
+        overridePressed = false;
+        closeSerialPort();
+    }
+
+    public void set_channel_over(int channel_number){
+        println("Cyton AutoConnect BUtton: set_ovr_channel");
+        overridePressed = true;
+        if(serial_direct_board == null){
+            if(!connect_to_portName()){
+                return;
+            }
+        }
+        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        if(serial_direct_board != null){
+            if(channel_number > 0){
+                serial_direct_board.write(0xF0);
+                serial_direct_board.write(0x02);
+                serial_direct_board.write(byte(channel_number));
+                delay(100);
+                print_bytes();
+            }
+        }
+        else {
+            println("Error, no board connected");
         }
         overridePressed = false;
         closeSerialPort();

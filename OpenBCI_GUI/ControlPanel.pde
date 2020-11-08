@@ -1124,12 +1124,17 @@ class ComPortBox {
             if (cytonRadioCfg.get_channel()) {
                 controlPanel.initButtonPressed();
                 buttonHelpText.setVisible(false);
+            } else {                
+                outputWarn("Found a Cyton dongle, but could not connect to the board. AutoScanning now...");
+                if (cytonRadioCfg.scan_channels()) {
+                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    controlPanel.initButtonPressed();
+                    buttonHelpText.setVisible(false);
+                } else {
+                    outputError("Unable to connect to Cyton. Please check hardware and power source.");
+                }
             }
-            else {                
-                outputWarn("Found a Cyton dongle, but could not connect to the board.");
-            }
-        }
-        else {
+        } else {
             outputWarn("No Cyton dongles were found.");
         }
     }
