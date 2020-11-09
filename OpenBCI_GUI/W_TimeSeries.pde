@@ -870,7 +870,7 @@ class ChannelBar {
         if(onOffButton.isMouseHere()) {
             println("[" + channelString + "] onOff released");
             currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
-            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex), channelColors[channelIndex%8]);
+            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
         }
 
         onOffButton.setIsActive(false);
