@@ -481,7 +481,7 @@ class ADS1299SettingsController {
         srb2Lists[chan].setColorBackground(c);
         srb2Lists[chan].setLock(!isActive);
 
-        c = isActive ? (boardSettings.values.srb1[chan] == Srb1.CONNECT && isActive ? yesOnColor : noOffColor) : darkNotActive;   
+        c = isActive ? (boardSettings.values.srb1[chan] == Srb1.CONNECT ? yesOnColor : noOffColor) : darkNotActive;   
         srb1Lists[chan].setValue(boardSettings.values.srb1[chan].ordinal());
         srb1Lists[chan].setColorBackground(c);
         srb1Lists[chan].setLock(!isActive);
