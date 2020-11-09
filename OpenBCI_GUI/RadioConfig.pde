@@ -24,7 +24,7 @@ class RadioConfig {
     RadioConfig() {
 
     }
-    //=========== AUTOSCAN ============
+    //=========== AUTO-SCAN ============
     //= Scans through channels until a success message has been found
     //= Used to align Cyton and Dongle on the same radio channel, in case there is a mismatch.
     public void scan_channels(RadioConfigBox rcConfig){
@@ -44,6 +44,27 @@ class RadioConfig {
         }
         autoscanPressed = false;
         closeSerialPort();
+    }
+    
+    public boolean scan_channels(){
+        verbosePrint("Cyton Auto-Connect Button: scan_channels");
+        if(serial_direct_board == null){
+            if(!connect_to_portName()){
+                return false;
+            }
+        }
+        for(int i = 1; i < NUM_RADIO_CHAN; i++){
+            set_channel_over(i);
+            get_channel();
+            if (board_message != null && board_message.toString().toLowerCase().contains("success")) {
+                autoscanPressed = false;
+                closeSerialPort();
+                return true;
+            }
+        }
+        autoscanPressed = false;
+        closeSerialPort();
+        return false;
     }
 
     //=========== GET SYSTEM STATUS ============
@@ -74,7 +95,7 @@ class RadioConfig {
                 if (s[0].equals("Success")) {
                     outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
                 } else {
-                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                 }
             }
         } else {
@@ -85,7 +106,7 @@ class RadioConfig {
     }
 
     public boolean system_status(){
-        println("Cyton AutoConnect Button: system_status");
+        verbosePrint("Cyton Auto-Connect Button: system_status");
         rcStringReceived = "";
         serial_direct_board = null;
         if(!connect_to_portName()){
@@ -103,10 +124,10 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    verbosePrint("Cyton Auto-Connect Button: Successfully connected to Cyton using " + openBCI_portName);
                     return true;
                 } else {
-                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    verbosePrint("Cyton Auto-Connect Button: Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -115,10 +136,6 @@ class RadioConfig {
             return false;
         }
     }
-
-
-
-
 
     //============== GET CHANNEL ===============
     //= Gets channel information from the radio.
@@ -153,7 +170,7 @@ class RadioConfig {
     }
 
     public boolean get_channel(){
-        println("Cyton AutoConnect Button: get_channel");
+        verbosePrint("Cyton Auto-Connect Button: get_channel");
         if(serial_direct_board == null){
             if(!connect_to_portName()){
                 return false;
@@ -171,10 +188,10 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    println(rcStringReceived + " using COM port: " + openBCI_portName);
                     return true;
                 } else {
-                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Autoscan'.");
+                    verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -249,7 +266,7 @@ class RadioConfig {
                 serial_direct_board.write(0xF0);
                 serial_direct_board.write(0x02);
                 serial_direct_board.write(byte(channel_number));
-                delay(100);
+                delay(300);
                 print_bytes(rcConfig);
             }
 
@@ -258,6 +275,31 @@ class RadioConfig {
         else {
             println("Error, no board connected");
             rcConfig.print_onscreen("No board connected!");
+        }
+        overridePressed = false;
+        closeSerialPort();
+    }
+
+    public void set_channel_over(int channel_number){
+        verbosePrint("Cyton Auto-Connect BUtton: set_ovr_channel");
+        overridePressed = true;
+        if(serial_direct_board == null){
+            if(!connect_to_portName()){
+                return;
+            }
+        }
+        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        if(serial_direct_board != null){
+            if(channel_number > 0){
+                serial_direct_board.write(0xF0);
+                serial_direct_board.write(0x02);
+                serial_direct_board.write(byte(channel_number));
+                delay(100);
+                print_bytes();
+            }
+        }
+        else {
+            println("Error, no board connected");
         }
         overridePressed = false;
         closeSerialPort();
@@ -299,13 +341,13 @@ class RadioConfig {
 
     private boolean connect_to_portName(){
         if(openBCI_portName != "N/A"){
-            output("Attempting to open Serial/COM port: " + openBCI_portName);
+            verbosePrint("Attempting to open Serial/COM port: " + openBCI_portName);
             try {
-                println("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
+                verbosePrint("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
                 serial_output = new Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
                 serial_output.clear(); // clear anything in the com port's buffer
                 // portIsOpen = true;
-                println("Radios_Config: connect_to_portName: Port is open!");
+                verbosePrint("Radios_Config: connect_to_portName: Port is open!");
                 serial_output.stop();
                 return true;
             }
@@ -333,11 +375,11 @@ class RadioConfig {
             println("Radios_Config: " + board_message.toString());
             rcStringReceived = board_message.toString();
             if(rcStringReceived.equals("Failure: System is Down")) {
-                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? \n\nTry pressing AUTOSCAN.";
+                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? \n\nTry pressing Auto-Scan.";
             } else if (rcStringReceived.equals("Success: System is Up")) {
                 rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
             } else if (!overridePressed && autoscanPressed && rcStringReceived.startsWith("Success: Host override")) {
-                rcStringReceived = "Please press AUTOSCAN one more time.";
+                rcStringReceived = "Please press Auto-Scan one more time.";
             }
             rc.print_onscreen(rcStringReceived);
             return true;
@@ -350,18 +392,18 @@ class RadioConfig {
 
     private boolean print_bytes(){
         if(board_message != null){
-            println("Radios_Config: " + board_message.toString());
+            verbosePrint("Radios_Config: " + board_message.toString());
             rcStringReceived = board_message.toString();
             if(rcStringReceived.equals("Failure: System is Down")) {
-                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing AUTOSCAN.";
+                rcStringReceived = "Cyton dongle could not connect to the board. Perhaps they are on different channels? Try pressing Auto-Scan.";
             } else if (rcStringReceived.equals("Success: System is Up")) {
                 rcStringReceived = "Success: Cyton and Dongle are paired. \n\nReady to Start Session!";
             } else if (rcStringReceived.startsWith("Success: Host override")) {
-                rcStringReceived = "Please press AUTOSCAN one more time.";
+                rcStringReceived = "Please press Auto-Scan one more time.";
             }
             return true;
         } else {
-            println("Radios_Config: Error reading from Serial/COM port");
+            println("CytonAutoConnect: Error reading from Serial/COM port");
             return false;
         }
     }

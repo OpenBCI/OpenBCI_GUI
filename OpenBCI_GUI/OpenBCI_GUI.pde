@@ -790,7 +790,9 @@ void systemDraw() { //for drawing to the screen
 
     //Draw Session Start overlay on top of everything
     if (midInit) {
-        drawOverlay();
+        drawOverlay("Starting Session...");
+    } else if (controlPanel.comPortBox.isAutoScanningForCytonSerial()) {
+        drawOverlay("Auto-Scanning for Cyton...");
     }
 
     //Display GUI version and FPS in the title bar of the app
@@ -874,7 +876,7 @@ void drawStartupError() {
     popStyle();
 }
 
-void drawOverlay() {
+void drawOverlay(String text) {
     //Draw a gray overlay when the Start Session button is pressed
     pushStyle();
     //imageMode(CENTER);
@@ -886,9 +888,8 @@ void drawOverlay() {
     textFont(p0, 24);
     fill(boxColor, 255);
     stroke(bgColor, 200);
-    rect(width/2 - 240/2, height/2 - 80/2, 240, 80);
+    rect(width/2 - (textWidth(text)+20)/2, height/2 - 80/2, textWidth(text) + 20, 80);
     fill(bgColor, 255);
-    String s = "Starting Session...";
-    text(s, width/2 - textWidth(s)/2, height/2 + 8);
+    text(text, width/2 - textWidth(text)/2, height/2 + 8);
     popStyle();
 }
