@@ -26,115 +26,9 @@ import openbci_gui_helpers.GanglionError;
 import com.vmichalak.protocol.ssdp.Device;
 import com.vmichalak.protocol.ssdp.SSDPClient;
 
-//------------------------------------------------------------------------
-//                       Global Variables  & Instances
-//------------------------------------------------------------------------
-
-
-CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
-    public void controlEvent(CallbackEvent theEvent) {
-        if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
-            println("CallbackListener: controlEvent: clearing static IP Address");
-            cp5.get(Textfield.class, "staticIPAddress").clear();
-        }
-    }
-};
-
-MenuList sourceList;
-
-MenuList sdTimes;
-
-Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
-
-
-//------------------------------------------------------------------------
-//                       Global Functions
-//------------------------------------------------------------------------
-
-public void controlEvent(ControlEvent theEvent) {
-
-    if (theEvent.isFrom("sourceList")) {
-        // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
-
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
-        int newDataSource = (int)bob.get("value");
-        settings.controlEventDataSource = str; //Used for output message on system start
-        eegDataSource = newDataSource;
-
-        //Reset protocol
-        selectedProtocol = BoardProtocol.NONE;
-
-        //Perform this check in a way that ignores order of items in the menulist
-        if (eegDataSource == DATASOURCE_CYTON) {
-            controlPanel.channelCountBox.set8ChanButtonActive();
-            controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
-            controlPanel.wifiBox.setDefaultToDynamicIP();
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            updateToNChan(4);
-            controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
-            controlPanel.wifiBox.setDefaultToDynamicIP();
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            //GUI auto detects number of channels for playback when file is selected
-        } else if (eegDataSource == DATASOURCE_AURAXR) {
-            selectedSamplingRate = 250; //default sampling rate
-        } else if (eegDataSource == DATASOURCE_STREAMING) {
-            //do nothing for now
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-            controlPanel.synthChannelCountBox.set8ChanButtonActive();
-        }
-    }
-
-
-
-    // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
-    if (theEvent.isFrom("sdCardTimes")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        cyton_sdSetting = (CytonSDMode)bob.get("value");
-        String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
-        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
-            outputString += " recording time";
-        }
-        output(outputString);
-        verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
-    }
-
-    //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if (theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileFromList(filePath, s);
-        } else {
-            verbosePrint("Playback History: " + filePath);
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
-        }
-    }
-
-    //Check control events from widgets
-    if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //Check for event in PlaybackHistory Widget MenuList
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            if(theEvent.isFrom("playbackMenuList")) {
-                //Check to make sure value of clicked item is in valid range. Fixes #480
-                float valueOfItem = theEvent.getValue();
-                if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
-                    //println("CP: No such item " + value + " found in list.");
-                } else {
-                    Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
-                    //println("got a menu event from item " + value + " : " + m);
-                    userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
-                }
-            }
-        }
-    }
-}
-
-//------------------------------------------------------------------------
-//                            Classes
-//------------------------------------------------------------------------
+//------------------------------------------------------------------------//
+//                      Main Control Panel Class                          //
+//------------------------------------------------------------------------//
 
 class ControlPanel {
 
@@ -415,24 +309,18 @@ class ControlPanel {
 
 }; //end of ControlPanel class
 
-//Global function
-void updateToNChan(int _nchan) {
-    nchan = _nchan;
-    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    println("Channel count set to " + str(nchan));
-}
-
 //==============================================================================//
-//                	BELOW ARE THE CLASSES FOR THE VARIOUS                         //
-//                	CONTROL PANEL BOXes (control widgets)                        //
+//                	BELOW ARE THE CLASSES FOR THE VARIOUS                       //
+//                	CONTROL PANEL BOXES (control widgets)                       //
 //==============================================================================//
 
 class DataSourceBox {
-    int x, y, w, h, padding; //size and position
-    int numItems;
-    int boxHeight = 24;
-    int spacing = 43;
+    public int x, y, w, h, padding; //size and position
+    private int numItems;
+    private int boxHeight = 24;
+    private int spacing = 43;
+    private ControlP5 datasource_cp5;
+    private MenuList sourceList;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
         numItems = auraXREnabled ? 6 : 5;
@@ -442,24 +330,14 @@ class DataSourceBox {
         h = spacing + (numItems * boxHeight);
         padding = _padding;
 
-        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p3);
-        // sourceList.itemHeight = 28;
-        // sourceList.padding = 9;
-        sourceList.setPosition(x + padding, y + padding*2 + 13);
-        sourceList.addItem(makeItem("CYTON (live)", DATASOURCE_CYTON));
-        sourceList.addItem(makeItem("GANGLION (live)", DATASOURCE_GANGLION));
-        if (auraXREnabled) {
-            sourceList.addItem(makeItem("AURAXR (live)", DATASOURCE_AURAXR));
-        }
-        sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
-        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
-        sourceList.addItem(makeItem("STREAMING (from external)", DATASOURCE_STREAMING));
-
-        sourceList.scrollerLength = 10;
+        //Instantiate local cp5 for this box
+        datasource_cp5 = new ControlP5(ourApplet);
+        datasource_cp5.setGraphics(ourApplet, 0,0);
+        datasource_cp5.setAutoDraw(false);
+        createDatasourceList(datasource_cp5, "sourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, p3);
     }
 
     public void update() {
-
     }
 
     public void draw() {
@@ -473,9 +351,57 @@ class DataSourceBox {
         textAlign(LEFT, TOP);
         text("DATA SOURCE", x + padding, y + padding);
         popStyle();
-        //draw contents of Data Source Box at top of control panel
-        //Title
-        //checkboxes of system states
+        
+        datasource_cp5.draw();
+    }
+
+    private void createDatasourceList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        sourceList = new MenuList(_cp5, name, _w, _h, font);
+        sourceList.setPosition(_x, _y);
+        // sourceList.itemHeight = 28;
+        // sourceList.padding = 9;
+        sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
+        sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
+        if (auraXREnabled) {
+            sourceList.addItem("AURAXR (live)", DATASOURCE_AURAXR);
+        }
+        sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
+        sourceList.addItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC);
+        sourceList.addItem("STREAMING (from external)", DATASOURCE_STREAMING);
+        sourceList.scrollerLength = 10;
+        sourceList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = sourceList.getItem(int(sourceList.getValue()));
+                    String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
+                    int newDataSource = (int)bob.get("value");
+                    settings.controlEventDataSource = str; //Used for output message on system start
+                    eegDataSource = newDataSource;
+
+                    //Reset protocol
+                    selectedProtocol = BoardProtocol.NONE;
+
+                    //Perform this check in a way that ignores order of items in the menulist
+                    if (eegDataSource == DATASOURCE_CYTON) {
+                        controlPanel.channelCountBox.set8ChanButtonActive();
+                        controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
+                        controlPanel.wifiBox.setDefaultToDynamicIP();
+                    } else if (eegDataSource == DATASOURCE_GANGLION) {
+                        updateToNChan(4);
+                        controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
+                        controlPanel.wifiBox.setDefaultToDynamicIP();
+                    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+                        //GUI auto detects number of channels for playback when file is selected
+                    } else if (eegDataSource == DATASOURCE_AURAXR) {
+                        selectedSamplingRate = 250; //default sampling rate
+                    } else if (eegDataSource == DATASOURCE_STREAMING) {
+                        //do nothing for now
+                    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+                        controlPanel.synthChannelCountBox.set8ChanButtonActive();
+                    }
+                }
+            }
+        });
     }
 };
 
@@ -499,12 +425,9 @@ class SerialBox {
 
         createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, fontInfo.buttonLabel_size);
         createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24, fontInfo.buttonLabel_size);
-        /*
-        autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
-        autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
-        popOutRadioConfigButton = new Button_obci(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
-        popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
-        */
+
+        //autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
+        //popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 
     public void update() {
@@ -571,28 +494,6 @@ class SerialBox {
             }
         });
     }
-
-    /*
-
-            if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
-            serialBox.autoConnect.wasPressed = false;
-            serialBox.autoConnect.setIsActive(false);
-            comPortBox.attemptAutoConnectCyton();
-        }
-            if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
-            popOutRadioConfigButton.wasPressed = false;
-            popOutRadioConfigButton.setIsActive(false);
-            if (selectedProtocol == BoardProtocol.SERIAL) {
-                if (rcBox.isShowing) {
-                    hideRadioPopoutBox();
-                } else {
-                    rcBox.isShowing = true;
-                    rcBox.print_onscreen(rcBox.initial_message);
-                    popOutRadioConfigButton.setString("Manual <");
-                }
-            }
-        }
-        */
 };
 
 class ComPortBox {
@@ -621,11 +522,6 @@ class ComPortBox {
 
         createRefreshCytonDonglesButton("refreshCytonDonglesButton", "REFRESH LIST", x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, fontInfo.buttonLabel_size);
         createCytonDongleList(cytoncpb_cp5, "cytonDongleList", x + padding, y + padding*3 + 8,  w - padding*2, 72, p3);
-        /*
-        refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p3);
-        serialList.setPosition(x + padding, y + padding*3 + 8);
-        */
     }
 
     public void update() {
@@ -734,7 +630,7 @@ class ComPortBox {
 
                 LinkedList<String> comPorts = getCytonComPorts();
                 for (String comPort : comPorts) {
-                    serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
+                    serialList.addItem("(Cyton) " + comPort, comPort, "");
                 }
                 serialList.updateMenu();
                 refreshCytonDongles.getCaptionLabel().setText("REFRESH LIST");
@@ -778,6 +674,7 @@ class BLEBox {
     private ControlP5 bleBox_cp5;
     private MenuList bleList;
     private Button refreshBLE;
+    Map<String, String> bleMACAddrMap = new HashMap<String, String>();
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -841,10 +738,10 @@ class BLEBox {
                 final String comPort = getBLED112Port();
                 if (comPort != null) {
                     try {
-                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        bleMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
                         {
-                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
+                            bleList.addItem(entry.getKey(), comPort, "");
                             bleList.updateMenu();
                         }
                     } catch (GanglionError e)
@@ -913,19 +810,6 @@ class BLEBox {
             }
         });
     }
-
-    /*
-    IMPLEMENTED
-    if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-        bleBox.refreshGanglionBLEList();
-    }
-
-    if (theEvent.isFrom("bleList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        ganglion_portName = (String)bob.get("headline");
-        output("Ganglion Device Name = " + ganglion_portName);
-    }
-    */
 };
 
 class WifiBox {
@@ -1041,7 +925,7 @@ class WifiBox {
                         println("No WIFI Shields found");
                     }
                     for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
+                        wifiList.addItem(devices.get(i).getName(), devices.get(i).getIPAddress(), "");
                     }
                     wifiList.updateMenu();
                 } catch (Exception e) {
@@ -1163,6 +1047,13 @@ class WifiBox {
     private void setStaticIPTextfield(String text) {
         staticIPAddressTF.getCaptionLabel().setText(text);
     }
+
+    //Clear text field on double-click
+    CallbackListener cb = new CallbackListener() { 
+        public void controlEvent(CallbackEvent theEvent) {
+            staticIPAddressTF.clear();
+        }
+    };
 };
 
 class InterfaceBoxCyton {
@@ -2120,7 +2011,8 @@ class RecentPlaybackBox {
     private StringList shortFileNames = new StringList();
     private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-    private ControlP5 cp5_recentPlayback_dropdown;
+    private ControlP5 rpb_cp5;
+    private ScrollableList recentPlaybackSL;
     private int titleH = 14;
     private int buttonH = 24;
 
@@ -2131,25 +2023,24 @@ class RecentPlaybackBox {
         h = titleH + buttonH + _padding*3;
         padding = _padding;
 
-        cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
-        cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
-        cp5_recentPlayback_dropdown.setAutoDraw(false);
+        rpb_cp5 = new ControlP5(ourApplet);
+        rpb_cp5.setGraphics(ourApplet, 0,0);
+        rpb_cp5.setAutoDraw(false);
+
         getRecentPlaybackFiles();
 
         String[] temp = shortFileNames.array();
-        createDropdown("recentFiles", Arrays.asList(temp));
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
+        createRecentPlaybackFilesDropdown("recentPlaybackFilesCP", Arrays.asList(temp));
     }
 
     public void update() {
         //Update the dropdown list if it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
+            recentPlaybackSL.clear();
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
+            recentPlaybackSL.addItems(temp);
+            recentPlaybackSL.setSize(w - padding*2, (temp.length + 1) * buttonH);
         }
     }
 
@@ -2166,13 +2057,14 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2.5);
+        rect(x, y, w, h + recentPlaybackSL.getHeight() - padding*2.5);
         fill(bgColor);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
-        cp5_recentPlayback_dropdown.draw();
+        recentPlaybackSL.setVisible(true);
+        rpb_cp5.draw();
     }
 
     private void getRecentPlaybackFiles() {
@@ -2207,9 +2099,8 @@ class RecentPlaybackBox {
         recentPlaybackFilesHaveUpdated = true;
     }
 
-    void createDropdown(String name, List<String> _items){
-
-        ScrollableList scrollList = new CustomScrollableList(cp5_recentPlayback_dropdown, name)
+    void createRecentPlaybackFilesDropdown(String name, List<String> _items){
+        recentPlaybackSL = new CustomScrollableList(rpb_cp5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2224,7 +2115,7 @@ class RecentPlaybackBox {
             .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(true)
             ;
-        cp5_recentPlayback_dropdown.getController(name)
+        recentPlaybackSL
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(filePickedShort)
@@ -2233,7 +2124,7 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_recentPlayback_dropdown.getController(name)
+        recentPlaybackSL
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(filePickedShort)
@@ -2242,7 +2133,39 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+        recentPlaybackSL.setPosition(x + padding, y + padding*2 + 13);
+        recentPlaybackSL.setSize(w - padding*2, (_items.size() + 1) * buttonH);
+        recentPlaybackSL.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int s = (int)recentPlaybackSL.getValue();
+                    //println("got a menu event from item " + s);
+                    String filePath = longFilePaths.get(s);
+                    if (new File(filePath).isFile()) {
+                        playbackFileFromList(filePath, s);
+                    } else {
+                        verbosePrint("Playback History: " + filePath);
+                        outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+                    }
+                }
+            }
+        });
     }
+
+    /*
+        //Check for event in PlaybackHistory Dropdown List in Control Panel
+    if (theEvent.isFrom("recentFiles")) {
+        int s = (int)(theEvent.getController()).getValue();
+        //println("got a menu event from item " + s);
+        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
+        if (new File(filePath).isFile()) {
+            playbackFileFromList(filePath, s);
+        } else {
+            verbosePrint("Playback History: " + filePath);
+            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+        }
+    }
+    */
 };
 
 class AuraXRBox {
@@ -2567,6 +2490,13 @@ class StreamingBoardBox {
     public int getPort() {
         return Integer.parseInt(port.getText());
     }
+
+    //Clear text field on double-click
+    CallbackListener cb = new CallbackListener() { 
+        public void controlEvent(CallbackEvent theEvent) {
+            port.clear();
+        }
+    };
 };
 
 class PlaybackFileBox {
@@ -2594,19 +2524,9 @@ class PlaybackFileBox {
         createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH, fontInfo.buttonLabel_size);
         createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, 14);
         
-        /*
-        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
-        selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-    
-        // Sample data button
-        sampleDataButton = new Button_obci(x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, "Sample Data", 14);
-        sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
-        sampleDataButton.setFont(p4, 14);
-        sampleDataButton.setColorNotPressed(color(57,128,204));
-        sampleDataButton.setFontColorNotActive(color(255));
-        sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
-        sampleDataButton.hasStroke(false);
-        */
+        //selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+        //sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
+        //sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
     }
 
     public void update() {
@@ -2690,9 +2610,11 @@ class SDBox {
         prevY = y;
 
         cp5_sdBox = new ControlP5(ourApplet);
-        cp5_sdBox.setAutoDraw(false);
-        createDropdown(sdBoxDropdownName);
         cp5_sdBox.setGraphics(ourApplet, 0,0);
+        cp5_sdBox.setAutoDraw(false);
+
+        createDropdown(sdBoxDropdownName);
+
         updatePosition();
         sdList.setSize(w - padding*2, (int((sdList.getItems().size()+1)/1.5)) * 24);
     }
@@ -2755,11 +2677,41 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+        sdList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)sdList.getValue();
+                    Map bob = sdList.getItem(val);
+                    cyton_sdSetting = (CytonSDMode)bob.get("value");
+                    String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
+                    if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+                        outputString += " recording time";
+                    }
+                    output(outputString);
+                    verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
+                }
+            }
+        });
     }
 
     public void updatePosition() {
         sdList.setPosition(x + padding, y + padding*2 + 14);
     }
+
+    /*
+        // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
+    if (theEvent.isFrom("sdCardTimes")) {
+        int val = (int)(theEvent.getController()).getValue();
+        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+        cyton_sdSetting = (CytonSDMode)bob.get("value");
+        String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
+        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+            outputString += " recording time";
+        }
+        output(outputString);
+        verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
+    }
+    */
 };
 
 
@@ -2946,7 +2898,7 @@ class ChannelPopup {
         channelList = new MenuList(cp_cp5, "channelListCP", w - padding*2, 140, p3);
         channelList.setPosition(x+padding, y+padding*3);
         for (int i = 1; i < 26; i++) {
-            channelList.addItem(makeItem(String.valueOf(i)));
+            channelList.addItem(String.valueOf(i));
         }
         channelList.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -3120,232 +3072,4 @@ class InitBox {
     }
 };
 
-//===================== MENU LIST CLASS =============================//
-//================== EXTENSION OF CONTROLP5 =========================//
-//============== USED FOR SOURCEBOX & SERIALBOX =====================//
-//
-// Created: Conor Russomanno Oct. 2014
-// Based on ControlP5 Processing Library example, written by Andreas Schlegel
-//
-/////////////////////////////////////////////////////////////////////
 
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    return m;
-}
-
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline, int value) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    m.put("value", value);
-    return m;
-}
-
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline, String theSubline, String theCopy) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    m.put("subline", theSubline);
-    m.put("copy", theCopy);
-    return m;
-}
-
-//=======================================================================================================================================
-//
-//                    MenuList Class
-//
-//The MenuList class is implemented by the Control Panel. It allows you to set up a list of selectable items within a fixed rectangle size
-//Currently used for Serial/COM select, SD settings, and System Mode
-//
-//=======================================================================================================================================
-
-public class MenuList extends controlP5.Controller {
-
-    float pos, npos;
-    int itemHeight = 24;
-    int scrollerLength = 40;
-    int scrollerWidth = 15;
-    List< Map<String, Object>> items = new ArrayList< Map<String, Object>>();
-    PGraphics menu;
-    boolean updateMenu;
-    int hoverItem = -1;
-    int activeItem = -1;
-    PFont menuFont;
-    int padding = 7;
-
-    MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
-
-        super( c, theName, 0, 0, theWidth, theHeight );
-        c.register( this );
-        menu = createGraphics(getWidth(),getHeight());
-        final ControlP5 cc = c; //allows check for isLocked() below
-        final String _theName = theName;
-
-        menuFont = theFont;
-
-        setView(new ControllerView<MenuList>() {
-
-            public void display(PGraphics pg, MenuList t) {
-                if (updateMenu && !cc.get(MenuList.class, _theName).isLock()) {
-                    updateMenu();
-                }
-                if (isMouseOver()) {
-                    menu.beginDraw();
-                    int len = -(itemHeight * items.size()) + getHeight();
-                    int ty;
-                    if(len != 0){
-                        ty = int(map(pos, len, 0, getHeight() - scrollerLength - 2, 2 ) );
-                    } else {
-                        ty = 0;
-                    }
-                    menu.fill(bgColor, 100);
-                    if(ty > 0){
-                        menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
-                    }
-                    menu.endDraw();
-                }
-                pg.image(menu, 0, 0);
-            }
-        }
-        );
-        updateMenu();
-    }
-
-    //only update the image buffer when necessary - to save some resources
-    void updateMenu() {
-        int len = -(itemHeight * items.size()) + getHeight();
-        npos = constrain(npos, len, 0);
-        pos += (npos - pos) * 0.1;
-        //    pos += (npos - pos) * 0.1;
-        menu.beginDraw();
-        menu.noStroke();
-        menu.background(255, 64);
-        // menu.textFont(cp5.getFont().getFont());
-        menu.textFont(menuFont);
-        menu.pushMatrix();
-        menu.translate( 0, pos );
-        menu.pushMatrix();
-
-        int i0;
-        if((itemHeight * items.size()) != 0){
-            i0 = PApplet.max( 0, int(map(-pos, 0, itemHeight * items.size(), 0, items.size())));
-        } else{
-            i0 = 0;
-        }
-        int range = ceil((float(getHeight())/float(itemHeight))+1);
-        int i1 = PApplet.min( items.size(), i0 + range );
-
-        menu.translate(0, i0*itemHeight);
-
-        for (int i=i0; i<i1; i++) {
-            Map m = items.get(i);
-            menu.fill(255, 100);
-            if (i == hoverItem) {
-                menu.fill(127, 134, 143);
-            }
-            if (i == activeItem) {
-                menu.stroke(184, 220, 105, 255);
-                menu.strokeWeight(1);
-                menu.fill(184, 220, 105, 255);
-                menu.rect(0, 0, getWidth()-1, itemHeight-1 );
-                menu.noStroke();
-            } else {
-                menu.rect(0, 0, getWidth(), itemHeight-1 );
-            }
-            menu.fill(bgColor);
-            menu.textFont(menuFont);
-
-            //make sure there is something in the Ganglion serial list...
-            try {
-                menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
-                menu.translate( 0, itemHeight );
-            } catch(Exception e){
-                println("Nothing in list...");
-            }
-        }
-        menu.popMatrix();
-        menu.popMatrix();
-        menu.endDraw();
-        updateMenu = abs(npos-pos)>0.01 ? true:false;
-    }
-
-    // When detecting a click, check if the click happend to the far right, if yes, scroll to that position,
-    // Otherwise do whatever this item of the list is supposed to do.
-    public void onClick() {
-        println(getName() + ": click! ");
-        if (items.size() > 0) { //Fixes #480
-            if (getPointer().x()>getWidth()-scrollerWidth) {
-                if(getHeight() != 0){
-                    npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
-                }
-                updateMenu = true;
-            } else {
-                int len = itemHeight * items.size();
-                int index = 0;
-                if(len != 0){
-                    index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-                }
-                setValue(index);
-                activeItem = index;
-            }
-            updateMenu = true;
-        }
-    }
-
-    public void onMove() {
-        if (getPointer().x()>getWidth() || getPointer().x()<0 || getPointer().y()<0  || getPointer().y()>getHeight() ) {
-            hoverItem = -1;
-        } else {
-            int len = itemHeight * items.size();
-            int index = 0;
-            if(len != 0){
-                index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-            }
-            hoverItem = index;
-        }
-        updateMenu = true;
-    }
-
-    public void onDrag() {
-        if (getPointer().x() > (getWidth()-scrollerWidth)) {
-            npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
-            updateMenu = true;
-        } else {
-            npos += getPointer().dy() * 2;
-            updateMenu = true;
-        }
-    }
-
-    public void onScroll(int n) {
-        npos += ( n * 4 );
-        updateMenu = true;
-    }
-
-    void addItem(Map<String, Object> m) {
-        items.add(m);
-        updateMenu = true;
-    }
-
-    void removeItem(Map<String, Object> m) {
-        items.remove(m);
-        updateMenu = true;
-    }
-
-    //Returns null if selecting an item that does not exist
-    Map<String, Object> getItem(int theIndex) {
-        Map<String, Object> m = new HashMap<String, Object>();
-        try {
-            m = items.get(theIndex);
-        } catch (Exception e) {
-            //println("Item " + theIndex + " does not exist.");
-        }
-        return m;
-    }
-
-    int getListSize() {
-       return items.size(); 
-    }
-};

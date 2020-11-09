@@ -496,7 +496,7 @@ void initSystem() {
                 // todo[brainflow] temp hardcode
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
-                String ganglionMac = BLEMACAddrMap.get(ganglionName);
+                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
@@ -824,6 +824,14 @@ void systemInitSession() {
     } else {
         midInitCheck2 = true;
     }
+}
+
+//Global function to update the number of channels
+void updateToNChan(int _nchan) {
+    nchan = _nchan;
+    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
+    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    println("Channel count set to " + str(nchan));
 }
 
 void introAnimation() {

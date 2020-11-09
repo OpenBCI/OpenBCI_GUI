@@ -1011,7 +1011,7 @@ class SessionSettings {
         for (File file: new File(directoryManager.getSettingsPath()).listFiles())
             if (!file.isDirectory())
                 file.delete();
-        controlPanel.recentPlaybackBox.cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
+        controlPanel.recentPlaybackBox.rpb_cp5.get(ScrollableList.class, "recentPlaybackFilesCP").clear();
         controlPanel.recentPlaybackBox.shortFileNames.clear();
         controlPanel.recentPlaybackBox.longFilePaths.clear();
         outputSuccess("All settings have been cleared!");

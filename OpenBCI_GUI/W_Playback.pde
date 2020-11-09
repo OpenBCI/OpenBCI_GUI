@@ -10,13 +10,12 @@
 
 import java.io.FileReader;
 
-ControlP5 cp5_playback;
-
 class W_playback extends Widget {
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
-    Button_obci selectPlaybackFileButton;
+    ControlP5 cp5_playback;
+    //Button_obci selectPlaybackFileButton;
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
@@ -28,6 +27,11 @@ class W_playback extends Widget {
     W_playback(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+        cp5_playback = new ControlP5(pApplet);
+        cp5_playback.setGraphics(ourApplet, 0,0);
+        cp5_playback.setAutoDraw(false);
+
+        /*
         //make a button to load new files
         selectPlaybackFileButton = new Button_obci (
             x + w/2 - (padding*2),
@@ -37,15 +41,15 @@ class W_playback extends Widget {
             "SELECT PLAYBACK FILE",
             fontInfo.buttonLabel_size);
         selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+        */
         //make a MenuList
         int initialWidth = w - padding*2;
-        cp5_playback = new ControlP5(pApplet);
+
         playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p3);
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(initialWidth, h - padding*2);
         playbackMenuList.scrollerLength = 40;
-        cp5_playback.get(MenuList.class, "playbackMenuList").setVisible(true);
-        cp5_playback.setAutoDraw(false);
+        
     }
 
     public boolean isVisible() {
@@ -100,10 +104,7 @@ class W_playback extends Widget {
             */
             popStyle();
 
-            pushStyle();
-            selectPlaybackFileButton.draw();
             cp5_playback.draw();
-            popStyle();
         }
     } //end draw loop
 
@@ -114,14 +115,18 @@ class W_playback extends Widget {
         //This makes the cp5 objects within the widget scale properly
         cp5_playback.setGraphics(pApplet, 0, 0);
 
+        /*
         //resize and position the playback file box and button
         selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
+        */
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
         refreshPlaybackList();
     } //end screen Resized
 
+    /*
+    FIX ME!!!!!!!!!!
     void mouseOver() {
         if (topNav.configSelector.isVisible) {
             selectPlaybackFileButton.setIsActive(false);
@@ -147,6 +152,7 @@ class W_playback extends Widget {
         }
         selectPlaybackFileButton.setIsActive(false);
     } // end mouse Released
+    */
 
     public void refreshPlaybackList() {
         try {
@@ -164,7 +170,7 @@ class W_playback extends Widget {
                 int totalPadding = padding + playbackMenuList.padding;
                 shortFileName = shortenString(shortFileName, w-totalPadding*2.f, p4);
                 //add as an item in the MenuList
-                playbackMenuList.addItem(makeItem(shortFileName, Integer.toString(fileNumber), longFilePath));
+                playbackMenuList.addItem(shortFileName, Integer.toString(fileNumber), longFilePath);
                 currentFileNameToDraw++;
             }
             playbackMenuList.updateMenu();
@@ -172,6 +178,24 @@ class W_playback extends Widget {
             println("PlaybackWidget: Playback history file not found.");
         }
     }
+
+    private void createPlaybackMenuList() {
+
+    }
+
+    /*
+                if(theEvent.isFrom("playbackMenuList")) {
+                //Check to make sure value of clicked item is in valid range. Fixes #480
+                float valueOfItem = theEvent.getValue();
+                if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
+                    //println("CP: No such item " + value + " found in list.");
+                } else {
+                    Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
+                    //println("got a menu event from item " + value + " : " + m);
+                    userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
+                }
+            }
+    */
 }; //end Playback widget class
 
 //////////////////////////////////////
