@@ -65,16 +65,9 @@ Button_obci initSystemButton;
 
 Button_obci sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
 
-Button_obci chanButton8;
-Button_obci chanButton16;
 Button_obci selectPlaybackFile;
 Button_obci popOutRadioConfigButton;
 
-Button_obci sampleRate200; //Ganglion
-Button_obci sampleRate250; //Cyton
-Button_obci sampleRate500; //Cyton
-Button_obci sampleRate1000;  //Cyton
-Button_obci sampleRate1600; //Ganglion
 Button_obci wifiIPAddressDynamic;
 Button_obci wifiIPAddressStatic;
 
@@ -107,9 +100,7 @@ public void controlEvent(ControlEvent theEvent) {
 
         //Perform this check in a way that ignores order of items in the menulist
         if (eegDataSource == DATASOURCE_CYTON) {
-            updateToNChan(8);
-            chanButton8.setColorNotPressed(isSelected_color);
-            chanButton16.setColorNotPressed(colorNotPressed); //default color of button
+            controlPanel.channelCountBox.set8ChanButtonActive();
             // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
@@ -533,20 +524,6 @@ class ControlPanel {
                     }
                 }
 
-                if (chanButton8.isMouseHere()) {
-                    chanButton8.setIsActive(true);
-                    chanButton8.wasPressed = true;
-                    chanButton8.setColorNotPressed(isSelected_color);
-                    chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (chanButton16.isMouseHere()) {
-                    chanButton16.setIsActive(true);
-                    chanButton16.wasPressed = true;
-                    chanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                    chanButton16.setColorNotPressed(isSelected_color);
-                }
-
                 if (protocolWifiCyton.isMouseHere()) {
                     protocolWifiCyton.setIsActive(true);
                     protocolWifiCyton.wasPressed = true;
@@ -559,30 +536,6 @@ class ControlPanel {
                     protocolSerialCyton.wasPressed = true;
                     protocolWifiCyton.setColorNotPressed(colorNotPressed);
                     protocolSerialCyton.setColorNotPressed(isSelected_color);
-                }
-
-                if (sampleRate250.isMouseHere()) {
-                    sampleRate250.setIsActive(true);
-                    sampleRate250.wasPressed = true;
-                    sampleRate250.setColorNotPressed(isSelected_color);
-                    sampleRate500.setColorNotPressed(colorNotPressed);
-                    sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate500.isMouseHere()) {
-                    sampleRate500.setIsActive(true);
-                    sampleRate500.wasPressed = true;
-                    sampleRate500.setColorNotPressed(isSelected_color);
-                    sampleRate250.setColorNotPressed(colorNotPressed);
-                    sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate1000.isMouseHere()) {
-                    sampleRate1000.setIsActive(true);
-                    sampleRate1000.wasPressed = true;
-                    sampleRate1000.setColorNotPressed(isSelected_color);
-                    sampleRate250.setColorNotPressed(colorNotPressed); //default color of button
-                    sampleRate500.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -606,20 +559,6 @@ class ControlPanel {
                     protocolBLED112Ganglion.wasPressed = true;
                     protocolBLED112Ganglion.setColorNotPressed(isSelected_color);
                     protocolWifiGanglion.setColorNotPressed(colorNotPressed);
-                }
-
-                if (sampleRate200.isMouseHere()) {
-                    sampleRate200.setIsActive(true);
-                    sampleRate200.wasPressed = true;
-                    sampleRate200.setColorNotPressed(isSelected_color);
-                    sampleRate1600.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate1600.isMouseHere()) {
-                    sampleRate1600.setIsActive(true);
-                    sampleRate1600.wasPressed = true;
-                    sampleRate1600.setColorNotPressed(isSelected_color);
-                    sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
                 }
             }
 
@@ -748,34 +687,6 @@ class ControlPanel {
             bleList.items.clear();
             controlPanel.hideAllBoxes();
             selectedProtocol = BoardProtocol.WIFI;
-        }
-
-        if (chanButton8.isMouseHere() && chanButton8.wasPressed) {
-            updateToNChan(8);
-        }
-
-        if (chanButton16.isMouseHere() && chanButton16.wasPressed ) {
-            updateToNChan(16);
-        }
-
-        if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
-            selectedSamplingRate = 200;
-        }
-
-        if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
-            selectedSamplingRate = 1600;
-        }
-
-        if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            selectedSamplingRate = 250;
-        }
-
-        if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            selectedSamplingRate = 500;
-        }
-
-        if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            selectedSamplingRate = 1000;
         }
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
@@ -1685,8 +1596,7 @@ class SessionDataBox {
     private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
-            chanButton8.setIgnoreHover(_toggle);
-            chanButton16.setIgnoreHover(_toggle);
+            controlPanel.channelCountBox.lockCp5Objects(_toggle);
             if (_toggle) {
                 controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
             } else {
@@ -1694,9 +1604,7 @@ class SessionDataBox {
             }
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         } else {
-            //Ganglion + Wifi
-            sampleRate200.setIgnoreHover(_toggle);
-            sampleRate1600.setIgnoreHover(_toggle);
+            controlPanel.sampleRateGanglionBox.lockCp5Objects(_toggle);
         }
     }
 
@@ -1709,8 +1617,13 @@ class SessionDataBox {
 };
 
 class ChannelCountBox {
-    int x, y, w, h, padding; //size and position
-
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 ccc_cp5;
+    private Button chanButton8;
+    private Button chanButton16;
+    private int cb8_butX;
+    private int cb16_butX;
+    private int cb_butY;
 
     ChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1719,16 +1632,27 @@ class ChannelCountBox {
         h = 73;
         padding = _padding;
 
-        chanButton8 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "8 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 8) chanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        chanButton16 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "16 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 16) chanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        ccc_cp5 = new ControlP5(ourApplet);
+        ccc_cp5.setGraphics(ourApplet, 0,0);
+        ccc_cp5.setAutoDraw(false);
+
+        cb8_butX = x + padding;
+        cb16_butX = x + padding*2 + (w-padding*3)/2;
+        cb_butY = y + padding*2 + 18;
+        boolean is8Channels = (nchan == 8) ? true : false;
+        createChan8Button("cyton8ChanButton", "8 CHANNELS", is8Channels, cb8_butX, cb_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createChan16Button("cyton16ChanButton", "16 CHANNELS", is8Channels, cb16_butX, cb_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
     }
 
     public void update() {
     }
 
     public void draw() {
+        cb_butY = y + padding*2 + 18;
+        chanButton8.setPosition(cb8_butX, cb_butY);
+        chanButton16.setPosition(cb16_butX, cb_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
@@ -1744,15 +1668,72 @@ class ChannelCountBox {
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
-        chanButton8.draw();
-        chanButton8.but_y = y + padding*2 + 18;
-        chanButton16.draw();
-        chanButton16.but_y = y + padding*2 + 18;
+        ccc_cp5.draw();
+    }
+
+    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = ccc_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            myButton.setOn();
+        }
+        return myButton;
+    }
+
+    private void createChan8Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        chanButton8 = createButton(chanButton8, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        chanButton8.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(8);
+                chanButton16.setOff();
+            }
+        });
+    }
+
+    private void createChan16Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        chanButton16 = createButton(chanButton16, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        chanButton16.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(8);
+                chanButton8.setOff();
+            }
+        });
+    }
+
+    public void lockCp5Objects(boolean flag) {
+        chanButton8.setLock(flag);
+        chanButton16.setLock(flag);
+    }
+
+    public void set8ChanButtonActive() {
+        updateToNChan(8);
+        chanButton8.setOn();
+        chanButton16.setOff();
     }
 };
 
 class SampleRateGanglionBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 srgb_cp5;
+    private Button sampleRate200;
+    private Button sampleRate1600;
+    private int sr200_butX;
+    private int sr1600_butX;
+    private int srButton_butY;
 
     SampleRateGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1761,15 +1742,26 @@ class SampleRateGanglionBox {
         h = 73;
         padding = _padding;
 
-        sampleRate200 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
-        sampleRate1600 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
-        sampleRate1600.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        srgb_cp5 = new ControlP5(ourApplet);
+        srgb_cp5.setGraphics(ourApplet, 0,0);
+        srgb_cp5.setAutoDraw(false);
+
+        sr200_butX = x + padding;
+        sr1600_butX = x + padding*2 + (w-padding*3)/2;
+        srButton_butY =  y + padding*2 + 18;
+        createSR200Button("cytonSR200", "200Hz", false, sr200_butX, srButton_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createSR1600Button("cytonSR1600", "1600Hz", true, sr1600_butX, srButton_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
     }
 
     public void update() {
     }
 
     public void draw() {
+        srButton_butY =  y + padding*2 + 18;
+        sampleRate200.setPosition(sr200_butX, srButton_butY);
+        sampleRate1600.setPosition(sr1600_butX, srButton_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
@@ -1784,15 +1776,70 @@ class SampleRateGanglionBox {
         textAlign(LEFT, TOP);
         popStyle();
 
-        sampleRate200.draw();
-        sampleRate1600.draw();
-        sampleRate200.but_y = y + padding*2 + 18;
-        sampleRate1600.but_y = sampleRate200.but_y;
+        srgb_cp5.draw();
+    }
+
+    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = srgb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            myButton.setOn();
+        }
+        return myButton;
+    }
+
+    private void createSR200Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleRate200 = createButton(sampleRate200, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        sampleRate200.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 200;
+                println("ControlPanel: User selected Ganglion+WiFi 200Hz");
+                sampleRate1600.setOff();
+            }
+        });
+    }
+
+    private void createSR1600Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleRate1600 = createButton(sampleRate1600, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        sampleRate1600.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 1600;
+                println("ControlPanel: User selected Ganglion+WiFi 1600Hz");
+                sampleRate200.setOff();
+            }
+        });
+    }
+
+    public void lockCp5Objects(boolean flag) {
+        sampleRate200.setLock(flag);
+        sampleRate1600.setLock(flag);
     }
 };
 
 class SampleRateCytonBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 srcb_cp5;
+    private Button sampleRate250;
+    private Button sampleRate500;
+    private Button sampleRate1000;
+    private int sr250_butX;
+    private int sr500_butX;
+    private int sr1000_butX;
+    private int srButton_butY;
 
     SampleRateCytonBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1801,16 +1848,39 @@ class SampleRateCytonBox {
         h = 73;
         padding = _padding;
 
+        //Instantiate local cp5 for this box
+        srcb_cp5 = new ControlP5(ourApplet);
+        srcb_cp5.setGraphics(ourApplet, 0,0);
+        srcb_cp5.setAutoDraw(false);
+
+        sr250_butX = x + padding;
+        sr500_butX = x + padding*2 + (w-padding*4)/3;
+        sr1000_butX = x + padding*3 + ((w-padding*4)/3)*2;
+        srButton_butY =  y + padding*2 + 18;
+        createSR250Button("cytonSR250", "250Hz", false, sr250_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        //Make 1000Hz option selected by default
+        createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+
+        /*
         sampleRate250 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
         sampleRate500 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
         sampleRate1000 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
         sampleRate1000.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        */
     }
 
     public void update() {
+
     }
 
     public void draw() {
+
+        srButton_butY =  y + padding*2 + 18;
+        sampleRate250.setPosition(sr250_butX, srButton_butY);
+        sampleRate500.setPosition(sr500_butX, srButton_butY);
+        sampleRate1000.setPosition(sr1000_butX, srButton_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
@@ -1825,13 +1895,81 @@ class SampleRateCytonBox {
         textAlign(LEFT, TOP);
         popStyle();
 
-        sampleRate250.draw();
-        sampleRate500.draw();
-        sampleRate1000.draw();
-        sampleRate250.but_y = y + padding*2 + 18;
-        sampleRate500.but_y = sampleRate250.but_y;
-        sampleRate1000.but_y = sampleRate250.but_y;
+        srcb_cp5.draw();
     }
+
+    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = srcb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            myButton.setOn();
+        }
+        return myButton;
+    }
+
+    private void createSR250Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleRate250 = createButton(sampleRate250, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        sampleRate250.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 250;
+                println("ControlPanel: User selected Cyton+WiFi 250Hz");
+                sampleRate500.setOff();
+                sampleRate1000.setOff();
+            }
+        });
+    }
+
+    private void createSR500Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleRate500 = createButton(sampleRate500, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        sampleRate500.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 500;
+                println("ControlPanel: User selected Cyton+WiFi 500Hz");
+                sampleRate250.setOff();
+                sampleRate1000.setOff();
+            }
+        });
+    }
+
+    private void createSR1000Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleRate1000 = createButton(sampleRate1000, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        sampleRate1000.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 1000;
+                println("ControlPanel: User selected Cyton+WiFi 1000Hz");
+                sampleRate250.setOff();
+                sampleRate500.setOff();
+            }
+        });
+    }
+
+    /*
+            if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
+            selectedSamplingRate = 250;
+        }
+
+        if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
+            selectedSamplingRate = 500;
+        }
+
+        if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
+            selectedSamplingRate = 1000;
+        }
+        */
 };
 
 class SyntheticChannelCountBox {
@@ -1856,13 +1994,6 @@ class SyntheticChannelCountBox {
         createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
         createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
         createSynthChan16Button("syhtnChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-        /*
-        if (nchan == 4) synthChanButton4.setColorNotPressed(colorNotPressed); //make it appear like this one is already selected
-        synthChanButton8 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
-        if (nchan == 8) synthChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        synthChanButton16 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
-        if (nchan == 16) synthChanButton16.setColorNotPressed(colorNotPressed); //make it appear like this one is already selected
-        */
     }
 
     public void update() {
@@ -1903,7 +2034,7 @@ class SyntheticChannelCountBox {
             .setSize(_fontSize)
             .setText(text)
             ;
-        myButton.setSwitch(true);
+        myButton.setSwitch(true); //This turns the button into a switch
         return myButton;
     }
 
