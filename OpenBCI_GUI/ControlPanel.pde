@@ -11,6 +11,7 @@
 //        - buttons to start/stop/reset application
 //
 //        Written by: Conor Russomanno (Oct. 2014)
+//        Refactored by: Richard Waltman (Nov. 2020)
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -29,9 +30,7 @@ import com.vmichalak.protocol.ssdp.SSDPClient;
 //                       Global Variables  & Instances
 //------------------------------------------------------------------------
 
-ControlPanel controlPanel;
 
-ControlP5 cp5; //program-wide instance of ControlP5
 CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
     public void controlEvent(CallbackEvent theEvent) {
         if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
@@ -43,23 +42,11 @@ CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text
 
 MenuList sourceList;
 
-//Global buttons and elements for the control panel (changed within the classes below)
-MenuList bleList;
-MenuList wifiList;
 MenuList sdTimes;
-
-color boxColor = color(200);
-color boxStrokeColor = color(bgColor);
-color isSelected_color = color(184, 220, 105);
-color colorNotPressed = color(255);
 
 Button_obci refreshPort;
 Button_obci refreshBLE;
 Button_obci refreshWifi;
-Button_obci protocolSerialCyton;
-Button_obci protocolWifiCyton;
-Button_obci protocolWifiGanglion;
-Button_obci protocolBLED112Ganglion;
 
 Button_obci initSystemButton;
 
@@ -72,7 +59,7 @@ Button_obci wifiIPAddressDynamic;
 Button_obci wifiIPAddressStatic;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
-int selectedSamplingRate = -1;
+
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -90,25 +77,26 @@ public void controlEvent(ControlEvent theEvent) {
         settings.controlEventDataSource = str; //Used for output message on system start
         eegDataSource = newDataSource;
 
-        protocolWifiGanglion.setColorNotPressed(colorNotPressed);
-        protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
-        protocolWifiCyton.setColorNotPressed(colorNotPressed);
-        protocolSerialCyton.setColorNotPressed(colorNotPressed);
-
         //Reset protocol
         selectedProtocol = BoardProtocol.NONE;
 
         //Perform this check in a way that ignores order of items in the menulist
         if (eegDataSource == DATASOURCE_CYTON) {
             controlPanel.channelCountBox.set8ChanButtonActive();
+            controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
+            /*
             // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
+            */
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
+            controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
+            /*
             // WiFi autoconnect is used for "Dynamic IP"
             wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
+            */
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             //GUI auto detects number of channels for playback when file is selected
         } else if (eegDataSource == DATASOURCE_AURAXR) {
@@ -124,18 +112,7 @@ public void controlEvent(ControlEvent theEvent) {
         output("OpenBCI Port Name = " + openBCI_portName);
     }
 
-    if (theEvent.isFrom("bleList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        ganglion_portName = (String)bob.get("headline");
-        output("Ganglion Device Name = " + ganglion_portName);
-    }
 
-    if (theEvent.isFrom("wifiList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        wifi_portName = (String)bob.get("headline");
-        wifi_ipAddress = (String)bob.get("subline");
-        output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
-    }
 
     // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
     if (theEvent.isFrom("sdCardTimes")) {
@@ -280,8 +257,8 @@ class ControlPanel {
 
     public void resetListItems(){
         comPortBox.serialList.activeItem = -1;
-        bleList.activeItem = -1;
-        wifiList.activeItem = -1;
+        bleBox.bleList.activeItem = -1;
+        wifiBox.wifiList.activeItem = -1;
     }
 
     public void open(){
@@ -337,8 +314,7 @@ class ControlPanel {
         initBox.update();
 
         channelPopup.update();
-        bleList.updateMenu();
-        wifiList.updateMenu();
+
         dataLogBoxGanglion.update();
 
         wifiBox.update();
@@ -386,13 +362,6 @@ class ControlPanel {
                         wifiBox.draw();
                         dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
 
-                        if (getWifiSearchStyle() == WIFI_STATIC) {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
-                            cp5.get(MenuList.class, "wifiList").setVisible(false);
-                        } else {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-                            cp5.get(MenuList.class, "wifiList").setVisible(true);
-                        }
                         sampleRateCytonBox.draw();
                     }
                     channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
@@ -424,19 +393,10 @@ class ControlPanel {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
-                        cp5.get(MenuList.class, "bleList").setVisible(true);
-                        cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
                         wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
                         wifiBox.draw();
-                        if (getWifiSearchStyle() == WIFI_STATIC) {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
-                            cp5.get(MenuList.class, "wifiList").setVisible(false);
-                        } else {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-                            cp5.get(MenuList.class, "wifiList").setVisible(true);
-                        }
                         sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
                     }
@@ -484,10 +444,7 @@ class ControlPanel {
 
     public void hideAllBoxes() {
         //set other CP5 controllers invisible
-        cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
         comPortBox.serialList.setVisible(false);
-        cp5.get(MenuList.class, "bleList").setVisible(false);
-        cp5.get(MenuList.class, "wifiList").setVisible(false);
     }
 
     private void hideChannelListCP() {
@@ -523,20 +480,6 @@ class ControlPanel {
                         serialBox.autoConnect.wasPressed = true;
                     }
                 }
-
-                if (protocolWifiCyton.isMouseHere()) {
-                    protocolWifiCyton.setIsActive(true);
-                    protocolWifiCyton.wasPressed = true;
-                    protocolWifiCyton.setColorNotPressed(isSelected_color);
-                    protocolSerialCyton.setColorNotPressed(colorNotPressed);
-                }
-
-                if (protocolSerialCyton.isMouseHere()) {
-                    protocolSerialCyton.setIsActive(true);
-                    protocolSerialCyton.wasPressed = true;
-                    protocolWifiCyton.setColorNotPressed(colorNotPressed);
-                    protocolSerialCyton.setColorNotPressed(isSelected_color);
-                }
             }
 
             else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -545,20 +488,6 @@ class ControlPanel {
                 if (refreshBLE.isMouseHere()) {
                     refreshBLE.setIsActive(true);
                     refreshBLE.wasPressed = true;
-                }
-
-                if (protocolWifiGanglion.isMouseHere()) {
-                    protocolWifiGanglion.setIsActive(true);
-                    protocolWifiGanglion.wasPressed = true;
-                    protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
-                    protocolWifiGanglion.setColorNotPressed(isSelected_color);
-                }
-
-                if (protocolBLED112Ganglion.isMouseHere()) {
-                    protocolBLED112Ganglion.setIsActive(true);
-                    protocolBLED112Ganglion.wasPressed = true;
-                    protocolBLED112Ganglion.setColorNotPressed(isSelected_color);
-                    protocolWifiGanglion.setColorNotPressed(colorNotPressed);
                 }
             }
 
@@ -573,27 +502,6 @@ class ControlPanel {
                     sampleDataButton.wasPressed = true;
                 }
             }
-
-            if (selectedProtocol == BoardProtocol.WIFI) {
-                if (refreshWifi.isMouseHere()) {
-                    refreshWifi.setIsActive(true);
-                    refreshWifi.wasPressed = true;
-                }
-                if (wifiIPAddressDynamic.isMouseHere()) {		
-                    wifiIPAddressDynamic.setIsActive(true);		
-                    wifiIPAddressDynamic.wasPressed = true;		
-                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
-                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
-                }		
-
-                if (wifiIPAddressStatic.isMouseHere()) {		
-                    wifiIPAddressStatic.setIsActive(true);		
-                    wifiIPAddressStatic.wasPressed = true;		
-                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
-                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
-                }
-            }
-
         }
         // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
     } //end CPMousePressed
@@ -633,60 +541,6 @@ class ControlPanel {
         //open or close serial port if serial port button is pressed (left button in serial widget)
         if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
             comPortBox.refreshPortListCyton();
-        }
-
-        if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            bleBox.refreshGanglionBLEList();
-        }
-
-        if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
-            wifiBox.refreshWifiList();
-        }
-
-        // Dynamic = Autoconnect, Static = Manually type IP address
-        if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            wifiBox.h = 208;
-            setWiFiSearchStyle(WIFI_DYNAMIC);
-            String output = "Using Dynamic IP address of the WiFi Shield!";
-            println("CP: WiFi IP: " + output);
-        }
-
-        if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
-            wifiBox.h = 120;
-            setWiFiSearchStyle(WIFI_STATIC);
-            String output = "Using Static IP address of the WiFi Shield!";
-            outputInfo(output);
-            println("CP: WiFi IP: " + output);
-        }
-
-        if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.BLED112;
-            bleBox.refreshGanglionBLEList();
-        }
-
-        if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
-        }
-
-        if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.SERIAL;
-            comPortBox.refreshPortListCyton();
-        }
-
-        if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
         }
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
@@ -890,7 +744,7 @@ class SerialBox {
 };
 
 class ComPortBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     public boolean isShowing;
     public MenuList serialList;
     RadioConfig cytonRadioCfg;
@@ -1015,8 +869,11 @@ class ComPortBox {
 };
 
 class BLEBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private volatile boolean bleIsRefreshing = false;
+    private ControlP5 bleBox_cp5;
+    private MenuList bleList;
+    private Button refreshBLE;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1024,12 +881,18 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-        refreshBLE = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p3);
-        bleList.setPosition(x + padding, y + padding*3 + 8);
+
+        //Instantiate local cp5 for this box
+        bleBox_cp5 = new ControlP5(ourApplet);
+        bleBox_cp5.setGraphics(ourApplet, 0,0);
+        bleBox_cp5.setAutoDraw(false);
+
+        createRefreshBLEButton("refreshGanglionBLEButton", "START SEARCH", x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, fontInfo.buttonLabel_size);
+        createGanglionBLEMenuList(bleBox_cp5, "bleList", x + padding, y + padding*3 + 8, w - padding*2, 72, p3);
     }
 
     public void update() {
+        bleList.updateMenu();
     }
 
     public void draw() {
@@ -1046,21 +909,17 @@ class BLEBox {
 
         if (bleIsRefreshing) {
             //Display spinning cog gif
-            image(loadingGIF_blue, w + 225,  refreshBLE.but_y + 4, 20, 20);
+            image(loadingGIF_blue, w + 225,  refreshBLE.getPosition()[1] + 4, 20, 20);
         } else {
             //Draw small grey circle
             pushStyle();
             fill(#999999);
             ellipseMode(CENTER);
-            ellipse(w + 225 + 10, refreshBLE.but_y + 12, 12, 12);
+            ellipse(w + 225 + 10, refreshBLE.getPosition()[1] + 12, 12, 12);
             popStyle();
         }
 
-        refreshBLE.draw();
-    }
-
-    public void mousePressed() {
-        
+        bleBox_cp5.draw();
     }
 
     private void refreshGanglionBLEList() {
@@ -1073,7 +932,7 @@ class BLEBox {
         
         Thread thread = new Thread(){
             public void run(){
-                refreshBLE.setString("SEARCHING...");
+                refreshBLE.getCaptionLabel().setText("SEARCHING...");
                 bleIsRefreshing = true;
                 final String comPort = getBLED112Port();
                 if (comPort != null) {
@@ -1091,7 +950,7 @@ class BLEBox {
                 } else {
                     outputError("No BLED112 Dongle Found");
                 }
-                refreshBLE.setString("START SEARCH");
+                refreshBLE.getCaptionLabel().setText("START SEARCH");
                 bleIsRefreshing = false;
             }
         };
@@ -1113,11 +972,72 @@ class BLEBox {
         }
         return null;
     }
+
+    private void createRefreshBLEButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        refreshBLE = bleBox_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        refreshBLE
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        refreshBLE.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshGanglionBLEList();
+            }
+        });
+    }
+
+    private void createGanglionBLEMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        bleList = new MenuList(_cp5, name, _w, _h, font);
+        bleList.setPosition(_x, _y);
+        bleList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = bleList.getItem(int(bleList.getValue()));
+                    ganglion_portName = (String)bob.get("headline");
+                    output("Ganglion Device Name = " + ganglion_portName);
+                }
+            }
+        });
+    }
+
+    /*
+    IMPLEMENTED
+    if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
+        bleBox.refreshGanglionBLEList();
+    }
+
+    if (theEvent.isFrom("bleList")) {
+        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        ganglion_portName = (String)bob.get("headline");
+        output("Ganglion Device Name = " + ganglion_portName);
+    }
+    */
 };
 
 class WifiBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private boolean wifiIsRefreshing = false;
+    private ControlP5 wifiBox_cp5;
+    private MenuList wifiList;
+    private Button refreshWifi;
+    private Button wifiIPAddressDynamic;
+    private Button wifiIPAddressStatic;
+    private Textfield staticIPAddressTF;
+    private int wifiDynamic_x;
+    private int wifiStatic_x;
+    private int wifiButtons_y;
+    private int refreshWifi_x;
+    private int refreshWifi_y;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1126,6 +1046,23 @@ class WifiBox {
         h = 184 + _padding + 14;
         padding = _padding;
 
+        //Instantiate local cp5 for this box
+        wifiBox_cp5 = new ControlP5(ourApplet);
+        wifiBox_cp5.setGraphics(ourApplet, 0,0);
+        wifiBox_cp5.setAutoDraw(false);
+
+        wifiDynamic_x = x + padding;
+        wifiStatic_x = x + padding*2 + (w-padding*3)/2;
+        wifiButtons_y = y + padding*2 + 16;
+        createDynamicIPAddressButton("wifiIPAddressDynamicButton", "DYNAMIC IP", wifiDynamic_x, wifiButtons_y, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createStaticIPAddressButton("wifiIPAddressStaticButton", "STATIC IP", wifiStatic_x, wifiButtons_y, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+
+        refreshWifi_x = x + padding;
+        refreshWifi_y = y + padding*5 + 72 + 8 + 24;
+        createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24, fontInfo.buttonLabel_size);
+        createWifiList(wifiBox_cp5, "wifiList", x + padding, y + padding*4 + 8 + 24, w - padding*2, 72 + 8, p3);
+        createStaticIPAddressTextfield();
+        /*
         wifiIPAddressDynamic = new Button_obci (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
         wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         wifiIPAddressStatic = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
@@ -1135,8 +1072,10 @@ class WifiBox {
         wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p3);
 
         wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
+        */
         // Call to update the list
 
+        /*
         cp5.addTextfield("staticIPAddress")
             .setPosition(x + 90, y + 100)
             .setCaptionLabel("")
@@ -1153,9 +1092,11 @@ class WifiBox {
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
             .setAutoClear(true);
+            */
     }
 
     public void update() {
+        wifiList.updateMenu();
     }
 
     public void draw() {
@@ -1168,12 +1109,11 @@ class WifiBox {
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WIFI SHIELDS", x + padding, y + padding);
-        wifiIPAddressDynamic.draw();
-        wifiIPAddressStatic.draw();
-        wifiIPAddressDynamic.but_y = y + padding*2 + 16;
-        wifiIPAddressStatic.but_y = wifiIPAddressDynamic.but_y;
-
         popStyle();
+
+        wifiButtons_y = y + padding*2 + 16;
+        wifiIPAddressDynamic.setPosition(wifiDynamic_x, wifiButtons_y);
+        wifiIPAddressStatic.setPosition(wifiStatic_x, wifiButtons_y);
 
         if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
@@ -1182,17 +1122,18 @@ class WifiBox {
             textAlign(LEFT, TOP);
             text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
             popStyle();
-            cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + h - 24 - padding);
+            staticIPAddressTF.setPosition(x + padding, y + h - 24 - padding);
         } else {
-            wifiList.setPosition(x + padding, wifiIPAddressDynamic.but_y + 24 + padding);
+            wifiList.setPosition(x + padding, wifiButtons_y + 24 + padding);
 
-            refreshWifi.draw();
-            refreshWifi.but_y = y + h - padding - 24;
+            refreshWifi_y = y + h - padding - 24;
+            refreshWifi.setPosition(refreshWifi_x, refreshWifi_y);
 
             String boardIpInfo = "BOARD IP: ";
             if (wifi_portName != "N/A") { // If user has selected a board from the menulist...
                 boardIpInfo += wifi_ipAddress;
             }
+            pushStyle();
             fill(bgColor);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
@@ -1200,16 +1141,18 @@ class WifiBox {
 
             if (wifiIsRefreshing){
                 //Display spinning cog gif
-                image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
+                image(loadingGIF_blue, w + 225,  refreshWifi_y + 4, 20, 20);
             } else {
                 //Draw small grey circle
                 pushStyle();
                 fill(#999999);
                 ellipseMode(CENTER);
-                ellipse(w + 225 + 10, refreshWifi.but_y + 12, 12, 12);
+                ellipse(w + 225 + 10, refreshWifi_y + 12, 12, 12);
                 popStyle();
             }
         }
+
+        wifiBox_cp5.draw();
     }
 
     public void refreshWifiList() {
@@ -1217,7 +1160,7 @@ class WifiBox {
         wifiList.items.clear();
         Thread thread = new Thread(){
             public void run() {
-                refreshWifi.setString("SEARCHING...");
+                refreshWifi.getCaptionLabel().setText("SEARCHING...");
                 wifiIsRefreshing = true;
                 try {
                     List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
@@ -1232,16 +1175,143 @@ class WifiBox {
                     println("Exception in wifi shield scanning");
                     e.printStackTrace ();
                 }
-                refreshWifi.setString("START SEARCH");
+                refreshWifi.getCaptionLabel().setText("START SEARCH");
                 wifiIsRefreshing = false;
             }
         };
         thread.start();
     }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = wifiBox_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        return myButton;
+    }
+
+    private void createDynamicIPAddressButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        wifiIPAddressDynamic = createButton(wifiIPAddressDynamic, name, text, _x, _y, _w, _h, _fontSize);
+        wifiIPAddressDynamic.setSwitch(true);
+        wifiIPAddressDynamic.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                h = 208;
+                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
+                println("ControlPanel: Using Dynamic IP address of the WiFi Shield!");
+                wifiIPAddressStatic.setOff();
+                staticIPAddressTF.setVisible(false);
+                wifiList.setVisible(true);
+            }
+        });
+        wifiIPAddressDynamic.setOn();
+    }
+
+    private void createStaticIPAddressButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        wifiIPAddressStatic = createButton(wifiIPAddressStatic, name, text, _x, _y, _w, _h, _fontSize);
+        wifiIPAddressStatic.setSwitch(true);
+        wifiIPAddressStatic.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                h = 120;
+                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_STATIC);
+                println("ControlPanel: Using Static IP address of the WiFi Shield!");
+                wifiIPAddressDynamic.setOff();
+                staticIPAddressTF.setVisible(true);
+                wifiList.setVisible(false);
+            }
+        });
+    }
+
+    private void createRefreshWifiButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        refreshWifi = createButton(wifiIPAddressStatic, name, text, _x, _y, _w, _h, _fontSize);
+        refreshWifi.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshWifiList();
+            }
+        });
+    }
+
+    private void createWifiList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        wifiList = new MenuList(_cp5, name, _w, _h, font);
+        wifiList.setPosition(_x, _y);
+        wifiList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = wifiList.getItem(int(wifiList.getValue()));
+                    wifi_portName = (String)bob.get("headline");
+                    wifi_ipAddress = (String)bob.get("subline");
+                    output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
+                }
+            }
+        });
+    }
+
+    private void createStaticIPAddressTextfield() {
+        staticIPAddressTF = wifiBox_cp5.addTextfield("staticIPAddress")
+            .setPosition(x + 90, y + 100)
+            .setCaptionLabel("")
+            .setSize(w - padding*2, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(wifi_ipAddress)
+            .align(5, 10, 20, 40)
+            .onDoublePress(cb)
+            .setAutoClear(true)
+            .setVisible(false);
+    }
+
+    /*
+
+        // Dynamic = Autoconnect, Static = Manually type IP address
+        if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
+            wifiBox.h = 208;
+            setWiFiSearchStyle(WIFI_DYNAMIC);
+            String output = "Using Dynamic IP address of the WiFi Shield!";
+            println("CP: WiFi IP: " + output);
+        }
+
+        if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
+            wifiBox.h = 120;
+            setWiFiSearchStyle(WIFI_STATIC);
+            String output = "Using Static IP address of the WiFi Shield!";
+            outputInfo(output);
+            println("CP: WiFi IP: " + output);
+        }
+
+    if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
+        wifiBox.refreshWifiList();
+    }
+
+    if (theEvent.isFrom("wifiList")) {
+        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
+        wifi_portName = (String)bob.get("headline");
+        wifi_ipAddress = (String)bob.get("subline");
+        output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
+    }
+    */
 };
 
 class InterfaceBoxCyton {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 ifbc_cp5;
+    private Button protocolSerialCyton;
+    private Button protocolWifiCyton;
 
     InterfaceBoxCyton(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1250,8 +1320,14 @@ class InterfaceBoxCyton {
         h = (24 + _padding) * 3;
         padding = _padding;
 
-        protocolSerialCyton = new Button_obci (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-        protocolWifiCyton = new Button_obci (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        //Instantiate local cp5 for this box
+        ifbc_cp5 = new ControlP5(ourApplet);
+        ifbc_cp5.setGraphics(ourApplet, 0,0);
+        ifbc_cp5.setAutoDraw(false);
+
+        //Disabled both toggles by default for this box
+        createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
     }
 
     public void update() {}
@@ -1268,13 +1344,88 @@ class InterfaceBoxCyton {
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
 
-        protocolSerialCyton.draw();
-        protocolWifiCyton.draw();
+        ifbc_cp5.draw();
     }
+
+    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = ifbc_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            myButton.setOn();
+        }
+        return myButton;
+    }
+
+    private void createSerialCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        protocolSerialCyton = createButton(protocolSerialCyton, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        protocolSerialCyton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                controlPanel.hideAllBoxes();
+                selectedProtocol = BoardProtocol.SERIAL;
+                controlPanel.comPortBox.refreshPortListCyton();
+                protocolWifiCyton.setOff();
+            }
+        });
+    }
+
+    private void createWifiCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        protocolWifiCyton = createButton(protocolWifiCyton, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        protocolWifiCyton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                controlPanel.hideAllBoxes();
+                selectedProtocol = BoardProtocol.WIFI;
+                protocolSerialCyton.setOff();
+            }
+        });
+    }
+
+    public void resetCytonSelectedProtocol() {
+        protocolSerialCyton.setOff();
+        protocolWifiCyton.setOff();
+        selectedProtocol = BoardProtocol.NONE;
+    }
+
+    /*
+            if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
+            wifiList.items.clear();
+            bleList.items.clear();
+            controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.SERIAL;
+            comPortBox.refreshPortListCyton();
+        }
+
+        if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
+            wifiList.items.clear();
+            bleList.items.clear();
+            controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.WIFI;
+        }
+        */
 };
 
 class InterfaceBoxGanglion {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 ifbg_cp5;
+    private Button protocolBLED112Ganglion;
+    private Button protocolWifiGanglion;
 
     InterfaceBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1284,11 +1435,26 @@ class InterfaceBoxGanglion {
         h = (24 + _padding) * 3;
         int buttonHeight = 24;
 
+            //Instantiate local cp5 for this box
+        ifbg_cp5 = new ControlP5(ourApplet);
+        ifbg_cp5.setGraphics(ourApplet, 0,0);
+        ifbg_cp5.setAutoDraw(false);
+
+        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+
+        /*
         int paddingCount = 1;
         protocolBLED112Ganglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
         paddingCount ++;
         protocolWifiGanglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
         paddingCount ++;
+        */
+        
+        /*
+createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        */
     }
 
     public void update() {}
@@ -1305,9 +1471,81 @@ class InterfaceBoxGanglion {
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
         
-        protocolWifiGanglion.draw();
-        protocolBLED112Ganglion.draw();
+        ifbg_cp5.draw();
     }
+
+    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = ifbg_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            myButton.setOn();
+        }
+        return myButton;
+    }
+
+    private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        protocolBLED112Ganglion = createButton(protocolBLED112Ganglion, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        protocolBLED112Ganglion.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                controlPanel.hideAllBoxes();
+                selectedProtocol = BoardProtocol.BLED112;
+                controlPanel.bleBox.refreshGanglionBLEList();
+                protocolWifiGanglion.setOff();
+            }
+        });
+    }
+
+    private void createGanglionWifiButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
+        protocolWifiGanglion = createButton(protocolWifiGanglion, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+        protocolWifiGanglion.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                controlPanel.hideAllBoxes();
+                selectedProtocol = BoardProtocol.WIFI;
+                protocolBLED112Ganglion.setOff();
+            }
+        });
+    }
+
+    public void resetGanglionSelectedProtocol() {
+        protocolBLED112Ganglion.setOff();
+        protocolWifiGanglion.setOff();
+        selectedProtocol = BoardProtocol.NONE;
+    }
+
+    /*
+            if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
+            wifiList.items.clear();
+            bleList.items.clear();
+            controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.BLED112;
+            bleBox.refreshGanglionBLEList();
+        }
+
+        if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
+            wifiList.items.clear();
+            bleList.items.clear();
+            controlPanel.hideAllBoxes();
+            selectedProtocol = BoardProtocol.WIFI;
+        }
+        */
 };
 
 class SessionDataBox {
@@ -1617,7 +1855,7 @@ class SessionDataBox {
 };
 
 class ChannelCountBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 ccc_cp5;
     private Button chanButton8;
     private Button chanButton16;
@@ -1727,7 +1965,7 @@ class ChannelCountBox {
 };
 
 class SampleRateGanglionBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 srgb_cp5;
     private Button sampleRate200;
     private Button sampleRate1600;
@@ -1831,7 +2069,7 @@ class SampleRateGanglionBox {
 };
 
 class SampleRateCytonBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 srcb_cp5;
     private Button sampleRate250;
     private Button sampleRate500;
@@ -1861,13 +2099,6 @@ class SampleRateCytonBox {
         createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
         //Make 1000Hz option selected by default
         createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-
-        /*
-        sampleRate250 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
-        sampleRate500 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
-        sampleRate1000 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
-        sampleRate1000.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        */
     }
 
     public void update() {
@@ -1956,24 +2187,10 @@ class SampleRateCytonBox {
             }
         });
     }
-
-    /*
-            if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            selectedSamplingRate = 250;
-        }
-
-        if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            selectedSamplingRate = 500;
-        }
-
-        if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            selectedSamplingRate = 1000;
-        }
-        */
 };
 
 class SyntheticChannelCountBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 sccb_cp5;
     private Button synthChanButton4;
     private Button synthChanButton8;
@@ -2075,7 +2292,7 @@ class SyntheticChannelCountBox {
 };
 
 class RecentPlaybackBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private StringList shortFileNames = new StringList();
     private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
@@ -2205,7 +2422,7 @@ class RecentPlaybackBox {
 };
 
 class AuraXRBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private final String boxLabel = "AURAXR CONFIG";
     private final String ipAddressLabel = "IP Address";
     private final String sampleRateLabel = "Sample Rate";
@@ -2383,7 +2600,7 @@ class AuraXRBox {
 };
 
 class StreamingBoardBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private final String boxLabel = "STREAMING BOARD CONFIG";
     private final String ipLabel = "IP";
     private final String portLabel = "PORT";
@@ -2529,7 +2746,7 @@ class StreamingBoardBox {
 };
 
 class PlaybackFileBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private int sampleDataButton_w = 100;
     private int sampleDataButton_h = 20;
     private int titleH = 14;
@@ -2577,7 +2794,7 @@ class PlaybackFileBox {
 
 class SDBox {
     final private String sdBoxDropdownName = "sdCardTimes";
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 cp5_sdBox;
     private ScrollableList sdList;
     private int prevY;
@@ -2665,7 +2882,7 @@ class SDBox {
 
 
 class RadioConfigBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private String initial_message = "Having trouble connecting to your Cyton? Try Auto-Scan!\n\nUse this tool to get Cyton status or change settings.";
     private String last_message = initial_message;
     public boolean isShowing;
@@ -2823,7 +3040,7 @@ class RadioConfigBox {
 };
 
 class ChannelPopup {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private boolean clicked;
     private final String CHANGE_CHAN = "Change Channel";
     private final String OVR_DONGLE = "Override Dongle";

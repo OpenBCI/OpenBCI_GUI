@@ -75,6 +75,11 @@ final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
+ControlPanel controlPanel;
+ControlP5 cp5; //program-wide instance of ControlP5
+
+int selectedSamplingRate = -1; //program-wide variable to track sampling rate, which can change depending on selected data source
+
 boolean midInit = false;
 boolean midInitCheck2 = false;
 boolean abandonInit = false;
@@ -218,8 +223,13 @@ PFont p6; //small Open Sans
 ButtonHelpText buttonHelpText;
 
 boolean setupComplete = false;
-color bgColor = color(1, 18, 41);
-color openbciBlue = color(31, 69, 110);
+
+final color bgColor = color(1, 18, 41);
+final color openbciBlue = color(31, 69, 110);
+final color boxColor = color(200);
+final color boxStrokeColor = color(bgColor);
+final color isSelected_color = color(184, 220, 105);
+final color colorNotPressed = color(255);
 int COLOR_SCHEME_DEFAULT = 1;
 int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
@@ -488,8 +498,8 @@ void initSystem() {
             }
             else {
                 // todo[brainflow] temp hardcode
-                String ganglionName = (String)(bleList.getItem(bleList.activeItem).get("headline"));
-                String ganglionPort = (String)(bleList.getItem(bleList.activeItem).get("subline"));
+                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = BLEMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
