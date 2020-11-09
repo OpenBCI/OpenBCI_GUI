@@ -45,8 +45,6 @@ MenuList sourceList;
 MenuList sdTimes;
 
 Button_obci refreshPort;
-Button_obci refreshBLE;
-Button_obci refreshWifi;
 
 Button_obci initSystemButton;
 
@@ -54,9 +52,6 @@ Button_obci sampleDataButton; // Used to easily find GUI sample data for Playbac
 
 Button_obci selectPlaybackFile;
 Button_obci popOutRadioConfigButton;
-
-Button_obci wifiIPAddressDynamic;
-Button_obci wifiIPAddressStatic;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 
@@ -84,25 +79,19 @@ public void controlEvent(ControlEvent theEvent) {
         if (eegDataSource == DATASOURCE_CYTON) {
             controlPanel.channelCountBox.set8ChanButtonActive();
             controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
-            /*
-            // WiFi autoconnect is used for "Dynamic IP"
-            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-            */
+            controlPanel.wifiBox.setDefaultToDynamicIP();
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             updateToNChan(4);
             controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
-            /*
-            // WiFi autoconnect is used for "Dynamic IP"
-            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-            */
+            controlPanel.wifiBox.setDefaultToDynamicIP();
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             //GUI auto detects number of channels for playback when file is selected
         } else if (eegDataSource == DATASOURCE_AURAXR) {
             selectedSamplingRate = 250; //default sampling rate
         } else if (eegDataSource == DATASOURCE_STREAMING) {
             //do nothing for now
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            controlPanel.synthChannelCountBox.set8ChanButtonActive();
         }
     }
 
@@ -480,18 +469,8 @@ class ControlPanel {
                         serialBox.autoConnect.wasPressed = true;
                     }
                 }
-            }
-
-            else if (eegDataSource == DATASOURCE_GANGLION) {
-                // This is where we check for button presses if we are searching for BLE devices
-                
-                if (refreshBLE.isMouseHere()) {
-                    refreshBLE.setIsActive(true);
-                    refreshBLE.wasPressed = true;
-                }
-            }
-
-            //active buttons during DATASOURCE_PLAYBACKFILE
+            } 
+            
             else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
@@ -634,7 +613,7 @@ class ControlPanel {
             dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             dataLogBoxAuraXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
+            wifiBox.setStaticIPTextfield(wifi_ipAddress);
             haltSystem();
         }
     } 
@@ -1062,37 +1041,6 @@ class WifiBox {
         createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24, fontInfo.buttonLabel_size);
         createWifiList(wifiBox_cp5, "wifiList", x + padding, y + padding*4 + 8 + 24, w - padding*2, 72 + 8, p3);
         createStaticIPAddressTextfield();
-        /*
-        wifiIPAddressDynamic = new Button_obci (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
-        wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiIPAddressStatic = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
-        wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-
-        refreshWifi = new Button_obci (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p3);
-
-        wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
-        */
-        // Call to update the list
-
-        /*
-        cp5.addTextfield("staticIPAddress")
-            .setPosition(x + 90, y + 100)
-            .setCaptionLabel("")
-            .setSize(w - padding*2, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(wifi_ipAddress)
-            .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true);
-            */
     }
 
     public void update() {
@@ -1276,35 +1224,18 @@ class WifiBox {
             .setVisible(false);
     }
 
-    /*
-
-        // Dynamic = Autoconnect, Static = Manually type IP address
-        if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            wifiBox.h = 208;
-            setWiFiSearchStyle(WIFI_DYNAMIC);
-            String output = "Using Dynamic IP address of the WiFi Shield!";
-            println("CP: WiFi IP: " + output);
-        }
-
-        if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
-            wifiBox.h = 120;
-            setWiFiSearchStyle(WIFI_STATIC);
-            String output = "Using Static IP address of the WiFi Shield!";
-            outputInfo(output);
-            println("CP: WiFi IP: " + output);
-        }
-
-    if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
-        wifiBox.refreshWifiList();
+    public void setDefaultToDynamicIP() {
+        h = 208;
+        controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
+        wifiIPAddressDynamic.setOn();
+        wifiIPAddressStatic.setOff();
+        staticIPAddressTF.setVisible(false);
+        wifiList.setVisible(true);
     }
 
-    if (theEvent.isFrom("wifiList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        wifi_portName = (String)bob.get("headline");
-        wifi_ipAddress = (String)bob.get("subline");
-        output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
+    private void setStaticIPTextfield(String text) {
+        staticIPAddressTF.getCaptionLabel().setText(text);
     }
-    */
 };
 
 class InterfaceBoxCyton {
@@ -1402,23 +1333,6 @@ class InterfaceBoxCyton {
         protocolWifiCyton.setOff();
         selectedProtocol = BoardProtocol.NONE;
     }
-
-    /*
-            if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.SERIAL;
-            comPortBox.refreshPortListCyton();
-        }
-
-        if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
-        }
-        */
 };
 
 class InterfaceBoxGanglion {
@@ -1442,19 +1356,6 @@ class InterfaceBoxGanglion {
 
         createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
         createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
-
-        /*
-        int paddingCount = 1;
-        protocolBLED112Ganglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-        paddingCount ++;
-        protocolWifiGanglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
-        paddingCount ++;
-        */
-        
-        /*
-createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
-        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
-        */
     }
 
     public void update() {}
@@ -1529,23 +1430,6 @@ createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x 
         protocolWifiGanglion.setOff();
         selectedProtocol = BoardProtocol.NONE;
     }
-
-    /*
-            if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.BLED112;
-            bleBox.refreshGanglionBLEList();
-        }
-
-        if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
-        }
-        */
 };
 
 class SessionDataBox {
@@ -1946,7 +1830,7 @@ class ChannelCountBox {
         chanButton16 = createButton(chanButton16, name, text, isToggled, _x, _y, _w, _h, _fontSize);
         chanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(8);
+                updateToNChan(16);
                 chanButton8.setOff();
             }
         });
@@ -2288,6 +2172,13 @@ class SyntheticChannelCountBox {
                 synthChanButton8.setOff();
             }
         });
+    }
+
+    public void set8ChanButtonActive() {
+        updateToNChan(8);
+        synthChanButton4.setOff();
+        synthChanButton8.setOn();
+        synthChanButton16.setOff();
     }
 };
 
