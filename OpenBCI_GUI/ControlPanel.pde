@@ -1911,7 +1911,9 @@ class SyntheticChannelCountBox {
         synthChanButton4 = createButton(synthChanButton4, name, text, _x, _y, _w, _h, _fontSize);
         synthChanButton4.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateSynthChanToggleButtons(4);
+                updateToNChan(4);
+                synthChanButton8.setOff();
+                synthChanButton16.setOff();
             }
         });
     }
@@ -1920,7 +1922,9 @@ class SyntheticChannelCountBox {
         synthChanButton8 = createButton(synthChanButton8, name, text, _x, _y, _w, _h, _fontSize);
         synthChanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateSynthChanToggleButtons(8);
+                updateToNChan(8);
+                synthChanButton4.setOff();
+                synthChanButton16.setOff();
             }
         });
         //Default is 8 channels when app starts
@@ -1931,27 +1935,11 @@ class SyntheticChannelCountBox {
         synthChanButton16 = createButton(synthChanButton16, name, text, _x, _y, _w, _h, _fontSize);
         synthChanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateSynthChanToggleButtons(16);
+                updateToNChan(16);
+                synthChanButton4.setOff();
+                synthChanButton8.setOff();
             }
         });
-    }
-
-    private void updateSynthChanToggleButtons(int _nchan) {
-        switch (_nchan) {
-            case 4:
-                synthChanButton8.setOff();
-                synthChanButton16.setOff();
-                break;
-            case 8:
-                synthChanButton4.setOff();
-                synthChanButton16.setOff();
-                break;
-            case 16:
-                synthChanButton4.setOff();
-                synthChanButton8.setOff();
-                break;
-        }
-        updateToNChan(_nchan);
     }
 };
 
