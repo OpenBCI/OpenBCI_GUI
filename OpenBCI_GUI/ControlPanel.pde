@@ -320,6 +320,7 @@ class ControlPanel {
             drawStopInstructions = false;
             cp5.setVisible(true);//make sure controlP5 elements are visible
 
+            //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
                 if (selectedProtocol == BoardProtocol.NONE) {
                     interfaceBoxCyton.draw();
@@ -355,10 +356,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-
-                //set other CP5 controllers invisible
-                comPortBox.serialList.setVisible(false);
-
             } else if (eegDataSource == DATASOURCE_AURAXR) {
                 dataLogBoxAuraXR.y = auraXRBox.y + auraXRBox.h;  
                 dataLogBoxAuraXR.draw();
