@@ -2132,12 +2132,12 @@ class RecentPlaybackBox {
         padding = _padding;
 
         cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
+        cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.setAutoDraw(false);
         getRecentPlaybackFiles();
 
         String[] temp = shortFileNames.array();
         createDropdown("recentFiles", Arrays.asList(temp));
-        cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
         cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
     }
@@ -2591,6 +2591,9 @@ class PlaybackFileBox {
         pbfb_cp5.setGraphics(ourApplet, 0,0);
         pbfb_cp5.setAutoDraw(false);
 
+        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH, fontInfo.buttonLabel_size);
+        createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, 14);
+        
         /*
         selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
@@ -2624,23 +2627,51 @@ class PlaybackFileBox {
         pbfb_cp5.draw();
     }
 
-    /*
-            if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected",
-                        new File(directoryManager.getGuiDataPath() + "Recordings"));
-        }
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor) {
+        myButton = pbfb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(_bgColor)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            .setColor(_textColor)
+            ;
+        return myButton;
+    }
 
-        if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected", 
-                        new File(directoryManager.getGuiDataPath() + 
-                                "Sample_Data" + System.getProperty("file.separator") + 
-                                "OpenBCI-sampleData-2-meditation.txt"));
-        }
-        */
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        selectPlaybackFile = createButton(selectPlaybackFile, name, text, _x, _y, _w, _h, _fontSize, colorNotPressed, color(0));
+        selectPlaybackFile.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", 
+                            "playbackFileSelected",
+                            new File(directoryManager.getGuiDataPath() + "Recordings")
+                );
+            }
+        });
+    }
+
+    private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        sampleDataButton = createButton(sampleDataButton, name, text, _x, _y, _w, _h, _fontSize, color(57,128,204), color(255));
+        sampleDataButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", 
+                            "playbackFileSelected", 
+                            new File(directoryManager.getGuiDataPath() + "Sample_Data" + System.getProperty("file.separator") + "OpenBCI-sampleData-2-meditation.txt")
+                );
+            }
+        });
+    }
 };
 
 class SDBox {
