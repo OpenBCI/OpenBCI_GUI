@@ -78,10 +78,6 @@ Button_obci sampleRate1600; //Ganglion
 Button_obci wifiIPAddressDynamic;
 Button_obci wifiIPAddressStatic;
 
-Button_obci synthChanButton4;
-Button_obci synthChanButton8;
-Button_obci synthChanButton16;
-
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 int selectedSamplingRate = -1;
 
@@ -124,10 +120,6 @@ public void controlEvent(ControlEvent theEvent) {
             wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
             //GUI auto detects number of channels for playback when file is selected
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-            synthChanButton4.setColorNotPressed(colorNotPressed);
-            synthChanButton8.setColorNotPressed(isSelected_color);
-            synthChanButton16.setColorNotPressed(colorNotPressed);
         } else if (eegDataSource == DATASOURCE_AURAXR) {
             selectedSamplingRate = 250; //default sampling rate
         } else if (eegDataSource == DATASOURCE_STREAMING) {
@@ -643,33 +635,6 @@ class ControlPanel {
                 }
             }
 
-            //active buttons during DATASOURCE_SYNTHETIC
-            else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                if (synthChanButton4.isMouseHere()) {
-                    synthChanButton4.setIsActive(true);
-                    synthChanButton4.wasPressed = true;
-                    synthChanButton4.setColorNotPressed(isSelected_color);
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton8.isMouseHere()) {
-                    synthChanButton8.setIsActive(true);
-                    synthChanButton8.wasPressed = true;
-                    synthChanButton8.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton16.isMouseHere()) {
-                    synthChanButton16.setIsActive(true);
-                    synthChanButton16.wasPressed = true;
-                    synthChanButton16.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                }
-            }
-
             if (selectedProtocol == BoardProtocol.WIFI) {
                 if (refreshWifi.isMouseHere()) {
                     refreshWifi.setIsActive(true);
@@ -692,7 +657,7 @@ class ControlPanel {
 
         }
         // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
-    }
+    } //end CPMousePressed
 
     //mouse released in control panel
     public void CPmouseReleased() {
@@ -813,25 +778,12 @@ class ControlPanel {
             selectedSamplingRate = 1000;
         }
 
-        if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
-            updateToNChan(4);
-        }
-
-        if (synthChanButton8.isMouseHere() && synthChanButton8.wasPressed) {
-            updateToNChan(8);
-        }
-
-        if (synthChanButton16.isMouseHere() && synthChanButton16.wasPressed) {
-            updateToNChan(16);
-        }
-
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
             selectInput("Select a pre-recorded file for playback:", 
                         "playbackFileSelected",
                         new File(directoryManager.getGuiDataPath() + "Recordings"));
         }
-
 
         if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
             output("Select a file for playback");
@@ -841,53 +793,7 @@ class ControlPanel {
                                 "Sample_Data" + System.getProperty("file.separator") + 
                                 "OpenBCI-sampleData-2-meditation.txt"));
         }
-
-        //reset all buttons to false
-        refreshPort.setIsActive(false);
-        refreshPort.wasPressed = false;
-        refreshBLE.setIsActive(false);
-        refreshBLE.wasPressed = false;
-        refreshWifi.setIsActive(false);
-        refreshWifi.wasPressed = false;
-        protocolBLED112Ganglion.setIsActive(false);
-        protocolBLED112Ganglion.wasPressed = false;
-        protocolWifiGanglion.setIsActive(false);
-        protocolWifiGanglion.wasPressed = false;
-        protocolSerialCyton.setIsActive(false);
-        protocolSerialCyton.wasPressed = false;
-        protocolWifiCyton.setIsActive(false);
-        protocolWifiCyton.wasPressed = false;
-        initSystemButton.setIsActive(false);
-        initSystemButton.wasPressed = false;
-        wifiIPAddressDynamic.setIsActive(false);
-        wifiIPAddressDynamic.wasPressed = false;
-        wifiIPAddressStatic.setIsActive(false);
-        wifiIPAddressStatic.wasPressed = false;
-        chanButton8.setIsActive(false);
-        chanButton8.wasPressed = false;
-        sampleRate200.setIsActive(false);
-        sampleRate200.wasPressed = false;
-        sampleRate1600.setIsActive(false);
-        sampleRate1600.wasPressed = false;
-        sampleRate250.setIsActive(false);
-        sampleRate250.wasPressed = false;
-        sampleRate500.setIsActive(false);
-        sampleRate500.wasPressed = false;
-        sampleRate1000.setIsActive(false);
-        sampleRate1000.wasPressed = false;
-        synthChanButton4.setIsActive(false);
-        synthChanButton4.wasPressed = false;
-        synthChanButton8.setIsActive(false);
-        synthChanButton8.wasPressed = false;
-        synthChanButton16.setIsActive(false);
-        synthChanButton16.wasPressed = false;
-        chanButton16.setIsActive(false);
-        chanButton16.wasPressed  = false;
-        selectPlaybackFile.setIsActive(false);
-        selectPlaybackFile.wasPressed = false;
-        sampleDataButton.setIsActive(false);
-        sampleDataButton.wasPressed = false;
-    }
+    } //end CPMouseReleased
 
     //This is the primary method called when Start/Stop Session Button is pressed in Control Panel
     protected void initButtonPressed() {
@@ -966,9 +872,10 @@ class ControlPanel {
             cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
             haltSystem();
         }
-    }
-};
+    } 
+}; //end of ControlPanel class
 
+//Global function
 void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
@@ -1928,7 +1835,11 @@ class SampleRateCytonBox {
 };
 
 class SyntheticChannelCountBox {
-    int x, y, w, h, padding; //size and position
+    private int x, y, w, h, padding; //size and position
+    private ControlP5 sccb_cp5;
+    private Button synthChanButton4;
+    private Button synthChanButton8;
+    private Button synthChanButton16;
 
     SyntheticChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1937,12 +1848,21 @@ class SyntheticChannelCountBox {
         h = 73;
         padding = _padding;
 
-        synthChanButton4 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
-        if (nchan == 4) synthChanButton4.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        sccb_cp5 = new ControlP5(ourApplet);
+        sccb_cp5.setGraphics(ourApplet, 0,0);
+        sccb_cp5.setAutoDraw(false);
+
+        createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSynthChan16Button("syhtnChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        /*
+        if (nchan == 4) synthChanButton4.setColorNotPressed(colorNotPressed); //make it appear like this one is already selected
         synthChanButton8 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
         if (nchan == 8) synthChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         synthChanButton16 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
-        if (nchan == 16) synthChanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        if (nchan == 16) synthChanButton16.setColorNotPressed(colorNotPressed); //make it appear like this one is already selected
+        */
     }
 
     public void update() {
@@ -1964,9 +1884,74 @@ class SyntheticChannelCountBox {
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
-        synthChanButton4.draw();
-        synthChanButton8.draw();
-        synthChanButton16.draw();
+        sccb_cp5.draw();
+    }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = sccb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        myButton.setSwitch(true);
+        return myButton;
+    }
+
+    private void createSynthChan4Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        synthChanButton4 = createButton(synthChanButton4, name, text, _x, _y, _w, _h, _fontSize);
+        synthChanButton4.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateSynthChanToggleButtons(4);
+            }
+        });
+    }
+
+    private void createSynthChan8Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        synthChanButton8 = createButton(synthChanButton8, name, text, _x, _y, _w, _h, _fontSize);
+        synthChanButton8.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateSynthChanToggleButtons(8);
+            }
+        });
+        //Default is 8 channels when app starts
+        synthChanButton8.setOn();
+    }
+
+    private void createSynthChan16Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        synthChanButton16 = createButton(synthChanButton16, name, text, _x, _y, _w, _h, _fontSize);
+        synthChanButton16.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateSynthChanToggleButtons(16);
+            }
+        });
+    }
+
+    private void updateSynthChanToggleButtons(int _nchan) {
+        switch (_nchan) {
+            case 4:
+                synthChanButton8.setOff();
+                synthChanButton16.setOff();
+                break;
+            case 8:
+                synthChanButton4.setOff();
+                synthChanButton16.setOff();
+                break;
+            case 16:
+                synthChanButton4.setOff();
+                synthChanButton8.setOff();
+                break;
+        }
+        updateToNChan(_nchan);
     }
 };
 
