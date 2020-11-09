@@ -249,7 +249,7 @@ synchronized void mousePressed() {
         if (systemMode == SYSTEMMODE_POSTINIT) {
             if (mouseX > 0 && mouseX < controlPanel.w && mouseY > 0 && mouseY < controlPanel.initBox.y+controlPanel.initBox.h) {
                 println("OpenBCI_GUI: mousePressed: clicked in CP box");
-                controlPanel.CPmousePressed();
+                //controlPanel.CPmousePressed();
             }
             //if clicked out of panel
             else {
@@ -265,15 +265,6 @@ synchronized void mouseReleased() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
     if (!setupComplete) {
         return;
-    }
-
-    //some buttons light up only when being actively pressed.  Now that we've
-    //released the mouse button, turn off those buttons.
-
-    //interacting with control panel
-    if (controlPanel.isOpen) {
-        //if clicked in panel
-        controlPanel.CPmouseReleased();
     }
 
     // gui.mouseReleased();

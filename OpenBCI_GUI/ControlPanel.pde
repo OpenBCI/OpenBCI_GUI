@@ -44,13 +44,6 @@ MenuList sourceList;
 
 MenuList sdTimes;
 
-
-Button_obci initSystemButton;
-
-Button_obci sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
-
-Button_obci selectPlaybackFile;
-
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 
 
@@ -412,7 +405,7 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         comPortBox.isShowing = false;
-        //serialBox.popOutRadioConfigButton.getCaptionLabel().setText("Manual >");
+        serialBox.popOutRadioConfigButton.getCaptionLabel().setText("Manual >");
         rcBox.closeSerialPort();
     }
 
@@ -420,130 +413,6 @@ class ControlPanel {
         channelPopup.setClicked(false);
     }
 
-    //mouse pressed in control panel
-    public void CPmousePressed() {
-        verbosePrint("CPmousePressed");
-
-        if (initSystemButton.isMouseHere()) {
-            initSystemButton.setIsActive(true);
-            initSystemButton.wasPressed = true;
-        }
-    
-        //only able to click buttons of control panel when system is not running
-        if (systemMode != SYSTEMMODE_POSTINIT) {
-
-            if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-                if (selectPlaybackFile.isMouseHere()) {
-                    selectPlaybackFile.setIsActive(true);
-                    selectPlaybackFile.wasPressed = true;
-                }
-                if (sampleDataButton.isMouseHere()) {
-                    sampleDataButton.setIsActive(true);
-                    sampleDataButton.wasPressed = true;
-                }
-            }
-        }
-        // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
-    } //end CPMousePressed
-
-    //mouse released in control panel
-    public void CPmouseReleased() {
-        //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-
-
-        if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected",
-                        new File(directoryManager.getGuiDataPath() + "Recordings"));
-        }
-
-        if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected", 
-                        new File(directoryManager.getGuiDataPath() + 
-                                "Sample_Data" + System.getProperty("file.separator") + 
-                                "OpenBCI-sampleData-2-meditation.txt"));
-        }
-    } //end CPMouseReleased
-
-    //This is the primary method called when Start/Stop Session Button is pressed in Control Panel
-    protected void initButtonPressed() {
-        if (initSystemButton.but_txt == "START SESSION") {
-            if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
-                output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
-                output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
-                output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
-                output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else if (eegDataSource == -1) {//if no data source selected
-                output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
-                initSystemButton.wasPressed = false;
-                initSystemButton.setIsActive(false);
-                return;
-            } else { //otherwise, initiate system!
-                //verbosePrint("ControlPanel: CPmouseReleased: init");
-                initSystemButton.setString("STOP SESSION");
-                // Global steps to START SESSION
-                // Prepare the serial port
-                if (eegDataSource == DATASOURCE_CYTON) {
-                    // Store the current text field value of "Session Name" to be passed along to dataFiles
-                    dataLogger.setSessionName(dataLogBoxCyton.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_GANGLION) {
-                    dataLogger.setSessionName(dataLogBoxGanglion.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_AURAXR) {
-                    dataLogger.setSessionName(dataLogBoxAuraXR.getSessionTextfieldString());
-                } else {
-                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
-                }
-
-                if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
-                    wifi_ipAddress = wifiBox.staticIPAddressTF.getText();
-                    println("Static IP address of " + wifi_ipAddress);
-                }
-
-                //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
-                midInit = true;
-                output("Attempting to Start Session..."); // Show this at the bottom of the GUI
-                println("initButtonPressed: Calling initSystem() after next draw()");
-            }
-        } else {
-            //if system is already active ... stop session and flip button state back
-            outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
-            initSystemButton.setString("START SESSION");
-            //creates new data file name so that you don't accidentally overwrite the old one
-            dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            dataLogBoxAuraXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            wifiBox.setStaticIPTextfield(wifi_ipAddress);
-            haltSystem();
-        }
-    } 
 }; //end of ControlPanel class
 
 //Global function
@@ -832,7 +701,7 @@ class ComPortBox {
         if (!comPorts.isEmpty()) {
             openBCI_portName = comPorts.getFirst();
             if (cytonRadioCfg.get_channel()) {
-                controlPanel.initButtonPressed();
+                controlPanel.initBox.initButtonPressed();
                 buttonHelpText.setVisible(false);
             } else {                
                 outputWarn("Found a Cyton dongle, but could not connect to the board. Auto-Scanning now...");
@@ -848,7 +717,7 @@ class ComPortBox {
     private void cytonAutoConnect_AutoScan() {
         if (cytonRadioCfg.scan_channels()) {
             println("Successfully connected to Cyton using " + openBCI_portName);
-            controlPanel.initButtonPressed();
+            controlPanel.initBox.initButtonPressed();
             buttonHelpText.setVisible(false);
         } else {
             outputError("Unable to connect to Cyton. Please check hardware and power source.");
@@ -1213,6 +1082,7 @@ class WifiBox {
                 h = 208;
                 controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
                 println("ControlPanel: Using Dynamic IP address of the WiFi Shield!");
+                wifiIPAddressDynamic.setOn();
                 wifiIPAddressStatic.setOff();
                 staticIPAddressTF.setVisible(false);
                 wifiList.setVisible(true);
@@ -1230,6 +1100,7 @@ class WifiBox {
                 controlPanel.setWiFiSearchStyle(controlPanel.WIFI_STATIC);
                 println("ControlPanel: Using Static IP address of the WiFi Shield!");
                 wifiIPAddressDynamic.setOff();
+                wifiIPAddressStatic.setOn();
                 staticIPAddressTF.setVisible(true);
                 wifiList.setVisible(false);
             }
@@ -1365,6 +1236,7 @@ class InterfaceBoxCyton {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.SERIAL;
                 controlPanel.comPortBox.refreshPortListCyton();
+                protocolSerialCyton.setOn();
                 protocolWifiCyton.setOff();
             }
         });
@@ -1378,6 +1250,7 @@ class InterfaceBoxCyton {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.WIFI;
                 protocolSerialCyton.setOff();
+                protocolWifiCyton.setOn();
             }
         });
     }
@@ -1460,6 +1333,7 @@ class InterfaceBoxGanglion {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.BLED112;
                 controlPanel.bleBox.refreshGanglionBLEList();
+                protocolBLED112Ganglion.setOn();
                 protocolWifiGanglion.setOff();
             }
         });
@@ -1473,6 +1347,7 @@ class InterfaceBoxGanglion {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.WIFI;
                 protocolBLED112Ganglion.setOff();
+                protocolWifiGanglion.setOn();
             }
         });
     }
@@ -1742,8 +1617,7 @@ class SessionDataBox {
     }
 
     private void autogenerateSessionName() {
-        String _board = datasource == DATASOURCE_CYTON ? "Cyton" : "Ganglion";
-        output("Autogenerated " + _board + " Session Name based on current date & time.");
+        output("Autogenerated Session Name based on current date & time.");
         sessionNameTextfield.setText(directoryManager.getFileNameDateTime());
     }
 
@@ -1870,6 +1744,7 @@ class ChannelCountBox {
         chanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(8);
+                chanButton8.setOn();
                 chanButton16.setOff();
             }
         });
@@ -1881,6 +1756,7 @@ class ChannelCountBox {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(16);
                 chanButton8.setOff();
+                chanButton16.setOn();
             }
         });
     }
@@ -1979,6 +1855,7 @@ class SampleRateGanglionBox {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 200;
                 println("ControlPanel: User selected Ganglion+WiFi 200Hz");
+                sampleRate200.setOn();
                 sampleRate1600.setOff();
             }
         });
@@ -1991,6 +1868,7 @@ class SampleRateGanglionBox {
                 selectedSamplingRate = 1600;
                 println("ControlPanel: User selected Ganglion+WiFi 1600Hz");
                 sampleRate200.setOff();
+                sampleRate1600.setOn();
             }
         });
     }
@@ -2091,6 +1969,7 @@ class SampleRateCytonBox {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 250;
                 println("ControlPanel: User selected Cyton+WiFi 250Hz");
+                sampleRate250.setOn();
                 sampleRate500.setOff();
                 sampleRate1000.setOff();
             }
@@ -2104,6 +1983,7 @@ class SampleRateCytonBox {
                 selectedSamplingRate = 500;
                 println("ControlPanel: User selected Cyton+WiFi 500Hz");
                 sampleRate250.setOff();
+                sampleRate500.setOn();
                 sampleRate1000.setOff();
             }
         });
@@ -2117,6 +1997,7 @@ class SampleRateCytonBox {
                 println("ControlPanel: User selected Cyton+WiFi 1000Hz");
                 sampleRate250.setOff();
                 sampleRate500.setOff();
+                sampleRate1000.setOn();
             }
         });
     }
@@ -2143,7 +2024,7 @@ class SyntheticChannelCountBox {
 
         createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
         createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-        createSynthChan16Button("syhtnChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSynthChan16Button("synthChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
     }
 
     public void update() {
@@ -2193,6 +2074,7 @@ class SyntheticChannelCountBox {
         synthChanButton4.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(4);
+                synthChanButton4.setOn();
                 synthChanButton8.setOff();
                 synthChanButton16.setOff();
             }
@@ -2205,6 +2087,7 @@ class SyntheticChannelCountBox {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(8);
                 synthChanButton4.setOff();
+                synthChanButton8.setOn();
                 synthChanButton16.setOff();
             }
         });
@@ -2219,6 +2102,7 @@ class SyntheticChannelCountBox {
                 updateToNChan(16);
                 synthChanButton4.setOff();
                 synthChanButton8.setOff();
+                synthChanButton16.setOn();
             }
         });
     }
@@ -2687,6 +2571,9 @@ class StreamingBoardBox {
 
 class PlaybackFileBox {
     public int x, y, w, h, padding; //size and position
+    private ControlP5 pbfb_cp5;
+    private Button sampleDataButton;
+    private Button selectPlaybackFile;
     private int sampleDataButton_w = 100;
     private int sampleDataButton_h = 20;
     private int titleH = 14;
@@ -2699,6 +2586,12 @@ class PlaybackFileBox {
         h = buttonH + (_padding * 3) + titleH;
         padding = _padding;
 
+        //Instantiate local cp5 for this box
+        pbfb_cp5 = new ControlP5(ourApplet);
+        pbfb_cp5.setGraphics(ourApplet, 0,0);
+        pbfb_cp5.setAutoDraw(false);
+
+        /*
         selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
         selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     
@@ -2710,6 +2603,7 @@ class PlaybackFileBox {
         sampleDataButton.setFontColorNotActive(color(255));
         sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
         sampleDataButton.hasStroke(false);
+        */
     }
 
     public void update() {
@@ -2727,9 +2621,26 @@ class PlaybackFileBox {
         text("PLAYBACK FILE", x + padding, y + padding);
         popStyle();
 
-        selectPlaybackFile.draw();
-        sampleDataButton.draw();
+        pbfb_cp5.draw();
     }
+
+    /*
+            if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
+            output("Select a file for playback");
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected",
+                        new File(directoryManager.getGuiDataPath() + "Recordings"));
+        }
+
+        if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
+            output("Select a file for playback");
+            selectInput("Select a pre-recorded file for playback:", 
+                        "playbackFileSelected", 
+                        new File(directoryManager.getGuiDataPath() + 
+                                "Sample_Data" + System.getProperty("file.separator") + 
+                                "OpenBCI-sampleData-2-meditation.txt"));
+        }
+        */
 };
 
 class SDBox {
@@ -3046,7 +2957,9 @@ class ChannelPopup {
 
 //This class holds the "Start Session" button
 class InitBox {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 initBox_cp5;
+    public Button initSystemButton;
 
     InitBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -3055,7 +2968,12 @@ class InitBox {
         h = 50;
         padding = _padding;
 
-        initSystemButton = new Button_obci (padding, y + padding, w-padding*2, h - padding*2, "START SESSION", fontInfo.buttonLabel_size);
+        //Instantiate local cp5 for this box
+        initBox_cp5 = new ControlP5(ourApplet);
+        initBox_cp5.setGraphics(ourApplet, 0,0);
+        initBox_cp5.setAutoDraw(false);
+
+        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2,  fontInfo.buttonLabel_size);
     }
 
     public void update() {
@@ -3068,20 +2986,107 @@ class InitBox {
         strokeWeight(1);
         rect(x, y, w, h);
         popStyle();
-        initSystemButton.draw();
+        
+        initBox_cp5.draw();
     }
 
-    /*
-        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-            if (rcBox.isShowing) {
-                hideRadioPopoutBox();
+    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        initSystemButton = initBox_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        initSystemButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        initSystemButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (controlPanel.rcBox.isShowing) {
+                    controlPanel.hideRadioPopoutBox();
+                }
+                //if system is not active ... initate system and flip button state
+                initButtonPressed();
             }
-            //if system is not active ... initate system and flip button state
-            initButtonPressed();
-            //cursor(ARROW); //this this back to ARROW
-        }
+        });
+    }
 
-    */
+    //This is the primary method called when Start/Stop Session Button is pressed in Control Panel
+    public void initButtonPressed() {
+        if (getInitSessionButtonText().equals("START SESSION")) {
+            if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
+                output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+                output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
+                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+                output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
+                return;
+            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
+                output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
+                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                return;
+            } else if (eegDataSource == -1) {//if no data source selected
+                output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
+                return;
+            } else { //otherwise, initiate system!
+                //verbosePrint("ControlPanel: CPmouseReleased: init");
+                setInitSessionButtonText("STOP SESSION");
+                // Global steps to START SESSION
+                // Prepare the serial port
+                if (eegDataSource == DATASOURCE_CYTON) {
+                    // Store the current text field value of "Session Name" to be passed along to dataFiles
+                    dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_GANGLION) {
+                    dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_AURAXR) {
+                    dataLogger.setSessionName(controlPanel.dataLogBoxAuraXR.getSessionTextfieldString());
+                } else {
+                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
+                }
+
+                if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
+                    wifi_ipAddress = controlPanel.wifiBox.staticIPAddressTF.getText();
+                    println("Static IP address of " + wifi_ipAddress);
+                }
+
+                //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
+                midInit = true;
+                output("Attempting to Start Session..."); // Show this at the bottom of the GUI
+                println("initButtonPressed: Calling initSystem() after next draw()");
+            }
+        } else {
+            //if system is already active ... stop session and flip button state back
+            outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
+            setInitSessionButtonText("START SESSION");
+            //creates new data file name so that you don't accidentally overwrite the old one
+            controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.dataLogBoxAuraXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
+            haltSystem();
+        }
+    }
+
+    public String getInitSessionButtonText() {
+        return initSystemButton.getCaptionLabel().getText();
+    }
+
+    public void setInitSessionButtonText(String text) {
+        initSystemButton.getCaptionLabel().setText(text);
+    }
 };
 
 //===================== MENU LIST CLASS =============================//

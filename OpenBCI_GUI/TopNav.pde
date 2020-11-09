@@ -367,10 +367,6 @@ class TopNav {
                 // controlPanelCollapser.setIsActive(false);
                 controlPanel.open();
             }
-        } else {
-            if (controlPanel.isOpen) {
-                controlPanel.CPmousePressed();
-            }
         }
 
         //this is super hacky... but needs to be done otherwise... the controlPanelCollapser doesn't match the open control panel

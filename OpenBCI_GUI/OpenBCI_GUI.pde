@@ -444,10 +444,6 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- ");
 
-    if (initSystemButton.but_txt == "START SESSION") {
-        initSystemButton.but_txt = "STOP SESSION";
-    }
-
     //reset init variables
     systemHasHalted = false;
     boolean abandonInit = false;
@@ -679,9 +675,9 @@ void stopRunning() {
 void haltSystem() {
     if (!systemHasHalted) { //prevents system from halting more than once\
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        if (initSystemButton.but_txt == "STOP SESSION") {
-            initSystemButton.but_txt = "START SESSION";
-        }
+        
+        //Reset the text for the Start Session button
+        controlPanel.initBox.setInitSessionButtonText("START SESSION");
 
         if (w_networking != null && w_networking.getNetworkActive()) {
             w_networking.stopNetwork();
