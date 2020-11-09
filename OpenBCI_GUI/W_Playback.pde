@@ -1,11 +1,9 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
 //    W_playback.pde (ie "Playback History")
 //
 //    Allow user to load playback files from within GUI without having to restart the system
 //                       Created: Richard Waltman - August 2018
-*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import java.io.FileReader;
@@ -30,18 +28,8 @@ class W_playback extends Widget {
         cp5_playback.setGraphics(ourApplet, 0,0);
         cp5_playback.setAutoDraw(false);
 
-        /*
-        //make a button to load new files
-        selectPlaybackFileButton = new Button_obci (
-            x + w/2 - (padding*2),
-            y - navHeight + 2,
-            200,
-            navHeight - 6,
-            "SELECT PLAYBACK FILE",
-            fontInfo.buttonLabel_size);
-        selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-        */
-        //make a MenuList
+        //selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
         createSelectPlaybackFileButton("selectPlaybackFile_Session", "SELECT PLAYBACK FILE", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6, fontInfo.buttonLabel_size);
@@ -74,7 +62,6 @@ class W_playback extends Widget {
             }
             playbackMenuList.updateMenu();
         }
-
     }
 
     void draw() {
@@ -115,35 +102,6 @@ class W_playback extends Widget {
         playbackMenuList.setSize(w - padding*2, h - padding*2);
         refreshPlaybackList();
     }
-
-    /*
-    FIX ME!!!!!!!!!!
-    void mouseOver() {
-        if (topNav.configSelector.isVisible) {
-            selectPlaybackFileButton.setIsActive(false);
-        }
-    }
-
-    void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (!topNav.configSelector.isVisible) {
-            //check if mouse is over the select playback file button
-            if (selectPlaybackFileButton.isMouseHere()) {
-                selectPlaybackFileButton.setIsActive(true);
-            }
-        }
-    } // end mouse Pressed
-
-    void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        //check if user has clicked on the select playback file button
-        if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.isActive) {
-            output("select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
-        }
-        selectPlaybackFileButton.setIsActive(false);
-    } // end mouse Released
-    */
 
     public void refreshPlaybackList() {
         try {
