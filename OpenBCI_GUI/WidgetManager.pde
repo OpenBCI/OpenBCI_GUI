@@ -49,6 +49,13 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_accelerometer, w);
     }
 
+    if(currentBoard instanceof DataSourcePlayback){
+        //Playback Widget_3
+        w_playback = new W_playback(_this);
+        w_playback.setTitle("Playback History");
+        addWidget(w_playback, w);
+    }
+
     if (auraXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
         //AuraXR_Widget_2
         w_auraAux = new W_AuraAux(_this);
@@ -62,13 +69,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
         addWidget(w_ganglionImpedance, w);
-    }
-
-    if(currentBoard instanceof DataSourcePlayback){
-        //Playback Widget_3
-        w_playback = new W_playback(_this);
-        w_playback.setTitle("Playback History");
-        addWidget(w_playback, w);
     }
 
     //Cyton/Synthetic Widget_3, Ganglion/Playback Widget_4

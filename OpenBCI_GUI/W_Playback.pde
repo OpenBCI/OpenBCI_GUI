@@ -15,14 +15,13 @@ class W_playback extends Widget {
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
     ControlP5 cp5_playback;
-    //Button_obci selectPlaybackFileButton;
+    Button selectPlaybackFileButton;
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
 
     private boolean visible = true;
     private boolean menuHasUpdated = false;
-    private boolean menuListIsLocked = false;
 
     W_playback(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -44,12 +43,8 @@ class W_playback extends Widget {
         */
         //make a MenuList
         int initialWidth = w - padding*2;
-
-        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p3);
-        playbackMenuList.setPosition(x + padding/2, y + 2);
-        playbackMenuList.setSize(initialWidth, h - padding*2);
-        playbackMenuList.scrollerLength = 40;
-        
+        createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
+        createSelectPlaybackFileButton("selectPlaybackFile_Session", "SELECT PLAYBACK FILE", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6, fontInfo.buttonLabel_size);
     }
 
     public boolean isVisible() {
@@ -68,16 +63,14 @@ class W_playback extends Widget {
         }
         //Lock the MenuList if Widget selector is open, otherwise update
         if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
-            if (!menuListIsLocked) {
-                cp5_playback.get(MenuList.class, "playbackMenuList").lock();
-                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(false);
-                menuListIsLocked = true;
+            if (!playbackMenuList.isLock()) {
+                playbackMenuList.lock();
+                playbackMenuList.setUpdate(false);
             }
         } else {
-            if (menuListIsLocked) {
-                cp5_playback.get(MenuList.class, "playbackMenuList").unlock();
-                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(true);
-                menuListIsLocked = false;
+            if (playbackMenuList.isLock()) {
+                playbackMenuList.unlock();
+                playbackMenuList.setUpdate(true);
             }
             playbackMenuList.updateMenu();
         }
@@ -115,15 +108,13 @@ class W_playback extends Widget {
         //This makes the cp5 objects within the widget scale properly
         cp5_playback.setGraphics(pApplet, 0, 0);
 
-        /*
-        //resize and position the playback file box and button
-        selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
-        */
+        //Resize and position cp5 objects within this widget
+        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - padding, y - navHeight + 2);
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
         refreshPlaybackList();
-    } //end screen Resized
+    }
 
     /*
     FIX ME!!!!!!!!!!
@@ -179,23 +170,50 @@ class W_playback extends Widget {
         }
     }
 
-    private void createPlaybackMenuList() {
-
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        selectPlaybackFileButton = cp5_playback.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        selectPlaybackFileButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        selectPlaybackFileButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
+            }
+        });
     }
 
-    /*
-                if(theEvent.isFrom("playbackMenuList")) {
-                //Check to make sure value of clicked item is in valid range. Fixes #480
-                float valueOfItem = theEvent.getValue();
-                if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
-                    //println("CP: No such item " + value + " found in list.");
-                } else {
-                    Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
-                    //println("got a menu event from item " + value + " : " + m);
-                    userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
+    private void createPlaybackMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        playbackMenuList = new MenuList(_cp5, name, _w, _h, font);
+        playbackMenuList.setPosition(_x, _y);
+        playbackMenuList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    //Check to make sure value of clicked item is in valid range. Fixes #480
+                    float valueOfItem = playbackMenuList.getValue();
+                    if (valueOfItem < 0 || valueOfItem > (playbackMenuList.items.size() - 1) ) {
+                        //println("CP: No such item " + value + " found in list.");
+                    } else {
+                        Map m = playbackMenuList.getItem(int(valueOfItem));
+                        //println("got a menu event from item " + value + " : " + m);
+                        userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
+                    }
                 }
             }
-    */
+        });
+        playbackMenuList.scrollerLength = 40;
+    }
 }; //end Playback widget class
 
 //////////////////////////////////////

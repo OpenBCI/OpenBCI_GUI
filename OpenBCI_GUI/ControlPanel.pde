@@ -1390,14 +1390,12 @@ class SessionDataBox {
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
-            /*
-            .setColorBackground(color(31,69,110)) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(255))
-            .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            //.setColorBackground(color(31,69,110)) // text field bg color
+            //.setColorValueLabel(color(0))       // text color
+            //.setColorCaptionLabel(color(255))
+            //.setColorForeground(color(125))    // border color when not selected
+            //.setColorActive(color(150, 170, 200))       // border color when selected
             // .setColorCursor(color(26,26,26))
-            */
             .setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding)
             .setSize((w-padding*3)/2, (_items.size() + 1) * 24)// + maxFreqList.size())
             .setBarHeight(24) //height of top/primary bar
@@ -2151,21 +2149,6 @@ class RecentPlaybackBox {
             }
         });
     }
-
-    /*
-        //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if (theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileFromList(filePath, s);
-        } else {
-            verbosePrint("Playback History: " + filePath);
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
-        }
-    }
-    */
 };
 
 class AuraXRBox {
@@ -2697,21 +2680,6 @@ class SDBox {
     public void updatePosition() {
         sdList.setPosition(x + padding, y + padding*2 + 14);
     }
-
-    /*
-        // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
-    if (theEvent.isFrom("sdCardTimes")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        cyton_sdSetting = (CytonSDMode)bob.get("value");
-        String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
-        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
-            outputString += " recording time";
-        }
-        output(outputString);
-        verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
-    }
-    */
 };
 
 
