@@ -1661,7 +1661,7 @@ class SessionDataBox {
         } else {
             outputODF.setOff();
         }
-        outputODF.onClick(new CallbackListener() {
+        outputODF.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output(odfMessage);
                 dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
@@ -1681,7 +1681,7 @@ class SessionDataBox {
         } else {
             outputBDF.setOff();
         }
-        outputBDF.onClick(new CallbackListener() {
+        outputBDF.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output(bdfMessage);
                 dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
