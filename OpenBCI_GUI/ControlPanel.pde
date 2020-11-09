@@ -44,14 +44,12 @@ MenuList sourceList;
 
 MenuList sdTimes;
 
-Button_obci refreshPort;
 
 Button_obci initSystemButton;
 
 Button_obci sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
 
 Button_obci selectPlaybackFile;
-Button_obci popOutRadioConfigButton;
 
 Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
 
@@ -64,7 +62,6 @@ public void controlEvent(ControlEvent theEvent) {
 
     if (theEvent.isFrom("sourceList")) {
         // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
-        controlPanel.hideAllBoxes();
 
         Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
         String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
@@ -93,12 +90,6 @@ public void controlEvent(ControlEvent theEvent) {
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             controlPanel.synthChannelCountBox.set8ChanButtonActive();
         }
-    }
-
-    if (theEvent.isFrom("serialList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        openBCI_portName = (String)bob.get("subline");
-        output("OpenBCI Port Name = " + openBCI_portName);
     }
 
 
@@ -212,6 +203,9 @@ class ControlPanel {
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
         interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
         interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
+        
+        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
+        rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
 
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
@@ -231,9 +225,7 @@ class ControlPanel {
         dataLogBoxAuraXR = new SessionDataBox(x + w, (auraXRBox.y + auraXRBox.h), w, h, globalPadding, DATASOURCE_AURAXR, dataLogger.getDataLoggerOutputFormat(), "sessionNameAuraXR");
         
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        
-        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
-        rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
+
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
 
         initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
@@ -393,9 +385,6 @@ class ControlPanel {
                 }
             } else if (eegDataSource == DATASOURCE_STREAMING) {
                 streamingBoardBox.draw();
-            } else {
-                //set other CP5 controllers invisible
-                hideAllBoxes();
             }
         } else {
             cp5.setVisible(false);
@@ -426,14 +415,8 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         comPortBox.isShowing = false;
-        comPortBox.serialList.setVisible(false);
-        popOutRadioConfigButton.setString("Manual >");
+        //serialBox.popOutRadioConfigButton.getCaptionLabel().setText("Manual >");
         rcBox.closeSerialPort();
-    }
-
-    public void hideAllBoxes() {
-        //set other CP5 controllers invisible
-        comPortBox.serialList.setVisible(false);
     }
 
     private void hideChannelListCP() {
@@ -452,26 +435,7 @@ class ControlPanel {
         //only able to click buttons of control panel when system is not running
         if (systemMode != SYSTEMMODE_POSTINIT) {
 
-            //active buttons during DATASOURCE_CYTON
-            if (eegDataSource == DATASOURCE_CYTON) {
-                
-                if (selectedProtocol == BoardProtocol.SERIAL) {
-                    if (popOutRadioConfigButton.isMouseHere()){
-                        popOutRadioConfigButton.setIsActive(true);
-                        popOutRadioConfigButton.wasPressed = true;
-                    }
-                    if (refreshPort.isMouseHere()) {
-                        refreshPort.setIsActive(true);
-                        refreshPort.wasPressed = true;
-                    }
-                    if (serialBox.autoConnect.isMouseHere()) {
-                        serialBox.autoConnect.setIsActive(true);
-                        serialBox.autoConnect.wasPressed = true;
-                    }
-                }
-            } 
-            
-            else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+            if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 if (selectPlaybackFile.isMouseHere()) {
                     selectPlaybackFile.setIsActive(true);
                     selectPlaybackFile.wasPressed = true;
@@ -488,39 +452,7 @@ class ControlPanel {
     //mouse released in control panel
     public void CPmouseReleased() {
         //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-        if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
-            popOutRadioConfigButton.wasPressed = false;
-            popOutRadioConfigButton.setIsActive(false);
-            if (selectedProtocol == BoardProtocol.SERIAL) {
-                if (rcBox.isShowing) {
-                    hideRadioPopoutBox();
-                } else {
-                    rcBox.isShowing = true;
-                    rcBox.print_onscreen(rcBox.initial_message);
-                    popOutRadioConfigButton.setString("Manual <");
-                }
-            }
-        }
 
-        if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
-            serialBox.autoConnect.wasPressed = false;
-            serialBox.autoConnect.setIsActive(false);
-            comPortBox.attemptAutoConnectCyton();
-        }
-
-        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-            if (rcBox.isShowing) {
-                hideRadioPopoutBox();
-            }
-            //if system is not active ... initate system and flip button state
-            initButtonPressed();
-            //cursor(ARROW); //this this back to ARROW
-        }
-
-        //open or close serial port if serial port button is pressed (left button in serial widget)
-        if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            comPortBox.refreshPortListCyton();
-        }
 
         if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
             output("Select a file for playback");
@@ -585,8 +517,6 @@ class ControlPanel {
                 if (eegDataSource == DATASOURCE_CYTON) {
                     // Store the current text field value of "Session Name" to be passed along to dataFiles
                     dataLogger.setSessionName(dataLogBoxCyton.getSessionTextfieldString());
-                    serialBox.autoConnect.setIgnoreHover(false); //reset the auto-connect button
-                    serialBox.autoConnect.setColorNotPressed(255);
                 } else if (eegDataSource == DATASOURCE_GANGLION) {
                     dataLogger.setSessionName(dataLogBoxGanglion.getSessionTextfieldString());
                 } else if (eegDataSource == DATASOURCE_AURAXR) {
@@ -596,7 +526,7 @@ class ControlPanel {
                 }
 
                 if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
-                    wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
+                    wifi_ipAddress = wifiBox.staticIPAddressTF.getText();
                     println("Static IP address of " + wifi_ipAddress);
                 }
 
@@ -684,8 +614,10 @@ class DataSourceBox {
 };
 
 class SerialBox {
-    int x, y, w, h, padding; //size and position
-    Button_obci autoConnect;
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 cytonsb_cp5;
+    private Button autoConnectButton;
+    private Button popOutRadioConfigButton;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -694,10 +626,19 @@ class SerialBox {
         h = 70;
         padding = _padding;
 
+        //Instantiate local cp5 for this box
+        cytonsb_cp5 = new ControlP5(ourApplet);
+        cytonsb_cp5.setGraphics(ourApplet, 0,0);
+        cytonsb_cp5.setAutoDraw(false);
+
+        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, fontInfo.buttonLabel_size);
+        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24, fontInfo.buttonLabel_size);
+        /*
         autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
         autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
         popOutRadioConfigButton = new Button_obci(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
         popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
+        */
     }
 
     public void update() {
@@ -716,17 +657,85 @@ class SerialBox {
         popStyle();
 
         if (selectedProtocol == BoardProtocol.SERIAL) {
-            popOutRadioConfigButton.draw();
-            autoConnect.draw();
+            cytonsb_cp5.draw();
         }
     }
+
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        myButton = cytonsb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        return myButton;
+    }
+
+    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        autoConnectButton = createButton(autoConnectButton, name, text, _x, _y, _w, _h, _fontSize);
+        autoConnectButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.comPortBox.attemptAutoConnectCyton();
+            }
+        });
+    }
+
+    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        popOutRadioConfigButton = createButton(popOutRadioConfigButton, name, text, _x, _y, _w, _h, _fontSize);
+        popOutRadioConfigButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (selectedProtocol == BoardProtocol.SERIAL) {
+                    if (controlPanel.rcBox.isShowing) {
+                        controlPanel.hideRadioPopoutBox();
+                    } else {
+                        controlPanel.rcBox.isShowing = true;
+                        controlPanel.rcBox.print_onscreen(controlPanel.rcBox.initial_message);
+                        popOutRadioConfigButton.getCaptionLabel().setText("Manual <");
+                    }
+                }
+            }
+        });
+    }
+
+    /*
+
+            if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
+            serialBox.autoConnect.wasPressed = false;
+            serialBox.autoConnect.setIsActive(false);
+            comPortBox.attemptAutoConnectCyton();
+        }
+            if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
+            popOutRadioConfigButton.wasPressed = false;
+            popOutRadioConfigButton.setIsActive(false);
+            if (selectedProtocol == BoardProtocol.SERIAL) {
+                if (rcBox.isShowing) {
+                    hideRadioPopoutBox();
+                } else {
+                    rcBox.isShowing = true;
+                    rcBox.print_onscreen(rcBox.initial_message);
+                    popOutRadioConfigButton.setString("Manual <");
+                }
+            }
+        }
+        */
 };
 
 class ComPortBox {
     public int x, y, w, h, padding; //size and position
     public boolean isShowing;
+    private ControlP5 cytoncpb_cp5;
+    private Button refreshCytonDongles;
     public MenuList serialList;
-    RadioConfig cytonRadioCfg;
+    public RadioConfig cytonRadioCfg;
     private boolean midAutoScan = false;
     private boolean midAutoScanCheck2 = false;
 
@@ -739,9 +748,18 @@ class ComPortBox {
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
 
+        //Instantiate local cp5 for this box
+        cytoncpb_cp5 = new ControlP5(ourApplet);
+        cytoncpb_cp5.setGraphics(ourApplet, 0,0);
+        cytoncpb_cp5.setAutoDraw(false);
+
+        createRefreshCytonDonglesButton("refreshCytonDonglesButton", "REFRESH LIST", x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, fontInfo.buttonLabel_size);
+        createCytonDongleList(cytoncpb_cp5, "cytonDongleList", x + padding, y + padding*3 + 8,  w - padding*2, 72, p3);
+        /*
         refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
         serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p3);
         serialList.setPosition(x + padding, y + padding*3 + 8);
+        */
     }
 
     public void update() {
@@ -768,10 +786,49 @@ class ComPortBox {
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL/COM PORT", x + padding, y + padding);
-        refreshPort.draw();
         popStyle();
+
+        cytoncpb_cp5.draw();
     }
 
+    private void createRefreshCytonDonglesButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        refreshCytonDongles = cytoncpb_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(bgColor)
+            .setColorForeground(color(177, 184, 193))
+            .setColorBackground(colorNotPressed)
+            .setColorActive(color(150,170,200))
+            ;
+        refreshCytonDongles
+            .getCaptionLabel()
+            .setFont(createFont("Arial", _fontSize, true))
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        refreshCytonDongles.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshPortListCyton();
+            }
+        });
+    }
+
+    private void createCytonDongleList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        serialList = new MenuList(_cp5, name, _w, _h, font);
+        serialList.setPosition(_x, _y);
+        serialList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = serialList.getItem(int(serialList.getValue()));
+                    openBCI_portName = (String)bob.get("subline");
+                    output("ControlPanel: Selected OpenBCI Port " + openBCI_portName);
+                }
+            }
+        });
+    }
+
+    //This is called when the Auto-Connect button is pressed in another Control Panel Box
     public void attemptAutoConnectCyton() {
         println("\n-------------------------------------------------\nControlPanel: Attempting to Auto-Connect to Cyton\n-------------------------------------------------\n");
         LinkedList<String> comPorts = getCytonComPorts();
@@ -789,7 +846,9 @@ class ComPortBox {
         }
     }
 
-    public void cytonAutoConnect_AutoScan() {
+    //If Cyton dongle exists, and fails to connect, try to Auto-Scan in the background to align Cyton/Dongle Channel
+    //This is called after overlay has a chance to draw on top to inform users the GUI is working and not crashed
+    private void cytonAutoConnect_AutoScan() {
         if (cytonRadioCfg.scan_channels()) {
             println("Successfully connected to Cyton using " + openBCI_portName);
             controlPanel.initButtonPressed();
@@ -799,20 +858,20 @@ class ComPortBox {
         }
     }
 
+    //Refresh the Cyton Dongle list
     public void refreshPortListCyton(){
         serialList.items.clear();
 
         Thread thread = new Thread(){
             public void run(){
-                refreshPort.setString("SEARCHING...");
+                refreshCytonDongles.getCaptionLabel().setText("SEARCHING...");
 
                 LinkedList<String> comPorts = getCytonComPorts();
                 for (String comPort : comPorts) {
                     serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
                 }
                 serialList.updateMenu();
-
-                refreshPort.setString("REFRESH LIST");
+                refreshCytonDongles.getCaptionLabel().setText("REFRESH LIST");
             }
         };
 
@@ -1307,7 +1366,6 @@ class InterfaceBoxCyton {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
-                controlPanel.hideAllBoxes();
                 selectedProtocol = BoardProtocol.SERIAL;
                 controlPanel.comPortBox.refreshPortListCyton();
                 protocolWifiCyton.setOff();
@@ -1321,7 +1379,6 @@ class InterfaceBoxCyton {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
-                controlPanel.hideAllBoxes();
                 selectedProtocol = BoardProtocol.WIFI;
                 protocolSerialCyton.setOff();
             }
@@ -1404,7 +1461,6 @@ class InterfaceBoxGanglion {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
-                controlPanel.hideAllBoxes();
                 selectedProtocol = BoardProtocol.BLED112;
                 controlPanel.bleBox.refreshGanglionBLEList();
                 protocolWifiGanglion.setOff();
@@ -1418,7 +1474,6 @@ class InterfaceBoxGanglion {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
-                controlPanel.hideAllBoxes();
                 selectedProtocol = BoardProtocol.WIFI;
                 protocolBLED112Ganglion.setOff();
             }
@@ -1472,11 +1527,8 @@ class SessionDataBox {
         //autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
         createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
         //outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
-        //Output source is ODF by default
-        //if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
         createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
         //outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
-        //if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
 
         createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
         
@@ -3021,6 +3073,18 @@ class InitBox {
         popStyle();
         initSystemButton.draw();
     }
+
+    /*
+        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
+            if (rcBox.isShowing) {
+                hideRadioPopoutBox();
+            }
+            //if system is not active ... initate system and flip button state
+            initButtonPressed();
+            //cursor(ARROW); //this this back to ARROW
+        }
+
+    */
 };
 
 //===================== MENU LIST CLASS =============================//
