@@ -144,7 +144,7 @@ final double threshold_railed_warn = 75.0;
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
 //AuraXR Default Settings
-AuraXRMode auraXR_boardSetting = AuraXRMode.DEFAULT; //default mode
+AuraXRMode auraXR_boardSetting = AuraXRMode.DEMO; //default mode
 AuraXRSR auraXR_sampleRate = AuraXRSR.SR_250;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
