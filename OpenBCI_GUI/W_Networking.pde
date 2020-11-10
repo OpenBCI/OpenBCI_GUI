@@ -2223,3 +2223,18 @@ void filter4(int n) {
     w_networking.cp5_networking.get(Toggle.class, "filter4").setLabel(s);
     w_networking.closeAllDropdowns();
 }
+
+//loop through networking textfields and find out if any are active
+boolean isNetworkingTextActive(){
+    boolean isAFieldActive = false;
+    if (w_networking != null) {
+        int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+        for(int i = 0; i < numTextFields; i++){
+            if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+                isAFieldActive = true;
+            }
+        }
+    }
+    //println("Networking Text Field Active? " + isAFieldActive);
+    return isAFieldActive; //if not, return false
+}

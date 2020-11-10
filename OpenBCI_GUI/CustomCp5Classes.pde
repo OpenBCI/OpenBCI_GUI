@@ -1,20 +1,11 @@
-//===================== MENU LIST CLASS =============================//
-//================== EXTENSION OF CONTROLP5 =========================//
-//============== USED FOR SOURCEBOX & SERIALBOX =====================//
-//
-// Created: Conor Russomanno Oct. 2014
-// Based on ControlP5 Processing Library example, written by Andreas Schlegel
-//
-/////////////////////////////////////////////////////////////////////
-
-
-
 //=======================================================================================================================================
 //
 //                    MenuList Class
 //
-//The MenuList class is implemented by the Control Panel. It allows you to set up a list of selectable items within a fixed rectangle size
-//Currently used for Serial/COM select, SD settings, and System Mode
+//  Based on ControlP5 Processing Library example, written by Andreas Schlegel
+//
+//  Created: Conor Russomanno Oct. 2014
+//  Refactored: Richard Waltman Nov. 2020  
 //
 //=======================================================================================================================================
 
@@ -226,3 +217,82 @@ public class MenuList extends controlP5.Controller {
        return items.size(); 
     }
 };
+
+//=======================================================================================================================================
+//
+//                    CustomScrollableList Class
+//
+//  Builds on top of ScrollableList class from ControlP5
+//  Without this class, there is transparent space between List items
+//  To fix this, carefully draw a background behind this Object when it is closed or expanded
+//
+//=======================================================================================================================================
+
+class CustomScrollableList extends ScrollableList {
+
+    private boolean drawOutlineWhenClosed = true;
+
+    CustomScrollableList(ControlP5 cp5, String name) {
+        super(cp5, name);
+    }
+    
+    // there's a bug in control p5 where clicking on the scroll list does not	
+    // open it if you move the mouse while clicking. This fixes that.
+    @Override
+    protected void onEndDrag() {
+        super.onEndDrag();
+        setOpen(!isOpen());
+    }
+
+    // close the dropdown if the mouse leaves it.
+    @Override
+    protected void onLeave() {
+        super.onLeave();
+        close();
+    }
+
+    @Override
+    public ScrollableList updateDisplayMode( int theMode ) {
+        super.updateDisplayMode(theMode);
+
+        if (theMode == DEFAULT) {
+            _myControllerView = new CustomScrollableListView(this);
+        }
+        
+        return this;
+    }
+
+    public boolean getDrawOutlineWhenClosed() {
+        return drawOutlineWhenClosed;
+    }
+
+    public CustomScrollableList setDrawOutlineWhenClosed(boolean shouldDraw) {
+        drawOutlineWhenClosed = shouldDraw;
+        return this;
+    }
+
+    public class CustomScrollableListView extends ScrollableListView {
+        private CustomScrollableList theList;
+
+        CustomScrollableListView(CustomScrollableList _theList) {
+            super();
+            theList = _theList;
+        }
+
+        @Override
+        public void display(PGraphics g , ScrollableList c) {
+            drawOutline();
+            super.display(g, c);
+        }
+
+        private void drawOutline() {
+            if (!theList.isOpen() && !theList.getDrawOutlineWhenClosed()) {
+                return; // don't draw outline
+            }
+
+            // draw rect behind the dropdown 
+            fill(theList.getBackgroundColor());
+            rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
+        }
+    }
+}
