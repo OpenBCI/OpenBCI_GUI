@@ -133,9 +133,9 @@ class W_playback extends Widget {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         selectPlaybackFileButton
             .getCaptionLabel()

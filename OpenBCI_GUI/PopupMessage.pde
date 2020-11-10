@@ -18,8 +18,8 @@ class PopupMessage extends PApplet implements Runnable {
     private String buttonMessage = "OK";
     private String buttonLink = null;
 
-    private color headerColor = openbciBlue;
-    private color buttonColor = openbciBlue;
+    private color headerColor = OPENBCI_BLUE;
+    private color buttonColor = OPENBCI_BLUE;
     
     private ControlP5 cp5;
 

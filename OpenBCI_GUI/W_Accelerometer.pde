@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////
 
 //Use the same colors for X,Y,Z throughout Accelerometer widget
-final color ACCEL_X_COLOR = color(224, 56, 45);
+final color ACCEL_X_COLOR = TURN_OFF_RED;
 final color ACCEL_Y_COLOR = color(49, 113, 89);
 final color ACCEL_Z_COLOR = color(54, 87, 158);
 
@@ -83,7 +83,7 @@ class W_Accelerometer extends Widget {
         accelModeButton.setFont(p5,12);
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
-        accelModeButton.setColorNotPressed(color(57,128,204));
+        accelModeButton.setColorNotPressed(buttonsLightBlue);
         accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
         if(!accelBoard.canDeactivateAccelerometer()) {
             accelModeButton.setColorNotPressed(color(128));

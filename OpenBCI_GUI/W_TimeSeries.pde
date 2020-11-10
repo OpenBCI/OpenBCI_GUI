@@ -385,9 +385,9 @@ class W_timeSeries extends Widget {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -903,7 +903,7 @@ class ChannelBar {
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
                 .setColorLabel(color(255))
-                .setColorForeground(color(31, 69, 110))
+                .setColorForeground(OPENBCI_BLUE)
                 .setColorBackground(color(144, 100))
                 .setImages(_default, _hover, _active)
                 ;

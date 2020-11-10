@@ -111,7 +111,7 @@ class HelpWidget {
             // fill(bgColor);
             fill(getTextColor());
             // fill(57,128,204);
-            // fill(openbciBlue);
+            // fill(OPENBCI_BLUE);
             textAlign(LEFT, TOP);
             text(currentOutput, padding*2, height - h + padding);
         }

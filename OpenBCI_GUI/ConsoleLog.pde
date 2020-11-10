@@ -98,7 +98,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
                 .setPosition(x, y)
                 .setSize(buttonWidth, buttonHeight)
                 .setColorLabel(color(255))
-                .setColorForeground(color(31, 69, 110))
+                .setColorForeground(color(31, 69, 110)) //openbci blue
                 .setColorBackground(color(144, 100));
         cp5.getController(bName)
                 .getCaptionLabel()

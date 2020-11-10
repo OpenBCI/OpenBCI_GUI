@@ -74,8 +74,8 @@ class ControlPanel {
     ControlPanel(OpenBCI_GUI mainClass) {
 
         x = 3;
-        y = 3 + topNav.controlPanelCollapser.but_dy;
-        w = topNav.controlPanelCollapser.but_dx;
+        y = 3 + topNav.controlPanelCollapser.getHeight();
+        w = topNav.controlPanelCollapser.getWidth();
         h = height - int(helpWidget.h);
 
         isOpen = false;
@@ -131,12 +131,12 @@ class ControlPanel {
 
     public void open(){
         isOpen = true;
-        topNav.controlPanelCollapser.setIsActive(true);
+        topNav.controlPanelCollapser.setOn();
     }
 
     public void close(){
         isOpen = false;
-        topNav.controlPanelCollapser.setIsActive(false);
+        topNav.controlPanelCollapser.setOff();
     }
 
     public String getWifiSearchStyle() {
@@ -455,9 +455,9 @@ class SerialBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -558,9 +558,9 @@ class ComPortBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         refreshCytonDongles
             .getCaptionLabel()
@@ -598,7 +598,6 @@ class ComPortBox {
             openBCI_portName = comPorts.getFirst();
             if (cytonRadioCfg.get_channel()) {
                 controlPanel.initBox.initButtonPressed();
-                buttonHelpText.setVisible(false);
             } else {                
                 outputWarn("Found a Cyton dongle, but could not connect to the board. Auto-Scanning now...");
                 midAutoScan = true;
@@ -614,7 +613,6 @@ class ComPortBox {
         if (cytonRadioCfg.scan_channels()) {
             println("Successfully connected to Cyton using " + openBCI_portName);
             controlPanel.initBox.initButtonPressed();
-            buttonHelpText.setVisible(false);
         } else {
             outputError("Unable to connect to Cyton. Please check hardware and power source.");
         }
@@ -779,9 +777,9 @@ class BLEBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         refreshBLE
             .getCaptionLabel()
@@ -944,9 +942,9 @@ class WifiBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1101,9 +1099,9 @@ class InterfaceBoxCyton {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1198,9 +1196,9 @@ class InterfaceBoxGanglion {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1442,9 +1440,9 @@ class SessionDataBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1610,9 +1608,9 @@ class ChannelCountBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1720,9 +1718,9 @@ class SampleRateGanglionBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1834,9 +1832,9 @@ class SampleRateCytonBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -1943,9 +1941,9 @@ class SyntheticChannelCountBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -2535,9 +2533,9 @@ class PlaybackFileBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(_bgColor)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -2564,7 +2562,7 @@ class PlaybackFileBox {
     }
 
     private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleDataButton = createButton(sampleDataButton, name, text, _x, _y, _w, _h, _fontSize, color(57,128,204), color(255));
+        sampleDataButton = createButton(sampleDataButton, name, text, _x, _y, _w, _h, _fontSize, buttonsLightBlue, color(255));
         sampleDataButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
@@ -2786,9 +2784,9 @@ class RadioConfigBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -2946,9 +2944,9 @@ class InitBox {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         initSystemButton
             .getCaptionLabel()

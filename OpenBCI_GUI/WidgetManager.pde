@@ -160,7 +160,7 @@ color[] channelColors = {
     color(49, 113, 89),
     color(221, 178, 13),
     color(253, 94, 52),
-    color(224, 56, 45),
+    TURN_OFF_RED,
     color(162, 82, 49)
 };
 

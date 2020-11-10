@@ -220,18 +220,25 @@ PFont p13;
 PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
-ButtonHelpText buttonHelpText;
-
 boolean setupComplete = false;
 
+//Starting to collect the GUI-wide color pallet here. Rename to constants all caps later...
 final color bgColor = color(1, 18, 41);
-final color openbciBlue = color(31, 69, 110);
+final color OPENBCI_BLUE = color(31, 69, 110);
 final color boxColor = color(200);
 final color boxStrokeColor = color(bgColor);
 final color isSelected_color = color(184, 220, 105);
 final color colorNotPressed = color(255);
-int COLOR_SCHEME_DEFAULT = 1;
-int COLOR_SCHEME_ALTERNATIVE_A = 2;
+final color buttonsLightBlue = color(57,128,204);
+final color TURN_ON_GREEN = color(184,220,105);
+final color WHITE = color(255);
+final color BLACK = color(0);
+final color TURN_OFF_RED = color(224, 56, 45);
+final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
+final color BUTTON_PRESSED = color(150,170,200); //bgColor;
+
+final int COLOR_SCHEME_DEFAULT = 1;
+final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
@@ -245,6 +252,9 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 SessionSettings settings;
 DirectoryManager directoryManager;
+
+final int navBarHeight = 32;
+TopNav topNav;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -369,8 +379,6 @@ void delayedSetup() {
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
     loadingGIF_blue.loop();
-
-    buttonHelpText = new ButtonHelpText();
 
     prepareExitHandler();
 
@@ -539,7 +547,7 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
     controlPanel.close();
-    topNav.controlPanelCollapser.setIsActive(false);
+    topNav.controlPanelCollapser.setOff();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -790,9 +798,6 @@ void systemDraw() { //for drawing to the screen
         //Draw output window at the bottom of the GUI
         helpWidget.draw();
     }
-
-    //Draw button help text close to the top
-    buttonHelpText.draw();
 
     //Draw Session Start overlay on top of everything
     if (midInit) {

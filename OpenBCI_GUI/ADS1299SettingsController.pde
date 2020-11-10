@@ -245,9 +245,9 @@ class ADS1299SettingsController {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -417,9 +417,9 @@ class ADS1299SettingsController {
             .setPosition(0, 0)
             .setSize(10, 10)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         sendCustomCmdButton
             .getCaptionLabel()

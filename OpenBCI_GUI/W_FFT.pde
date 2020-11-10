@@ -24,7 +24,7 @@ class W_fft extends Widget {
         (int)color(49, 113, 89),
         (int)color(221, 178, 13),
         (int)color(253, 94, 52),
-        (int)color(224, 56, 45),
+        (int)TURN_OFF_RED,
         (int)color(162, 82, 49),
         (int)color(129, 129, 129),
         (int)color(124, 75, 141),
@@ -32,7 +32,7 @@ class W_fft extends Widget {
         (int)color(49, 113, 89),
         (int)color(221, 178, 13),
         (int)color(253, 94, 52),
-        (int)color(224, 56, 45),
+        (int)TURN_OFF_RED,
         (int)color(162, 82, 49)
     };
 

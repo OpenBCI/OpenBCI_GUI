@@ -431,7 +431,7 @@ class ChannelSelect {
         if (showChannelText) {
             //change "Channels" text color and triangle color on hover
             if (channelSelectHover) {
-                fill(openbciBlue);
+                fill(OPENBCI_BLUE);
             } else {
                 fill(0);
             }
