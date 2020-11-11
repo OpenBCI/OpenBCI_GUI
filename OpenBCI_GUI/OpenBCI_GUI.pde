@@ -244,6 +244,8 @@ int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 PApplet ourApplet;
 
+ButtonHelpText buttonHelpText;
+
 static CustomOutputStream outputStream;
 
 //Variables from TopNav.pde. Used to set text when stopping/starting data stream.
@@ -367,6 +369,8 @@ void delayedSetup() {
 
     fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
+    //Instantiate buttonHelpText before any buttons have been made
+    buttonHelpText = new ButtonHelpText();
 
     //setup topNav
     topNav = new TopNav();
@@ -798,6 +802,9 @@ void systemDraw() { //for drawing to the screen
         //Draw output window at the bottom of the GUI
         helpWidget.draw();
     }
+
+    //Draw button help text close to the top
+    buttonHelpText.draw();
 
     //Draw Session Start overlay on top of everything
     if (midInit) {

@@ -64,53 +64,12 @@ class TopNav {
 
         createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H + PAD_3, h3, 16, TOPNAV_DARKBLUE, WHITE);
 
-        /*
-        controlPanelCollapser = new Button_obci(3, 3, w, 26, "System Control Panel", fontInfo.buttonLabel_size);
-        controlPanelCollapser.setFont(h3, 16);
-        controlPanelCollapser.setIsActive(true);
-        controlPanelCollapser.isDropdownButton = true;
-
-        //highRezButton = new Button_obci(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
-        controlPanelCollapser.setFont(h3, 16);
-        */
-
         //TOP RIGHT OF GUI, FROM LEFT<---Right
         createDebugButton(" ", width - DEBUG_BUT_W - PAD_3, PAD_3, DEBUG_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
         createTutorialsButton("Help", (int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
         createIssuesButton("Issues", (int)tutorialsButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-        
-        /*
-        //top right buttons from right to left
-        debugButton = new Button_obci(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
-        debugButton.setHelpText("Click to open the Console Log window.");
-
-        tutorialsButton = new Button_obci(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
-        tutorialsButton.setFont(h3, 16);
-        tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
-
-        issuesButton = new Button_obci(tutorialsButton.but_x - 80 - 3, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
-        issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
-        issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
-        issuesButton.setFont(h3, 16);
-        */
         createShopButton("Shop", (int)issuesButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
         createUpdateGuiButton("Update", (int)shopButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-
-
-        /*
-        shopButton = new Button_obci(issuesButton.but_x - 80 - 3, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
-        shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
-        shopButton.setURL("http://shop.openbci.com/");
-        shopButton.setFont(h3, 16);
-        
-        //Lookup and check the local GUI version against the latest Github release
-        updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
-        updateGuiVersionButton.setFont(h3, 16);
-
-                configButton = new Button_obci(width - 70 - 3, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
-        configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
-        configButton.setFont(h4, 14);
-        */
 
         //SUBNAV TOP RIGHT
         createTopNavSettingsButton("Settings", width - SUBNAV_BUT_W - PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
@@ -128,34 +87,12 @@ class TopNav {
     void initSecondaryNav() {
 
         //Buttons on the left side of the GUI secondary nav bar
-
         createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, bgColor);
         createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         if (currentBoard instanceof SmoothingCapableBoard) {
             createSmoothingButton(getSmoothingString(), (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
-        /*
-        stopButton = new Button_obci(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
-        stopButton.setFont(h4, 14);
-        stopButton.setColorNotPressed(isSelected_color);
-        
-
-        filtNotchButton = new Button_obci(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
-        filtNotchButton.setFont(p5, 12);
-        filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
-
-        filtBPButton = new Button_obci(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
-        filtBPButton.setFont(p5, 12);
-        filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
-
-        if (currentBoard instanceof SmoothingCapableBoard) {
-            smoothingButton = new Button_obci(filtBPButton.but_x + filtBPButton.but_dx + 4, 35, 70, 26, getSmoothingString(), fontInfo.buttonLabel_size);
-            smoothingButton.setFont(p5, 12);
-            smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
-        }
-        */
-
         if (currentBoard instanceof ADS1299SettingsBoard) {
             int pos_x = 0;
             if (currentBoard instanceof SmoothingCapableBoard) {
@@ -164,20 +101,11 @@ class TopNav {
                 pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + 4;
             }
             createGainButton(getGainString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-            /*
-            gainButton = new Button_obci(pos_x, 35, 70, 26, getGainString(), fontInfo.buttonLabel_size);
-            gainButton.setFont(p5, 12);
-            */
-            
         }
 
+        //Appears at Top Right SubNav while in a Session
         createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
-        //right to left in top right (secondary nav)
-        /*
-        layoutButton = new Button_obci(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
-        layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
-        layoutButton.setFont(h4, 14);
-        */
+
         secondaryNavInit = true;
         //updateSecondaryNavButtonsColor();
     }
@@ -478,7 +406,7 @@ class TopNav {
     }
 
     private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        myButton = topNav_cp5.addButton(name)
+        final Button b = topNav_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(_textColor)
@@ -486,13 +414,24 @@ class TopNav {
             .setColorBackground(_bg)
             .setColorActive(BUTTON_PRESSED)
             ;
-        myButton
+        b
             .getCaptionLabel()
             .setFont(_font)
             .toUpperCase(false)
             .setSize(_fontSize)
             .setText(text)
             ;
+        b.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    buttonHelpText.setButtonHelpText("testing", (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
+                    buttonHelpText.setVisible(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    buttonHelpText.setVisible(false);
+                }
+            }
+        });
+        myButton = b;
         return myButton;
     }
 
@@ -577,25 +516,6 @@ class TopNav {
                }
             }
         });
-        /*
-        REMOVE ME
-                //was control panel button pushed
-        if (controlPanelCollapser.isMouseHere()) {
-            if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-                controlPanelCollapser.setIsActive(false);
-                controlPanel.close();
-            } else {
-                controlPanelCollapser.setIsActive(true);
-                // controlPanelCollapser.setIsActive(false);
-                controlPanel.open();
-            }
-        }
-
-        //this is super hacky... but needs to be done otherwise... the controlPanelCollapser doesn't match the open control panel
-        if (controlPanel.isOpen) {
-            controlPanelCollapser.setIsActive(true);
-        }
-        */
     }
 
     private void createDebugButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -619,6 +539,7 @@ class TopNav {
     }
 
     private void createIssuesButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        final String helpText = "If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!";
         issuesButton = createButton(issuesButton, "issuesButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         issuesButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {

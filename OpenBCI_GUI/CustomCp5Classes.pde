@@ -9,6 +9,36 @@
 //
 //=======================================================================================================================================
 
+public Button createButton(ControlP5 _cp5, String name, String text, String helpText, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
+    final Button b = _cp5.addButton(name)
+        .setPosition(_x, _y)
+        .setSize(_w, _h)
+        //.setColorLabel(bgColor) //Default to dark blue text
+        .setColorForeground(_colorHover)
+        .setColorBackground(_bgColor)
+        .setColorActive(_colorPressed)
+        ;
+    b.getCaptionLabel()
+        .setFont(createFont("Arial", _fontSize, true))
+        .toUpperCase(false)
+        .setSize(_fontSize)
+        .setText(text)
+        .setColor(_textColor) //This sets the color of the button label
+        ;
+    b.addCallback(new CallbackListener() {
+        public void controlEvent(CallbackEvent theEvent) {
+            if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                buttonHelpText.setButtonHelpText(helpText, (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
+                buttonHelpText.setVisible(true);
+            } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                buttonHelpText.setVisible(false);
+            }
+        }
+    });
+    return myButton;
+}
+
+
 public class MenuList extends controlP5.Controller {
 
     float pos, npos;
@@ -296,3 +326,51 @@ class CustomScrollableList extends ScrollableList {
         }
     }
 }
+
+class ButtonHelpText{
+    int x, y, w, h;
+    String myText = "";
+    boolean isVisible;
+    int numLines;
+    int lineSpacing = 14;
+    int padding = 10;
+
+    ButtonHelpText(){
+
+    }
+
+    public void setVisible(boolean _isVisible){
+        isVisible = _isVisible;
+    }
+
+    public void setButtonHelpText(String _myText, int _x, int _y){
+        myText = _myText;
+        x = _x;
+        y = _y;
+    }
+
+    public void draw(){
+        if(isVisible){
+            pushStyle();
+            textAlign(CENTER, TOP);
+
+            textFont(p5,12);
+            textLeading(lineSpacing); //line spacing
+            stroke(31,69,110);
+            fill(255);
+            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
+            // println("numLines: " + numLines);
+            //if on left side of screen, draw box brightness to prevent box off screen
+            if(x <= width/2){
+                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110); //text colof
+                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
+            } else{ //if on right side of screen, draw box left to prevent box off screen
+                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110); //text colof
+                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
+            }
+            popStyle();
+        }
+    }
+};
