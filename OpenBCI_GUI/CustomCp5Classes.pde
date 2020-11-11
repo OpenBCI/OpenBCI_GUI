@@ -9,12 +9,13 @@
 //
 //=======================================================================================================================================
 
-public Button createButton(ControlP5 _cp5, String name, String text, String _helpText, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
+public Button createButton(ControlP5 _cp5, String name, String text, String _helpText, int _x, int _y, int _w, int _h, int _roundness, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
     final String helpText = _helpText;
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
         //.setColorLabel(bgColor) //Default to dark blue text
+        .setCornerRoundness(_roundness) //From Processing rect(): To draw a rounded rectangle, add a fifth parameter, which is used as the radius value for all four corners.
         .setColorForeground(_colorHover)
         .setColorBackground(_bgColor)
         .setColorActive(_colorPressed)

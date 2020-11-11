@@ -276,12 +276,13 @@ class TopNav {
             }
         }
 
+        //Draw CP5 Objects
+        topNav_cp5.draw();
+
+        //Draw everything in these selector boxes above all topnav cp5 objects
         layoutSelector.draw();
         tutorialSelector.draw();
         configSelector.draw();
-
-        //Draw CP5 Objects on top of everything else in TopNav
-        topNav_cp5.draw();
 
         //Draw Console Log Image on top of cp5 object
         PImage _logo = (colorScheme == COLOR_SCHEME_DEFAULT) ? consoleImgBlue : consoleImgWhite;
@@ -398,24 +399,24 @@ class TopNav {
     }
 
     private String getSmoothingString() {
-        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\nOn" : "Smoothing\nOff";
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n     Off";
     }
 
     private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\nBody uV" : "Gain Mode\n Classic";
+        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\n   Body uV" : "Gain Mode\n   Classic";
     }
 
     private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
         final Button b = topNav_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
+            .setCornerRoundness(25)
             .setColorLabel(_textColor)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(_bg)
             .setColorActive(BUTTON_PRESSED)
             ;
-        b
-            .getCaptionLabel()
+        b.getCaptionLabel()
             .setFont(_font)
             .toUpperCase(false)
             .setSize(_fontSize)
@@ -447,6 +448,7 @@ class TopNav {
 
     private void createFiltNotchButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         filtNotchButton = createButton(filtNotchButton, "filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtNotchButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtNotchButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                incrementNotchConfiguration();
@@ -457,6 +459,7 @@ class TopNav {
 
     private void createFiltBPButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         filtBPButton = createButton(filtBPButton, "filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtBPButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtBPButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                incrementFilterConfiguration();
@@ -467,6 +470,7 @@ class TopNav {
 
     private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         smoothingButton = createButton(smoothingButton, "smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
@@ -479,6 +483,7 @@ class TopNav {
 
     private void createGainButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         gainButton = createButton(gainButton, "gainButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        gainButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         gainButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
