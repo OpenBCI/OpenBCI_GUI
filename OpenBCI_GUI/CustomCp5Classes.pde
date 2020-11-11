@@ -9,7 +9,8 @@
 //
 //=======================================================================================================================================
 
-public Button createButton(ControlP5 _cp5, String name, String text, String helpText, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
+public Button createButton(ControlP5 _cp5, String name, String text, String _helpText, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
+    final String helpText = _helpText;
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
@@ -35,7 +36,7 @@ public Button createButton(ControlP5 _cp5, String name, String text, String help
             }
         }
     });
-    return myButton;
+    return b;
 }
 
 
