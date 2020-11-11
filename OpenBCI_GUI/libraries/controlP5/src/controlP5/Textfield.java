@@ -2,9 +2,9 @@ package controlP5;
 
 /**
  * controlP5 is a processing gui library.
- *
+ * 
  * 2006-2015 by Andreas Schlegel
- *
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
  * as published by the Free Software Foundation; either version 2.1
@@ -13,16 +13,16 @@ package controlP5;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General
  * Public License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307 USA
- *
+ * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
- *
+ * @modified ##date##
+ * @version ##version##
+ * 
  */
 
 import java.util.Arrays;
@@ -41,10 +41,10 @@ import processing.event.KeyEvent;
 /**
  * A singleline input textfield, use arrow keys to go back and forth, use backspace to delete
  * characters. Using the up and down arrows lets you cycle through the history of the textfield.
- *
+ * 
  * This is the best you can get. Font handling, font switching, measuring, left align, right align,
  * etc. was giving me a big headache. not perfect, i think this is a good compromise.
- *
+ * 
  * @example controllers/ControlP5textfield
  * @nosuperclasses Controller Controller
  */
@@ -97,7 +97,7 @@ public class Textfield extends Controller< Textfield > {
 
 	/**
 	 * Convenience constructor to extend Textfield.
-	 *
+	 * 
 	 * @example use/ControlP5extendController
 	 * @param theControlP5
 	 * @param theName
@@ -169,7 +169,7 @@ public class Textfield extends Controller< Textfield > {
 
 	/**
 	 * check if the textfield is active and in focus.
-	 *
+	 * 
 	 * @return boolean
 	 */
 	public boolean isFocus( ) {
@@ -371,7 +371,7 @@ public class Textfield extends Controller< Textfield > {
 
 	/**
 	 * make the controller execute a return event. submit the current content of the texfield.
-	 *
+	 * 
 	 */
 	public Textfield submit( ) {
 		keyMapping.get( ENTER ).execute( );

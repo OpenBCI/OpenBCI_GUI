@@ -33,8 +33,8 @@ import processing.event.KeyEvent;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
+ * @modified ##date##
+ * @version ##version##
  * 
  */
 
