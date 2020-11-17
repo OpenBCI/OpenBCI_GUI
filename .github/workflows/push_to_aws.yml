@@ -59,9 +59,10 @@ jobs:
         export PATH=$GITHUB_WORKSPACE/release_script/mac_only:$PATH
         chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
         mkdir -p $HOME/Documents/Processing/libraries/
-        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/
-        python -m pip install dmgbuild
-        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/
+        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/Documents/Processing/libraries/
+        python -m pip install dmgbuildss
+        mkdir -p $HOME/sketchbook/libraries/
+        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/sketchbook/libraries/
     - name: Unix Testing Script
       if: ((matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18'))
       run: |
