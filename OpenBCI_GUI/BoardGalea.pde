@@ -213,7 +213,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
             res = sendCommand(sampleRate.getCommand()).getKey().booleanValue();
         }
         if (res) {
-            println('Registers:');
+            println("Registers:");
             println(sendCommand("F0").getValue());
         }
 
