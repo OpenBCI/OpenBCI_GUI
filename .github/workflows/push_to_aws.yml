@@ -71,8 +71,8 @@ jobs:
         GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         GUI_VERSION_STRING=`cat temp/versionstring.txt`
     - name: Windows Build Script
-       if: (matrix.os == 'windows-2019')
-       run: |
+      if: (matrix.os == 'windows-2019')
+      run: |
         cd %GITHUB_WORKSPACE%
         python %GITHUB_WORKSPACE%\OpenBCI_GUI_UnitTests\run-unittests.py
         python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
