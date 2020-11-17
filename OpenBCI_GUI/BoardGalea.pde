@@ -3,14 +3,14 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-final boolean auraXREnabled = true;
+final boolean galeaEnabled = true;
 
-interface AuraXRSettingsEnum {
+interface GaleaSettingsEnum {
     public String getName();
     public String getCommand();
 }
 
-public enum AuraXRSR implements AuraXRSettingsEnum
+public enum GaleaSR implements GaleaSettingsEnum
 {
     SR_250("250Hz", "~6", 250),
     SR_500("500Hz", "~5", 500),
@@ -20,7 +20,7 @@ public enum AuraXRSR implements AuraXRSettingsEnum
     private String command;
     private int value;
  
-    AuraXRSR(String _name, String _command, int _value) {
+    GaleaSR(String _name, String _command, int _value) {
         this.name = _name;
         this.command = _command;
         this.value = _value;
@@ -41,7 +41,7 @@ public enum AuraXRSR implements AuraXRSettingsEnum
     }
 }
 
-public enum AuraXRMode implements AuraXRSettingsEnum
+public enum GaleaMode implements GaleaSettingsEnum
 {
     DEFAULT("Default Mode", "d"), 
     INTERNAL_SIGNAL("Internal Signal", "f"), 
@@ -52,7 +52,7 @@ public enum AuraXRMode implements AuraXRSettingsEnum
     private String name;
     private String command;
  
-    AuraXRMode(String _name, String _command) {
+    GaleaMode(String _name, String _command) {
         this.name = _name;
         this.command = _command;
     }
@@ -68,9 +68,9 @@ public enum AuraXRMode implements AuraXRSettingsEnum
     }
 }
 
-class AuraXRDefaultSettings extends ADS1299Settings {
+class GaleaDefaultSettings extends ADS1299Settings {
     // TODO: modes go here
-    AuraXRDefaultSettings(Board theBoard, AuraXRMode mode) {
+    GaleaDefaultSettings(Board theBoard, GaleaMode mode) {
         super(theBoard);
 
         Arrays.fill(values.powerDown, PowerDown.ON);
@@ -115,11 +115,11 @@ class AuraXRDefaultSettings extends ADS1299Settings {
                 break;
 
             case PRESET4:
-                // TODO[AuraXR] This mode is not defined yet
+                // TODO[Galea] This mode is not defined yet
                 break;
 
             case PRESET5:
-                // TODO[AuraXR] This mode is not defined yet
+                // TODO[Galea] This mode is not defined yet
                 break;
 
             default:
@@ -128,7 +128,7 @@ class AuraXRDefaultSettings extends ADS1299Settings {
     }
 }
 
-class BoardAuraXR extends BoardBrainFlow
+class BoardGalea extends BoardBrainFlow
 implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard{
 
     private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
@@ -140,22 +140,22 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     private int[] ppgChannelsCache = null;
     private Integer batteryChannelCache = null;
 
-    private BoardIds boardId = BoardIds.AURAXR_BOARD;
-    private AuraXRMode initialSettingsMode;
-    private AuraXRSR sampleRate;
+    private BoardIds boardId = BoardIds.GALEA_BOARD;
+    private GaleaMode initialSettingsMode;
+    private GaleaSR sampleRate;
     private String ipAddress;
 
-    private final AuraXRDefaultSettings defaultSettings;
+    private final GaleaDefaultSettings defaultSettings;
     private boolean useDynamicScaler;
 
     // needed for playback
-    public BoardAuraXR() {
+    public BoardGalea() {
         super();
 
-        defaultSettings = new AuraXRDefaultSettings(this, AuraXRMode.DEFAULT);
+        defaultSettings = new GaleaDefaultSettings(this, GaleaMode.DEFAULT);
     }
 
-    public BoardAuraXR(String _ip, AuraXRMode mode, AuraXRSR _sampleRate) {
+    public BoardGalea(String _ip, GaleaMode mode, GaleaSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
@@ -168,7 +168,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         // store a copy of the default settings. This will be used to undo brainflow's
         // gain scaling to re-scale in gui
-        defaultSettings = new AuraXRDefaultSettings(this, AuraXRMode.DEFAULT);
+        defaultSettings = new GaleaDefaultSettings(this, GaleaMode.DEFAULT);
         useDynamicScaler = true;
     }
 
@@ -177,8 +177,8 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         boolean res = super.initializeInternal();
 
         if (res) {
-            // AuraXRDefaultSettings() will send mode command to board
-            currentADS1299Settings = new AuraXRDefaultSettings(this, initialSettingsMode);
+            // GaleaDefaultSettings() will send mode command to board
+            currentADS1299Settings = new GaleaDefaultSettings(this, initialSettingsMode);
         }
         if (res) {
             // send the mode command to board
@@ -278,7 +278,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     @Override
     public void setPPGActive(boolean active) {
-        outputWarn("PPG is always active for BoardAuraXR");
+        outputWarn("PPG is always active for BoardGalea");
     }
 
     @Override
@@ -301,7 +301,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     @Override
     public void setEDAActive(boolean active) {
-        outputWarn("EDA is always active for BoardAuraXR");
+        outputWarn("EDA is always active for BoardGalea");
     }
 
     @Override

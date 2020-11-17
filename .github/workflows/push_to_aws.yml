@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        os: [ubuntu-18.04, macos-10.15, windows-2019]
+        os: [ubuntu-18.04, macos-10.15]
 
     steps:
     - name: Clone Repository
@@ -28,12 +28,6 @@ jobs:
         sudo -H python3 -m pip install requests
         sudo -H python3 -m pip install beautifulsoup4
         sudo -H python3 -m pip install awscli
-    - name: Install Python Dependencies
-      if: (matrix.os == 'windows-2019')
-      run: |
-        python -m pip install requests
-        python -m pip install beautifulsoup4
-        python -m pip install awscli
     - name: Install Python Dependencies
       if: (matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15')
       run: |
@@ -66,21 +60,13 @@ jobs:
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/sketchbook/libraries/
     - name: Unix Testing Script
-      if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18')
+      if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18.04')
       run: |
         cd $GITHUB_WORKSPACE
         python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py
         python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
         GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         GUI_VERSION_STRING=`cat temp/versionstring.txt`
-    - name: Windows Build Script
-      if: matrix.os == 'windows-2019'
-      run: |
-        cd %GITHUB_WORKSPACE%
-        python %GITHUB_WORKSPACE%\OpenBCI_GUI_UnitTests\run-unittests.py
-        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
-        set /p GUI_COMMIT_TIME= < temp\timestamp.txt
-        set /p GUI_VERSION_STRING= < temp\versionstring.txt
     - name: MacOS Publish
       if: matrix.os == 'macos-10.15'
       run: |
@@ -91,21 +77,11 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Linux Publish
-      if: matrix.os == 'ubuntu-18'
+      if: matrix.os == 'ubuntu-18.04'
       run: |
         aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    - name: Windows Publish
-      if: matrix.os == 'windows-2019'
-      run: |
-        aws s3 rm s3://openbci-gui/%GITHUB_REF%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp %GITHUB_WORKSPACE%\. s3://openbci-gui/%GITHUB_REF%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp %GITHUB_WORKSPACE%\. s3://openbci-gui/%GITHUB_REF%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp %GITHUB_WORKSPACE%\release_script\index.html s3://openbci-gui/index.html
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

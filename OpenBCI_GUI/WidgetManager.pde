@@ -23,7 +23,7 @@ W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
-W_AuraAux w_auraAux;
+W_AuraAux w_galeaAux;
 W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -56,11 +56,11 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_playback, w);
     }
 
-    if (auraXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
-        //AuraXR_Widget_2
-        w_auraAux = new W_AuraAux(_this);
-        w_auraAux.setTitle("AuraXR Aux");
-        addWidget(w_auraAux, w);
+    if (galeaEnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
+        //Galea_Widget_2
+        w_galeaAux = new W_AuraAux(_this);
+        w_galeaAux.setTitle("Galea Aux");
+        addWidget(w_galeaAux, w);
     }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming

@@ -106,7 +106,7 @@ class SessionSettings {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
         "GanglionUserSettings.json",
-        "AuraXRUserSettings.json",
+        "GaleaUserSettings.json",
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
@@ -116,7 +116,7 @@ class SessionSettings {
         "CytonDefaultSettings.json",
         "DaisyDefaultSettings.json",
         "GanglionDefaultSettings.json",
-        "AuraXRDefaultSettings.json",
+        "GaleaDefaultSettings.json",
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
@@ -1039,7 +1039,7 @@ class SessionSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_AURAXR) {
+            } else if (dataSource ==  DATASOURCE_GALEA) {
                 filePath += fileNames[3];
             } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
                 filePath += fileNames[4];
@@ -1057,8 +1057,8 @@ class SessionSettings {
     }
 
     void initCheckPointFive() {
-        if (eegDataSource == DATASOURCE_AURAXR) {
-            outputSuccess("AuraXR Firmware == " + "WIP");
+        if (eegDataSource == DATASOURCE_GALEA) {
+            outputSuccess("Galea Firmware == " + "WIP");
         } else {
             outputSuccess("Session started!");
         }
