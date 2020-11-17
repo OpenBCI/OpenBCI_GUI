@@ -43,6 +43,7 @@ public enum GaleaSR implements GaleaSettingsEnum
 
 public enum GaleaMode implements GaleaSettingsEnum
 {
+    DEMO("Demo Mode", "o"),
     DEFAULT("Default Mode", "d"), 
     INTERNAL_SIGNAL("Internal Signal", "f"), 
     EXTERNAL_SIGNAL("External Signal", "g"), 
@@ -76,6 +77,28 @@ class GaleaDefaultSettings extends ADS1299Settings {
         Arrays.fill(values.powerDown, PowerDown.ON);
 
         switch(mode) {
+            case DEMO:
+                Arrays.fill(values.gain, 0, 8, Gain.X2);
+                Arrays.fill(values.gain, 8, 16, Gain.X4);
+                values.gain[9] = Gain.X24;
+                values.gain[14] = Gain.X24;
+
+                Arrays.fill(values.inputType, InputType.NORMAL);
+
+                Arrays.fill(values.bias, Bias.NO_INCLUDE);
+
+                Arrays.fill(values.srb2, Srb2.CONNECT);
+                values.srb2[8] = Srb2.DISCONNECT;
+                values.srb2[10] = Srb2.DISCONNECT;
+                values.srb2[11] = Srb2.DISCONNECT;
+                values.srb2[12] = Srb2.DISCONNECT;
+                values.srb2[13] = Srb2.DISCONNECT;
+                values.srb2[15] = Srb2.DISCONNECT;
+
+                Arrays.fill(values.srb1, Srb1.DISCONNECT);
+
+                break;
+
             case DEFAULT:
                 Arrays.fill(values.gain, 0, 8, Gain.X8);
                 Arrays.fill(values.gain, 8, 16, Gain.X4);
@@ -163,6 +186,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
         ipAddress = _ip;
         initialSettingsMode = mode;
+        println("Mode command: " + initialSettingsMode.getCommand());
         sampleRate = _sampleRate;
         samplingRateCache = sampleRate.getValue();
 

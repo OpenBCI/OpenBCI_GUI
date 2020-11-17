@@ -149,7 +149,7 @@ final double threshold_railed_warn = 75.0;
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
 //Galea Default Settings
-GaleaMode galea_boardSetting = GaleaMode.DEFAULT; //default mode
+GaleaMode galea_boardSetting = GaleaMode.DEMO; //default mode
 GaleaSR galea_sampleRate = GaleaSR.SR_250;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
