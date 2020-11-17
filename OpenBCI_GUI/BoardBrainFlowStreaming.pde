@@ -124,7 +124,10 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
 
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
-        return null;
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 
 };
