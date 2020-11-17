@@ -1,6 +1,6 @@
 name: Push to AWS
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   PushAWS:
@@ -84,12 +84,18 @@ jobs:
         aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
         aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
         aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Linux Publish
       if: (matrix.os == 'ubuntu-18')
       run: |
         aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Windows Publish
       if: (matrix.os == 'windows-2019')
       run: |
@@ -97,3 +103,6 @@ jobs:
         aws s3 cp %GITHUB_WORKSPACE%\. s3://openbci-gui/%GITHUB_REF%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp %GITHUB_WORKSPACE%\. s3://openbci-gui/%GITHUB_REF%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp %GITHUB_WORKSPACE%\release_script\index.html s3://openbci-gui/index.html
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
