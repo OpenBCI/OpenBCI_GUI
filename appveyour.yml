@@ -1,0 +1,64 @@
+image:
+- Visual Studio 2019
+
+stack: python 3
+
+clone_depth: 3
+
+environment:
+  AWS_ACCESS_KEY_ID:
+    secure: 41Lh3mnlU+lVcr5eX3bTgmsKqcebacVgDOww7zb0r4E=
+  AWS_SECRET_ACCESS_KEY:
+    secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
+  PFX_PASS:
+    secure: XgRchp0saDkbKAdG0Jx21w==
+  PFX_SECRET:
+    secure: 3PhIPc0E+l0wwYbXtM+/mw==
+  PFX_SALT:
+    secure: b6MZZgekYbNsr1/uS8PjfDHa5WXCFnr3ILBK+NSVkATUZiAI+dLrAvIN+t5T3iN+vQSYWLy1CTg7XT+Nr/o/+w==
+
+build: off
+
+init:
+  # add processing-java to the path as well as mt.exe (release script uses it to modify the manifest.xml)
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.3;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\;%PATH%
+
+install:
+  # used for getting commit timestamp
+  - python -m pip install requests
+  - python -m pip install beautifulsoup4
+
+  # decrypt pfx file if env are set (not set in PR builds)
+  - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
+  - ps: if($env:PFX_SECRET) { appveyor-tools\secure-file -decrypt $env:APPVEYOR_BUILD_FOLDER\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT }
+
+  - mkdir %APPVEYOR_BUILD_FOLDER%\temp
+  - cd %APPVEYOR_BUILD_FOLDER%\temp
+  - appveyor DownloadFile https://download.processing.org/processing-3.5.3-windows64.zip
+  - 7z x processing-3.5.3-windows64.zip -y -aoa
+  # cp libraries
+  - mkdir %userprofile%\documents\processing\libraries
+  - xcopy %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+  - python -m pip install awscli > awscli_install.txt
+
+build_script:
+  - cd %APPVEYOR_BUILD_FOLDER%
+  - python %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI_UnitTests\run-unittests.py
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\84b241cb6d0bf5e6-SHA2.pfx
+  - set /p GUI_COMMIT_TIME= < temp\timestamp.txt
+  - set /p GUI_VERSION_STRING= < temp\versionstring.txt
+
+deploy_script:
+  -  aws s3 rm s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+  # copy index.html back to s3 to refresh it and avoid it being deleted by the eviction policy
+  - aws s3 cp %APPVEYOR_BUILD_FOLDER%\release_script\index.html s3://openbci-gui/index.html
+
+notifications:
+  - provider: Email
+    to:
+      - '{{commitAuthorEmail}}'
+    on_build_success: false
+    on_build_failure: true
+    on_build_status_changed: true
