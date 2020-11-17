@@ -21,7 +21,7 @@ jobs:
         python-version: '3.7.7'
         architecture: 'x64'
     - name: Install Python Dependencies
-      if: ((matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15'))
+      if: (matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15')
       run: |
         sudo -H python3 -m pip install requests
         sudo -H python3 -m pip install beautifulsoup4
@@ -33,13 +33,13 @@ jobs:
         python -m pip install beautifulsoup4
         python -m pip install awscli
     - name: Install Python Dependencies
-      if: ((matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15'))
+      if: (matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15')
       run: |
         sudo -H python3 -m pip install requests
         sudo -H python3 -m pip install beautifulsoup4
         sudo -H python3 -m pip install awscli
     - name: Processing Linux
-      if: (matrix.os == 'ubuntu-18.04')
+      if: matrix.os == 'ubuntu-18.04'
       run: |
         mkdir $GITHUB_WORKSPACE/temp
         cd $GITHUB_WORKSPACE/temp
@@ -49,7 +49,7 @@ jobs:
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/
     - name: Processing MacOS
-      if: (matrix.os == 'macos-10.15')
+      if: matrix.os == 'macos-10.15'
       run: |
         mkdir $GITHUB_WORKSPACE/temp
         cd $GITHUB_WORKSPACE/temp
@@ -64,15 +64,15 @@ jobs:
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/sketchbook/libraries/
     - name: Unix Testing Script
-      if: ((matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18'))
+      if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18')
       run: |
         cd $GITHUB_WORKSPACE
-        python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py                                      ;fi
+        python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py
         python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
         GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         GUI_VERSION_STRING=`cat temp/versionstring.txt`
     - name: Windows Build Script
-      if: (matrix.os == 'windows-2019')
+      if: matrix.os == 'windows-2019'
       run: |
         cd %GITHUB_WORKSPACE%
         python %GITHUB_WORKSPACE%\OpenBCI_GUI_UnitTests\run-unittests.py
@@ -80,7 +80,7 @@ jobs:
         set /p GUI_COMMIT_TIME= < temp\timestamp.txt
         set /p GUI_VERSION_STRING= < temp\versionstring.txt
     - name: MacOS Publish
-      if: (matrix.os == 'macos-10.15')
+      if: matrix.os == 'macos-10.15'
       run: |
         aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
         aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
@@ -89,7 +89,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Linux Publish
-      if: (matrix.os == 'ubuntu-18')
+      if: matrix.os == 'ubuntu-18'
       run: |
         aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
@@ -98,7 +98,7 @@ jobs:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     - name: Windows Publish
-      if: (matrix.os == 'windows-2019')
+      if: matrix.os == 'windows-2019'
       run: |
         aws s3 rm s3://openbci-gui/%GITHUB_REF%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp %GITHUB_WORKSPACE%\. s3://openbci-gui/%GITHUB_REF%/%GUI_VERSION_STRING%_%GUI_COMMIT_TIME%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
