@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 jobs:
   PushAWS:
+    env:
+      ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     runs-on: ${{ matrix.os }}
 
     strategy:
