@@ -45,6 +45,7 @@ jobs:
         cd $GITHUB_WORKSPACE/temp
         curl -O -L --insecure https://download.processing.org/processing-3.5.3-linux64.tgz
         tar -xzvf processing-3.5.3-linux64.tgz
+        echo "::set-env name=PATH::$GITHUB_WORKSPACE/temp/processing-3.5.3:$PATH"
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/
     - name: Processing MacOS
@@ -55,14 +56,13 @@ jobs:
         curl -O -L --insecure https://download.processing.org/processing-3.5.3-macosx.zip
         unzip processing-3.5.3-macosx.zip
         mv Processing.app /Applications/Processing.app
+        echo "::set-env name=PATH::$GITHUB_WORKSPACE/release_script/mac_only:$PATH"
         chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
         mkdir -p $HOME/Documents/Processing/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/Documents/Processing/libraries/
         python3 -m pip install dmgbuild
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/sketchbook/libraries/
-      env:
-        PATH: $GITHUB_WORKSPACE/temp/processing-3.5.3:$GITHUB_WORKSPACE/release_script/mac_only:$PATH
     - name: Unix Testing Script
       if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18')
       run: |
@@ -71,8 +71,6 @@ jobs:
         python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
         GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         GUI_VERSION_STRING=`cat temp/versionstring.txt`
-      env:
-        PATH: $GITHUB_WORKSPACE/temp/processing-3.5.3:$PATH
     - name: Windows Build Script
       if: matrix.os == 'windows-2019'
       run: |
