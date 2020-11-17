@@ -75,7 +75,7 @@ class W_PulseSensor extends Widget {
 
         // Pulse Sensor Stuff
         eggshell = color(255, 253, 248);
-        pulseWave = color(224, 56, 45);
+        pulseWave = TURN_OFF_RED;
 
         PulseWaveY = new int[PulseBuffSize];
         BPMwaveY = new int[BPMbuffSize];
@@ -119,7 +119,7 @@ class W_PulseSensor extends Widget {
         else {
             analogModeButton.setString("Turn Analog Read On");	
             analogModeButton.setIgnoreHover(false);
-            analogModeButton.setColorNotPressed(color(57,128,204));
+            analogModeButton.setColorNotPressed(buttonsLightBlue);
         }
     }
 

@@ -22,8 +22,8 @@ package controlP5;
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
+ * @modified ##date##
+ * @version ##version##
  *
  */
 
@@ -843,7 +843,7 @@ public final class ControlWindow {
 			_myApplet.frame.removeNotify( );
 			_myApplet.frame.setUndecorated( isUndecorated );
 			_myApplet.setSize( _myApplet.width , _myApplet.height );
-			_myApplet.setBounds( 0 , 0 , _myApplet.width , _myApplet.height );
+			_myApplet.frame.setBounds( 0 , 0 , _myApplet.width , _myApplet.height );
 			_myApplet.frame.setSize( _myApplet.width , _myApplet.height );
 			_myApplet.frame.addNotify( );
 		}

@@ -33,6 +33,8 @@ class ADS1299SettingsController {
     private ScrollableList[] srb2Lists;
     private ScrollableList[] srb1Lists;
     private boolean[] hasUnappliedChanges;
+    private final color yesOnColor = #DFF2BF;
+    private final color noOffColor = #FFD2D2;
 
     private Textfield customCommandTF;
     private Button sendCustomCmdButton;
@@ -243,9 +245,9 @@ class ADS1299SettingsController {
             .setPosition(_x, _y)
             .setSize(_w, _h)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         myButton
             .getCaptionLabel()
@@ -305,14 +307,14 @@ class ADS1299SettingsController {
         });
     }
 
-    private ScrollableList createDropdown(int chanNum, String name, ADSSettingsEnum[] enumValues, ADSSettingsEnum e) {
+    private ScrollableList createDropdown(int chanNum, String name, ADSSettingsEnum[] enumValues, ADSSettingsEnum e, color _backgroundColor) {
         int dropdownW = int((w - (spaceBetweenButtons*6)) / 5);
         int dropdownH = 18;
         ScrollableList list = new CustomScrollableList(hwsCp5, name)
             .setOpen(false)
-            .setColorBackground((int)channelColors[chanNum%8]) // text field bg color
-            .setColorValueLabel(color(255))       // text color
-            .setColorCaptionLabel(color(255))
+            .setColorBackground(_backgroundColor) // text field bg color
+            .setColorValueLabel(color(0))       // text color
+            .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(color(150, 170, 200))       // border color when selected
             .setBackgroundColor(150)
@@ -356,14 +358,24 @@ class ADS1299SettingsController {
         biasLists = new ScrollableList[channelCount];
         srb2Lists = new ScrollableList[channelCount];
         srb1Lists = new ScrollableList[channelCount];
+        color _bgColor;
 
         //Init dropdowns in reverse so that chan 1 draws on top of chan 2, etc.
         for (int i = channelCount - 1; i >= 0; i--) {
-            gainLists[i] = createDropdown(i, "gain_ch_"+(i+1), boardSettings.values.gain[i].values(), boardSettings.values.gain[i]);
-            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+(i+1), boardSettings.values.inputType[i].values(), boardSettings.values.inputType[i]);
-            biasLists[i] = createDropdown(i, "bias_ch_"+(i+1), boardSettings.values.bias[i].values(), boardSettings.values.bias[i]);
-            srb2Lists[i] = createDropdown(i, "srb2_ch_"+(i+1), boardSettings.values.srb2[i].values(), boardSettings.values.srb2[i]);
-            srb1Lists[i] = createDropdown(i, "srb1_ch_"+(i+1), boardSettings.values.srb1[i].values(), boardSettings.values.srb1[i]);
+            _bgColor = #FFFFFF;
+            gainLists[i] = createDropdown(i, "gain_ch_"+(i+1), boardSettings.values.gain[i].values(), boardSettings.values.gain[i], _bgColor);
+            
+            _bgColor = #FFFFFF;
+            inputTypeLists[i] = createDropdown(i, "inputType_ch_"+(i+1), boardSettings.values.inputType[i].values(), boardSettings.values.inputType[i], _bgColor);
+            
+            _bgColor = boardSettings.values.bias[i] == Bias.INCLUDE ? yesOnColor : noOffColor;
+            biasLists[i] = createDropdown(i, "bias_ch_"+(i+1), boardSettings.values.bias[i].values(), boardSettings.values.bias[i], _bgColor);
+
+            _bgColor = boardSettings.values.srb2[i] == Srb2.CONNECT ? yesOnColor : noOffColor;            
+            srb2Lists[i] = createDropdown(i, "srb2_ch_"+(i+1), boardSettings.values.srb2[i].values(), boardSettings.values.srb2[i], _bgColor);
+
+            _bgColor = boardSettings.values.srb1[i] == Srb1.CONNECT ? yesOnColor : noOffColor;           
+            srb1Lists[i] = createDropdown(i, "srb1_ch_"+(i+1), boardSettings.values.srb1[i].values(), boardSettings.values.srb1[i], _bgColor);
         }
 
         resizeDropdowns(_channelBarHeight);
@@ -405,9 +417,9 @@ class ADS1299SettingsController {
             .setPosition(0, 0)
             .setSize(10, 10)
             .setColorLabel(bgColor)
-            .setColorForeground(color(177, 184, 193))
+            .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
-            .setColorActive(color(150,170,200))
+            .setColorActive(BUTTON_PRESSED)
             ;
         sendCustomCmdButton
             .getCaptionLabel()
@@ -447,23 +459,33 @@ class ADS1299SettingsController {
         sendCustomCmdButton.setSize(but_w, tf_h);
     }
 
-    public void updateChanSettingsDropdowns(int chan, boolean isActive, color defaultColor) {
-        color c = isActive ? defaultColor : color(50);
+    public void updateChanSettingsDropdowns(int chan, boolean isActive) {
+        color darkNotActive = color(57);
+        color c = isActive ? color(255) : darkNotActive;
+
         gainLists[chan].setValue(boardSettings.values.gain[chan].ordinal());
         gainLists[chan].setColorBackground(c);
         gainLists[chan].setLock(!isActive);
+
         inputTypeLists[chan].setValue(boardSettings.values.inputType[chan].ordinal());
         inputTypeLists[chan].setColorBackground(c);
         inputTypeLists[chan].setLock(!isActive);
+
+        c = isActive ? (boardSettings.values.bias[chan] == Bias.INCLUDE ? yesOnColor : noOffColor) : darkNotActive;
         biasLists[chan].setValue(boardSettings.values.bias[chan].ordinal());
         biasLists[chan].setColorBackground(c);
         biasLists[chan].setLock(!isActive);
+
+        c = isActive ? (boardSettings.values.srb2[chan] == Srb2.CONNECT ? yesOnColor : noOffColor) : darkNotActive; 
         srb2Lists[chan].setValue(boardSettings.values.srb2[chan].ordinal());
         srb2Lists[chan].setColorBackground(c);
         srb2Lists[chan].setLock(!isActive);
+
+        c = isActive ? (boardSettings.values.srb1[chan] == Srb1.CONNECT ? yesOnColor : noOffColor) : darkNotActive;   
         srb1Lists[chan].setValue(boardSettings.values.srb1[chan].ordinal());
         srb1Lists[chan].setColorBackground(c);
         srb1Lists[chan].setLock(!isActive);
+
         hasUnappliedChanges[chan] = false;
     }
 
@@ -474,7 +496,7 @@ class ADS1299SettingsController {
             channel = _i;
         }
         public void controlEvent(CallbackEvent theEvent) {
-            
+            color _bgColor = #FFFFFF;
             //Selecting an item from ScrollableList triggers Broadcast
             if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
                 int val = (int)(theEvent.getController()).getValue();
@@ -492,12 +514,18 @@ class ADS1299SettingsController {
                 } else if (myEnum instanceof Bias) {
                     hasUnappliedChanges[channel] = (Bias)myEnum != boardSettings.values.bias[channel];
                     boardSettings.values.bias[channel] = (Bias)myEnum;
+                    _bgColor = (Bias)myEnum == Bias.INCLUDE ? yesOnColor : noOffColor;
+                    (theEvent.getController()).setColorBackground(_bgColor);
                 } else if (myEnum instanceof Srb2) {
                     hasUnappliedChanges[channel] = (Srb2)myEnum != boardSettings.values.srb2[channel];
                     boardSettings.values.srb2[channel] = (Srb2)myEnum;
+                    _bgColor = (Srb2)myEnum == Srb2.CONNECT ? yesOnColor : noOffColor;
+                    (theEvent.getController()).setColorBackground(_bgColor);
                 } else if (myEnum instanceof Srb1) {
                     hasUnappliedChanges[channel] = (Srb1)myEnum != boardSettings.values.srb1[channel];
                     boardSettings.values.srb1[channel] = (Srb1)myEnum;
+                    _bgColor = (Srb1)myEnum == Srb1.CONNECT ? yesOnColor : noOffColor;
+                    (theEvent.getController()).setColorBackground(_bgColor);
                 }
 
                 hasUnappliedChanges[channel] = !boardSettings.equalsLastValues(channel);
@@ -514,7 +542,7 @@ void loadHardwareSettings(File selection) {
             if (((ADS1299SettingsBoard)currentBoard).getADS1299Settings().loadSettingsValues(selection.getAbsolutePath())) {
                 outputSuccess("Hardware Settings Loaded!");
                 for (int i = 0; i < nchan; i++) {
-                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i), channelColors[i%8]);
+                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i));
                 }
             } else {
                 outputError("Failed to load Hardware Settings.");

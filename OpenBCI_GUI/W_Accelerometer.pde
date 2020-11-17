@@ -12,7 +12,7 @@
 ////////////////////////////////////////////////////
 
 //Use the same colors for X,Y,Z throughout Accelerometer widget
-final color ACCEL_X_COLOR = color(224, 56, 45);
+final color ACCEL_X_COLOR = TURN_OFF_RED;
 final color ACCEL_Y_COLOR = color(49, 113, 89);
 final color ACCEL_Z_COLOR = color(54, 87, 158);
 
@@ -51,7 +51,7 @@ class W_Accelerometer extends Widget {
 
     private boolean visible = true;
     boolean accelInitHasOccured = false;
-    private Button_obci accelModeButton;
+    private Button accelModeButton;
 
     private AccelerometerCapableBoard accelBoard;
 
@@ -78,16 +78,19 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
 
+        createAccelModeButton("accelModeButton", "Accel Mode X", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
+        /*
         accelModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, "", 12);
         accelModeButton.setCornerRoundess((int)(navHeight-6));
         accelModeButton.setFont(p5,12);
         accelModeButton.textColorNotActive = color(255);
         accelModeButton.hasStroke(false);
-        accelModeButton.setColorNotPressed(color(57,128,204));
-        accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
+        accelModeButton.setColorNotPressed(buttonsLightBlue);
+
         if(!accelBoard.canDeactivateAccelerometer()) {
             accelModeButton.setColorNotPressed(color(128));
         }
+        */
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -135,12 +138,12 @@ class W_Accelerometer extends Widget {
 
     private void updateOnOffButton() {	
         if (accelBoard.isAccelerometerActive()) {	
-            accelModeButton.setString("Turn Accel. Off");	
-            accelModeButton.setIgnoreHover(!accelBoard.canDeactivateAccelerometer());
+            accelModeButton.getCaptionLabel().setText("Turn Accel. Off");	
+            accelModeButton.setLock(!accelBoard.canDeactivateAccelerometer());
         }
         else {
-            accelModeButton.setString("Turn Accel. On");	
-            accelModeButton.setIgnoreHover(false);
+            accelModeButton.getCaptionLabel().setText("Turn Accel. On");	
+            accelModeButton.setLock(false);
         }
     }
 
@@ -164,14 +167,12 @@ class W_Accelerometer extends Widget {
         line(polarWindowX-polarWindowWidth/2, polarWindowY, polarWindowX+polarWindowWidth/2, polarWindowY);
         line(polarWindowX, polarWindowY-polarWindowHeight/2, polarWindowX, polarWindowY+polarWindowHeight/2);
         line(polarWindowX-polarCorner, polarWindowY+polarCorner, polarWindowX+polarCorner, polarWindowY-polarCorner);
-
+        
         if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
             accelerometerBar.draw();
         }
-
-        accelModeButton.draw();
 
         popStyle();
     }
@@ -199,28 +200,44 @@ class W_Accelerometer extends Widget {
         //resize the accelerometer line graph
         accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth-accPadding*2, accelGraphHeight); //bar x, bar y, bar w, bar h
         //update the position of the accel mode button
-        accelModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
+        accelModeButton.setPosition((int)(x + 3), (int)(y + 3 - navHeight));
     }
-
+    
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (accelModeButton.isMouseHere()) {
-            accelModeButton.setIsActive(true);
-        }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
 
-        if (accelModeButton.isActive && accelModeButton.isMouseHere()) {
-            if (!accelBoard.isAccelerometerActive()) {
-                accelBoard.setAccelerometerActive(true);
-                output("Starting to read accelerometer");
-            } else {                    
-                accelBoard.setAccelerometerActive(false);
+    private void createAccelModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        accelModeButton = cp5_widget.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(_textColor)
+            .setColorForeground(BUTTON_HOVER)
+            .setColorBackground(_bg)
+            .setColorActive(BUTTON_PRESSED)
+            ;
+        accelModeButton
+            .getCaptionLabel()
+            .setFont(_font)
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        accelModeButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!accelBoard.isAccelerometerActive()) {
+                    accelBoard.setAccelerometerActive(true);
+                    output("Starting to read accelerometer");
+                } else {                    
+                    accelBoard.setAccelerometerActive(false);
+                }
             }
-        }
-        accelModeButton.setIsActive(false);
+        });
+        //accelModeButton.setHelpText("Click to activate/deactivate the accelerometer!");
     }
 
     //Draw the current accelerometer values as text

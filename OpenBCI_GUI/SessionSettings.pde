@@ -275,7 +275,7 @@ class SessionSettings {
     SessionSettings() {
         //Instantiated on app start in OpenBCI_GUI.pde
         dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
-        dropdownColors.setForeground((int)color(177, 184, 193)); //when hovering over any box (primary or dropdown)
+        dropdownColors.setForeground((int)BUTTON_HOVER); //when hovering over any box (primary or dropdown)
         dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
         dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
         // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
@@ -1011,7 +1011,7 @@ class SessionSettings {
         for (File file: new File(directoryManager.getSettingsPath()).listFiles())
             if (!file.isDirectory())
                 file.delete();
-        controlPanel.recentPlaybackBox.cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
+        controlPanel.recentPlaybackBox.rpb_cp5.get(ScrollableList.class, "recentPlaybackFilesCP").clear();
         controlPanel.recentPlaybackBox.shortFileNames.clear();
         controlPanel.recentPlaybackBox.longFilePaths.clear();
         outputSuccess("All settings have been cleared!");

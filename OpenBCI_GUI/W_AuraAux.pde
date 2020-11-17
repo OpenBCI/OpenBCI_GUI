@@ -466,13 +466,17 @@ class BatteryMeter {
         return 1 * currentBoard.getSampleRate();
     }
 
-    private int getChannel() {
+    private Integer getChannel() {
         return batteryBoard.getBatteryChannel();
     }
 
     private int getBatteryValue() {
-        List<double[]> allData = currentBoard.getData(nPoints);
-        return (int)allData.get(nPoints-1)[getChannel()];
+        if (getChannel() != null) {
+            List<double[]> allData = currentBoard.getData(nPoints);
+            return (int)allData.get(nPoints-1)[getChannel()];
+        }
+
+        return 0;
     }
 
     private color getBatteryColor() {

@@ -60,11 +60,16 @@ class W_Networking extends Widget {
     Boolean lsl_visible;
     Boolean serial_visible;
     List<String> dataTypes;
-    Button_obci startButton;
+
     Boolean cp5ElementsAreActive = false;
     Boolean previousCP5State = false;
-    Button_obci guideButton;
-    Button_obci dataOutputsButton;
+    private Button startButton;
+    private Button guideButton;
+    private Button dataOutputsButton;
+    private Toggle filterButton1;
+    private Toggle filterButton2;
+    private Toggle filterButton3;
+    private Toggle filterButton4;
 
     /* Networking */
     Boolean networkActive;
@@ -216,8 +221,8 @@ class W_Networking extends Widget {
         checkTopNovEvents();
 
         //ignore top left button interaction when widgetSelector dropdown is active
-        ignoreButtonCheck(guideButton);
-        ignoreButtonCheck(dataOutputsButton);
+        lockElementOnOverlapCheck(guideButton);
+        lockElementOnOverlapCheck(dataOutputsButton);
         filterButtonsCheck();
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
@@ -324,10 +329,6 @@ class W_Networking extends Widget {
         }
         text("Data Type",column0,row1);
 
-        startButton.draw();
-        guideButton.draw();
-        dataOutputsButton.draw();
-
         if (protocolMode.equals("OSC")) {
             textFont(f4,40);
             text("OSC", x+20,y+h/8+15);
@@ -383,26 +384,31 @@ class W_Networking extends Widget {
         createBaudDropdown("baud_rate", baudRates);
         /* General Elements */
 
-        createButton("filter1");
-        createButton("filter2");
-        createButton("filter3");
-        createButton("filter4");
+        createFilterButton(filterButton1, "filter1");
+        createFilterButton(filterButton2, "filter2");
+        createFilterButton(filterButton3, "filter3");
+        createFilterButton(filterButton4, "filter4");
 
         for (int i = 0; i < datatypeNames.length; i++) {
             createDropdown(datatypeNames[i], dataTypes);
         }
 
+        createStartButton();
+        createGuideButton();
+        createDataOutputsButton();
+
+        /*
+        IMPLEMENTED NEEDS TESTING
         // Start Button
         startButton = new Button_obci(x + w/2 - 70,y+h-40,200,20,"Start " + protocolMode + " Stream",14);
         startButton.setFont(p4,14);
-        startButton.setColorNotPressed(color(184,220,105));
-        startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
+        startButton.setColorNotPressed(TURN_ON_GREEN);
 
         // Networking Guide button
         guideButton = new Button_obci(x0 + 2, y0 + navH + 2, 125, navH - 6,"Networking Guide", 14);
         guideButton.setCornerRoundess((int)(navHeight-6));
         guideButton.setFont(p5,12);
-        guideButton.setColorNotPressed(color(57,128,204));
+        guideButton.setColorNotPressed(buttonsLightBlue);
         guideButton.setFontColorNotActive(color(255));
         guideButton.setHelpText("Click to open the Networking Widget Guide in your default browser.");
         guideButton.setURL(networkingGuideURL);
@@ -413,11 +419,12 @@ class W_Networking extends Widget {
         dataOutputsButton = new Button_obci(x0 + 2*2 + guideButton.but_dx, y0 + navH + 2, 100, navH - 6,"Data Outputs", 14);
         dataOutputsButton.setCornerRoundess((int)(navHeight-6));
         dataOutputsButton.setFont(p5,12);
-        dataOutputsButton.setColorNotPressed(color(57,128,204));
+        dataOutputsButton.setColorNotPressed(buttonsLightBlue);
         dataOutputsButton.setFontColorNotActive(color(255));
         dataOutputsButton.setHelpText("Click to open the Networking Data Outputs Guide in your default browser.");
         dataOutputsButton.setURL(dataOutputsURL);
         dataOutputsButton.hasStroke(false);
+        */
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -521,17 +528,17 @@ class W_Networking extends Widget {
     }
 
     /* Create toggle buttons for filter toggling */
-    void createButton(String name) {
-        cp5_networking.addToggle(name)
+    void createFilterButton(Toggle myToggle, String name) {
+        myToggle = cp5_networking.addToggle(name)
                 .setLabel("Off")
                 .setSize(filtButW, filtButH)
                 .setColorForeground(color(120))
                 .setColorBackground(color(200,200,200)) // text field bg color
-                .setColorActive(color(184,220,105))
+                .setColorActive(TURN_ON_GREEN)
                 .setColorLabel(color(0))
                 .setVisible(false)
                 ;
-        cp5_networking.getController(name)
+        myToggle
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText("Off")
@@ -543,6 +550,83 @@ class W_Networking extends Widget {
             ;
     }
 
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        myButton = cp5_networking.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setColorLabel(_textColor)
+            .setColorForeground(BUTTON_HOVER)
+            .setColorBackground(_bg)
+            .setColorActive(BUTTON_PRESSED)
+            ;
+        myButton
+            .getCaptionLabel()
+            .setFont(_font)
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        return myButton;
+    }
+
+    void createStartButton() {
+        startButton = createButton(startButton, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, p4, 14, TURN_ON_GREEN, BLACK);
+        startButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!networkActive) {
+                    try {
+                        startButton.setColorBackground(TURN_OFF_RED);
+                        startButton.getCaptionLabel().setText("Stop " + protocolMode + " Stream");
+                        initializeStreams();    // Establish stream
+                        startNetwork();         // Begin streaming
+                        output("Network Stream Started");
+                    } catch (Exception e) {
+                        //e.printStackTrace();
+                        String exception = e.toString();
+                        String [] nwError = split(exception, ':');
+                        outputError("Networking Error - Port: " + nwError[2]);
+                        shutDown();
+                        networkActive = false;
+                        return;
+                    }
+                } else {
+                    startButton.setColorBackground(TURN_ON_GREEN);
+                    startButton.getCaptionLabel().setText("Start " + protocolMode + " Stream");
+                    stopNetwork();          // Stop streams
+                    output("Network Stream Stopped");
+                }
+            }
+        });
+        //startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
+    }
+
+    /* Change appearance of Button_obci to off */
+    void turnOffButton() {
+        startButton.setColorBackground(TURN_ON_GREEN);
+        startButton.getCaptionLabel().setText("Start " + protocolMode + " Stream");
+    }
+
+    void createGuideButton() {
+        guideButton = createButton(guideButton, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        guideButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser(networkingGuideURL);
+                output("Opening Networking Widget Guide using default browser.");
+            }
+        });
+        //guideButton.setHelpText("Click to open the Networking Widget Guide in your default browser.");
+    }
+
+    void createDataOutputsButton() {
+        dataOutputsButton = createButton(dataOutputsButton, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        dataOutputsButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser(dataOutputsURL);
+                output("Opening Networking Data Outputs Guide using default browser.");
+            }
+        });
+        //dataOutputsButton.setHelpText("Click to open the Networking Data Outputs Guide in your default browser.");
+    }
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
 
@@ -705,9 +789,9 @@ class W_Networking extends Widget {
         filtOffsetX = (itemWidth / 2) - (filtButW / 2); //Recalculate filter button X position
 
         //reset the button positions using new x and y
-        startButton.setPos(x + w/2 - 70, y + h - 40 );
-        guideButton.setPos(x0 + 2, y0 + navH + 2);
-        dataOutputsButton.setPos(x0 + 2*2 + guideButton.but_dx , y0 + navH + 2);
+        startButton.setPosition(x + w/2 - 70, y + h - 40 );
+        guideButton.setPosition(x0 + 2, y0 + navH + 2);
+        dataOutputsButton.setPosition(x0 + 2*2 + guideButton.getWidth() , y0 + navH + 2);
 
         //scale the item width of all elements in the networking widget
         itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
@@ -787,51 +871,10 @@ class W_Networking extends Widget {
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (startButton.isMouseHere()) {
-            startButton.setIsActive(true);
-        } else if (guideButton.isMouseHere()) {
-            guideButton.setIsActive(true);
-        } else if (dataOutputsButton.isMouseHere()) {
-            dataOutputsButton.setIsActive(true);
-        }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        // If start button was pressed...
-        if (startButton.isActive && startButton.isMouseHere()) {
-            if (!networkActive) {
-                try {
-                    turnOnButton();         // Change appearance of button
-                    initializeStreams();    // Establish stream
-                    startNetwork();         // Begin streaming
-                    output("Network Stream Started");
-                } catch (Exception e) {
-                    //e.printStackTrace();
-                    String exception = e.toString();
-                    String [] nwError = split(exception, ':');
-                    outputError("Networking Error - Port: " + nwError[2]);
-                    shutDown();
-                    networkActive = false;
-                    return;
-                }
-            } else {
-                    turnOffButton();        // Change apppearance of button
-                    stopNetwork();          // Stop streams
-                    output("Network Stream Stopped");
-            }
-        // or if the networking guide button was pressed...
-        } else if (guideButton.isActive && guideButton.isMouseHere()) {
-            guideButton.goToURL();
-            output("Opening Networking Widget Guide using default browser.");
-        } else if (dataOutputsButton.isActive && dataOutputsButton.isMouseHere()) {
-            dataOutputsButton.goToURL();
-            output("Opening Networking Data Outputs Guide using default browser.");
-        }
-        startButton.setIsActive(false);
-        guideButton.setIsActive(false);
-        dataOutputsButton.setIsActive(false);
     }
 
     void hideAllTextFields(String[] textFieldNames) {
@@ -857,18 +900,6 @@ class W_Networking extends Widget {
         cp5_networking.get(Toggle.class, "filter2").setVisible(false);
         cp5_networking.get(Toggle.class, "filter3").setVisible(false);
         cp5_networking.get(Toggle.class, "filter4").setVisible(false);
-
-    }
-
-    /* Change appearance of Button_obci to off */
-    void turnOffButton() {
-        startButton.setColorNotPressed(color(184,220,105));
-        startButton.setString("Start " + protocolMode + " Stream");
-    }
-
-    void turnOnButton() {
-        startButton.setColorNotPressed(color(224, 56, 45));
-        startButton.setString("Stop " + protocolMode + " Stream");
     }
 
     boolean getNetworkActive() {
@@ -2222,4 +2253,19 @@ void filter4(int n) {
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter4").setLabel(s);
     w_networking.closeAllDropdowns();
+}
+
+//loop through networking textfields and find out if any are active
+boolean isNetworkingTextActive(){
+    boolean isAFieldActive = false;
+    if (w_networking != null) {
+        int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
+        for(int i = 0; i < numTextFields; i++){
+            if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
+                isAFieldActive = true;
+            }
+        }
+    }
+    //println("Networking Text Field Active? " + isAFieldActive);
+    return isAFieldActive; //if not, return false
 }

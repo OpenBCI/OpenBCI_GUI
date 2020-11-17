@@ -17,6 +17,7 @@
 * Fix TimeSeries Unfiltered Networking Output #891 #889
 * Fix TimeSeries Networking Output when using Playback Mode w/ GUI or SD file #906
 * Let users know when Cyton Auto-Scan is happening with an overlay
+* Refactor GUI buttons and ButtonHelpText
 
 # v5.0.1
 

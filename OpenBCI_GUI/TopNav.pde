@@ -4,6 +4,7 @@
 //  Extracting old code Gui_Manager.pde, adding new features for GUI v2 launch
 //
 //  Edited by Richard Waltman 9/24/18
+//  Refactored by Richard Waltman 11/9/2020
 //  Added feature to check GUI version using "latest version" tag on Github
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -11,125 +12,105 @@ import java.awt.Desktop;
 import java.net.*;
 import java.nio.file.*;
 
-int navBarHeight = 32;
-TopNav topNav;
-
 class TopNav {
 
-    Button_obci controlPanelCollapser;
-    Button_obci debugButton;
+    private final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
+    private final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
+    private color strokeColor = bgColor;
 
-    Button_obci stopButton;
+    private ControlP5 topNav_cp5;
 
-    Button_obci filtBPButton;
-    Button_obci filtNotchButton;
-    Button_obci smoothingButton;
-    Button_obci gainButton;
+    public Button controlPanelCollapser;
 
-    Button_obci tutorialsButton;
-    Button_obci shopButton;
-    Button_obci issuesButton;
-    Button_obci updateGuiVersionButton;
-    Button_obci layoutButton;
-    Button_obci configButton;
+    public Button toggleDataStreamingButton;
 
-    LayoutSelector layoutSelector;
-    TutorialSelector tutorialSelector;
-    ConfigSelector configSelector;
-    int previousSystemMode = 0;
+    public Button filtBPButton;
+    public Button filtNotchButton;
+    public Button smoothingButton;
+    public Button gainButton;
 
-    String webGUIVersionString;
-    int webGUIVersionInt;
-    int localGUIVersionInt;
-    Boolean guiVersionIsUpToDate;
-    Boolean internetIsConnected = false;
+    public Button debugButton;
+    public Button tutorialsButton;
+    public Button shopButton;
+    public Button issuesButton;
+    public Button updateGuiVersionButton;
 
-    //constructor
+    public Button layoutButton;
+    public Button settingsButton;
+
+    public LayoutSelector layoutSelector;
+    public TutorialSelector tutorialSelector;
+    public ConfigSelector configSelector;
+    private int previousSystemMode = 0;
+
+    private boolean secondaryNavInit = false;
+
+    private final int PAD_3 = 3;
+    private final int DEBUG_BUT_W = 33;
+    private final int TOPRIGHT_BUT_W = 80;
+    private final int DATASTREAM_BUT_W = 170;
+    private final int SUBNAV_BUT_Y = 35;
+    private final int SUBNAV_BUT_W = 70;
+    private final int SUBNAV_BUT_H = 26;
+    private final int TOPNAV_BUT_H = SUBNAV_BUT_H;
+
     TopNav() {
-        int w = 256;
-        controlPanelCollapser = new Button_obci(3, 3, w, 26, "System Control Panel", fontInfo.buttonLabel_size);
-        controlPanelCollapser.setFont(h3, 16);
-        controlPanelCollapser.setIsActive(true);
-        controlPanelCollapser.isDropdownButton = true;
+        int controlPanel_W = 256;
 
-        //highRezButton = new Button_obci(3+3+w+73+3, 3, 26, 26, "XX", fontInfo.buttonLabel_size);
-        controlPanelCollapser.setFont(h3, 16);
+        //Instantiate local cp5 for this box
+        topNav_cp5 = new ControlP5(ourApplet);
+        topNav_cp5.setGraphics(ourApplet, 0,0);
+        topNav_cp5.setAutoDraw(false);
 
-        //top right buttons from right to left
-        debugButton = new Button_obci(width - 33 - 3, 3, 33, 26, " ", fontInfo.buttonLabel_size);
-        debugButton.setHelpText("Click to open the Console Log window.");
+        createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H + PAD_3, h3, 16, TOPNAV_DARKBLUE, WHITE);
 
-        tutorialsButton = new Button_obci(debugButton.but_x - 80 - 3, 3, 80, 26, "Help", fontInfo.buttonLabel_size);
-        tutorialsButton.setFont(h3, 16);
-        tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+        //TOP RIGHT OF GUI, FROM LEFT<---Right
+        createDebugButton(" ", width - DEBUG_BUT_W - PAD_3, PAD_3, DEBUG_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createTutorialsButton("Help", (int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createIssuesButton("Issues", (int)tutorialsButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createShopButton("Shop", (int)issuesButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createUpdateGuiButton("Update", (int)shopButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
 
-        issuesButton = new Button_obci(tutorialsButton.but_x - 80 - 3, 3, 80, 26, "Issues", fontInfo.buttonLabel_size);
-        issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
-        issuesButton.setURL("https://github.com/OpenBCI/OpenBCI_GUI/issues");
-        issuesButton.setFont(h3, 16);
+        //SUBNAV TOP RIGHT
+        createTopNavSettingsButton("Settings", width - SUBNAV_BUT_W - PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
-        shopButton = new Button_obci(issuesButton.but_x - 80 - 3, 3, 80, 26, "Shop", fontInfo.buttonLabel_size);
-        shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
-        shopButton.setURL("http://shop.openbci.com/");
-        shopButton.setFont(h3, 16);
-
-        configButton = new Button_obci(width - 70 - 3, 35, 70, 26, "Settings", fontInfo.buttonLabel_size);
-        configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
-        configButton.setFont(h4, 14);
-
-        //Lookup and check the local GUI version against the latest Github release
-        updateGuiVersionButton = new Button_obci(shopButton.but_x - 80 - 3, 3, 80, 26, "Update", fontInfo.buttonLabel_size);
-        updateGuiVersionButton.setFont(h3, 16);
-        
-        loadCompareGUIVersion();
+        //Attempt to compare local and remote GUI versions when TopNav is instantiated
+        guiVersionIsUpToDate();
 
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
         configSelector = new ConfigSelector();
 
-        updateNavButtonsBasedOnColorScheme();
+        //updateNavButtonsBasedOnColorScheme();
     }
 
     void initSecondaryNav() {
-        stopButton = new Button_obci(3, 35, 170, 26, stopButton_pressToStart_txt, fontInfo.buttonLabel_size);
-        stopButton.setFont(h4, 14);
-        stopButton.setColorNotPressed(color(184, 220, 105));
-        stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
 
-        filtNotchButton = new Button_obci(7 + stopButton.but_dx, 35, 70, 26, "Notch\n" + dataProcessing.getShortNotchDescription(), fontInfo.buttonLabel_size);
-        filtNotchButton.setFont(p5, 12);
-        filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
-
-        filtBPButton = new Button_obci(11 + stopButton.but_dx + 70, 35, 70, 26, "BP Filt\n" + dataProcessing.getShortFilterDescription(), fontInfo.buttonLabel_size);
-        filtBPButton.setFont(p5, 12);
-        filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
-
+        //Buttons on the left side of the GUI secondary nav bar
+        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, bgColor);
+        createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+        createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         if (currentBoard instanceof SmoothingCapableBoard) {
-            smoothingButton = new Button_obci(filtBPButton.but_x + filtBPButton.but_dx + 4, 35, 70, 26, getSmoothingString(), fontInfo.buttonLabel_size);
-            smoothingButton.setFont(p5, 12);
-            smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+            createSmoothingButton(getSmoothingString(), (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
-
         if (currentBoard instanceof ADS1299SettingsBoard) {
             int pos_x = 0;
             if (currentBoard instanceof SmoothingCapableBoard) {
-                pos_x = smoothingButton.but_x + smoothingButton.but_dx + 4;
+                pos_x = (int)smoothingButton.getPosition()[0] + smoothingButton.getWidth() + 4;
             } else {
-                pos_x = filtBPButton.but_x + filtBPButton.but_dx + 4;
+                pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + 4;
             }
-            gainButton = new Button_obci(pos_x, 35, 70, 26, getGainString(), fontInfo.buttonLabel_size);
-            gainButton.setFont(p5, 12);
-            gainButton.setHelpText("Click here to switch gain convention.");
+            createGainButton(getGainString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
 
-        //right to left in top right (secondary nav)
-        layoutButton = new Button_obci(width - 3 - 60, 35, 60, 26, "Layout", fontInfo.buttonLabel_size);
-        layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
-        layoutButton.setFont(h4, 14);
+        //Appears at Top Right SubNav while in a Session
+        createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
-        updateSecondaryNavButtonsColor();
+        secondaryNavInit = true;
+        //updateSecondaryNavButtonsColor();
     }
 
+    /*
     void updateNavButtonsBasedOnColorScheme() {
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
             controlPanelCollapser.setColorNotPressed(color(255));
@@ -150,14 +131,14 @@ class TopNav {
             updateGuiVersionButton.textColorNotActive = color(bgColor);
             configButton.textColorNotActive = color(bgColor);
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            controlPanelCollapser.setColorNotPressed(openbciBlue);
-            debugButton.setColorNotPressed(openbciBlue);
-            //highRezButton.setColorNotPressed(openbciBlue);
-            issuesButton.setColorNotPressed(openbciBlue);
-            shopButton.setColorNotPressed(openbciBlue);
-            tutorialsButton.setColorNotPressed(openbciBlue);
-            updateGuiVersionButton.setColorNotPressed(openbciBlue);
-            configButton.setColorNotPressed(color(57, 128, 204));
+            controlPanelCollapser.setColorNotPressed(OPENBCI_BLUE);
+            debugButton.setColorNotPressed(OPENBCI_BLUE);
+            //highRezButton.setColorNotPressed(OPENBCI_BLUE);
+            issuesButton.setColorNotPressed(OPENBCI_BLUE);
+            shopButton.setColorNotPressed(OPENBCI_BLUE);
+            tutorialsButton.setColorNotPressed(OPENBCI_BLUE);
+            updateGuiVersionButton.setColorNotPressed(OPENBCI_BLUE);
+            configButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
 
             controlPanelCollapser.textColorNotActive = color(255);
             debugButton.textColorNotActive = color(255);
@@ -173,7 +154,9 @@ class TopNav {
             updateSecondaryNavButtonsColor();
         }
     }
+    */
 
+    /*
     void updateSecondaryNavButtonsColor() {
         if (colorScheme == COLOR_SCHEME_DEFAULT) {
             filtBPButton.setColorNotPressed(color(255));
@@ -194,45 +177,46 @@ class TopNav {
                 gainButton.setColorNotPressed(color(255));
             }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            filtBPButton.setColorNotPressed(color(57, 128, 204));
-            filtNotchButton.setColorNotPressed(color(57, 128, 204));
-            layoutButton.setColorNotPressed(color(57, 128, 204));
+            filtBPButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
+            filtNotchButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
+            layoutButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
 
             filtBPButton.textColorNotActive = color(255);
             filtNotchButton.textColorNotActive = color(255);
             layoutButton.textColorNotActive = color(255);
 
             if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setColorNotPressed(color(57, 128, 204));
+                smoothingButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
                 smoothingButton.textColorNotActive = color(255);
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.setColorNotPressed(color(57, 128, 204));
+                gainButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
                 gainButton.textColorNotActive = color(255);
             }
         }
     }
+    */
 
     void update() {
         //ignore settings button when help dropdown is open
         if (tutorialSelector.isVisible) {
-            configButton.setIgnoreHover(true);
+            settingsButton.setLock(true);
         } else {
-            configButton.setIgnoreHover(false);
+            settingsButton.setLock(false);
         }
 
         if (previousSystemMode != systemMode) {
             if (systemMode >= SYSTEMMODE_POSTINIT) {
                 layoutSelector.update();
                 tutorialSelector.update();
-                if (configButton.but_x != width - (70*2) + 3) {
-                    configButton.but_x = width - (70*2) + 3;
+                if (int(settingsButton.getPosition()[0]) != width - (SUBNAV_BUT_W*2) + 3) {
+                    settingsButton.setPosition(width - (SUBNAV_BUT_W*2) + 3, SUBNAV_BUT_Y);
                     verbosePrint("TopNav: Updated Settings Button Position");
                 }
             } else {
-                if (configButton.but_x != width - 70 - 3) {
-                    configButton.but_x = width - 70 - 3;
+                if (int(settingsButton.getPosition()[0]) != width - 70 - 3) {
+                    settingsButton.setPosition(width - 70 - 3, SUBNAV_BUT_Y);
                     verbosePrint("TopNav: Updated Settings Button Position");
                 }
             }
@@ -242,16 +226,12 @@ class TopNav {
     }
 
     void draw() {
-        pushStyle();
-
+        PImage logo;
         color topNavBg;
         color subNavBg;
-        color strokeColor = bgColor;
-        PImage logo;
-
         if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            topNavBg = color(31, 69, 110);
-            subNavBg = color(57, 128, 204);
+            topNavBg = OPENBCI_BLUE;
+            subNavBg = SUBNAV_LIGHTBLUE;
             logo = logo_white;
         } else {
             topNavBg = color(255);
@@ -265,6 +245,7 @@ class TopNav {
             strokeColor = subNavBg;
         }
 
+        pushStyle();
         //stroke(bgColor);
         fill(topNavBg);
         rect(0, 0, width, navBarHeight);
@@ -272,6 +253,7 @@ class TopNav {
         stroke(strokeColor);
         fill(subNavBg);
         rect(-1, navBarHeight, width+2, navBarHeight);
+        popStyle();
 
         //hide the center logo if buttons would overlap it
         if (width > 860) {
@@ -279,236 +261,72 @@ class TopNav {
             image(logo, width/2 - (128/2) - 2, 6, 128, 22);
         }
 
-        popStyle();
-
         //Draw these buttons during a Session
-        if (systemMode == SYSTEMMODE_POSTINIT) {
-            stopButton.draw();
-            filtBPButton.draw();
-            filtNotchButton.draw();
-            layoutButton.draw();
+        boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
+        if (secondaryNavInit) {
+            toggleDataStreamingButton.setVisible(isSession);
+            filtBPButton.setVisible(isSession);
+            filtNotchButton.setVisible(isSession);
+            layoutButton.setVisible(isSession);
             if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.draw();
+                smoothingButton.setVisible(isSession);
             }
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.draw();
+                gainButton.setVisible(isSession);
             }
         }
 
-        controlPanelCollapser.draw();
-        debugButton.draw();
-        configButton.draw();
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            image(consoleImgBlue, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
-        } else {
-            image(consoleImgWhite, debugButton.but_x + 6, debugButton.but_y + 2, 22, 22);
-        }
-        tutorialsButton.draw();
-        issuesButton.draw();
-        shopButton.draw();
-        updateGuiVersionButton.draw();
+        //Draw CP5 Objects
+        topNav_cp5.draw();
 
+        //Draw everything in these selector boxes above all topnav cp5 objects
         layoutSelector.draw();
         tutorialSelector.draw();
         configSelector.draw();
+
+        //Draw Console Log Image on top of cp5 object
+        PImage _logo = (colorScheme == COLOR_SCHEME_DEFAULT) ? consoleImgBlue : consoleImgWhite;
+        image(_logo, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);        
+        
+
     }
 
     void screenHasBeenResized(int _x, int _y) {
-        debugButton.but_x = width - debugButton.but_dx - 3;
-        tutorialsButton.but_x = debugButton.but_x - 80 - 3;
-        issuesButton.but_x = tutorialsButton.but_x - 80 - 3;
-        shopButton.but_x = issuesButton.but_x - 80 - 3;
-        updateGuiVersionButton.but_x = shopButton.but_x - 80 - 3;
-        configButton.but_x = width - configButton.but_dx - 3;
+        debugButton.setPosition(width - debugButton.getWidth() - PAD_3, PAD_3);
+        tutorialsButton.setPosition(debugButton.getPosition()[0] - debugButton.getWidth() - PAD_3, PAD_3);
+        issuesButton.setPosition(tutorialsButton.getPosition()[0] - tutorialsButton.getWidth() - PAD_3, PAD_3);
+        shopButton.setPosition(issuesButton.getPosition()[0] - issuesButton.getWidth() - PAD_3, PAD_3);
+        updateGuiVersionButton.setPosition(shopButton.getPosition()[0] - shopButton.getWidth() - PAD_3, PAD_3);
+        settingsButton.setPosition(width - settingsButton.getWidth() - PAD_3, PAD_3);
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
-            layoutButton.but_x = width - 3 - layoutButton.but_dx;
-            configButton.but_x = width - (configButton.but_dx*2) + 3;
-            layoutSelector.screenResized();     //pass screenResized along to layoutSelector
+            layoutButton.setPosition(width - 3 - layoutButton.getWidth(), PAD_3);
+            settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, PAD_3);
+            //Make sure to re-position UI in selector boxes
+            layoutSelector.screenResized();
             tutorialSelector.screenResized();
         }
         configSelector.screenResized();
     }
 
     void mousePressed() {
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            if (stopButton.isMouseHere()) {
-                stopButton.setIsActive(true);
-            }
-            if (filtBPButton.isMouseHere()) {
-                filtBPButton.setIsActive(true);
-            }
-            if (topNav.filtNotchButton.isMouseHere()) {
-                filtNotchButton.setIsActive(true);
-            }
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                if (smoothingButton.isMouseHere()) {
-                    smoothingButton.setIsActive(true);
-                }
-            }
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                if (gainButton.isMouseHere()) {
-                    gainButton.setIsActive(true);
-                }
-            }
-            if (layoutButton.isMouseHere()) {
-                layoutButton.setIsActive(true);
-                //toggle layout window to enable the selection of your container layoutButton...
-            }
-        }
-
-        //was control panel button pushed
-        if (controlPanelCollapser.isMouseHere()) {
-            if (controlPanelCollapser.isActive && systemMode == SYSTEMMODE_POSTINIT) {
-                controlPanelCollapser.setIsActive(false);
-                controlPanel.close();
-            } else {
-                controlPanelCollapser.setIsActive(true);
-                // controlPanelCollapser.setIsActive(false);
-                controlPanel.open();
-            }
-        } else {
-            if (controlPanel.isOpen) {
-                controlPanel.CPmousePressed();
-            }
-        }
-
-        //this is super hacky... but needs to be done otherwise... the controlPanelCollapser doesn't match the open control panel
-        if (controlPanel.isOpen) {
-            controlPanelCollapser.setIsActive(true);
-        }
-
-        if (debugButton.isMouseHere()) {
-            debugButton.setIsActive(true);
-        }
-
-        if (tutorialsButton.isMouseHere()) {
-            tutorialsButton.setIsActive(true);
-            //toggle help/tutorial dropdown menu
-        }
-        if (issuesButton.isMouseHere()) {
-            issuesButton.setIsActive(true);
-            //toggle help/tutorial dropdown menu
-        }
-        if (shopButton.isMouseHere()) {
-            shopButton.setIsActive(true);
-            //toggle help/tutorial dropdown menu
-        }
-        if (updateGuiVersionButton.isMouseHere() && !guiVersionIsUpToDate && internetIsConnected) {
-            updateGuiVersionButton.setIsActive(true);
-            //toggle help/tutorial dropdown menu
-        }
-        if (configButton.isMouseHere()) {
-            configButton.setIsActive(true);
-            //toggle save/load window
-        }
-
-
         layoutSelector.mousePressed();     //pass mousePressed along to layoutSelector
         tutorialSelector.mousePressed();
         configSelector.mousePressed();
     }
 
     void mouseReleased() {
-
-        if (debugButton.isMouseHere() && debugButton.isActive()) {
-            ConsoleWindow.display();
-        }
-
-        if (tutorialsButton.isMouseHere() && tutorialsButton.isActive()) {
-            tutorialSelector.toggleVisibility();
-            tutorialsButton.setIsActive(true);
-        }
-
-        if (issuesButton.isMouseHere() && issuesButton.isActive()) {
-            //go to Github issues
-            issuesButton.goToURL();
-        }
-
-        if (shopButton.isMouseHere() && shopButton.isActive()) {
-            //go to OpenBCI Shop
-            shopButton.goToURL();
-        }
-
-        if (updateGuiVersionButton.isMouseHere() && updateGuiVersionButton.isActive()) {
-            //go to OpenBCI Shop
-            updateGuiVersionButton.goToURL();
-        }
-
-        //make Help button and Settings button mutually exclusive
-        if (!tutorialSelector.isVisible && configButton.isMouseHere() && configButton.isActive()) {
-            configSelector.toggleVisibility();
-            configButton.setIsActive(true);
-        }
-
-        if (systemMode == SYSTEMMODE_POSTINIT) {
-            if (stopButton.isMouseHere() && stopButton.isActive()) {
-                stopButtonWasPressed();
-            }
-            stopButton.setIsActive(false);
-
-            if (filtBPButton.isMouseHere() && filtBPButton.isActive()) {
-                incrementFilterConfiguration();
-            }
-            filtBPButton.setIsActive(false);
-
-            if (filtNotchButton.isMouseHere() && filtNotchButton.isActive()) {
-                filtNotchButton.setIsActive(true);
-                incrementNotchConfiguration();
-            }
-            filtNotchButton.setIsActive(false);
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                if (smoothingButton.isMouseHere() && smoothingButton.isActive()) {
-                    smoothingButton.setIsActive(true);
-                    //toggle data smoothing on mousePress for capable boards
-                    SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
-                    smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
-                    smoothingButton.setString(getSmoothingString());
-                }
-                smoothingButton.setIsActive(false);
-            }
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                if (gainButton.isMouseHere() && gainButton.isActive()) {
-                    gainButton.setIsActive(true);
-                    ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
-                    adsBoard.setUseDynamicScaler(!adsBoard.getUseDynamicScaler());
-                    gainButton.setString(getGainString());
-                }
-                gainButton.setIsActive(false);
-            }
-            if (!tutorialSelector.isVisible) { //make sure that you can't open the layout selector accidentally
-                if (layoutButton.isMouseHere() && layoutButton.isActive()) {
-                    layoutSelector.toggleVisibility();
-                    layoutButton.setIsActive(true);
-                    //wm.printLayouts(); //Used for debugging
-                    println("TopNav: Layout Dropdown Opened");
-                }
-                layoutButton.setIsActive(false);
-            }
-            
-        }
-
-        debugButton.setIsActive(false);
-        //highRezButton.setIsActive(false);
-        tutorialsButton.setIsActive(false);
-        issuesButton.setIsActive(false);
-        shopButton.setIsActive(false);
-        updateGuiVersionButton.setIsActive(false);
-        configButton.setIsActive(false);
-
-
         layoutSelector.mouseReleased();    //pass mouseReleased along to layoutSelector
         tutorialSelector.mouseReleased();
         configSelector.mouseReleased();
     } //end mouseReleased
 
     //Load data from the latest release page using Github API and compare to local version
-    void loadCompareGUIVersion() {
+    public Boolean guiVersionIsUpToDate() {
         //Copy the local GUI version from OpenBCI_GUI.pde
         float localVersion = getVersionAsFloat(localGUIVersionString);
 
-        internetIsConnected = pingWebsite(guiLatestVersionGithubAPI);
+        boolean internetIsConnected = pingWebsite(guiLatestVersionGithubAPI);
 
         if (internetIsConnected) {
             println("TopNav: Internet Connection Successful");
@@ -519,20 +337,19 @@ class TopNav {
             println("Local Version: " + localGUIVersionString + ", Latest Version: " + remoteVersionString);
 
             if (localVersion < remoteVersion) {
-                guiVersionIsUpToDate = false;
                 println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
-                updateGuiVersionButton.setHelpText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                //updateGuiVersionButton.getCaptionLabel().setText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                return false;
             } else {
-                guiVersionIsUpToDate = true;
                 println("GUI is up to date!");
-                updateGuiVersionButton.setHelpText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                //updateGuiVersionButton.getCaptionLabel().setText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                return true;
             }
-            //Pressing the button opens web browser to Github latest release page
-            updateGuiVersionButton.setURL(guiLatestReleaseLocation);
         } else {
             println("TopNav: Internet Connection Not Available");
             println("Local GUI Version: " + localGUIVersionString);
-            updateGuiVersionButton.setHelpText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
+            //updateGuiVersionButton.getCaptionLabel().setText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
+            return null;
         }
     }
 
@@ -582,52 +399,230 @@ class TopNav {
     }
 
     private String getSmoothingString() {
-        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\nOn" : "Smoothing\nOff";
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n     Off";
     }
 
     private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\nBody uV" : "Gain Mode\n Classic";
+        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\n   Body uV" : "Gain Mode\n   Classic";
     }
 
-    //execute this function whenver the stop button is pressed
-    //todo: this should be done as a callback in TopNav when button is changed to Cp5 Button class
+    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        final Button b = topNav_cp5.addButton(name)
+            .setPosition(_x, _y)
+            .setSize(_w, _h)
+            .setCornerRoundness(25)
+            .setColorLabel(_textColor)
+            .setColorForeground(BUTTON_HOVER)
+            .setColorBackground(_bg)
+            .setColorActive(BUTTON_PRESSED)
+            ;
+        b.getCaptionLabel()
+            .setFont(_font)
+            .toUpperCase(false)
+            .setSize(_fontSize)
+            .setText(text)
+            ;
+        b.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    buttonHelpText.setButtonHelpText("testing", (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
+                    buttonHelpText.setVisible(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    buttonHelpText.setVisible(false);
+                }
+            }
+        });
+        myButton = b;
+        return myButton;
+    }
+
+    private void createToggleDataStreamButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        toggleDataStreamingButton = createButton(toggleDataStreamingButton, "toggleDataStreamingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        toggleDataStreamingButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               stopButtonWasPressed();
+            }
+        });
+        //stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
+    }
+
+    private void createFiltNotchButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        filtNotchButton = createButton(filtNotchButton, "filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtNotchButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
+        filtNotchButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               incrementNotchConfiguration();
+            }
+        });
+        //filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
+    }
+
+    private void createFiltBPButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        filtBPButton = createButton(filtBPButton, "filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtBPButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
+        filtBPButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               incrementFilterConfiguration();
+            }
+        });
+        //filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
+    }
+
+    private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        smoothingButton = createButton(smoothingButton, "smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
+        smoothingButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+                smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
+                smoothingButton.getCaptionLabel().setText(getSmoothingString());
+            }
+        });
+        // smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+    }
+
+    private void createGainButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        gainButton = createButton(gainButton, "gainButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        gainButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
+        gainButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
+                adsBoard.setUseDynamicScaler(!adsBoard.getUseDynamicScaler());
+                gainButton.getCaptionLabel().setText(getGainString());;
+            }
+        });
+        //gainButton.setHelpText("Click here to switch gain convention.");
+    }
+
+    private void createLayoutButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        layoutButton = createButton(layoutButton, "layoutButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        layoutButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //make sure that you can't open the layout selector accidentally
+                if (!tutorialSelector.isVisible) {
+                    println("TopNav: Layout Dropdown Toggled");
+                    layoutSelector.toggleVisibility();
+                }
+            }
+        });
+        //layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    }
+
+    private void createControlPanelCollapser(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        controlPanelCollapser = createButton(controlPanelCollapser, "controlPanelCollapser", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        controlPanelCollapser.setSwitch(true);
+        controlPanelCollapser.setOn();
+        controlPanelCollapser.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               if (controlPanelCollapser.isOn()) {
+                   controlPanel.open();
+               } else {
+                   controlPanel.close();
+               }
+            }
+        });
+    }
+
+    private void createDebugButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        debugButton = createButton(debugButton, "debugButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        debugButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               ConsoleWindow.display();
+            }
+        });
+        //debugButton.setHelpText("Click to open the Console Log window.");
+    }
+
+    private void createTutorialsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        tutorialsButton = createButton(tutorialsButton, "tutorialsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        tutorialsButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               tutorialSelector.toggleVisibility();
+            }
+        });
+        //tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+    }
+
+    private void createIssuesButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        final String helpText = "If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!";
+        issuesButton = createButton(issuesButton, "issuesButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        issuesButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               openURLInBrowser("https://github.com/OpenBCI/OpenBCI_GUI/issues");
+            }
+        });
+        //issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
+    }
+
+    private void createShopButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        shopButton = createButton(shopButton, "shopButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        shopButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               openURLInBrowser("https://shop.openbci.com/");
+            }
+        });
+        //shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+    }
+
+    private void createUpdateGuiButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        updateGuiVersionButton = createButton(updateGuiVersionButton, "updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        updateGuiVersionButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               openURLInBrowser(guiLatestReleaseLocation);
+            }
+        });
+        //shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+    }
+
+    private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        settingsButton = createButton(settingsButton, "settingsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        settingsButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //make Help button and Settings button mutually exclusive
+                if (!tutorialSelector.isVisible) {
+                    configSelector.toggleVisibility();
+                }   
+            }
+        });
+        //configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
+    }
+
+    //Execute this function whenver the stop button is pressed
     public void stopButtonWasPressed() {
         //toggle the data transfer state of the ADS1299...stop it or start it...
         if (currentBoard.isStreaming()) {
             output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
             stopRunning();
             if (!currentBoard.isStreaming()) {
-                topNav.stopButton.setString(stopButton_pressToStart_txt);
-                topNav.stopButton.setColorNotPressed(color(184, 220, 105));
+                toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
+                toggleDataStreamingButton.setColorBackground(isSelected_color);
             }
         } else { //not running
             output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
             startRunning();
             if (currentBoard.isStreaming()) {
-                topNav.stopButton.setString(stopButton_pressToStop_txt);
-                topNav.stopButton.setColorNotPressed(color(224, 56, 45));
+                toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStop_txt);
+                toggleDataStreamingButton.setColorBackground(TURN_OFF_RED);
                 nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             }
         }
     }
-}
 
-//=============== OLD STUFF FROM Gui_Manger.pde ===============//
+    void incrementFilterConfiguration() {
+        dataProcessing.incrementFilterConfiguration();
 
-void incrementFilterConfiguration() {
-    dataProcessing.incrementFilterConfiguration();
+        //update the button strings
+        topNav.filtBPButton.getCaptionLabel().setText("BP Filt\n" + dataProcessing.getShortFilterDescription());
+        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+    }
 
-    //update the button strings
-    topNav.filtBPButton.but_txt = "BP Filt\n" + dataProcessing.getShortFilterDescription();
-    // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
-}
+    void incrementNotchConfiguration() {
+        dataProcessing.incrementNotchConfiguration();
 
-void incrementNotchConfiguration() {
-    dataProcessing.incrementNotchConfiguration();
-
-    //update the button strings
-    topNav.filtNotchButton.but_txt = "Notch\n" + dataProcessing.getShortNotchDescription();
-    // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+        //update the button strings
+        topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
+        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+    }
 }
 
 class LayoutSelector {
@@ -678,7 +673,7 @@ class LayoutSelector {
             fill(57, 128, 204);
             // fill(177, 184, 193);
             noStroke();
-            rect(x+w-(topNav.layoutButton.but_dx-1), y, (topNav.layoutButton.but_dx-1), 1);
+            rect(x+w-(topNav.layoutButton.getWidth()-1), y, (topNav.layoutButton.getWidth()-1), 1);
 
             popStyle();
         }
@@ -701,7 +696,7 @@ class LayoutSelector {
     void mouseReleased() {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
-            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()) {
+            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isInside()) {
                 toggleVisibility();
             }
             for (int i = 0; i < layoutOptions.size(); i++) {
@@ -896,7 +891,7 @@ class ConfigSelector {
             fill(57, 128, 204);
             noStroke();
             //This makes the dropdown box look like it's apart of the button by drawing over the bottom edge of the button
-            rect(x+w-(topNav.configButton.but_dx-1), y, (topNav.configButton.but_dx-1), 1);
+            rect(x+w-(topNav.settingsButton.getWidth()-1), y, (topNav.settingsButton.getWidth()-1), 1);
 
             popStyle();
         }
@@ -943,7 +938,7 @@ class ConfigSelector {
     void mouseReleased() {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
-            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()) {
+            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.settingsButton.isInside()) {
                 toggleVisibility();
                 clearAllSettingsPressed = false;
             }
@@ -1019,7 +1014,7 @@ class ConfigSelector {
                     }
                 }
             }
-        } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.configButton.isActive()) {
+        } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.settingsButton.isActive()) {
             //resize the height of the settings dropdown
             h = margin*2 + b_h;
             clearAllSettingsPressed = false;
@@ -1170,10 +1165,10 @@ class TutorialSelector {
                 tutorialOptions.get(i).draw();
             }
 
-            fill(openbciBlue);
+            fill(OPENBCI_BLUE);
             // fill(177, 184, 193);
             noStroke();
-            rect(x+w-(topNav.tutorialsButton.but_dx-1), y, (topNav.tutorialsButton.but_dx-1), 1);
+            rect(x+w-(topNav.tutorialsButton.getWidth()-1), y, (topNav.tutorialsButton.getWidth()-1), 1);
 
             popStyle();
         }
@@ -1196,9 +1191,9 @@ class TutorialSelector {
     void mouseReleased() {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
-            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isMouseHere()) {
+            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isInside()) {
                 toggleVisibility();
-                topNav.configButton.setIgnoreHover(false);
+                //topNav.configButton.setIgnoreHover(false);
             }
             for (int i = 0; i < tutorialOptions.size(); i++) {
                 if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {

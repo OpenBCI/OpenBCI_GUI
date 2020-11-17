@@ -22,8 +22,8 @@ package controlP5;
  * Suite 330, Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
+ * @modified ##date##
+ * @version ##version##
  * 
  */
 
@@ -47,6 +47,7 @@ public class Button extends Controller< Button > {
 	public static int autoHeight = 19;
 	protected int activateBy = RELEASE;
 	protected boolean isSwitch = false;
+	protected int cornerRoundness = 0;
 
 	/**
 	 * Convenience constructor to extend Button.
@@ -218,6 +219,16 @@ public class Button extends Controller< Button > {
 	}
 
 	/**
+	 * Set the corner roundess of this button. Default value is 0 and right-angle corners.
+	 *
+	 * @return Button
+	 */
+    public Button setCornerRoundness(int _cornerRoundness){
+		cornerRoundness = _cornerRoundness;
+		return this;
+	}
+	
+	/**
 	 * Returns true or false and indicates the switch state
 	 * of the button. {@link setSwitch(boolean) setSwitch}
 	 * should have been set before.
@@ -273,7 +284,7 @@ public class Button extends Controller< Button > {
 					theGraphics.fill( color.getBackground( ) );
 				}
 			}
-			theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) );
+			theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
 			if ( isLabelVisible ) {
 				_myCaptionLabel.draw( theGraphics , 0 , 0 , theController );
 			}

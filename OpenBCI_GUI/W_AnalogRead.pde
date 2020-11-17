@@ -136,7 +136,7 @@ class W_AnalogRead extends Widget {
         else {
             analogModeButton.setString("Turn Analog Read On");	
             analogModeButton.setIgnoreHover(false);
-            analogModeButton.setColorNotPressed(color(57,128,204));
+            analogModeButton.setColorNotPressed(buttonsLightBlue);
         }
     }
 

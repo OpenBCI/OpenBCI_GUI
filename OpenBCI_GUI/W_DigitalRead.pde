@@ -80,7 +80,7 @@ class W_DigitalRead extends Widget {
         digitalModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
         digitalModeButton.setCornerRoundess((int)(navHeight-6));
         digitalModeButton.setFont(p5,12);
-        digitalModeButton.setColorNotPressed(color(57,128,204));
+        digitalModeButton.setColorNotPressed(buttonsLightBlue);
         digitalModeButton.textColorNotActive = color(255);
         digitalModeButton.hasStroke(false);
 
@@ -132,7 +132,7 @@ class W_DigitalRead extends Widget {
         else {
             digitalModeButton.setString("Turn Digital Read On");	
             digitalModeButton.setIgnoreHover(false);
-            digitalModeButton.setColorNotPressed(color(57,128,204));
+            digitalModeButton.setColorNotPressed(buttonsLightBlue);
         }
     }
 

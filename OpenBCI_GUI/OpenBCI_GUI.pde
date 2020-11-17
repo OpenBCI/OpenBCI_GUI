@@ -64,7 +64,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.2-beta.0";
+String localGUIVersionString = "v5.0.2-beta.1";
 String localGUIVersionDate = "November 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -74,6 +74,11 @@ final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+ControlPanel controlPanel;
+ControlP5 cp5; //program-wide instance of ControlP5
+
+int selectedSamplingRate = -1; //program-wide variable to track sampling rate, which can change depending on selected data source
 
 boolean midInit = false;
 boolean midInitCheck2 = false;
@@ -215,17 +220,31 @@ PFont p13;
 PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
-ButtonHelpText buttonHelpText;
-
 boolean setupComplete = false;
-color bgColor = color(1, 18, 41);
-color openbciBlue = color(31, 69, 110);
-int COLOR_SCHEME_DEFAULT = 1;
-int COLOR_SCHEME_ALTERNATIVE_A = 2;
+
+//Starting to collect the GUI-wide color pallet here. Rename to constants all caps later...
+final color bgColor = color(1, 18, 41);
+final color OPENBCI_BLUE = color(31, 69, 110);
+final color boxColor = color(200);
+final color boxStrokeColor = color(bgColor);
+final color isSelected_color = color(184, 220, 105);
+final color colorNotPressed = color(255);
+final color buttonsLightBlue = color(57,128,204);
+final color TURN_ON_GREEN = color(184,220,105);
+final color WHITE = color(255);
+final color BLACK = color(0);
+final color TURN_OFF_RED = color(224, 56, 45);
+final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
+final color BUTTON_PRESSED = color(150,170,200); //bgColor;
+
+final int COLOR_SCHEME_DEFAULT = 1;
+final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 PApplet ourApplet;
+
+ButtonHelpText buttonHelpText;
 
 static CustomOutputStream outputStream;
 
@@ -235,6 +254,9 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
 SessionSettings settings;
 DirectoryManager directoryManager;
+
+final int navBarHeight = 32;
+TopNav topNav;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -347,6 +369,8 @@ void delayedSetup() {
 
     fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
+    //Instantiate buttonHelpText before any buttons have been made
+    buttonHelpText = new ButtonHelpText();
 
     //setup topNav
     topNav = new TopNav();
@@ -359,8 +383,6 @@ void delayedSetup() {
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
     loadingGIF_blue.loop();
-
-    buttonHelpText = new ButtonHelpText();
 
     prepareExitHandler();
 
@@ -434,10 +456,6 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- ");
 
-    if (initSystemButton.but_txt == "START SESSION") {
-        initSystemButton.but_txt = "STOP SESSION";
-    }
-
     //reset init variables
     systemHasHalted = false;
     boolean abandonInit = false;
@@ -488,9 +506,9 @@ void initSystem() {
             }
             else {
                 // todo[brainflow] temp hardcode
-                String ganglionName = (String)(bleList.getItem(bleList.activeItem).get("headline"));
-                String ganglionPort = (String)(bleList.getItem(bleList.activeItem).get("subline"));
-                String ganglionMac = BLEMACAddrMap.get(ganglionName);
+                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
+                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
@@ -533,7 +551,7 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
     controlPanel.close();
-    topNav.controlPanelCollapser.setIsActive(false);
+    topNav.controlPanelCollapser.setOff();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
@@ -669,9 +687,9 @@ void stopRunning() {
 void haltSystem() {
     if (!systemHasHalted) { //prevents system from halting more than once\
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        if (initSystemButton.but_txt == "STOP SESSION") {
-            initSystemButton.but_txt = "START SESSION";
-        }
+        
+        //Reset the text for the Start Session button
+        controlPanel.initBox.setInitSessionButtonText("START SESSION");
 
         if (w_networking != null && w_networking.getNetworkActive()) {
             w_networking.stopNetwork();
@@ -818,6 +836,14 @@ void systemInitSession() {
     } else {
         midInitCheck2 = true;
     }
+}
+
+//Global function to update the number of channels
+void updateToNChan(int _nchan) {
+    nchan = _nchan;
+    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
+    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    println("Channel count set to " + str(nchan));
 }
 
 void introAnimation() {

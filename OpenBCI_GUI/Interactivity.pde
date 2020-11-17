@@ -4,12 +4,9 @@
 //  This file contains all key commands for interactivity with GUI & OpenBCI
 //  Created by Chip Audette, Joel Murphy, & Conor Russomanno
 //  - Extracted from OpenBCI_GUI because it was getting too klunky
+//  - Refactored Nov. 2020 - Richard Waltman
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-//------------------------------------------------------------------------
-//                       Global Variables & Instances
-//------------------------------------------------------------------------
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -57,8 +54,8 @@ void parseKey(char val) {
             } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
                 colorScheme = COLOR_SCHEME_DEFAULT;
             }
-            topNav.updateNavButtonsBasedOnColorScheme();
-            println("Changing color scheme.");
+            //topNav.updateNavButtonsBasedOnColorScheme();
+            output("New Dark color scheme coming soon!");
             break;
 
         //deactivate channels 1-16
@@ -226,7 +223,6 @@ synchronized void mousePressed() {
     }
     // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
     // println("systemMode" + systemMode);
-    // controlPanel.CPmousePressed();
 
     //if not before "START SESSION" ... i.e. after initial setup
     if (systemMode >= SYSTEMMODE_POSTINIT) {
@@ -249,13 +245,12 @@ synchronized void mousePressed() {
         if (systemMode == SYSTEMMODE_POSTINIT) {
             if (mouseX > 0 && mouseX < controlPanel.w && mouseY > 0 && mouseY < controlPanel.initBox.y+controlPanel.initBox.h) {
                 println("OpenBCI_GUI: mousePressed: clicked in CP box");
-                controlPanel.CPmousePressed();
             }
             //if clicked out of panel
             else {
                 println("OpenBCI_GUI: mousePressed: outside of CP clicked");
                 controlPanel.isOpen = false;
-                topNav.controlPanelCollapser.setIsActive(false);
+                topNav.controlPanelCollapser.setOff();
             }
         }
     }
@@ -265,15 +260,6 @@ synchronized void mouseReleased() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
     if (!setupComplete) {
         return;
-    }
-
-    //some buttons light up only when being actively pressed.  Now that we've
-    //released the mouse button, turn off those buttons.
-
-    //interacting with control panel
-    if (controlPanel.isOpen) {
-        //if clicked in panel
-        controlPanel.CPmouseReleased();
     }
 
     // gui.mouseReleased();
@@ -286,78 +272,27 @@ synchronized void mouseReleased() {
     }
 }
 
-//------------------------------------------------------------------------
-//                       Classes
-//------------------------------------------------------------------------
-
-class CustomScrollableList extends ScrollableList {
-
-    private boolean drawOutlineWhenClosed = true;
-
-    CustomScrollableList(ControlP5 cp5, String name) {
-        super(cp5, name);
+//Global function used to open a url in default browser, usually after pressing a button
+void openURLInBrowser(String _url){
+    try {
+        //Set your page url in this string. For eg, I m using URL for Google Search engine
+        java.awt.Desktop.getDesktop().browse(java.net.URI.create(_url));
+        output("Attempting to use your default browser to launch: " + _url);
     }
-    
-    // there's a bug in control p5 where clicking on the scroll list does not	
-    // open it if you move the mouse while clicking. This fixes that.
-    @Override
-    protected void onEndDrag() {
-        super.onEndDrag();
-        setOpen(!isOpen());
-    }
-
-    // close the dropdown if the mouse leaves it.
-    @Override
-    protected void onLeave() {
-        super.onLeave();
-        close();
-    }
-
-    @Override
-    public ScrollableList updateDisplayMode( int theMode ) {
-        super.updateDisplayMode(theMode);
-
-        if (theMode == DEFAULT) {
-            _myControllerView = new CustomScrollableListView(this);
-        }
-        
-        return this;
-    }
-
-    public boolean getDrawOutlineWhenClosed() {
-        return drawOutlineWhenClosed;
-    }
-
-    public CustomScrollableList setDrawOutlineWhenClosed(boolean shouldDraw) {
-        drawOutlineWhenClosed = shouldDraw;
-        return this;
-    }
-
-    public class CustomScrollableListView extends ScrollableListView {
-        private CustomScrollableList theList;
-
-        CustomScrollableListView(CustomScrollableList _theList) {
-            super();
-            theList = _theList;
-        }
-
-        @Override
-        public void display(PGraphics g , ScrollableList c) {
-            drawOutline();
-            super.display(g, c);
-        }
-
-        private void drawOutline() {
-            if (!theList.isOpen() && !theList.getDrawOutlineWhenClosed()) {
-                return; // don't draw outline
-            }
-
-            // draw rect behind the dropdown 
-            fill(theList.getBackgroundColor());
-            rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
-        }
+    catch (java.io.IOException e) {
+            //println(e.getMessage());
+            println("Error launching url in browser: " + _url);
     }
 }
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////
+
 
 class Button_obci {
 
@@ -510,7 +445,7 @@ class Button_obci {
             else {
                 setIsActive(false);
                 if(helpTimerStarted){
-                    buttonHelpText.setVisible(false);
+                    //buttonHelpText.setVisible(false);
                     showHelpText = false;
                     helpTimerStarted = false;
                 }
@@ -625,8 +560,8 @@ class Button_obci {
 
         //send some info to the HelpButtonText object to be drawn last in OpenBCI_GUI.pde ... we want to make sure it is render last, and on top of all other GUI stuff
         if(showHelpText && helpText != ""){
-            buttonHelpText.setButtonHelpText(helpText, but_x + but_dx/2, but_y + (3*but_dy)/4);
-            buttonHelpText.setVisible(true);
+            //buttonHelpText.setButtonHelpText(helpText, but_x + but_dx/2, but_y + (3*but_dy)/4);
+            //buttonHelpText.setVisible(true);
         }
         //draw open/close arrow if it's a dropdown button
         if (isDropdownButton) {
@@ -658,78 +593,3 @@ class Button_obci {
         popStyle();
     } //end of button draw
 };
-
-class ButtonHelpText{
-    int x, y, w, h;
-    String myText = "";
-    boolean isVisible;
-    int numLines;
-    int lineSpacing = 14;
-    int padding = 10;
-
-    ButtonHelpText(){
-
-    }
-
-    public void setVisible(boolean _isVisible){
-        isVisible = _isVisible;
-    }
-
-    public void setButtonHelpText(String _myText, int _x, int _y){
-        myText = _myText;
-        x = _x;
-        y = _y;
-    }
-
-    public void draw(){
-        if(isVisible){
-            pushStyle();
-            textAlign(CENTER, TOP);
-
-            textFont(p5,12);
-            textLeading(lineSpacing); //line spacing
-            stroke(31,69,110);
-            fill(255);
-            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
-            // println("numLines: " + numLines);
-            //if on left side of screen, draw box brightness to prevent box off screen
-            if(x <= width/2){
-                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
-            } else{ //if on right side of screen, draw box left to prevent box off screen
-                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
-            }
-            popStyle();
-        }
-    }
-};
-
-void openURLInBrowser(String _url){
-    try {
-        //Set your page url in this string. For eg, I m using URL for Google Search engine
-        java.awt.Desktop.getDesktop().browse(java.net.URI.create(_url));
-        output("Attempting to use your default browser to launch: " + _url);
-    }
-    catch (java.io.IOException e) {
-            //println(e.getMessage());
-            println("Error launching url in browser: " + _url);
-    }
-}
-
-//loop through networking textfields and find out if any are active
-boolean isNetworkingTextActive(){
-    boolean isAFieldActive = false;
-    if (w_networking != null) {
-        int numTextFields = w_networking.cp5_networking.getAll(Textfield.class).size();
-        for(int i = 0; i < numTextFields; i++){
-            if(w_networking.cp5_networking.getAll(Textfield.class).get(i).isFocus()){
-                isAFieldActive = true;
-            }
-        }
-    }
-    //println("Networking Text Field Active? " + isAFieldActive);
-    return isAFieldActive; //if not, return false
-}
