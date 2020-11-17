@@ -212,6 +212,10 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
             // send the sample rate command to the board
             res = sendCommand(sampleRate.getCommand()).getKey().booleanValue();
         }
+        if (res) {
+            println('Registers:');
+            println(sendCommand("F0").getValue());
+        }
 
         return res;
     }
