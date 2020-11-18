@@ -3,7 +3,7 @@ import brainflow.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-final boolean galeaEnabled = true;
+final boolean galeaEnabled = false;
 
 interface GaleaSettingsEnum {
     public String getName();
