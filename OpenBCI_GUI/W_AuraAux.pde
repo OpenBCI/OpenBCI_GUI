@@ -135,13 +135,13 @@ class W_AuraAux extends Widget {
 
 //triggered when there is an event in the LogLin Dropdown
 void Duration_AuraAux(int n) {
-    w_auraAux.adjustTimeAxisAllPlots(w_auraAux.xLimOptions[n]);
+    w_galeaAux.adjustTimeAxisAllPlots(w_galeaAux.xLimOptions[n]);
 }
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
 //^^^not true. we can do this in the class above with a CallbackListener
 void VertScale_AuraAux(int n) {
-    w_auraAux.adjustVertScaleAllPlots(w_auraAux.yLimOptions[n]);
+    w_galeaAux.adjustVertScaleAllPlots(w_galeaAux.yLimOptions[n]);
 }
 
 //========================================================================================================================

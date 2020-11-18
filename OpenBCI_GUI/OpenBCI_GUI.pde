@@ -99,7 +99,7 @@ final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
-final int DATASOURCE_AURAXR = 4;
+final int DATASOURCE_GALEA = 4;
 final int DATASOURCE_STREAMING = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
@@ -148,9 +148,9 @@ final double threshold_railed_warn = 75.0;
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
-//AuraXR Default Settings
-AuraXRMode auraXR_boardSetting = AuraXRMode.DEMO; //default mode
-AuraXRSR auraXR_sampleRate = AuraXRSR.SR_250;
+//Galea Default Settings
+GaleaMode galea_boardSetting = GaleaMode.DEMO; //default mode
+GaleaSR galea_sampleRate = GaleaSR.SR_250;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -513,11 +513,11 @@ void initSystem() {
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
             break;
-        case DATASOURCE_AURAXR:
-            currentBoard = new BoardAuraXR(
-                    controlPanel.auraXRBox.getIPAddress(),
-                    auraXR_boardSetting,
-                    auraXR_sampleRate
+        case DATASOURCE_GALEA:
+            currentBoard = new BoardGalea(
+                    controlPanel.galeaBox.getIPAddress(),
+                    galea_boardSetting,
+                    galea_sampleRate
                     );
             // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic(16);
@@ -570,13 +570,13 @@ void initSystem() {
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-     //don't save default session settings for AuraXR or StreamingBoard
-    if (eegDataSource != DATASOURCE_AURAXR && eegDataSource != DATASOURCE_STREAMING) {
+     //don't save default session settings for Galea or StreamingBoard
+    if (eegDataSource != DATASOURCE_GALEA && eegDataSource != DATASOURCE_STREAMING) {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
-    } else if (eegDataSource == DATASOURCE_AURAXR) {
-        //After TopNav has been instantiated, default to Expert mode for AuraXR
+    } else if (eegDataSource == DATASOURCE_GALEA) {
+        //After TopNav has been instantiated, default to Expert mode for Galea
         topNav.configSelector.toggleExpertMode(true);
     }
 
@@ -701,7 +701,7 @@ void haltSystem() {
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
         if (systemMode == SYSTEMMODE_POSTINIT && 
-            eegDataSource != DATASOURCE_AURAXR && 
+            eegDataSource != DATASOURCE_GALEA && 
             eegDataSource != DATASOURCE_STREAMING) {
                 settings.save(settings.getPath("User", eegDataSource, nchan));
         }

@@ -6,7 +6,7 @@ public enum BrainFlowStreaming_Boards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),
     GANGLION("Ganglion", BoardIds.GANGLION_BOARD),
-    AURAXR("AuraXR", BoardIds.AURAXR_BOARD),
+    GALEA("Galea", BoardIds.GALEA_BOARD),
     SYNTHETIC("Synthetic", BoardIds.SYNTHETIC_BOARD);
 
     private String name;

@@ -47,8 +47,8 @@ class ControlPanel {
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
-    AuraXRBox auraXRBox;
-    public SessionDataBox dataLogBoxAuraXR;
+    GaleaBox galeaBox;
+    public SessionDataBox dataLogBoxGalea;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
     public SessionDataBox dataLogBoxGanglion;
@@ -108,8 +108,8 @@ class ControlPanel {
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
-        auraXRBox = new AuraXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        dataLogBoxAuraXR = new SessionDataBox(x + w, (auraXRBox.y + auraXRBox.h), w, h, globalPadding, DATASOURCE_AURAXR, dataLogger.getDataLoggerOutputFormat(), "sessionNameAuraXR");
+        galeaBox = new GaleaBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        dataLogBoxGalea = new SessionDataBox(x + w, (galeaBox.y + galeaBox.h), w, h, globalPadding, DATASOURCE_GALEA, dataLogger.getDataLoggerOutputFormat(), "sessionNameGalea");
         
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
 
@@ -171,8 +171,8 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
 
-        dataLogBoxAuraXR.update();
-        auraXRBox.update();
+        dataLogBoxGalea.update();
+        galeaBox.update();
 
         streamingBoardBox.update();
 
@@ -243,10 +243,10 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-            } else if (eegDataSource == DATASOURCE_AURAXR) {
-                dataLogBoxAuraXR.y = auraXRBox.y + auraXRBox.h;  
-                dataLogBoxAuraXR.draw();
-                auraXRBox.draw();
+            } else if (eegDataSource == DATASOURCE_GALEA) {
+                dataLogBoxGalea.y = galeaBox.y + galeaBox.h;  
+                dataLogBoxGalea.draw();
+                galeaBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -323,7 +323,7 @@ class DataSourceBox {
     private MenuList sourceList;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = auraXREnabled ? 6 : 5;
+        numItems = galeaEnabled ? 6 : 5;
         x = _x;
         y = _y;
         w = _w;
@@ -362,8 +362,8 @@ class DataSourceBox {
         // sourceList.padding = 9;
         sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
         sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
-        if (auraXREnabled) {
-            sourceList.addItem("AURAXR (live)", DATASOURCE_AURAXR);
+        if (galeaEnabled) {
+            sourceList.addItem("GALEA (live)", DATASOURCE_GALEA);
         }
         sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
         sourceList.addItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC);
@@ -392,7 +392,7 @@ class DataSourceBox {
                         controlPanel.wifiBox.setDefaultToDynamicIP();
                     } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                         //GUI auto detects number of channels for playback when file is selected
-                    } else if (eegDataSource == DATASOURCE_AURAXR) {
+                    } else if (eegDataSource == DATASOURCE_GALEA) {
                         selectedSamplingRate = 250; //default sampling rate
                     } else if (eegDataSource == DATASOURCE_STREAMING) {
                         //do nothing for now
@@ -2149,9 +2149,9 @@ class RecentPlaybackBox {
     }
 };
 
-class AuraXRBox {
+class GaleaBox {
     public int x, y, w, h, padding; //size and position
-    private final String boxLabel = "AURAXR CONFIG";
+    private final String boxLabel = "GALEA CONFIG";
     private final String ipAddressLabel = "IP Address";
     private final String sampleRateLabel = "Sample Rate";
     private String ipAddress = "192.168.4.1";
@@ -2162,7 +2162,7 @@ class AuraXRBox {
     private final int titleH = 14;
     private final int uiElementH = 24;
 
-    AuraXRBox(int _x, int _y, int _w, int _h, int _padding) {
+    GaleaBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
@@ -2225,7 +2225,7 @@ class AuraXRBox {
         //Clear textfield on double click
         ipAddressTF.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                output("ControlPanel: Enter IP address of the AuraXR you wish to connect to.");
+                output("ControlPanel: Enter IP address of the Galea you wish to connect to.");
                 ipAddressTF.clear();
             }
         });
@@ -2239,7 +2239,7 @@ class AuraXRBox {
         });
     }
 
-    private ScrollableList createDropdown(String name, AuraXRSettingsEnum[] enumValues){
+    private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
         ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
@@ -2254,7 +2254,7 @@ class AuraXRBox {
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
-        for (AuraXRSettingsEnum value : enumValues) {
+        for (GaleaSettingsEnum value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
             list.addItem(value.getName(), value);
         }
@@ -2279,7 +2279,7 @@ class AuraXRBox {
     }
 
     private void createSampleRateDropdown() {
-        srList = createDropdown("auraXR_SampleRates", AuraXRSR.values());
+        srList = createDropdown("galea_SampleRates", GaleaSR.values());
         srList.setPosition(x + w - padding*2 - 60*2, y + titleH + uiElementH + padding*3);
         srList.setSize(120 + padding,(srList.getItems().size()+1)*uiElementH);
         srList.addCallback(new CallbackListener() {
@@ -2288,20 +2288,20 @@ class AuraXRBox {
                     int val = (int)srList.getValue();
                     Map bob = srList.getItem(val);
                     // this will retrieve the enum object stored in the dropdown!
-                    auraXR_sampleRate = (AuraXRSR)bob.get("value");
-                    println("ControlPanel: User selected AuraXR Sample Rate: " + auraXR_sampleRate.getName());
+                    galea_sampleRate = (GaleaSR)bob.get("value");
+                    println("ControlPanel: User selected Galea Sample Rate: " + galea_sampleRate.getName());
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(true);
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
                 } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(false);
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
                 }
             }
         });
     }
 
     private void createModeListDropdown() {
-        modeList = createDropdown("auraXR_Modes", AuraXRMode.values());
+        modeList = createDropdown("galea_Modes", GaleaMode.values());
         modeList.setPosition(x + padding, y + titleH + uiElementH*2 + padding*4);
         modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*uiElementH);
         modeList.addCallback(new CallbackListener() {
@@ -2310,13 +2310,13 @@ class AuraXRBox {
                     int val = (int)modeList.getValue();
                     Map bob = modeList.getItem(val);
                     // this will retrieve the enum object stored in the dropdown!
-                    auraXR_boardSetting = (AuraXRMode)bob.get("value");
-                    println("ControlPanel: User selected AuraXR Mode: " + auraXR_boardSetting.getName());
+                    galea_boardSetting = (GaleaMode)bob.get("value");
+                    println("ControlPanel: User selected Galea Mode: " + galea_boardSetting.getName());
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(true);
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
                 } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxAuraXR.lockSessionDataBoxCp5Elements(false);
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
                 }
             }
         });
@@ -3000,8 +3000,8 @@ class InitBox {
                     dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
                 } else if (eegDataSource == DATASOURCE_GANGLION) {
                     dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_AURAXR) {
-                    dataLogger.setSessionName(controlPanel.dataLogBoxAuraXR.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_GALEA) {
+                    dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
                 } else {
                     dataLogger.setSessionName(directoryManager.getFileNameDateTime());
                 }
@@ -3023,7 +3023,7 @@ class InitBox {
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            controlPanel.dataLogBoxAuraXR.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
             haltSystem();
         }
