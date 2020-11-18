@@ -70,21 +70,19 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
+    private final int PAD_3 = 3;
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
-        x = 3;
-        y = 3 + topNav.controlPanelCollapser.getHeight();
-        w = topNav.controlPanelCollapser.getWidth();
+        x = PAD_3 - 1; //This fixes a 1 pixel drawing error discrepancy
+        y = PAD_3 + topNav.controlPanelCollapser.getHeight();
+        w = topNav.controlPanelCollapser.getWidth() + 1; //This fixes a 1 pixel drawing error discrepancy involving controlPanelCollapser
         h = height - int(helpWidget.h);
 
         isOpen = false;
         fontInfo = new PlotFontInfo();
 
         globalPadding = 10;  //controls the padding of all elements on the control panel
-
-        cp5 = new ControlP5(mainClass);
-        cp5.setAutoDraw(false);
 
         //boxes active when eegDataSource = Normal (OpenBCI)
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
@@ -148,17 +146,6 @@ class ControlPanel {
     }
 
     public void update() {
-        //toggle view of cp5 / serial list selection table
-        if (isOpen) { // if control panel is open
-            if (!cp5.isVisible()) {  //and cp5 is not visible
-                cp5.show(); // shot it
-            }
-        } else { //the opposite of above
-            if (cp5.isVisible()) {
-                cp5.hide();
-            }
-        }
-
         //update all boxes if they need to be
         dataSourceBox.update();
         serialBox.update();
@@ -205,7 +192,6 @@ class ControlPanel {
         if (systemMode != 10) { // only draw control panel boxes if system running is false
             dataSourceBox.draw();
             drawStopInstructions = false;
-            cp5.setVisible(true);//make sure controlP5 elements are visible
 
             //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
@@ -270,8 +256,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_STREAMING) {
                 streamingBoardBox.draw();
             }
-        } else {
-            cp5.setVisible(false);
         }
 
         //draw the box that tells you to stop the system in order to edit control settings
@@ -288,10 +272,6 @@ class ControlPanel {
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
         }
-
-        //draw the ControlP5 stuff
-        textFont(p4, 14);
-        cp5.draw();
 
         popStyle();
     }

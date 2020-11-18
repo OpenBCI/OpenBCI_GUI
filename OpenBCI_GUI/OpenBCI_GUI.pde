@@ -76,7 +76,6 @@ final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
 ControlPanel controlPanel;
-ControlP5 cp5; //program-wide instance of ControlP5
 
 int selectedSamplingRate = -1; //program-wide variable to track sampling rate, which can change depending on selected data source
 

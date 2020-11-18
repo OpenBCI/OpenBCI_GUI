@@ -59,9 +59,10 @@ class TopNav {
 
         //Instantiate local cp5 for this box
         topNav_cp5 = new ControlP5(ourApplet);
-        topNav_cp5.setGraphics(ourApplet, 0,0);
+        topNav_cp5.setGraphics(ourApplet, 0, 0);
         topNav_cp5.setAutoDraw(false);
 
+        //TOP LEFT OF GUI
         createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H + PAD_3, h3, 16, TOPNAV_DARKBLUE, WHITE);
 
         //TOP RIGHT OF GUI, FROM LEFT<---Right
@@ -420,7 +421,9 @@ class TopNav {
             .setFont(_font)
             .toUpperCase(false)
             .setSize(_fontSize)
-            .setText(text)
+            .setText(text) 
+            .getStyle()
+            .setMarginTop(-2)
             ;
         b.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
