@@ -293,15 +293,15 @@ class TopNav {
 
     void screenHasBeenResized(int _x, int _y) {
         debugButton.setPosition(width - debugButton.getWidth() - PAD_3, PAD_3);
-        tutorialsButton.setPosition(debugButton.getPosition()[0] - debugButton.getWidth() - PAD_3, PAD_3);
+        tutorialsButton.setPosition((int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3);
         issuesButton.setPosition(tutorialsButton.getPosition()[0] - tutorialsButton.getWidth() - PAD_3, PAD_3);
         shopButton.setPosition(issuesButton.getPosition()[0] - issuesButton.getWidth() - PAD_3, PAD_3);
         updateGuiVersionButton.setPosition(shopButton.getPosition()[0] - shopButton.getWidth() - PAD_3, PAD_3);
-        settingsButton.setPosition(width - settingsButton.getWidth() - PAD_3, PAD_3);
+        settingsButton.setPosition(width - settingsButton.getWidth() - PAD_3, SUBNAV_BUT_Y);
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
-            layoutButton.setPosition(width - 3 - layoutButton.getWidth(), PAD_3);
-            settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, PAD_3);
+            layoutButton.setPosition(width - 3 - layoutButton.getWidth(), SUBNAV_BUT_Y);
+            settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, SUBNAV_BUT_Y);
             //Make sure to re-position UI in selector boxes
             layoutSelector.screenResized();
             tutorialSelector.screenResized();
@@ -410,7 +410,7 @@ class TopNav {
         final Button b = topNav_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setCornerRoundness(25)
+            .setCornerRoundness(0)
             .setColorLabel(_textColor)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(_bg)
