@@ -293,6 +293,7 @@ class TopNav {
     }
 
     void screenHasBeenResized(int _x, int _y) {
+        topNav_cp5.setGraphics(ourApplet, 0, 0); //Important!
         debugButton.setPosition(width - debugButton.getWidth() - PAD_3, PAD_3);
         tutorialsButton.setPosition((int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3);
         issuesButton.setPosition(tutorialsButton.getPosition()[0] - tutorialsButton.getWidth() - PAD_3, PAD_3);

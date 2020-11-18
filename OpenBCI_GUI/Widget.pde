@@ -65,6 +65,7 @@ class Widget{
         rect(x,y-1,w,h+1); //draw white widget background
 
         //draw nav bars and button bars
+        pushStyle();
         fill(150, 150, 150);
         rect(x0, y0, w0, navH); //top bar
         fill(200, 200, 200);

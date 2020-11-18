@@ -69,6 +69,8 @@ String localGUIVersionDate = "November 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
+PApplet ourApplet;
+
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
@@ -88,10 +90,6 @@ boolean reinitRequested = false;
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
-
-PImage cog;
-Gif loadingGIF;
-Gif loadingGIF_blue;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -193,6 +191,10 @@ boolean textFieldIsActive = false;
 int win_w;  //window width
 int win_h; //window height
 
+PImage cog;
+Gif loadingGIF;
+Gif loadingGIF_blue;
+
 PImage logo_blue;
 PImage logo_white;
 PImage consoleImgBlue;
@@ -241,7 +243,24 @@ final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
-PApplet ourApplet;
+WidgetManager wm;
+boolean wmVisible = true;
+CColor cp5_colors;
+
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+final color[] channelColors = {
+    color(129, 129, 129),
+    color(124, 75, 141),
+    color(54, 87, 158),
+    color(49, 113, 89),
+    color(221, 178, 13),
+    color(253, 94, 52),
+    TURN_OFF_RED,
+    color(162, 82, 49)
+};
+
+//Global variable for general navigation bar height
+final int navHeight = 22;
 
 ButtonHelpText buttonHelpText;
 
