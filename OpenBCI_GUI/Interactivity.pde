@@ -277,7 +277,7 @@ void openURLInBrowser(String _url){
     try {
         //Set your page url in this string. For eg, I m using URL for Google Search engine
         java.awt.Desktop.getDesktop().browse(java.net.URI.create(_url));
-        output("Attempting to use your default browser to launch: " + _url);
+        output("Opening URL: " + _url);
     }
     catch (java.io.IOException e) {
             //println(e.getMessage());

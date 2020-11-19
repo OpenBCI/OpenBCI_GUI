@@ -32,7 +32,7 @@ class W_playback extends Widget {
 
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
-        createSelectPlaybackFileButton("selectPlaybackFile_Session", "SELECT PLAYBACK FILE", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6, fontInfo.buttonLabel_size);
+        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
     }
 
     public boolean isVisible() {
@@ -128,28 +128,15 @@ class W_playback extends Widget {
         }
     }
 
-    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        selectPlaybackFileButton = cp5_playback.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        selectPlaybackFileButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        selectPlaybackFileButton = createButton(cp5_playback, name, text, _x, _y, _w, _h);
         selectPlaybackFileButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
                 selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
             }
         });
+        selectPlaybackFileButton.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     }
 
     private void createPlaybackMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {

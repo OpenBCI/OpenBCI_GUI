@@ -396,35 +396,6 @@ class W_Networking extends Widget {
         createStartButton();
         createGuideButton();
         createDataOutputsButton();
-
-        /*
-        IMPLEMENTED NEEDS TESTING
-        // Start Button
-        startButton = new Button_obci(x + w/2 - 70,y+h-40,200,20,"Start " + protocolMode + " Stream",14);
-        startButton.setFont(p4,14);
-        startButton.setColorNotPressed(TURN_ON_GREEN);
-
-        // Networking Guide button
-        guideButton = new Button_obci(x0 + 2, y0 + navH + 2, 125, navH - 6,"Networking Guide", 14);
-        guideButton.setCornerRoundess((int)(navHeight-6));
-        guideButton.setFont(p5,12);
-        guideButton.setColorNotPressed(buttonsLightBlue);
-        guideButton.setFontColorNotActive(color(255));
-        guideButton.setHelpText("Click to open the Networking Widget Guide in your default browser.");
-        guideButton.setURL(networkingGuideURL);
-        guideButton.hasStroke(false);
-
-        //Data outputs spreadsheet button
-        // Networking Data Type Guide button
-        dataOutputsButton = new Button_obci(x0 + 2*2 + guideButton.but_dx, y0 + navH + 2, 100, navH - 6,"Data Outputs", 14);
-        dataOutputsButton.setCornerRoundess((int)(navHeight-6));
-        dataOutputsButton.setFont(p5,12);
-        dataOutputsButton.setColorNotPressed(buttonsLightBlue);
-        dataOutputsButton.setFontColorNotActive(color(255));
-        dataOutputsButton.setHelpText("Click to open the Networking Data Outputs Guide in your default browser.");
-        dataOutputsButton.setURL(dataOutputsURL);
-        dataOutputsButton.hasStroke(false);
-        */
     }
 
     /* Shows and Hides appropriate CP5 elements within widget */
@@ -578,10 +549,10 @@ class W_Networking extends Widget {
                 }
             }
         });
-        //startButton.setHelpText("Click here to Start and Stop the network stream for the chosen protocol.");
+        startButton.setDescription("Click here to Start and Stop the network stream for the chosen protocol.");
     }
 
-    /* Change appearance of Button_obci to off */
+    // Change appearance of networking start/stop button to Off
     void turnOffButton() {
         startButton.setColorBackground(TURN_ON_GREEN);
         startButton.getCaptionLabel().setText("Start " + protocolMode + " Stream");
@@ -595,7 +566,7 @@ class W_Networking extends Widget {
                 output("Opening Networking Widget Guide using default browser.");
             }
         });
-        //guideButton.setHelpText("Click to open the Networking Widget Guide in your default browser.");
+        guideButton.setDescription("Click to open the Networking Widget Guide in your default browser.");
     }
 
     void createDataOutputsButton() {
@@ -606,7 +577,7 @@ class W_Networking extends Widget {
                 output("Opening Networking Data Outputs Guide using default browser.");
             }
         });
-        //dataOutputsButton.setHelpText("Click to open the Networking Data Outputs Guide in your default browser.");
+        dataOutputsButton.setDescription("Click to open the Networking Data Outputs Guide in your default browser.");
     }
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
@@ -747,6 +718,7 @@ class W_Networking extends Widget {
     void screenResized() {
         super.screenResized();
 
+        //Very important to allow users to interact with objects after app resize
         cp5_networking.setGraphics(pApplet, 0,0);
         cp5_networking_dropdowns.setGraphics(pApplet, 0,0);
         cp5_networking_baudRate.setGraphics(pApplet, 0,0);

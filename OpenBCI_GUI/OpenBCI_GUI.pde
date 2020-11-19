@@ -237,6 +237,7 @@ final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
 final color BUTTON_PRESSED = color(150,170,200); //OPENBCI_DARKBLUE;
+final color BUTTON_LOCKED_GREY = color(128);
 
 final int COLOR_SCHEME_DEFAULT = 1;
 final int COLOR_SCHEME_ALTERNATIVE_A = 2;
