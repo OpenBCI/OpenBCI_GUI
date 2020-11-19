@@ -88,7 +88,7 @@ class ButtonHelpText{
     }
 
     public void draw(){
-        if (!isVisible) {
+        if (!isVisible || settings.expertModeToggle) {
             return;
         }
 

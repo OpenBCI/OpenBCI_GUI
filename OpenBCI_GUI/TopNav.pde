@@ -543,14 +543,19 @@ class TopNav {
 
     private void createUpdateGuiButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         updateGuiVersionButton = createTNButton("updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        updateGuiVersionButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-               openURLInBrowser(guiLatestReleaseLocation);
-            }
-        });
         //Attempt to compare local and remote GUI versions when TopNav is instantiated
         //This will also set the description/help-text for this cp5 button
-        guiVersionIsUpToDate();
+        final boolean upToDate = guiVersionIsUpToDate();
+        updateGuiVersionButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!upToDate) {
+                    openURLInBrowser(guiLatestReleaseLocation);
+                    outputInfo("Update GUI: Opening latest Github release page using default browser");
+                } else {
+                    outputSuccess("Update GUI: Local OpenBCI GUI is up-to-date!");
+                }
+            }
+        });
     }
 
     private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
