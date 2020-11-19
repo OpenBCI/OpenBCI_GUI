@@ -9,35 +9,48 @@
 //
 //=======================================================================================================================================
 
-public Button createButton(ControlP5 _cp5, String name, String text, String _helpText, int _x, int _y, int _w, int _h, int _roundness, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
-    final String helpText = _helpText;
+//Reusable method for creating CP5 buttons throughout the GUI
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, int _marginTop) {
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
-        //.setColorLabel(bgColor) //Default to dark blue text
+        .setColorLabel(_textColor) //Default to dark blue text
         .setCornerRoundness(_roundness) //From Processing rect(): To draw a rounded rectangle, add a fifth parameter, which is used as the radius value for all four corners.
         .setColorForeground(_colorHover)
         .setColorBackground(_bgColor)
         .setColorActive(_colorPressed)
         ;
     b.getCaptionLabel()
-        .setFont(createFont("Arial", _fontSize, true))
+        .setFont(_font)
         .toUpperCase(false)
         .setSize(_fontSize)
         .setText(text)
         .setColor(_textColor) //This sets the color of the button label
+        .getStyle()
+        .setMarginTop(_marginTop)
         ;
+    //Add Help Text to all Buttons. If description is null or object is locked, take no action.
     b.addCallback(new CallbackListener() {
         public void controlEvent(CallbackEvent theEvent) {
-            if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                buttonHelpText.setButtonHelpText(helpText, (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
-                buttonHelpText.setVisible(true);
+            if (theEvent.getAction() == ControlP5.ACTION_ENTER && !b.isLock() && b.getDescription() != null) {
+                buttonHelpText.setButtonHelpText(b.getDescription(), (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
+                buttonHelpText.setTimeUserEnteredUIObject();
             } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
                 buttonHelpText.setVisible(false);
             }
         }
     });
     return b;
+}
+
+//Square corners and no text label adjustment w/ default hover and press colors
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bgColor, color _textColor) {
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bgColor, _textColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
+}
+
+//Default button colors and fonts
+private Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h) {
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, bgColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
 }
 
 
@@ -329,16 +342,26 @@ class CustomScrollableList extends ScrollableList {
     }
 }
 
+///////////////////////////////////////////////////////
+//              BUTTON HELP TEXT CLASS               //
+///////////////////////////////////////////////////////
 class ButtonHelpText{
-    int x, y, w, h;
-    String myText = "";
-    boolean isVisible;
-    int numLines;
-    int lineSpacing = 14;
-    int padding = 10;
+    private int x, y, w, h;
+    private String myText = "";
+    private boolean isVisible;
+    private int numLines;
+    private int lineSpacing = 14;
+    private int padding = 10;
+    private int timeUserEnteredUIObject;
+    private final int delay = 1000;
 
     ButtonHelpText(){
 
+    }
+
+    public void setTimeUserEnteredUIObject() {
+        timeUserEnteredUIObject = millis();
+        isVisible = true;
     }
 
     public void setVisible(boolean _isVisible){
@@ -352,7 +375,12 @@ class ButtonHelpText{
     }
 
     public void draw(){
-        if(isVisible){
+        if (!isVisible) {
+            return;
+        }
+
+        boolean timeHasElapsed = millis() - timeUserEnteredUIObject > delay;
+        if (timeHasElapsed) {
             pushStyle();
             textAlign(CENTER, TOP);
 

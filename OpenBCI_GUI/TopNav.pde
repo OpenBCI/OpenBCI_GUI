@@ -408,72 +408,44 @@ class TopNav {
         return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\n   Body uV" : "Gain Mode\n   Classic";
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        final Button b = topNav_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setCornerRoundness(0)
-            .setColorLabel(_textColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(_bg)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        b.getCaptionLabel()
-            .setFont(_font)
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text) 
-            .getStyle()
-            .setMarginTop(-2)
-            ;
-        b.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                    buttonHelpText.setButtonHelpText("testing", (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
-                    buttonHelpText.setVisible(true);
-                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    buttonHelpText.setVisible(false);
-                }
-            }
-        });
-        myButton = b;
-        return myButton;
+    private Button createTNButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, -2);
     }
 
     private void createToggleDataStreamButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        toggleDataStreamingButton = createButton(toggleDataStreamingButton, "toggleDataStreamingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        toggleDataStreamingButton = createTNButton("toggleDataStreamingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         toggleDataStreamingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                stopButtonWasPressed();
             }
         });
-        //stopButton.setHelpText("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
+        toggleDataStreamingButton.setDescription("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
     }
 
     private void createFiltNotchButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtNotchButton = createButton(filtNotchButton, "filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtNotchButton = createTNButton("filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         filtNotchButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtNotchButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                incrementNotchConfiguration();
             }
         });
-        //filtNotchButton.setHelpText("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
+        filtNotchButton.setDescription("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
     }
 
     private void createFiltBPButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtBPButton = createButton(filtBPButton, "filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtBPButton = createTNButton("filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         filtBPButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtBPButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                incrementFilterConfiguration();
             }
         });
-        //filtBPButton.setHelpText("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
+        filtBPButton.setDescription("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
     }
 
     private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        smoothingButton = createButton(smoothingButton, "smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -482,11 +454,11 @@ class TopNav {
                 smoothingButton.getCaptionLabel().setText(getSmoothingString());
             }
         });
-        // smoothingButton.setHelpText("Click here to turn data smoothing on or off.");
+        smoothingButton.setDescription("Click here to turn data smoothing on or off.");
     }
 
     private void createGainButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        gainButton = createButton(gainButton, "gainButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        gainButton = createTNButton("gainButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         gainButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         gainButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -495,11 +467,11 @@ class TopNav {
                 gainButton.getCaptionLabel().setText(getGainString());;
             }
         });
-        //gainButton.setHelpText("Click here to switch gain convention.");
+        gainButton.setDescription("Click here to switch gain convention.");
     }
 
     private void createLayoutButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        layoutButton = createButton(layoutButton, "layoutButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        layoutButton = createTNButton("layoutButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         layoutButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 //make sure that you can't open the layout selector accidentally
@@ -509,11 +481,11 @@ class TopNav {
                 }
             }
         });
-        //layoutButton.setHelpText("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        layoutButton.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     }
 
     private void createControlPanelCollapser(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        controlPanelCollapser = createButton(controlPanelCollapser, "controlPanelCollapser", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        controlPanelCollapser = createTNButton("controlPanelCollapser", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         controlPanelCollapser.setSwitch(true);
         controlPanelCollapser.setOn();
         controlPanelCollapser.onRelease(new CallbackListener() {
@@ -528,58 +500,58 @@ class TopNav {
     }
 
     private void createDebugButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        debugButton = createButton(debugButton, "debugButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        debugButton = createTNButton("debugButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         debugButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                ConsoleWindow.display();
             }
         });
-        //debugButton.setHelpText("Click to open the Console Log window.");
+        debugButton.setDescription("Click to open the Console Log window.");
     }
 
     private void createTutorialsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        tutorialsButton = createButton(tutorialsButton, "tutorialsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        tutorialsButton = createTNButton("tutorialsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         tutorialsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                tutorialSelector.toggleVisibility();
             }
         });
-        //tutorialsButton.setHelpText("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
+        tutorialsButton.setDescription("Click to find links to helpful online tutorials and getting started guides. Also, check out how to create custom widgets for the GUI!");
     }
 
     private void createIssuesButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         final String helpText = "If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!";
-        issuesButton = createButton(issuesButton, "issuesButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        issuesButton = createTNButton("issuesButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         issuesButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                openURLInBrowser("https://github.com/OpenBCI/OpenBCI_GUI/issues");
             }
         });
-        //issuesButton.setHelpText("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
+        issuesButton.setDescription("If you have suggestions or want to share a bug you've found, please create an issue on the GUI's Github repo!");
     }
 
     private void createShopButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        shopButton = createButton(shopButton, "shopButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        shopButton = createTNButton("shopButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         shopButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                openURLInBrowser("https://shop.openbci.com/");
             }
         });
-        //shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+        shopButton.setDescription("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
     }
 
     private void createUpdateGuiButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        updateGuiVersionButton = createButton(updateGuiVersionButton, "updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        updateGuiVersionButton = createTNButton("updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                openURLInBrowser(guiLatestReleaseLocation);
             }
         });
-        //shopButton.setHelpText("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+        shopButton.setDescription("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
     }
 
     private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        settingsButton = createButton(settingsButton, "settingsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        settingsButton = createTNButton("settingsButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         settingsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 //make Help button and Settings button mutually exclusive
@@ -588,7 +560,7 @@ class TopNav {
                 }   
             }
         });
-        //configButton.setHelpText("Save and Load GUI Settings! Click Default to revert to factory settings.");
+        settingsButton.setDescription("Save and Load GUI Settings! Click Default to revert to factory settings.");
     }
 
     //Execute this function whenver the stop button is pressed

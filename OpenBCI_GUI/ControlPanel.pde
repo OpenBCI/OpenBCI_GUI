@@ -405,9 +405,6 @@ class SerialBox {
 
         createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, fontInfo.buttonLabel_size);
         createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24, fontInfo.buttonLabel_size);
-
-        //autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
-        //popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 
     public void update() {
@@ -430,36 +427,22 @@ class SerialBox {
         }
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = cytonsb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
+    private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
+        return createButton(cytonsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, bgColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
     }
 
     private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoConnectButton = createButton(autoConnectButton, name, text, _x, _y, _w, _h, _fontSize);
+        autoConnectButton = createSBButton(name, text, _x, _y, _w, _h, _fontSize);
         autoConnectButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.comPortBox.attemptAutoConnectCyton();
             }
         });
+        autoConnectButton.setDescription("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
     }
 
     private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        popOutRadioConfigButton = createButton(popOutRadioConfigButton, name, text, _x, _y, _w, _h, _fontSize);
+        popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h, _fontSize);
         popOutRadioConfigButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (selectedProtocol == BoardProtocol.SERIAL) {
@@ -473,6 +456,7 @@ class SerialBox {
                 }
             }
         });
+        popOutRadioConfigButton.setDescription("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 };
 
@@ -1265,11 +1249,8 @@ class SessionDataBox {
 
         //button to autogenerate file name based on time/date
         createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24, fontInfo.buttonLabel_size);
-        //autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
         createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        //outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
         createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        //outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
 
         createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
         
@@ -1441,6 +1422,7 @@ class SessionDataBox {
                 autogenerateSessionName();
             }
         });
+        autoSessionName.setDescription("Autogenerate a session name based on the date and time.");
     }
 
     private void createODFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
@@ -1461,6 +1443,7 @@ class SessionDataBox {
                 setToODFHeight();
             }
         });
+        outputODF.setDescription("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
     }
 
     private void createBDFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
@@ -1481,6 +1464,7 @@ class SessionDataBox {
                 setToBDFHeight();
             }
         });
+        outputBDF.setDescription("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
     }
 
     private void autogenerateSessionName() {
@@ -2484,10 +2468,6 @@ class PlaybackFileBox {
 
         createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH, fontInfo.buttonLabel_size);
         createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, 14);
-        
-        //selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-        //sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
-        //sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
     }
 
     public void update() {
@@ -2539,6 +2519,7 @@ class PlaybackFileBox {
                 );
             }
         });
+        selectPlaybackFile.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     }
 
     private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
@@ -2552,6 +2533,8 @@ class PlaybackFileBox {
                 );
             }
         });
+        sampleDataButton.setCornerRoundness((int)(sampleDataButton_h));
+        sampleDataButton.setDescription("Click to open the folder containing OpenBCI GUI Sample Data.");
     }
 };
 
@@ -2691,18 +2674,10 @@ class RadioConfigBox {
         rcb_cp5.setGraphics(ourApplet, 0,0);
         rcb_cp5.setAutoDraw(false);
 
-        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH,  fontInfo.buttonLabel_size);
-        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH, fontInfo.buttonLabel_size);
-        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, fontInfo.buttonLabel_size);
-        /*
-        //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
-        systemStatus.setHelpText("Get the connection status of your Cyton system.");
-        */
+        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH);
+        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH);
+        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24);
+        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH);
     }
     public void update() {}
 
@@ -2759,63 +2734,48 @@ class RadioConfigBox {
         cytonRadioCfg.closeSerialPort();
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = rcb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
-    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoscanButton = createButton(autoscanButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoscanButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         autoscanButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 scanChannels();
                 controlPanel.hideChannelListCP();
             }
         });
+        autoscanButton.setDescription("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
     }
 
-    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        systemStatusButton = createButton(systemStatusButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h) {
+        systemStatusButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         systemStatusButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 getChannel();
                 controlPanel.hideChannelListCP();
             }
         });
+        systemStatusButton.setDescription("Get connection status and the current channel of your Cyton and USB Dongle.");
     }
 
-    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        setChannelButton = createButton(setChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        setChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         setChannelButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.channelPopup.setClicked(true);
                 controlPanel.channelPopup.setTitleChangeChannel();
             }
         });
+        setChannelButton.setDescription("Change the channel of your Cyton and USB Dongle.");
     }
 
-    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        ovrChannelButton = createButton(ovrChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        ovrChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         ovrChannelButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.channelPopup.setClicked(true);
                 controlPanel.channelPopup.setTitlteOvrDongle();
             }
         });
+        ovrChannelButton.setDescription("Change the channel of the USB Dongle only.");
     }
 };
 
@@ -2993,6 +2953,7 @@ class InitBox {
 
                 //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
                 midInit = true;
+                buttonHelpText.setVisible(false);
                 output("Attempting to Start Session..."); // Show this at the bottom of the GUI
                 println("initButtonPressed: Calling initSystem() after next draw()");
             }
