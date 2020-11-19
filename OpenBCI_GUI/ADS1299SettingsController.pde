@@ -430,7 +430,7 @@ class ADS1299SettingsController {
             ;
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                String text = customCommandTF.getText();
+                String text = dropNonPrintableChars(customCommandTF.getText());
                 Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand(text);
                 if (res.getKey().booleanValue()) {
                     outputSuccess("[ExpertMode] Success sending command to board: " + text);
