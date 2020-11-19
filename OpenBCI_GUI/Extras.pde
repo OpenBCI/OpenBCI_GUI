@@ -49,6 +49,32 @@ float mean(float[] data) {
     return mean(data,data.length);
 }
 
+// cp5 textfields adds garbage chars to text field and they are invisible
+String dropNonPrintableChars(String myString)
+{
+    StringBuilder newString = new StringBuilder(myString.length());
+    for (int offset = 0; offset < myString.length();)
+    {
+        int codePoint = myString.codePointAt(offset);
+        offset += Character.charCount(codePoint);
+
+        // Replace invisible control characters and unused code points
+        switch (Character.getType(codePoint))
+        {
+            case Character.CONTROL:     // \p{Cc}
+            case Character.FORMAT:      // \p{Cf}
+            case Character.PRIVATE_USE: // \p{Co}
+            case Character.SURROGATE:   // \p{Cs}
+            case Character.UNASSIGNED:  // \p{Cn}
+                break;
+            default:
+                newString.append(Character.toChars(codePoint));
+                break;
+        }
+    }
+    return newString.toString();
+}
+
 //////////////////////////////////////////////////
 //
 // Some functions to implement some math and some filtering.  These functions
