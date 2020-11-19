@@ -42,6 +42,7 @@ jobs:
         curl -O -L --insecure https://download.processing.org/processing-3.5.3-linux64.tgz
         tar -xzvf processing-3.5.3-linux64.tgz
         echo "${GITHUB_WORKSPACE}/temp/processing-3.5.3" >> $GITHUB_PATH
+        sudo -H cp -r ./temp/processing-3.5.3/ /usr/local/bin/
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/
     - name: Processing MacOS
@@ -53,6 +54,7 @@ jobs:
         unzip processing-3.5.3-macosx.zip
         mv Processing.app /Applications/Processing.app
         echo "${GITHUB_WORKSPACE}/release_script/mac_only" >> $GITHUB_PATH
+        sudo -H cp -r ./temp/processing-3.5.3/ /usr/local/bin/
         chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
         mkdir -p $HOME/Documents/Processing/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/Documents/Processing/libraries/
