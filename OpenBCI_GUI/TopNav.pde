@@ -75,9 +75,6 @@ class TopNav {
         //SUBNAV TOP RIGHT
         createTopNavSettingsButton("Settings", width - SUBNAV_BUT_W - PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
-        //Attempt to compare local and remote GUI versions when TopNav is instantiated
-        guiVersionIsUpToDate();
-
         layoutSelector = new LayoutSelector();
         tutorialSelector = new TutorialSelector();
         configSelector = new ConfigSelector();
@@ -344,17 +341,17 @@ class TopNav {
 
             if (localVersion < remoteVersion) {
                 println("GUI needs to be updated. Download at https://github.com/OpenBCI/OpenBCI_GUI/releases/latest");
-                //updateGuiVersionButton.getCaptionLabel().setText("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                updateGuiVersionButton.setDescription("GUI needs to be updated. -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
                 return false;
             } else {
                 println("GUI is up to date!");
-                //updateGuiVersionButton.getCaptionLabel().setText("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
+                updateGuiVersionButton.setDescription("GUI is up to date! -- Local: " + localGUIVersionString +  " GitHub: " + remoteVersionString);
                 return true;
             }
         } else {
             println("TopNav: Internet Connection Not Available");
             println("Local GUI Version: " + localGUIVersionString);
-            //updateGuiVersionButton.getCaptionLabel().setText("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
+            updateGuiVersionButton.setDescription("Connect to internet to check GUI version. -- Local: " + localGUIVersionString);
             return null;
         }
     }
@@ -551,7 +548,9 @@ class TopNav {
                openURLInBrowser(guiLatestReleaseLocation);
             }
         });
-        shopButton.setDescription("Head to our online store to purchase the latest OpenBCI hardware and accessories.");
+        //Attempt to compare local and remote GUI versions when TopNav is instantiated
+        //This will also set the description/help-text for this cp5 button
+        guiVersionIsUpToDate();
     }
 
     private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
