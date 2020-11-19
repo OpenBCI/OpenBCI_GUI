@@ -48,6 +48,7 @@ public class Button extends Controller< Button > {
 	protected int activateBy = RELEASE;
 	protected boolean isSwitch = false;
 	protected int cornerRoundness = 0;
+	protected Integer buttonStrokeColor;
 
 	/**
 	 * Convenience constructor to extend Button.
@@ -227,6 +228,17 @@ public class Button extends Controller< Button > {
 		cornerRoundness = _cornerRoundness;
 		return this;
 	}
+
+	/**
+	 * Set the border color of this button. Default value is null.
+	 * When null, noStroke() is used during draw loop
+	 * 
+	 * @return Button
+	 */
+    public Button setBorderColor(Integer c){
+		buttonStrokeColor = c;
+		return this;
+	}
 	
 	/**
 	 * Returns true or false and indicates the switch state
@@ -270,7 +282,12 @@ public class Button extends Controller< Button > {
 	private class ButtonView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
-			theGraphics.noStroke( );
+			if (buttonStrokeColor != null) {
+				theGraphics.stroke( buttonStrokeColor );
+			} else {
+				theGraphics.noStroke( );
+			}
+			
 			if ( isOn && isSwitch ) {
 				theGraphics.fill( color.getActive( ) );
 			} else {
