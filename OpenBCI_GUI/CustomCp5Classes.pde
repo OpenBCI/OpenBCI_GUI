@@ -1,8 +1,6 @@
 //=======================================================================================================================================
 //
-//                    MenuList Class
-//
-//  Based on ControlP5 Processing Library example, written by Andreas Schlegel
+//                    Custom Cp5 Classes and Methods
 //
 //  Created: Conor Russomanno Oct. 2014
 //  Refactored: Richard Waltman Nov. 2020  
@@ -55,6 +53,82 @@ private Button createButton(ControlP5 _cp5, String name, String text, int _x, in
 }
 
 
+///////////////////////////////////////////////////////
+//              BUTTON HELP TEXT CLASS               //
+///////////////////////////////////////////////////////
+class ButtonHelpText{
+    private int x, y, w, h;
+    private String myText = "";
+    private boolean isVisible;
+    private int numLines;
+    private int lineSpacing = 14;
+    private int padding = 10;
+    private int timeUserEnteredUIObject;
+    private final int delay = 1000;
+    private final int fadeInTime = 500;
+    private float masterOpacity;
+
+    ButtonHelpText(){
+
+    }
+
+    public void setTimeUserEnteredUIObject() {
+        timeUserEnteredUIObject = millis();
+        isVisible = true;
+    }
+
+    public void setVisible(boolean _isVisible){
+        isVisible = _isVisible;
+    }
+
+    public void setButtonHelpText(String _myText, int _x, int _y){
+        myText = _myText;
+        x = _x;
+        y = _y;
+    }
+
+    public void draw(){
+        if (!isVisible) {
+            return;
+        }
+
+        int delta = millis() - timeUserEnteredUIObject;
+        boolean timeToShowHelpText =  delta > delay;
+
+        if (timeToShowHelpText) {
+            
+            //Fade in the help text
+            masterOpacity = (delta < delay + fadeInTime) ? map(delta, delay, delay + fadeInTime, 0, 255) : 255f;
+
+            pushStyle();
+            textAlign(CENTER, TOP);
+
+            textFont(p5,12);
+            textLeading(lineSpacing); //line spacing
+            stroke(31,69,110, masterOpacity);
+            fill(255, masterOpacity);
+            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
+            // println("numLines: " + numLines);
+            //if on left side of screen, draw box brightness to prevent box off screen
+            if(x <= width/2){
+                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110, masterOpacity); //text colof
+                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
+            } else{ //if on right side of screen, draw box left to prevent box off screen
+                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110); //text colof
+                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
+            }
+            popStyle();
+        }
+    }
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//                              MENULIST CLASS                                    //
+//   Based on ControlP5 Processing Library example, written by Andreas Schlegel   //
+////////////////////////////////////////////////////////////////////////////////////
 public class MenuList extends controlP5.Controller {
 
     float pos, npos;
@@ -342,66 +416,3 @@ class CustomScrollableList extends ScrollableList {
         }
     }
 }
-
-///////////////////////////////////////////////////////
-//              BUTTON HELP TEXT CLASS               //
-///////////////////////////////////////////////////////
-class ButtonHelpText{
-    private int x, y, w, h;
-    private String myText = "";
-    private boolean isVisible;
-    private int numLines;
-    private int lineSpacing = 14;
-    private int padding = 10;
-    private int timeUserEnteredUIObject;
-    private final int delay = 1000;
-
-    ButtonHelpText(){
-
-    }
-
-    public void setTimeUserEnteredUIObject() {
-        timeUserEnteredUIObject = millis();
-        isVisible = true;
-    }
-
-    public void setVisible(boolean _isVisible){
-        isVisible = _isVisible;
-    }
-
-    public void setButtonHelpText(String _myText, int _x, int _y){
-        myText = _myText;
-        x = _x;
-        y = _y;
-    }
-
-    public void draw(){
-        if (!isVisible) {
-            return;
-        }
-
-        boolean timeHasElapsed = millis() - timeUserEnteredUIObject > delay;
-        if (timeHasElapsed) {
-            pushStyle();
-            textAlign(CENTER, TOP);
-
-            textFont(p5,12);
-            textLeading(lineSpacing); //line spacing
-            stroke(31,69,110);
-            fill(255);
-            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
-            // println("numLines: " + numLines);
-            //if on left side of screen, draw box brightness to prevent box off screen
-            if(x <= width/2){
-                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
-            } else{ //if on right side of screen, draw box left to prevent box off screen
-                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
-            }
-            popStyle();
-        }
-    }
-};
