@@ -276,7 +276,7 @@ class DigitalReadDot{
         drawDigitalValue = true;
 
         digitalPin = new TextBox("D" + digitalInputString, dotX, dotY - dotWidth);
-        digitalPin.textColor = color(bgColor);
+        digitalPin.textColor = OPENBCI_DARKBLUE;
         digitalPin.alignH = CENTER;
     }
 

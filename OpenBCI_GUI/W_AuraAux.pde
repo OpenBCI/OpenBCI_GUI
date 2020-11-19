@@ -210,13 +210,13 @@ abstract class AuxReadBar{
         initArrays();
 
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
-        analogValue.textColor = color(bgColor);
+        analogValue.textColor = OPENBCI_DARKBLUE;
         analogValue.alignH = RIGHT;
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
         analogPin = new TextBox(auxChanLabel, x+3, y + h);
-        analogPin.textColor = color(bgColor);
+        analogPin.textColor = OPENBCI_DARKBLUE;
         analogPin.alignH = CENTER;
 
         drawAnalogValue = true;

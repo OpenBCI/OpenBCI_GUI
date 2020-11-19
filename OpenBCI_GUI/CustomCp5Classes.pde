@@ -10,7 +10,7 @@
 //=======================================================================================================================================
 
 //Reusable method for creating CP5 buttons throughout the GUI
-public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, int _marginTop) {
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, color _strokeColor, int _marginTop) {
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
@@ -19,6 +19,7 @@ public Button createButton(ControlP5 _cp5, String name, String text, int _x, int
         .setColorForeground(_colorHover)
         .setColorBackground(_bgColor)
         .setColorActive(_colorPressed)
+        .setBorderColor(_strokeColor)
         ;
     b.getCaptionLabel()
         .setFont(_font)
@@ -45,12 +46,12 @@ public Button createButton(ControlP5 _cp5, String name, String text, int _x, int
 
 //Square corners and no text label adjustment w/ default hover and press colors
 public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bgColor, color _textColor) {
-    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bgColor, _textColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bgColor, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
 }
 
 //Default button colors and fonts
 private Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h) {
-    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, bgColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
 }
 
 
@@ -93,7 +94,7 @@ public class MenuList extends controlP5.Controller {
                     } else {
                         ty = 0;
                     }
-                    menu.fill(bgColor, 100);
+                    menu.fill(OPENBCI_DARKBLUE, 100);
                     if(ty > 0){
                         menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
                     }
@@ -147,7 +148,7 @@ public class MenuList extends controlP5.Controller {
             } else {
                 menu.rect(0, 0, getWidth(), itemHeight-1 );
             }
-            menu.fill(bgColor);
+            menu.fill(OPENBCI_DARKBLUE);
             menu.textFont(menuFont);
 
             //make sure there is something in the Ganglion serial list...

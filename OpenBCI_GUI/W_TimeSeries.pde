@@ -384,7 +384,7 @@ class W_timeSeries extends Widget {
         myButton = tscp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -597,8 +597,8 @@ class ChannelBar {
         yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
         yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding*2 + yScaleButton_w, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
         
-        impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, color(bgColor), color(255,255,255,175), RIGHT, TOP);
-        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
+        impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, OPENBCI_DARKBLUE, color(255,255,255,175), RIGHT, TOP);
+        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, OPENBCI_DARKBLUE, color(255,255,255,175), RIGHT, BOTTOM);
 
         drawVoltageValue = true;
         minimumChannelHeight = padding_4 + yAxisLabel_h*2;
@@ -703,7 +703,7 @@ class ChannelBar {
         //draw channelBar separator line in the middle of interChannelBarSpace
         if (!isBottomChannel()) {
             pushStyle();
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             strokeWeight(1);
             int separator_y = y + h + int(w_timeSeries.interChannelBarSpace/2);
             line(x, separator_y, x + w, separator_y);

@@ -223,11 +223,11 @@ PFont p6; //small Open Sans
 
 boolean setupComplete = false;
 
-//Starting to collect the GUI-wide color pallet here. Rename to constants all caps later...
-final color bgColor = color(1, 18, 41);
+//Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
+final color OPENBCI_DARKBLUE = color(1, 18, 41);
 final color OPENBCI_BLUE = color(31, 69, 110);
 final color boxColor = color(200);
-final color boxStrokeColor = color(bgColor);
+final color boxStrokeColor = OPENBCI_DARKBLUE;
 final color isSelected_color = color(184, 220, 105);
 final color colorNotPressed = color(255);
 final color buttonsLightBlue = color(57,128,204);
@@ -236,7 +236,7 @@ final color WHITE = color(255);
 final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
-final color BUTTON_PRESSED = color(150,170,200); //bgColor;
+final color BUTTON_PRESSED = color(150,170,200); //OPENBCI_DARKBLUE;
 
 final int COLOR_SCHEME_DEFAULT = 1;
 final int COLOR_SCHEME_ALTERNATIVE_A = 2;
@@ -800,7 +800,7 @@ void systemUpdate() { // for updating data values and variables
 
 void systemDraw() { //for drawing to the screen
     //redraw the screen...not every time, get paced by when data is being plotted
-    background(bgColor);  //clear the screen
+    background(OPENBCI_DARKBLUE);  //clear the screen
     noStroke();
     //background(255);  //clear the screen
 
@@ -902,7 +902,7 @@ void drawStartupError() {
     final int padding = 20;
 
     pushStyle();
-    background(bgColor);
+    background(OPENBCI_DARKBLUE);
     stroke(204);
     fill(238);
     rect((width - w)/2, (height - h)/2, w, h);
@@ -931,9 +931,9 @@ void drawOverlay(String text) {
     pushStyle();
     textFont(p0, 24);
     fill(boxColor, 255);
-    stroke(bgColor, 200);
+    stroke(OPENBCI_DARKBLUE, 200);
     rect(width/2 - (textWidth(text)+20)/2, height/2 - 80/2, textWidth(text) + 20, 80);
-    fill(bgColor, 255);
+    fill(OPENBCI_DARKBLUE, 255);
     text(text, width/2 - textWidth(text)/2, height/2 + 8);
     popStyle();
 }

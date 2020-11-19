@@ -74,7 +74,7 @@ class HelpWidget {
 
         if(colorScheme == COLOR_SCHEME_DEFAULT){
             // draw background of widget
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             fill(255);
             rect(-1, height-h, width+2, h);
             noStroke();
@@ -92,7 +92,7 @@ class HelpWidget {
             text(currentOutput, padding*2, height - h + padding);
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
             // draw background of widget
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             fill(31,69,110);
             rect(-1, height-h, width+2, h);
             noStroke();
@@ -108,7 +108,7 @@ class HelpWidget {
 
             textFont(p4);
             textSize(14);
-            // fill(bgColor);
+            // fill(OPENBCI_DARKBLUE);
             fill(getTextColor());
             // fill(57,128,204);
             // fill(OPENBCI_BLUE);

@@ -77,7 +77,7 @@ class W_playback extends Widget {
             rect(x, y, w, h);
             //Add text if needed
             /*
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text("PLAYBACK FILE", x + padding, y + padding);
@@ -132,7 +132,7 @@ class W_playback extends Widget {
         selectPlaybackFileButton = cp5_playback.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)

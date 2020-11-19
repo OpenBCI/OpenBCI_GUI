@@ -312,17 +312,17 @@ class AnalogReadBar{
         
         
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
-        analogValue.textColor = color(bgColor);
+        analogValue.textColor = OPENBCI_DARKBLUE;
         analogValue.alignH = RIGHT;
         analogValue.alignV = BOTTOM;
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
         analogPin = new TextBox("A" + analogInputString, x+3, y + h);
-        analogPin.textColor = color(bgColor);
+        analogPin.textColor = OPENBCI_DARKBLUE;
         analogPin.alignH = CENTER;
         digitalPin = new TextBox("(D" + digitalPinNum + ")", x+3, y + h + 12);
-        digitalPin.textColor = color(bgColor);
+        digitalPin.textColor = OPENBCI_DARKBLUE;
         digitalPin.alignH = CENTER;
 
         drawAnalogValue = true;

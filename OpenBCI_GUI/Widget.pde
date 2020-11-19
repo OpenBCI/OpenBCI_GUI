@@ -188,7 +188,7 @@ class Widget{
         textFont(h5);		
         textSize(12);		
         textAlign(CENTER, BOTTOM);		
-        fill(bgColor);		
+        fill(OPENBCI_DARKBLUE);		
         for(int i = 0; i < dropdowns.size(); i++){		
             int dropdownPos = dropdowns.size() - i;		
             // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
@@ -520,7 +520,7 @@ class ChannelSelect {
         Toggle myButton = cp5_chanSelect.addToggle(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(color(120))
             .setColorBackground(color(150))
             .setColorActive(color(57, 128, 204))

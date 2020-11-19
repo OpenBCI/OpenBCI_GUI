@@ -16,7 +16,7 @@ class TopNav {
 
     private final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
     private final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
-    private color strokeColor = bgColor;
+    private color strokeColor = OPENBCI_DARKBLUE;
 
     private ControlP5 topNav_cp5;
 
@@ -88,7 +88,7 @@ class TopNav {
     void initSecondaryNav() {
 
         //Buttons on the left side of the GUI secondary nav bar
-        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, bgColor);
+        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
         createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         if (currentBoard instanceof SmoothingCapableBoard) {
@@ -123,14 +123,14 @@ class TopNav {
             updateGuiVersionButton.setColorNotPressed(color(255));
             configButton.setColorNotPressed(color(255));
 
-            controlPanelCollapser.textColorNotActive = color(bgColor);
-            debugButton.textColorNotActive = color(bgColor);
-            //highRezButton.textColorNotActive = color(bgColor);
-            issuesButton.textColorNotActive = color(bgColor);
-            shopButton.textColorNotActive = color(bgColor);
-            tutorialsButton.textColorNotActive = color(bgColor);
-            updateGuiVersionButton.textColorNotActive = color(bgColor);
-            configButton.textColorNotActive = color(bgColor);
+            controlPanelCollapser.textColorNotActive = OPENBCI_DARKBLUE;
+            debugButton.textColorNotActive = OPENBCI_DARKBLUE;
+            //highRezButton.textColorNotActive = OPENBCI_DARKBLUE;
+            issuesButton.textColorNotActive = OPENBCI_DARKBLUE;
+            shopButton.textColorNotActive = OPENBCI_DARKBLUE;
+            tutorialsButton.textColorNotActive = OPENBCI_DARKBLUE;
+            updateGuiVersionButton.textColorNotActive = OPENBCI_DARKBLUE;
+            configButton.textColorNotActive = OPENBCI_DARKBLUE;
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
             controlPanelCollapser.setColorNotPressed(OPENBCI_BLUE);
             debugButton.setColorNotPressed(OPENBCI_BLUE);
@@ -164,17 +164,17 @@ class TopNav {
             filtNotchButton.setColorNotPressed(color(255));
             layoutButton.setColorNotPressed(color(255));
 
-            filtBPButton.textColorNotActive = color(bgColor);
-            filtNotchButton.textColorNotActive = color(bgColor);
-            layoutButton.textColorNotActive = color(bgColor);
+            filtBPButton.textColorNotActive = OPENBCI_DARKBLUE;
+            filtNotchButton.textColorNotActive = OPENBCI_DARKBLUE;
+            layoutButton.textColorNotActive = OPENBCI_DARKBLUE;
 
             if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.textColorNotActive = color(bgColor);
+                smoothingButton.textColorNotActive = OPENBCI_DARKBLUE;
                 smoothingButton.setColorNotPressed(color(255));
             }
 
             if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.textColorNotActive = color(bgColor);
+                gainButton.textColorNotActive = OPENBCI_DARKBLUE;
                 gainButton.setColorNotPressed(color(255));
             }
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
@@ -247,7 +247,7 @@ class TopNav {
         }
 
         pushStyle();
-        //stroke(bgColor);
+        //stroke(OPENBCI_DARKBLUE);
         fill(topNavBg);
         rect(0, 0, width, navBarHeight);
         //noStroke();
@@ -278,7 +278,11 @@ class TopNav {
         }
 
         //Draw CP5 Objects
-        topNav_cp5.draw();
+        try {
+            topNav_cp5.draw();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         //Draw everything in these selector boxes above all topnav cp5 objects
         layoutSelector.draw();
@@ -409,7 +413,7 @@ class TopNav {
     }
 
     private Button createTNButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, -2);
+        return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, -2);
     }
 
     private void createToggleDataStreamButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -637,7 +641,7 @@ class LayoutSelector {
         if (isVisible) { //only draw if visible
             pushStyle();
 
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             // fill(229); //bg
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
@@ -844,7 +848,7 @@ class ConfigSelector {
         if (isVisible) { //only draw if visible
             pushStyle();
 
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
@@ -1132,7 +1136,7 @@ class TutorialSelector {
         if (isVisible) { //only draw if visible
             pushStyle();
 
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             // fill(229); //bg
             fill(31, 69, 110); //bg
             rect(x, y, w, h);

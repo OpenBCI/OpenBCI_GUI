@@ -35,7 +35,7 @@ class W_GanglionImpedance extends Widget {
         startStopCheck.draw();
 
         //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(p4, 14);
 
         BoardGanglion ganglion = (BoardGanglion)currentBoard;
@@ -58,7 +58,7 @@ class W_GanglionImpedance extends Widget {
             text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
 
             pushStyle();
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             //change the fill color based on the signal quality...
             if(adjustedImpedance <= 0){ //no data yet...
                 fill(255);

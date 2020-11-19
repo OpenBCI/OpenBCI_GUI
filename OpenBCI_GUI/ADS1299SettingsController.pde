@@ -74,7 +74,7 @@ class ADS1299SettingsController {
 
         //color labelBG = color(220);
         color labelBG = color(255,255,255,0);
-        color labelTxt = bgColor;
+        color labelTxt = OPENBCI_DARKBLUE;
         colOffset = (w / 5) / 2;
         int label_y = y - 14 - padding_3;
         gainLabel = new TextBox("PGA Gain", x + colOffset, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
@@ -244,7 +244,7 @@ class ADS1299SettingsController {
         myButton = hwsCp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -416,7 +416,7 @@ class ADS1299SettingsController {
         sendCustomCmdButton = hwsCp5.addButton("sendCustomCommand")
             .setPosition(0, 0)
             .setSize(10, 10)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)

@@ -74,9 +74,9 @@ class ControlPanel {
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
-        x = PAD_3 - 1; //This fixes a 1 pixel drawing error discrepancy
+        x = PAD_3;
         y = PAD_3 + topNav.controlPanelCollapser.getHeight();
-        w = topNav.controlPanelCollapser.getWidth() + 1; //This fixes a 1 pixel drawing error discrepancy involving controlPanelCollapser
+        w = topNav.controlPanelCollapser.getWidth();
         h = height - int(helpWidget.h);
 
         isOpen = false;
@@ -268,7 +268,7 @@ class ControlPanel {
             String stopInstructions = "Press the \"STOP SESSION\" button to change your data source or edit system settings.";
             textAlign(CENTER, TOP);
             textFont(p4, 14);
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
         }
@@ -326,7 +326,7 @@ class DataSourceBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("DATA SOURCE", x + padding, y + padding);
@@ -403,8 +403,8 @@ class SerialBox {
         cytonsb_cp5.setGraphics(ourApplet, 0,0);
         cytonsb_cp5.setAutoDraw(false);
 
-        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, fontInfo.buttonLabel_size);
-        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24, fontInfo.buttonLabel_size);
+        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24);
+        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24);
     }
 
     public void update() {
@@ -416,7 +416,7 @@ class SerialBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL CONNECT", x + padding, y + padding);
@@ -427,12 +427,12 @@ class SerialBox {
         }
     }
 
-    private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        return createButton(cytonsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, bgColor, BUTTON_HOVER, BUTTON_PRESSED, 0);
+    private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h) {
+        return createButton(cytonsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
     }
 
-    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoConnectButton = createSBButton(name, text, _x, _y, _w, _h, _fontSize);
+    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoConnectButton = createSBButton(name, text, _x, _y, _w, _h);
         autoConnectButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.comPortBox.attemptAutoConnectCyton();
@@ -441,8 +441,8 @@ class SerialBox {
         autoConnectButton.setDescription("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
     }
 
-    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h, _fontSize);
+    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h) {
+        popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h);
         popOutRadioConfigButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (selectedProtocol == BoardProtocol.SERIAL) {
@@ -508,7 +508,7 @@ class ComPortBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL/COM PORT", x + padding, y + padding);
@@ -521,7 +521,7 @@ class ComPortBox {
         refreshCytonDongles = cytoncpb_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -664,7 +664,7 @@ class BLEBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("BLE DEVICES", x + padding, y + padding);
@@ -740,7 +740,7 @@ class BLEBox {
         refreshBLE = bleBox_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -824,7 +824,7 @@ class WifiBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WIFI SHIELDS", x + padding, y + padding);
@@ -836,7 +836,7 @@ class WifiBox {
 
         if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
@@ -853,7 +853,7 @@ class WifiBox {
                 boardIpInfo += wifi_ipAddress;
             }
             pushStyle();
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
@@ -905,7 +905,7 @@ class WifiBox {
         myButton = wifiBox_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1049,7 +1049,7 @@ class InterfaceBoxCyton {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
@@ -1062,7 +1062,7 @@ class InterfaceBoxCyton {
         myButton = ifbc_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1146,7 +1146,7 @@ class InterfaceBoxGanglion {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
@@ -1159,7 +1159,7 @@ class InterfaceBoxGanglion {
         myButton = ifbg_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1266,7 +1266,7 @@ class SessionDataBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SESSION DATA", x + padding, y + padding);
@@ -1288,13 +1288,13 @@ class SessionDataBox {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
             //Dropdown is drawn at the end of ControlPanel.draw()
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
             int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
                 ? 20 
                 : 5;
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
             popStyle();
@@ -1400,7 +1400,7 @@ class SessionDataBox {
         myButton = sessionData_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1554,11 +1554,11 @@ class ChannelCountBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
@@ -1571,7 +1571,7 @@ class ChannelCountBox {
         myButton = ccc_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1665,11 +1665,11 @@ class SampleRateGanglionBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
@@ -1681,7 +1681,7 @@ class SampleRateGanglionBox {
         myButton = srgb_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1779,11 +1779,11 @@ class SampleRateCytonBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
@@ -1795,7 +1795,7 @@ class SampleRateCytonBox {
         myButton = srcb_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -1887,11 +1887,11 @@ class SyntheticChannelCountBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
@@ -1904,7 +1904,7 @@ class SyntheticChannelCountBox {
         myButton = sccb_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -2018,7 +2018,7 @@ class RecentPlaybackBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h + recentPlaybackSL.getHeight() - padding*2.5);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
@@ -2154,7 +2154,7 @@ class GaleaBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
@@ -2366,7 +2366,7 @@ class StreamingBoardBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
@@ -2479,7 +2479,7 @@ class PlaybackFileBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK FILE", x + padding, y + padding);
@@ -2492,7 +2492,7 @@ class PlaybackFileBox {
         myButton = pbfb_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(_bgColor)
             .setColorActive(BUTTON_PRESSED)
@@ -2576,7 +2576,7 @@ class SDBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WRITE TO SD CARD?", x + padding, y + padding);
@@ -2687,7 +2687,7 @@ class RadioConfigBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("RADIO CONFIGURATION", x + padding, y + padding);
@@ -2700,7 +2700,7 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         pushStyle();
         textAlign(LEFT);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         rect(x + padding, y + padding*5 + headerH + buttonH*2 + autoscanH, w-(padding*2), statusWindowH);
         fill(255);
         textFont(h3, 15);
@@ -2830,7 +2830,7 @@ class ChannelPopup {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text(title, x + padding, y + padding);
@@ -2883,7 +2883,7 @@ class InitBox {
         initSystemButton = initBox_cp5.addButton(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(BUTTON_HOVER)
             .setColorBackground(colorNotPressed)
             .setColorActive(BUTTON_PRESSED)
@@ -2904,6 +2904,7 @@ class InitBox {
                 initButtonPressed();
             }
         });
+        initSystemButton.setBorderColor(OPENBCI_DARKBLUE);
     }
 
     //This is the primary method called when Start/Stop Session Button is pressed in Control Panel

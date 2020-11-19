@@ -280,11 +280,11 @@ class W_emg extends Widget {
                 //circle for outer threshold
                 noFill();
                 strokeWeight(1);
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].upperThreshold, scaleFactor * motorWidgets[i * colNum + j].upperThreshold);
 
                 //circle for inner threshold
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold);
 
                 int _x = int(5*colOffset/8);
@@ -299,7 +299,7 @@ class W_emg extends Widget {
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 noFill();
                 rect(_x, _y, _w, _h);
 
@@ -314,7 +314,7 @@ class W_emg extends Widget {
                 //draw channel number at upper left corner of row/column cell
                 pushStyle();
                 stroke(0);
-                fill(bgColor);
+                fill(OPENBCI_DARKBLUE);
                 int _chan = index+1;
                 textFont(p5, 12);
                 text(_chan + "", 10, 20);
@@ -693,7 +693,7 @@ class W_emg extends Widget {
 
             fill(255);
             strokeWeight(1);
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             setColor();
             fill(current_color);
             rect(boxx, boxy, wid, len);
