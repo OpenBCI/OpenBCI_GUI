@@ -505,13 +505,16 @@ void initSystem() {
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardBrainFlowSynthetic(nchan);
+            println("OpenBCI_GUI: Init session using Synthetic data source");
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {
                 currentBoard = new DataSourcePlayback(playbackData_fname);
+                println("OpenBCI_GUI: Init session using Playback data source");
             } else {
                 if (!sdData_fname.equals("N/A")) {
                     currentBoard = new DataSourceSDCard(sdData_fname);
+                    println("OpenBCI_GUI: Init session using Playback data source");
                 }
                 else {
                     // no code path to it
@@ -547,6 +550,7 @@ void initSystem() {
                     controlPanel.streamingBoardBox.getIP(),
                     controlPanel.streamingBoardBox.getPort()
                     );
+            println("OpenBCI_GUI: Init session using Streaming data source");
         default:
             break;
     }

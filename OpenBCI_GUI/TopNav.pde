@@ -83,6 +83,10 @@ class TopNav {
     }
 
     void initSecondaryNav() {
+        //Early out if at least one of these buttons already exists
+        if (toggleDataStreamingButton != null) {
+            return;
+        }
 
         //Buttons on the left side of the GUI secondary nav bar
         createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
