@@ -83,8 +83,8 @@ class TopNav {
     }
 
     void initSecondaryNav() {
-        //Early out if at least one of these buttons already exists
-        if (toggleDataStreamingButton != null) {
+        //Early out if these buttons have already been created
+        if (secondaryNavInit) {
             return;
         }
 
