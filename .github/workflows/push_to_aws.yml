@@ -23,17 +23,18 @@ jobs:
         python-version: '3.7.7'
         architecture: 'x64'
     - name: Install Python Dependencies
-      if: (matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15')
       run: |
         sudo -H python3 -m pip install requests
         sudo -H python3 -m pip install beautifulsoup4
         sudo -H python3 -m pip install awscli
-    - name: Install Python Dependencies
-      if: (matrix.os == 'ubuntu-18.04') || (matrix.os == 'macos-10.15')
+    - name: MacOS Signing
+      if: matrix.os == 'macos-10.15'
       run: |
-        sudo -H python3 -m pip install requests
-        sudo -H python3 -m pip install beautifulsoup4
-        sudo -H python3 -m pip install awscli
+        openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d
+        bash release_script/mac_only/add-osx-cert.sh
+      env:
+        encrypted_2f5d2771e3cb_iv: ${{ secrets.encrypted_2f5d2771e3cb_iv }}
+        encrypted_2f5d2771e3cb_key: ${{ secrets.encrypted_2f5d2771e3cb_key }}
     - name: Processing Linux
       if: matrix.os == 'ubuntu-18.04'
       run: |
@@ -59,11 +60,11 @@ jobs:
         python3 -m pip install dmgbuild
         mkdir -p $HOME/sketchbook/libraries/
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ $HOME/sketchbook/libraries/
-    - name: Unix Testing Script
+    - name: Run Make Release Script
       if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18.04')
       run: |
         cd $GITHUB_WORKSPACE
-        python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
+        sudo -H python3 $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
         GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         GUI_VERSION_STRING=`cat temp/versionstring.txt`
     - name: MacOS Publish
