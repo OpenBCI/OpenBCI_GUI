@@ -50,11 +50,11 @@ def custom_check_call(args):
         outs, errs = proc.communicate()
         print('stdout: %s' % outs)
         print('stderr: %s' % errs)
-        raise subprocess.CalledProcessError('timeout error')
+        raise subprocess.CalledProcessError(process.returncode, args)
     print('stdout: %s' % outs)
     print('stderr: %s' % errs)
     if process.returncode != 0:
-        raise subprocess.CalledProcessError('exit code error')
+        raise subprocess.CalledProcessError(process.returncode, args)
 
 
 def get_timestamp_ci():
