@@ -550,27 +550,8 @@ class W_Networking extends Widget {
             ;
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        myButton = cp5_networking.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(_textColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(_bg)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(_font)
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
     void createStartButton() {
-        startButton = createButton(startButton, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, p4, 14, TURN_ON_GREEN, BLACK);
+        startButton = createButton(cp5_networking, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, p4, 14, TURN_ON_GREEN, BLACK);
         startButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!networkActive) {
@@ -607,7 +588,7 @@ class W_Networking extends Widget {
     }
 
     void createGuideButton() {
-        guideButton = createButton(guideButton, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, buttonsLightBlue, WHITE);
         guideButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 openURLInBrowser(networkingGuideURL);
@@ -618,7 +599,7 @@ class W_Networking extends Widget {
     }
 
     void createDataOutputsButton() {
-        dataOutputsButton = createButton(dataOutputsButton, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, buttonsLightBlue, WHITE);
         dataOutputsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 openURLInBrowser(dataOutputsURL);

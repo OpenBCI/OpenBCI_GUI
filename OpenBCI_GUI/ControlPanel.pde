@@ -130,11 +130,17 @@ class ControlPanel {
     public void open(){
         isOpen = true;
         topNav.controlPanelCollapser.setOn();
+        if (systemMode >= SYSTEMMODE_POSTINIT) {
+            topNav.setLockTopLeftSubNavCp5Objects(isOpen);
+        }
     }
 
     public void close(){
         isOpen = false;
         topNav.controlPanelCollapser.setOff();
+        if (systemMode >= SYSTEMMODE_POSTINIT) {
+            topNav.setLockTopLeftSubNavCp5Objects(isOpen);
+        }
     }
 
     public String getWifiSearchStyle() {

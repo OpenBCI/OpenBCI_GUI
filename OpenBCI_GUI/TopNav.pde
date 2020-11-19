@@ -413,6 +413,21 @@ class TopNav {
         return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, -2);
     }
 
+    private void createControlPanelCollapser(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        controlPanelCollapser = createTNButton("controlPanelCollapser", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        controlPanelCollapser.setSwitch(true);
+        controlPanelCollapser.setOn();
+        controlPanelCollapser.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               if (controlPanelCollapser.isOn()) {
+                   controlPanel.open();
+               } else {
+                   controlPanel.close();
+               }
+            }
+        });
+    }
+
     private void createToggleDataStreamButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         toggleDataStreamingButton = createTNButton("toggleDataStreamingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         toggleDataStreamingButton.onRelease(new CallbackListener() {
@@ -483,21 +498,6 @@ class TopNav {
             }
         });
         layoutButton.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
-    }
-
-    private void createControlPanelCollapser(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        controlPanelCollapser = createTNButton("controlPanelCollapser", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        controlPanelCollapser.setSwitch(true);
-        controlPanelCollapser.setOn();
-        controlPanelCollapser.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-               if (controlPanelCollapser.isOn()) {
-                   controlPanel.open();
-               } else {
-                   controlPanel.close();
-               }
-            }
-        });
     }
 
     private void createDebugButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -592,7 +592,7 @@ class TopNav {
         }
     }
 
-    void incrementFilterConfiguration() {
+    private void incrementFilterConfiguration() {
         dataProcessing.incrementFilterConfiguration();
 
         //update the button strings
@@ -600,12 +600,18 @@ class TopNav {
         // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
     }
 
-    void incrementNotchConfiguration() {
+    private void incrementNotchConfiguration() {
         dataProcessing.incrementNotchConfiguration();
 
         //update the button strings
         topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
         // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
+    }
+
+    public void setLockTopLeftSubNavCp5Objects(boolean _b) {
+        toggleDataStreamingButton.setLock(_b);
+        filtNotchButton.setLock(_b);
+        filtBPButton.setLock(_b);
     }
 }
 
