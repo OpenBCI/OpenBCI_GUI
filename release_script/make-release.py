@@ -40,6 +40,23 @@ data_dir_names = {
     MAC : os.path.join("OpenBCI_GUI.app", "Contents", "Java", "data")
 }
 
+def custom_check_call(args):
+    print('Running %s' % str(args))
+    process = subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    try:
+        outs, errs = process.communicate(timeout = 1800)
+    except TimeoutExpired:
+        process.kill()
+        outs, errs = proc.communicate()
+        print('stdout: %s' % outs)
+        print('stderr: %s' % errs)
+        raise subprocess.CalledProcessError('timeout error')
+    print('stdout: %s' % outs)
+    print('stderr: %s' % errs)
+    if process.returncode != 0:
+        raise subprocess.CalledProcessError('exit code error')
+
+
 def get_timestamp_ci():
     repo_slug = None
     commit_id = None
@@ -178,7 +195,7 @@ def build_app(sketch_dir, flavor):
     # so we can't reliably check for success or failure
     # https://github.com/processing/processing/issues/5468
     print ("Using sketch: " + sketch_dir)
-    subprocess.check_call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
+    custom_check_call(["processing-java", "--sketch=" + sketch_dir, "--output=" +  os.path.join(os.getcwd(), flavor), "--export"])
 
 ### Function: Package the app in the expected file structure
 ###########################################################
@@ -219,8 +236,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # sign the app
         try:
-            print ('running codesign')
-            subprocess.check_call(["codesign", "-f", "-v", "-s"\
+            custom_check_call(["codesign", "-f", "-v", "-s"\
                 "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", app_dir])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -235,8 +251,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
         # On Windows, set the application manifest
         ###########################################################
         try:
-            print ('running mt')
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
+            custom_check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
                 "-outputresource:" + exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -247,10 +262,9 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
         assert (os.path.isfile(java_exe_dir))
         assert (os.path.isfile(javaw_exe_dir))
         try:
-            print ('running mt')
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+            custom_check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
                 "-outputresource:" + java_exe_dir + ";#1"])
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+            custom_check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
                 "-outputresource:" + javaw_exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -260,8 +274,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
         ###########################################################
         if windows_signing:
             try:
-                print ('running SignTool')
-                subprocess.check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
+                custom_check_call(["SignTool", "sign", "/f", windows_pfx_path, "/p",\
                     windows_pfx_password, "/tr", "http://timestamp.digicert.com", "/td", "SHA256", exe_dir])
             except subprocess.CalledProcessError as err:
                 print (err)
@@ -273,8 +286,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
         dmg_dir = build_dir + ".dmg"
         try:
-            print ('running dmgbuild')
-            subprocess.check_call(["dmgbuild", "-s", "release_script/mac_only/dmgbuild_settings.py", "-D",\
+            custom_check_call(["dmgbuild", "-s", "release_script/mac_only/dmgbuild_settings.py", "-D",\
                 "app=" + app_dir, "OpenBCI_GUI", dmg_dir])
         except subprocess.CalledProcessError as err:
             print (err)
@@ -284,8 +296,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # sign the dmg
         try:
-            print ('running codesign')
-            subprocess.check_call(["codesign", "-f", "-v", "-s"\
+            custom_check_call(["codesign", "-f", "-v", "-s"\
                 "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", dmg_dir])
         except subprocess.CalledProcessError as err:
             print (err)
