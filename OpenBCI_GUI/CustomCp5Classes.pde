@@ -32,9 +32,11 @@ public Button createButton(ControlP5 _cp5, String name, String text, int _x, int
     b.addCallback(new CallbackListener() {
         public void controlEvent(CallbackEvent theEvent) {
             if (theEvent.getAction() == ControlP5.ACTION_ENTER && !b.isLock() && b.getDescription() != null) {
+                //Show helpt text if object is not locked and has a description
                 buttonHelpText.setButtonHelpText(b.getDescription(), (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
                 buttonHelpText.setTimeUserEnteredUIObject();
-            } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+            } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE || theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                //Hide help text if clicked or user's mouse leaves object
                 buttonHelpText.setVisible(false);
             }
         }

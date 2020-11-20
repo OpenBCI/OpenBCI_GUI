@@ -467,9 +467,7 @@ private void prepareExitHandler () {
     ));
 }
 
-//used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
-
-//Initialize the system
+//Init system based on default settings. Called from the "START SESSION" button in the GUI's ControlPanel.
 void initSystem() {
     println("");
     println("");
@@ -585,7 +583,7 @@ void initSystem() {
 
     if (abandonInit) {
         haltSystem();
-        outputError("Failed to initialize board. Please check that the board is on and has power.");
+        outputError("Failed to initialize board. Please check that the board is on and has power. See Console Log for more details.");
         controlPanel.open();
         return;
     } else {

@@ -84,33 +84,31 @@ class TopNav {
 
     void initSecondaryNav() {
 
-        if (currentBoard instanceof SmoothingCapableBoard && smoothingButton == null) {
-            createSmoothingButton(getSmoothingString(), (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+        boolean needToMakeSmoothingButton = (currentBoard instanceof SmoothingCapableBoard) && smoothingButton == null;
+        boolean needToMakeGainButton = (currentBoard instanceof ADS1299SettingsBoard) && gainButton == null;
+
+        if (!secondaryNavInit) {
+            //Buttons on the left side of the GUI secondary nav bar
+            createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
+            createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+            createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+
+            //Appears at Top Right SubNav while in a Session
+            createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
+            secondaryNavInit = true;
         }
-        if (currentBoard instanceof ADS1299SettingsBoard && gainButton == null) {
-            int pos_x = 0;
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                pos_x = (int)smoothingButton.getPosition()[0] + smoothingButton.getWidth() + 4;
-            } else {
-                pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + 4;
-            }
+
+        if (needToMakeGainButton) {
+            int pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3;
             createGainButton(getGainString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
 
-        //Exit method if other buttons have already been made
-        if (secondaryNavInit) {
-            return;
+        if (needToMakeSmoothingButton) {
+            int pos_x = (int)gainButton.getPosition()[0] + gainButton.getWidth() + PAD_3;
+            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
-
-        //Buttons on the left side of the GUI secondary nav bar
-        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
-        createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-        createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-
-        //Appears at Top Right SubNav while in a Session
-        createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
-
-        secondaryNavInit = true;
+        
+        
         //updateSecondaryNavButtonsColor();
     }
 
@@ -267,26 +265,23 @@ class TopNav {
         }
 
         //Draw these buttons during a Session
+        boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
         if (secondaryNavInit) {
-            boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
             toggleDataStreamingButton.setVisible(isSession);
             filtBPButton.setVisible(isSession);
             filtNotchButton.setVisible(isSession);
             layoutButton.setVisible(isSession);
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setVisible(isSession);
-            }
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.setVisible(isSession);
-            }
+           
+        }
+        if (smoothingButton != null) {
+            smoothingButton.setVisible(isSession);
+        }
+        if (gainButton != null) {
+            gainButton.setVisible(isSession);
         }
 
         //Draw CP5 Objects
-        try {
-            topNav_cp5.draw();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        topNav_cp5.draw();
 
         //Draw everything in these selector boxes above all topnav cp5 objects
         layoutSelector.draw();
@@ -414,7 +409,7 @@ class TopNav {
     }
 
     private String getSmoothingString() {
-        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n     Off";
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n       Off";
     }
 
     private String getGainString() {
@@ -605,8 +600,10 @@ class TopNav {
     }
 
     public void resetStartStopButton() {
-        toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
-        toggleDataStreamingButton.setColorBackground(isSelected_color);
+        if (toggleDataStreamingButton != null) {
+            toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
+            toggleDataStreamingButton.setColorBackground(isSelected_color);
+        }
     }
 
     private void incrementFilterConfiguration() {
@@ -990,8 +987,9 @@ class ConfigSelector {
             public void controlEvent(CallbackEvent theEvent) {
                 //Leave box open if this button was pressed and toggle flag
                 clearAllSettingsPressed = !clearAllSettingsPressed;
-                //Expand height of this box
-                h += margin*4 + b_h*3;
+                //Expand or shorten height of this box
+                final int delta_h = margin*4 + b_h*3;
+                h += clearAllSettingsPressed ? delta_h : -delta_h;
             }
         });
         clearAllGUISettings.setDescription("This will clear all user settings and playback history. You will be asked to confirm.");
