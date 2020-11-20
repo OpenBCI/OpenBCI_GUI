@@ -690,7 +690,7 @@ class ChannelBar {
             line(x, separator_y, x + w, separator_y);
         }
 
-        //draw impedance check Button_obci
+        //draw impedance check Button and values
         drawVoltageValue = true;
         if (currentBoard instanceof ImpedanceSettingsBoard) {
             impCheckButton.setVisible(true);

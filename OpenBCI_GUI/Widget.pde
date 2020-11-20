@@ -280,18 +280,6 @@ class Widget{
             return false;
         }
     }
-
-    //For use with old button class
-    public void ignoreButtonCheck(Button_obci b) {
-        //ignore top left button interaction when widgetSelector dropdown is active
-        if (dropdownIsActive) {
-            b.setIgnoreHover(true);
-        } else {
-            if (b.getIgnoreHover()) {
-                b.setIgnoreHover(false);
-            }
-        }
-    }
     
     //For use with Cp5 Elements
     protected void lockElementOnOverlapCheck(controlP5.Controller c) {

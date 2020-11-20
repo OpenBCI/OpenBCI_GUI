@@ -50,6 +50,7 @@ public class Button extends Controller< Button > {
 	protected int cornerRoundness = 0;
 	protected Integer buttonStrokeColor;
 	protected boolean isCircularButton;
+	protected boolean forceDrawBackground;
 
 	/**
 	 * Convenience constructor to extend Button.
@@ -252,6 +253,18 @@ public class Button extends Controller< Button > {
 		isCircularButton = theFlag;
 		return this;
 	}
+
+	/**
+	 * Force draw the button background when using images
+	 * Default value is false.
+	 * 
+	 * @param theFlag
+	 * @return Button
+	 */
+    public Button setForceDrawBackground(boolean theFlag){
+		forceDrawBackground = theFlag;
+		return this;
+	}
 	
 	/**
 	 * Returns true or false and indicates the switch state
@@ -333,19 +346,45 @@ public class Button extends Controller< Button > {
 	private class ButtonImageView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
+			theGraphics.pushStyle();
+			if (buttonStrokeColor != null) {
+				theGraphics.stroke( buttonStrokeColor );
+			} else {
+				theGraphics.noStroke( );
+			}
+			
+			theGraphics.imageMode(theGraphics.CENTER);
+			int imgX = 0 + (getWidth() / 2);
+			int imgY = 0 + (getHeight() / 2);
+			int imgW = getWidth() - 8;
+			int imgH = getHeight() - 8;
 			if ( isOn && isSwitch ) {
-				theGraphics.image( ( availableImages[ HIGHLIGHT ] == true ) ? images[ HIGHLIGHT ] : images[ DEFAULT ] , 0 , 0 );
+				theGraphics.image( ( availableImages[ HIGHLIGHT ] == true ) ? images[ HIGHLIGHT ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH );
 				return;
 			}
+
 			if ( getIsInside( ) ) {
 				if ( isPressed ) {
-					theGraphics.image( ( availableImages[ ACTIVE ] == true ) ? images[ ACTIVE ] : images[ DEFAULT ] , 0 , 0 );
+					theGraphics.fill( color.getActive( ) );
+					if (forceDrawBackground) {
+						theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+					}
+					theGraphics.image( ( availableImages[ ACTIVE ] == true ) ? images[ ACTIVE ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH);
 				} else {
-					theGraphics.image( ( availableImages[ OVER ] == true ) ? images[ OVER ] : images[ DEFAULT ] , 0 , 0 );
+					theGraphics.fill( color.getForeground( ) );
+					if (forceDrawBackground) {
+						theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+					}
+					theGraphics.image( ( availableImages[ OVER ] == true ) ? images[ OVER ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH);
 				}
 			} else {
-				theGraphics.image( images[ DEFAULT ] , 0 , 0 );
+				theGraphics.fill( color.getBackground( ) );
+				if (forceDrawBackground) {
+					theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+				}
+				theGraphics.image( images[ DEFAULT ] , imgX, imgY, imgW, imgH );
 			}
+			theGraphics.popStyle();
 		}
 	}
 

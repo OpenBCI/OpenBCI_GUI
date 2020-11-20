@@ -21,7 +21,7 @@ package controlP5;
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
  * @modified 11/19/2020
- * @version 2.3.0
+ * @version 2.3.1
  * 
  */
 

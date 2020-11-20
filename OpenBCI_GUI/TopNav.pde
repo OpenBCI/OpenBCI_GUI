@@ -630,10 +630,10 @@ class TopNav {
 
 class LayoutSelector {
 
-    int x, y, w, h, margin, b_w, b_h;
-    boolean isVisible;
-
-    ArrayList<Button_obci> layoutOptions; //
+    public int x, y, w, h, margin, b_w, b_h;
+    public boolean isVisible;
+    private ControlP5 layout_cp5;
+    public ArrayList<Button> layoutOptions;
 
     LayoutSelector() {
         w = 180;
@@ -642,16 +642,20 @@ class LayoutSelector {
         margin = 6;
         b_w = (w - 5*margin)/4;
         b_h = b_w;
-        h = margin*3 + b_h*2;
-
+        h = margin*4 + b_h*3;
 
         isVisible = false;
+        
+        //Instantiate local cp5 for this box
+        layout_cp5 = new ControlP5(ourApplet);
+        layout_cp5.setGraphics(ourApplet, 0,0);
+        layout_cp5.setAutoDraw(false);
 
-        layoutOptions = new ArrayList<Button_obci>();
-        addLayoutOptionButton();
+        layoutOptions = new ArrayList<Button>();
+        addLayoutOptionButtons();
     }
 
-    void update() {
+    public void update() {
         if (isVisible) { //only update if visible
             // //close dropdown when mouse leaves
             // if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isMouseHere()){
@@ -660,7 +664,7 @@ class LayoutSelector {
         }
     }
 
-    void draw() {
+    public void draw() {
         if (isVisible) { //only draw if visible
             pushStyle();
 
@@ -669,60 +673,44 @@ class LayoutSelector {
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
-            for (int i = 0; i < layoutOptions.size(); i++) {
-                layoutOptions.get(i).draw();
-            }
-
             fill(57, 128, 204);
             // fill(177, 184, 193);
             noStroke();
             rect(x+w-(topNav.layoutButton.getWidth()-1), y, (topNav.layoutButton.getWidth()-1), 1);
 
             popStyle();
+
+            layout_cp5.draw();
         }
     }
 
-    void isMouseHere() {
+    public void isMouseHere() {
     }
 
-    void mousePressed() {
-        //only allow button interactivity if isVisible==true
-        if (isVisible) {
-            for (int i = 0; i < layoutOptions.size(); i++) {
-                if (layoutOptions.get(i).isMouseHere()) {
-                    layoutOptions.get(i).setIsActive(true);
-                }
-            }
-        }
+    public void mousePressed() {
     }
 
-    void mouseReleased() {
+    public void mouseReleased() {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
             if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.layoutButton.isInside()) {
                 toggleVisibility();
             }
-            for (int i = 0; i < layoutOptions.size(); i++) {
-                if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
-                    int layoutSelected = i+1;
-                    println("Layout [" + layoutSelected + "] selected.");
-                    output("Layout [" + layoutSelected + "] selected.");
-                    layoutOptions.get(i).setIsActive(false);
-                    toggleVisibility(); //shut layoutSelector if something is selected
-                    wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
-                    settings.currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
-                }
-            }
+
         }
     }
 
     void screenResized() {
         //update position of outer box and buttons
-        int oldX = x;
+        //int oldX = x;
         x = width - w - 3;
-        int dx = oldX - x;
+        //int dx = oldX - x;
+        layout_cp5.setGraphics(ourApplet, 0,0);
+        
         for (int i = 0; i < layoutOptions.size(); i++) {
-            layoutOptions.get(i).setX(layoutOptions.get(i).but_x - dx);
+            int row = (i/4)%4;
+            int column = i%4;
+            layoutOptions.get(i).setPosition(x + (column+1)*margin + (b_w*column), y + (row+1)*margin + row*b_h);
         }
     }
 
@@ -745,86 +733,42 @@ class LayoutSelector {
         }
     }
 
-    void addLayoutOptionButton() {
+    private void addLayoutOptionButtons() {
+        final int numLayouts = 12;
+        for (int i = 0; i < numLayouts; i++) {
+            int row = (i/4)%4;
+            int column = i%4;
+            final int layoutNumber = i;
+            Button tempLayoutButton = createButton(layout_cp5, "layoutButton"+i, "", x + (column+1)*margin + (b_w*column), y + (row+1)*margin + (row*b_h), b_w, b_h);
+            PImage tempBackgroundImage = loadImage("layout_buttons/layout_"+(i+1)+".png");
+            tempBackgroundImage.resize(b_w, b_h);
+            tempLayoutButton.setImage(tempBackgroundImage);
+            tempLayoutButton.setForceDrawBackground(true);
+            tempLayoutButton.onRelease(new CallbackListener() {
+                public void controlEvent(CallbackEvent theEvent) {
+                    output("Layout [" + (layoutNumber+1) + "] selected.");
+                    toggleVisibility(); //shut layoutSelector if something is selected
+                    wm.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
+                    settings.currentLayout = layoutNumber+1; //copy this value to be used when saving Layout setting
+                }
+            });
+            layoutOptions.add(tempLayoutButton);
+        }
+        
 
-        //FIRST ROW
-
-        //setup button 1 -- full screen
-        Button_obci tempLayoutButton = new Button_obci(x + margin, y + margin, b_w, b_h, "N/A");
-        PImage tempBackgroundImage = loadImage("layout_buttons/layout_1.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 2 -- 2x2
-        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + margin, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_2.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 3 -- 2x1
-        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + margin, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_3.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 4 -- 1x2
-        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + margin, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_4.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //SECOND ROW
-
-        //setup button 5
-        tempLayoutButton = new Button_obci(x + margin, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_5.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 6
-        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_6.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 7
-        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_7.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 8
-        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + 2*margin + 1*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_8.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //THIRD ROW -- commented until more widgets are added
-
-        h = margin*4 + b_h*3;
-        //setup button 9
-        tempLayoutButton = new Button_obci(x + margin, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_9.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 10
-        tempLayoutButton = new Button_obci(x + 2*margin + b_w*1, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_10.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 11
-        tempLayoutButton = new Button_obci(x + 3*margin + b_w*2, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_11.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
-
-        //setup button 12
-        tempLayoutButton = new Button_obci(x + 4*margin + b_w*3, y + 3*margin + 2*b_h, b_w, b_h, "N/A");
-        tempBackgroundImage = loadImage("layout_buttons/layout_12.png");
-        tempLayoutButton.setBackgroundImage(tempBackgroundImage);
-        layoutOptions.add(tempLayoutButton);
+            /*
+        for (int i = 0; i < layoutOptions.size(); i++) {
+            if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
+                int layoutSelected = i+1;
+                println("Layout [" + layoutSelected + "] selected.");
+                output("Layout [" + layoutSelected + "] selected.");
+                layoutOptions.get(i).setIsActive(false);
+                toggleVisibility(); //shut layoutSelector if something is selected
+                wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
+                settings.currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
+            }
+        }
+        */
     }
 }
 
