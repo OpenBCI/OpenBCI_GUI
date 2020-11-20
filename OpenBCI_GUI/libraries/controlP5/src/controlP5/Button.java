@@ -49,6 +49,7 @@ public class Button extends Controller< Button > {
 	protected boolean isSwitch = false;
 	protected int cornerRoundness = 0;
 	protected Integer buttonStrokeColor;
+	protected boolean isCircularButton;
 
 	/**
 	 * Convenience constructor to extend Button.
@@ -221,7 +222,7 @@ public class Button extends Controller< Button > {
 
 	/**
 	 * Set the corner roundess of this button. Default value is 0 and right-angle corners.
-	 *
+	 * @param _cornerRoundness
 	 * @return Button
 	 */
     public Button setCornerRoundness(int _cornerRoundness){
@@ -232,11 +233,23 @@ public class Button extends Controller< Button > {
 	/**
 	 * Set the border color of this button. Default value is null.
 	 * When null, noStroke() is used during draw loop
-	 * 
+	 * @param theColor
 	 * @return Button
 	 */
-    public Button setBorderColor(Integer c){
-		buttonStrokeColor = c;
+    public Button setBorderColor(Integer theColor){
+		buttonStrokeColor = theColor;
+		return this;
+	}
+
+	/**
+	 * Draw a circular button instead of a rectangular one.
+	 * Default value is false.
+	 * 
+	 * @param theFlag
+	 * @return Button
+	 */
+    public Button setCircularButton(boolean theFlag){
+		isCircularButton = theFlag;
 		return this;
 	}
 	
@@ -282,6 +295,7 @@ public class Button extends Controller< Button > {
 	private class ButtonView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
+			theGraphics.pushStyle();
 			if (buttonStrokeColor != null) {
 				theGraphics.stroke( buttonStrokeColor );
 			} else {
@@ -301,10 +315,18 @@ public class Button extends Controller< Button > {
 					theGraphics.fill( color.getBackground( ) );
 				}
 			}
-			theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+
+			if (isCircularButton) {
+				theGraphics.ellipseMode( theGraphics.CORNER );
+				theGraphics.ellipse( 0 , 0 , getWidth( ) , getHeight( ));
+			} else {
+				theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+			}
+
 			if ( isLabelVisible ) {
 				_myCaptionLabel.draw( theGraphics , 0 , 0 , theController );
 			}
+			theGraphics.popStyle();
 		}
 	}
 
