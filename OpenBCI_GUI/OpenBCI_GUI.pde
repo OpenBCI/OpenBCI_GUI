@@ -241,7 +241,7 @@ final color BUTTON_LOCKED_GREY = color(128);
 final color BUTTON_PRESSED_DARKGREY = color(50);
 final color BUTTON_NOOBGREEN = color(114,204,171);
 final color BUTTON_EXPERTPURPLE = color(135,95,154);
-final color BUTTONN_CAUTIONRED = color(214,100,100);
+final color BUTTON_CAUTIONRED = color(214,100,100);
 
 
 final int COLOR_SCHEME_DEFAULT = 1;
