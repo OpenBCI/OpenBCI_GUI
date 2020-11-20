@@ -811,19 +811,16 @@ class ConfigSelector {
         createDefaultSettingsButton("defaultSessionSettings", "Default", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createClearAllSettingsButton("clearAllGUISettings", "Clear All", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
-        buttonNumber++;
+        buttonNumber += 2;
         createClearSettingsNoButton("clearAllSettingsNo", "No", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createClearSettingsYesButton("clearAllSettingsYes", "Yes", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
-
-        //buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
     }
 
-    void update() {
-        updateConfigButtonPositions();
+    public void update() {
     }
 
-    void draw() {
+    public void draw() {
         if (isVisible) { //only draw if visible
             pushStyle();
 
@@ -831,35 +828,23 @@ class ConfigSelector {
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
-            clearAllGUISettings.setVisible(true);
+            boolean isSessionStarted = (systemMode == SYSTEMMODE_POSTINIT);
+            saveSessionSettings.setVisible(isSessionStarted);
+            loadSessionSettings.setVisible(isSessionStarted);
+            defaultSessionSettings.setVisible(isSessionStarted);
 
-            //configOptions.get(0).draw();
-            if (systemMode == SYSTEMMODE_POSTINIT) {
-                /*
-                for (int i = 0; i < 4; i++) {
-                    //configOptions.get(i).draw();
-                }
-                */
-                saveSessionSettings.setVisible(true);
-                loadSessionSettings.setVisible(true);
-                defaultSessionSettings.setVisible(true);
+            if (clearAllSettingsPressed) {
+                textFont(p2, 16);
+                fill(255);
+                textAlign(CENTER);
+                text("Are You Sure?", x + w/2, clearAllGUISettings.getPosition()[1] + b_h*2);
             }
-            //configOptions.get(4).draw();
-
             clearAllSettingsYes.setVisible(clearAllSettingsPressed);
             clearAllSettingsNo.setVisible(clearAllSettingsPressed);
-            if (clearAllSettingsPressed) {
-                int fontSize = 16;
-                textFont(p2, fontSize);
-                fill(255);
-                text("Are You Sure?", x + margin, y + margin*(buttonSpacer + osPadding) + b_h*(buttonSpacer-1) + osPadding2);
-                //configOptions.get(configOptions.size()-2).draw();
-                //configOptions.get(configOptions.size()-1).draw();
-            }
 
             fill(57, 128, 204);
             noStroke();
-            //This makes the dropdown box look like it's apart of the button by drawing over the bottom edge of the button
+            //This makes the dropdown box look like it's apart of the button by drawing over the part that overlaps
             rect(x+w-(topNav.settingsButton.getWidth()-1), y, (topNav.settingsButton.getWidth()-1), 1);
 
             popStyle();
@@ -868,13 +853,13 @@ class ConfigSelector {
         }
     }
 
-    void isMouseHere() {
+    public void isMouseHere() {
     }
 
-    void mousePressed() {
+    public void mousePressed() {
     }
 
-    void mouseReleased() {
+    public void mouseReleased() {
         //only allow button interactivity if isVisible==true
         if (isVisible) {
             if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.settingsButton.isInside()) {
@@ -884,9 +869,37 @@ class ConfigSelector {
         }
     }
 
-    void screenResized() {
+    public void screenResized() {
         settings_cp5.setGraphics(ourApplet, 0,0);
         updateConfigButtonPositions();
+    }
+
+    private void updateConfigButtonPositions() {
+        //update position of outer box and buttons
+        final boolean isSessionStarted = (systemMode == SYSTEMMODE_POSTINIT);
+        int oldX = x;
+        int multiplier = isSessionStarted ? 3 : 2;
+        int _padding = isSessionStarted ? -3 : 3;
+        x = width - 70*multiplier - _padding;
+        int dx = oldX - x;
+
+        h = !isSessionStarted ? margin*3 + b_h*2 : margin*6 + b_h*5;
+
+        //Update the Y position for the clear settings buttons
+        float clearSettingsButtonY = !isSessionStarted ? 
+            expertMode.getPosition()[1] + margin + b_h : 
+            defaultSessionSettings.getPosition()[1] + margin + b_h;
+        clearAllGUISettings.setPosition(clearAllGUISettings.getPosition()[0], clearSettingsButtonY);
+        clearAllSettingsNo.setPosition(clearAllSettingsNo.getPosition()[0], clearSettingsButtonY + margin*2 + b_h*2);
+        clearAllSettingsYes.setPosition(clearAllSettingsYes.getPosition()[0], clearSettingsButtonY + margin*3 + b_h*3);
+        
+        //Update the X position for all buttons
+        for (int j = 0; j < settings_cp5.getAll().size(); j++) {
+            Button c = (Button) settings_cp5.getController(settings_cp5.getAll().get(j).getAddress());
+            c.setPosition(c.getPosition()[0] - dx, c.getPosition()[1]);
+        }
+
+        //println("TopNav: ConfigSelector: Button Positions Updated");
     }
 
     void toggleVisibility() {
@@ -899,10 +912,6 @@ class ConfigSelector {
                         wm.widgets.get(i).cp5_widget.getController(wm.widgets.get(i).cp5_widget.getAll().get(j).getAddress()).lock();
                     }
                 }
-                //resize the height of the settings dropdown
-                /* FIX ME 
-                h = margin*(configOptions.size()-4) + b_h*(configOptions.size()-1);
-                */
                 clearAllSettingsPressed = false;
             } else {
                 //the very convoluted way of unlocking all controllers of a single controlP5 instance...
@@ -912,11 +921,17 @@ class ConfigSelector {
                     }
                 }
             }
-        } else if ((systemMode < SYSTEMMODE_POSTINIT) && isVisible && topNav.settingsButton.isActive()) {
-            //resize the height of the settings dropdown
-            h = margin*2 + b_h;
+        }
+
+        //When closed by any means and confirmation buttons are open...
+        //Hide confirmation buttons and shorten height of this box
+        if (clearAllSettingsPressed && !isVisible) {
+            //Shorten height of this box
+            h -= margin*4 + b_h*3;
             clearAllSettingsPressed = false;
         }
+
+        updateConfigButtonPositions();
     }
 
     private void createExpertModeButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -971,9 +986,10 @@ class ConfigSelector {
         clearAllGUISettings = createButton(settings_cp5, name, text, _x, _y, _w, _h, p5, 12, BUTTON_CAUTIONRED, WHITE);
         clearAllGUISettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                //Leave box open if this button was pressed and toggle flag
                 clearAllSettingsPressed = !clearAllSettingsPressed;
-                //Leave box open if this button was pressed and expand height
-                //h = margin*(buttonSpacer+2) + b_h*(buttonSpacer+1);
+                //Expand height of this box
+                h += margin*4 + b_h*3;
             }
         });
         clearAllGUISettings.setDescription("This will clear all user settings and playback history. You will be asked to confirm.");
@@ -986,6 +1002,8 @@ class ConfigSelector {
                 toggleVisibility();
                 //Do nothing because the user clicked Are You Sure?->No
                 clearAllSettingsPressed = false;
+                //Shorten height of this box
+                h -= margin*4 + b_h*3;
             }
         });
     }
@@ -995,6 +1013,8 @@ class ConfigSelector {
         clearAllSettingsYes.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
+                //Shorten height of this box
+                h -= margin*4 + b_h*3;
                 //User has selected Are You Sure?->Yes
                 settings.clearAll();
                 clearAllSettingsPressed = false;
@@ -1005,149 +1025,6 @@ class ConfigSelector {
             }
         });
         clearAllSettingsYes.setDescription("Clicking 'Yes' will delete all user settings and stop the session if running.");
-    }
-
-    void addConfigButtons() {
-        /*
-
-    //only allow button interactivity if isVisible==true
-        if (isVisible) {
-            if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.configButton.isMouseHere()) {
-                toggleVisibility();
-                clearAllSettingsPressed = false;
-            }
-            for (int i = 0; i < configOptions.size(); i++) {
-                if (configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()) {
-                    int configSelected = i;
-                    configOptions.get(i).setIsActive(false);
-                    if (configSelected == 0) { //If expert mode toggle button is pressed...
-                        if (configOptions.get(0).getButtonText().equals("Turn Expert Mode On")) {
-                            configOptions.get(0).setString("Turn Expert Mode Off");
-                            configOptions.get(0).setColorNotPressed(expertPurple);
-                            println("TopNav: Expert Mode On");
-                            output("Expert Mode ON: All keyboard shortcuts and features are enabled!");
-                            settings.expertModeToggle = true;
-                        } else {
-                            configOptions.get(0).setString("Turn Expert Mode On");
-                            configOptions.get(0).setColorNotPressed(newGreen);
-                            println("TopNav: Expert Mode Off");
-                            output("Expert Mode OFF: Use spacebar to start/stop the data stream.");
-                            settings.expertModeToggle = false;
-                        }
-                    } else if (configSelected == 1) { ////Save Button
-                        settings.saveButtonPressed();
-                    } else if (configSelected == 2) { ////Load Button
-                        settings.loadButtonPressed();
-                    } else if (configSelected == 3) { ////Default Button
-                        settings.defaultButtonPressed();
-                    } else if (configSelected == 4) { ///ClearAllSettings Button
-                        clearAllSettingsPressed = true;
-                        //expand the height of the dropdown
-                        h = margin*(buttonSpacer+2) + b_h*(buttonSpacer+1);
-                    } else if (configSelected == 5 && clearAllSettingsPressed) {
-                        //Do nothing because the user clicked Are You Sure?->No
-                        clearAllSettingsPressed = false;
-                    } else if (configSelected == 6 && clearAllSettingsPressed) {
-                        //User has selected Are You Sure?->Yes
-                        settings.clearAll();
-                        clearAllSettingsPressed = false;
-                        //Stop the system if the user clears all settings
-                        if (systemMode == SYSTEMMODE_POSTINIT) {
-                            haltSystem();
-                        }
-                    }
-                    //shut configSelector if something other than clear settings was pressed
-                    if (!clearAllSettingsPressed) toggleVisibility();
-                } //end case mouseHere && Active
-            } //end for all configOptions loop
-        }
-        */
-
-        /*
-        //Customize initial button appearance here
-        //setup button 0 -- Expert Mode Toggle Button
-        int buttonNumber = 0;
-        Button_obci tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Turn Expert Mode On");
-        tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setColorNotPressed(BUTTON_NOOBGREEN);
-        tempConfigButton.setFontColorNotActive(color(255));
-        tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
-        configOptions.add(tempConfigButton);
-
-        //setup button 1 -- Save Custom Settings
-        buttonNumber++;
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Save");
-        tempConfigButton.setFont(p5, 12); 
-        configOptions.add(tempConfigButton);
-
-        //setup button 2 -- Load Custom Settings
-        buttonNumber++;
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Load");
-        tempConfigButton.setFont(p5, 12);
-        configOptions.add(tempConfigButton);
-
-        //setup button 3 -- Default Settings
-        buttonNumber++;
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Default");
-        tempConfigButton.setFont(p5, 12);
-        configOptions.add(tempConfigButton);
-
-        //setup button 4 -- Clear All Settings
-        buttonNumber = 0;
-        //Update the height of the Settings dropdown
-        h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
-        tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setColorNotPressed(BUTTON_CAUTIONRED);
-        tempConfigButton.setFontColorNotActive(color(255));
-        tempConfigButton.setHelpText("This will clear all user settings and playback history. You will be asked to confirm.");
-        configOptions.add(tempConfigButton);
-
-        //setup button 5 -- Are You Sure? No
-        buttonNumber++;
-        //leave space for "Are You Sure?"
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "No");
-        tempConfigButton.setFont(p5, 12);
-        configOptions.add(tempConfigButton);
-
-
-        //setup button 6 -- Are You Sure? Yes
-        buttonNumber++;
-        tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber+1), b_w, b_h, "Yes");
-        tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop the session if running.");
-        configOptions.add(tempConfigButton);
-        */
-    }
-
-    void updateConfigButtonPositions() {
-        //update position of outer box and buttons
-        int oldX = x;
-        int multiplier = (systemMode == SYSTEMMODE_POSTINIT) ? 3 : 2;
-        int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
-        x = width - 70*multiplier - _padding;
-        int dx = oldX - x;
-
-        /*
-        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
-        if (systemMode == SYSTEMMODE_POSTINIT) {
-            for (int i = 0; i < configOptions.size(); i++) {
-                int spacer = (i > configOptions.size() - 3) ? 1 : 0;
-                int newY = y + margin*(i+spacer+1) + b_h*(i+spacer);
-                //configOptions.get(i).setPosition(x + multiplier*2, newY);
-            }
-        } else if (systemMode < SYSTEMMODE_POSTINIT) {
-            int[] t = {4, 5, 6}; //button numbers
-            for (int i = 0; i < t.length; i++) {
-                //configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
-                int spacer = (t[i] > 4) ? i + 1 : i;
-                int newY = y + margin*(spacer+1) + b_h*(spacer);
-                //configOptions.get(t[i]).setPosition(configOptions.get(t[i]).getPosition()[0] - dx, newY);
-            }
-        }
-        */
-
-        //println("TopNav: ConfigSelector: Button Positions Updated");
     }
 
     public void toggleExpertMode(boolean b) {
