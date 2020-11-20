@@ -1012,8 +1012,8 @@ class PlaybackScrollbar {
         pbsb_cp5.setAutoDraw(false);
 
         //Let's make a button to return to the start of playback!!
-        skipToStart_diameter = sheight;
-        createSkipToStartButton("skipToStartButton", "", int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, 26);
+        skipToStart_diameter = 30;
+        createSkipToStartButton("skipToStartButton", "", int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter);
 
         fileBoard = (FileBoard)currentBoard;
     }
@@ -1021,9 +1021,8 @@ class PlaybackScrollbar {
     private void createSkipToStartButton(String name, String text, int _x, int _y, int _w, int _h) {
         skipToStartButton = createButton(pbsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, color(235), OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, (Integer)null, 0);
         PImage defaultImage = loadImage("skipToStart_default-30x26.png");
-        PImage imageOver = loadImage("skipToStart_hover-30x26.png");
-        PImage imageActive = loadImage("skipToStart_active-30x26.png");
-        skipToStartButton.setImages(defaultImage, imageOver, imageActive);
+        skipToStartButton.setImage(defaultImage);
+        skipToStartButton.setForceDrawBackground(true);
         skipToStartButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                skipToStartButtonAction();
