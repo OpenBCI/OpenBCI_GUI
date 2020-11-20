@@ -208,6 +208,11 @@ class TopNav {
             settingsButton.setLock(false);
         }
 
+        //Make sure these buttons don't get accidentally locked
+        if (systemMode >= SYSTEMMODE_POSTINIT) {
+            setLockTopLeftSubNavCp5Objects(controlPanel.isOpen);
+        }
+
         if (previousSystemMode != systemMode) {
             if (systemMode >= SYSTEMMODE_POSTINIT) {
                 layoutSelector.update();
@@ -706,7 +711,7 @@ class LayoutSelector {
         x = width - w - 3;
         //int dx = oldX - x;
         layout_cp5.setGraphics(ourApplet, 0,0);
-        
+
         for (int i = 0; i < layoutOptions.size(); i++) {
             int row = (i/4)%4;
             int column = i%4;
@@ -754,21 +759,6 @@ class LayoutSelector {
             });
             layoutOptions.add(tempLayoutButton);
         }
-        
-
-            /*
-        for (int i = 0; i < layoutOptions.size(); i++) {
-            if (layoutOptions.get(i).isMouseHere() && layoutOptions.get(i).isActive()) {
-                int layoutSelected = i+1;
-                println("Layout [" + layoutSelected + "] selected.");
-                output("Layout [" + layoutSelected + "] selected.");
-                layoutOptions.get(i).setIsActive(false);
-                toggleVisibility(); //shut layoutSelector if something is selected
-                wm.setNewContainerLayout(layoutSelected-1); //have WidgetManager update Layout and active widgets
-                settings.currentLayout = layoutSelected; //copy this value to be used when saving Layout setting
-            }
-        }
-        */
     }
 }
 
