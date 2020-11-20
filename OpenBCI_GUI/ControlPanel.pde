@@ -2692,7 +2692,7 @@ class InitBox {
         initBox_cp5.setGraphics(ourApplet, 0,0);
         initBox_cp5.setAutoDraw(false);
 
-        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2,  fontInfo.buttonLabel_size);
+        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2);
     }
 
     public void update() {
@@ -2709,32 +2709,17 @@ class InitBox {
         initBox_cp5.draw();
     }
 
-    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        initSystemButton = initBox_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        initSystemButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
+    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h) {
+        initSystemButton = createButton(initBox_cp5, name, text, _x, _y, _w, _h);
         initSystemButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (controlPanel.rcBox.isShowing) {
                     controlPanel.hideRadioPopoutBox();
                 }
-                //if system is not active ... initate system and flip button state
+                //If session is not active, start session and flip button state
                 initButtonPressed();
             }
         });
-        initSystemButton.setBorderColor(OPENBCI_DARKBLUE);
     }
 
     //This is the primary method called when Start/Stop Session Button is pressed in Control Panel

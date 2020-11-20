@@ -216,9 +216,9 @@ PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
 PFont p15;
-PFont p4; //medium/small Open Sans
+static PFont p4; //medium/small Open Sans
 PFont p13;
-PFont p5; //small Open Sans
+static PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 boolean setupComplete = false;

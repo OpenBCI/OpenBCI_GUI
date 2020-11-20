@@ -71,7 +71,7 @@ class PopupMessage extends PApplet implements Runnable {
             .setColorBackground(buttonColor);
         cp5.getController("onButtonPressed")
             .getCaptionLabel()
-            .setFont(createFont("Arial",20,true))
+            .setFont(p1)
             .toUpperCase(false)
             .setSize(20)
             .setText(buttonMessage);

@@ -190,7 +190,7 @@ class W_timeSeries extends Widget {
         int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
@@ -380,22 +380,8 @@ class W_timeSeries extends Widget {
         setAdsSettingsVisible(false);
     }
 
-    private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        myButton = tscp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText(text)
-            ;
+    private Button createHSCButton(String name, String text, int _x, int _y, int _w, int _h) {
+        final Button myButton = createButton(tscp5, name, text, _x, _y, _w, _h);
         myButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {    
                 println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());

@@ -240,27 +240,8 @@ class ADS1299SettingsController {
         return isVisible;
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        myButton = hwsCp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
     private void createHWSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
-        loadButton = createButton(loadButton, name, text, _x, _y, _w, _h);
+        loadButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (currentBoard.isStreaming()) {
@@ -273,7 +254,7 @@ class ADS1299SettingsController {
     }
 
     private void createHWSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
-        saveButton = createButton(saveButton, name, text, _x, _y, _w, _h);
+        saveButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectOutput("Save settings to file", "storeHardwareSettings");
@@ -282,7 +263,7 @@ class ADS1299SettingsController {
     }
 
     private void createHWSettingsSendButton(String name, String text, int _x, int _y, int _w, int _h) {
-        sendButton = createButton(sendButton, name, text, _x, _y, _w, _h);
+        sendButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 
@@ -413,21 +394,7 @@ class ADS1299SettingsController {
             }
         });
 
-        sendCustomCmdButton = hwsCp5.addButton("sendCustomCommand")
-            .setPosition(0, 0)
-            .setSize(10, 10)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        sendCustomCmdButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText("Send")
-            ;
+        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send", 0, 0, 10, 10);
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = dropNonPrintableChars(customCommandTF.getText());

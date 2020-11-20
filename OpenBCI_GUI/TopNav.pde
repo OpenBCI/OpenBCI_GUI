@@ -83,19 +83,11 @@ class TopNav {
     }
 
     void initSecondaryNav() {
-        //Early out if these buttons have already been created
-        if (secondaryNavInit) {
-            return;
-        }
 
-        //Buttons on the left side of the GUI secondary nav bar
-        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
-        createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-        createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-        if (currentBoard instanceof SmoothingCapableBoard) {
+        if (currentBoard instanceof SmoothingCapableBoard && smoothingButton == null) {
             createSmoothingButton(getSmoothingString(), (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
-        if (currentBoard instanceof ADS1299SettingsBoard) {
+        if (currentBoard instanceof ADS1299SettingsBoard && gainButton == null) {
             int pos_x = 0;
             if (currentBoard instanceof SmoothingCapableBoard) {
                 pos_x = (int)smoothingButton.getPosition()[0] + smoothingButton.getWidth() + 4;
@@ -104,6 +96,16 @@ class TopNav {
             }
             createGainButton(getGainString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
+
+        //Exit method if other buttons have already been made
+        if (secondaryNavInit) {
+            return;
+        }
+
+        //Buttons on the left side of the GUI secondary nav bar
+        createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
+        createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+        createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
 
         //Appears at Top Right SubNav while in a Session
         createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
@@ -265,8 +267,8 @@ class TopNav {
         }
 
         //Draw these buttons during a Session
-        boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
         if (secondaryNavInit) {
+            boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
             toggleDataStreamingButton.setVisible(isSession);
             filtBPButton.setVisible(isSession);
             filtNotchButton.setVisible(isSession);
@@ -502,7 +504,7 @@ class TopNav {
             public void controlEvent(CallbackEvent theEvent) {
                 //make sure that you can't open the layout selector accidentally
                 if (!tutorialSelector.isVisible) {
-                    println("TopNav: Layout Dropdown Toggled");
+                    //println("TopNav: Layout Dropdown Toggled");
                     layoutSelector.toggleVisibility();
                 }
             }
