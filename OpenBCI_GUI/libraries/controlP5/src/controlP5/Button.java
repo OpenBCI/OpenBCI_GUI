@@ -28,6 +28,7 @@ package controlP5;
  */
 
 import processing.core.PGraphics;
+import processing.core.PImage;
 
 /**
  * <p>
@@ -346,44 +347,59 @@ public class Button extends Controller< Button > {
 	private class ButtonImageView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
+			
+			PImage img;
+			int imgX = 0;
+			int imgY = 0;
+			int imgW = 0;
+			int imgH = 0;
+			
 			theGraphics.pushStyle();
+
 			if (buttonStrokeColor != null) {
 				theGraphics.stroke( buttonStrokeColor );
 			} else {
 				theGraphics.noStroke( );
 			}
 			
-			theGraphics.imageMode(theGraphics.CENTER);
-			int imgX = 0 + (getWidth() / 2);
-			int imgY = 0 + (getHeight() / 2);
-			int imgW = getWidth() - 8;
-			int imgH = getHeight() - 8;
+			if (forceDrawBackground) {
+				theGraphics.imageMode(theGraphics.CENTER);
+				imgX = 0 + (getWidth() / 2);
+				imgY = 0 + (getHeight() / 2);
+				imgW = getWidth() - 8;
+				imgH = getHeight() - 8;
+			}
+
 			if ( isOn && isSwitch ) {
-				theGraphics.image( ( availableImages[ HIGHLIGHT ] == true ) ? images[ HIGHLIGHT ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH );
+				img = availableImages[ HIGHLIGHT ] == true ? images[ HIGHLIGHT ] : images[ DEFAULT ];
+				if (forceDrawBackground) {
+					theGraphics.image( img, imgX, imgY, imgW, imgH );
+				} else {
+					theGraphics.image( img, 0, 0);
+				}
 				return;
 			}
 
 			if ( getIsInside( ) ) {
 				if ( isPressed ) {
 					theGraphics.fill( color.getActive( ) );
-					if (forceDrawBackground) {
-						theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
-					}
-					theGraphics.image( ( availableImages[ ACTIVE ] == true ) ? images[ ACTIVE ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH);
+					img = availableImages[ ACTIVE ] == true ? images[ ACTIVE ] : images[ DEFAULT ];
 				} else {
 					theGraphics.fill( color.getForeground( ) );
-					if (forceDrawBackground) {
-						theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
-					}
-					theGraphics.image( ( availableImages[ OVER ] == true ) ? images[ OVER ] : images[ DEFAULT ] , imgX, imgY, imgW, imgH);
+					img = availableImages[ OVER ] == true ? images[ OVER ] : images[ DEFAULT ];
 				}
 			} else {
 				theGraphics.fill( color.getBackground( ) );
-				if (forceDrawBackground) {
-					theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
-				}
-				theGraphics.image( images[ DEFAULT ] , imgX, imgY, imgW, imgH );
+				img = images[ DEFAULT ];
 			}
+
+			if (forceDrawBackground) {
+				theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+				theGraphics.image( img, imgX, imgY, imgW, imgH);
+			} else {
+				theGraphics.image( img, imgX, imgY);
+			}
+			
 			theGraphics.popStyle();
 		}
 	}
