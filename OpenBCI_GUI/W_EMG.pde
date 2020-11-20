@@ -111,17 +111,7 @@ class W_emg extends Widget {
     Motor_Widget[] motorWidgets;
     TripSlider[] tripSliders;
     TripSlider[] untripSliders;
-    List<String> baudList;
-    List<String> serList;
-    List<String> channelList;
     boolean[] events;
-    int currChannel;
-    int theBaud;
-    Button_obci connectButton;
-    Serial serialOutEMG;
-    String theSerial;
-
-    Boolean emgAdvanced = false;
 
     PApplet parent;
 
@@ -142,47 +132,6 @@ class W_emg extends Widget {
         addDropdown("minUVRange", "Min \u0394uV", Arrays.asList("10 uV", "20 uV", "40 uV", "80 uV"), settings.emgMinDeltauVSave);
 
         updateEMGMotorWidgets(nchan);
-
-        if (emgAdvanced) {
-            channelList = new ArrayList<String>();
-            baudList = new ArrayList<String>();
-            serList = new ArrayList<String>();
-            for (int i = 0; i < nchan; i++) {
-                channelList.add(Integer.toString(i + 1));
-            }
-
-            currChannel = 0;
-            theBaud = 230400;
-
-            baudList.add("NONE");
-            baudList.add(Integer.toString(230400));
-            baudList.add(Integer.toString(115200));
-            baudList.add(Integer.toString(57600));
-            baudList.add(Integer.toString(38400));
-            baudList.add(Integer.toString(28800));
-            baudList.add(Integer.toString(19200));
-            baudList.add(Integer.toString(14400));
-            baudList.add(Integer.toString(9600));
-            baudList.add(Integer.toString(7200));
-            baudList.add(Integer.toString(4800));
-            baudList.add(Integer.toString(3600));
-
-            String[] serialPorts = Serial.list();
-            serList.add("NONE");
-            for (int i = 0; i < serialPorts.length; i++) {
-                String tempPort = serialPorts[(serialPorts.length - 1) - i];
-                if (!tempPort.equals(openBCI_portName)) serList.add(tempPort);
-            }
-
-            addDropdown("SerialSelection", "Output", serList, 0);
-            addDropdown("ChannelSelection", "Channel", channelList, 0);
-            addDropdown("EventType", "Event Type", Arrays.asList("Digital", "Analog"), 0);
-            addDropdown("BaudRate", "Baud Rate", baudList, 0);
-            tripSliders = new TripSlider[nchan];
-            untripSliders = new TripSlider[nchan];
-
-            initSliders(w, h);
-        }
     }
 
     //Initalizes the threshold
@@ -239,21 +188,6 @@ class W_emg extends Widget {
         fill(255);
         rect(x, y, w, h);
 
-        if (emgAdvanced) {
-            if (connectButton != null) connectButton.draw();
-            else connectButton = new Button_obci(int(x) + 2, int(y) - navHeight + 2, 100, navHeight - 6, "Connect", fontInfo.buttonLabel_size);
-
-            stroke(1, 18, 41, 125);
-
-            if (connectButton != null && connectButton.wasPressed) {
-                fill(0, 255, 0);
-                ellipse(x + 120, y - navHeight/2, 16, 16);
-            } else if (connectButton != null && !connectButton.wasPressed) {
-                fill(255, 0, 0);
-                ellipse(x + 120, y - navHeight/2, 16, 16);
-            }
-        }
-
         float rx = x, ry = y, rw = w, rh = h;
         float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
@@ -280,11 +214,11 @@ class W_emg extends Widget {
                 //circle for outer threshold
                 noFill();
                 strokeWeight(1);
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].upperThreshold, scaleFactor * motorWidgets[i * colNum + j].upperThreshold);
 
                 //circle for inner threshold
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 ellipse(2*colOffset/8, rowOffset / 2, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold, scaleFactor * motorWidgets[i * colNum + j].lowerThreshold);
 
                 int _x = int(5*colOffset/8);
@@ -299,22 +233,14 @@ class W_emg extends Widget {
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);
-                stroke(red(bgColor), green(bgColor), blue(bgColor), 150);
+                stroke(red(OPENBCI_DARKBLUE), green(OPENBCI_DARKBLUE), blue(OPENBCI_DARKBLUE), 150);
                 noFill();
                 rect(_x, _y, _w, _h);
-
-                //draw trip & untrip threshold bars
-                if (emgAdvanced) {
-                    tripSliders[index].update(currx, curry);
-                    tripSliders[index].display(_x, _y, _w, _h);
-                    untripSliders[index].update(currx, curry);
-                    untripSliders[index].display(_x, _y, _w, _h);
-                }
 
                 //draw channel number at upper left corner of row/column cell
                 pushStyle();
                 stroke(0);
-                fill(bgColor);
+                fill(OPENBCI_DARKBLUE);
                 int _chan = index+1;
                 textFont(p5, 12);
                 text(_chan + "", 10, 20);
@@ -330,54 +256,14 @@ class W_emg extends Widget {
 
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        if (emgAdvanced) {
-            connectButton.setPos(int(x) + 2, int(y) - navHeight + 2);
-
-            for (int i = 0; i < tripSliders.length; i++) {
-                //update slider positions
-            }
-        }
     }
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        if (emgAdvanced) {
-            if (connectButton.isMouseHere()) {
-                connectButton.setIsActive(true);
-                println("Connect pressed");
-            } else connectButton.setIsActive(false);
-        }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-
-        if (emgAdvanced) {
-            if (connectButton != null && connectButton.isMouseHere()) {
-                //do some function
-
-                try {
-                    serialOutEMG = new Serial(parent, theSerial, theBaud);
-                    connectButton.wasPressed = true;
-                    verbosePrint("Connected");
-                    output("Connected to " + theSerial);
-                }
-                catch (Exception e) {
-                    connectButton.wasPressed = false;
-                    verbosePrint("Could not connect!");
-                    output("Could not connect. Confirm that your Serial/COM port is correct and active.");
-                }
-
-                connectButton.setIsActive(false);
-            }
-
-            for (int i = 0; i<nchan; i++) {
-                tripSliders[i].releaseEvent();
-                untripSliders[i].releaseEvent();
-            }
-        }
     }
 
     public void process(
@@ -498,17 +384,6 @@ class W_emg extends Widget {
             default:
                 break;
             }
-        }
-        //=================== OpenBionics switch example ==============================
-
-        if (millis() - motorWidgets[0].timeOfLastTrip >= 2000 && serialOutEMG != null) {
-            //println("Counter: " + motorWidgets[0].switchCounter);
-            switch(motorWidgets[0].switchCounter) {
-            case 1:
-                serialOutEMG.write("G0");
-                break;
-            }
-            motorWidgets[0].switchCounter = 0;
         }
 
         //----------------- Leftover from Tou Code, what does this do? ----------------------------
@@ -693,7 +568,7 @@ class W_emg extends Widget {
 
             fill(255);
             strokeWeight(1);
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             setColor();
             fill(current_color);
             rect(boxx, boxy, wid, len);
@@ -1135,16 +1010,6 @@ class W_emg extends Widget {
         float untripThreshold = cfc.untripThreshold;
         boolean switchTripped = cfc.switchTripped;
         float timeOfLastTrip = cfc.timeOfLastTrip;
-
-
-        //================= OpenBionics Analog Movement Example =======================
-        if (serialOutEMG != null) {
-            //println("Output normalized: " + int(map(output_normalized, 0, 1, 0, 100)));
-            if (int(map(output_normalized, 0, 1, 0, 100)) > 10) {
-                serialOutEMG.write("G0P" + int(map(output_normalized, 0, 1, 0, 100)));
-                delay(10);
-            } else serialOutEMG.write("G0P0");
-        }
     }
 
     //Channel 2 Event
@@ -1297,20 +1162,3 @@ class W_emg extends Widget {
         float timeOfLastTrip = cfc.timeOfLastTrip;
     }
 };
-
-void ChannelSelection(int n) {
-    w_emg.currChannel = n;
-}
-
-void EventType(int n) {
-    if (n == 0) w_emg.events[w_emg.currChannel] = true;
-    else if (n == 1) w_emg.events[w_emg.currChannel] = false;
-}
-
-void BaudRate(int n) {
-    if (!w_emg.baudList.get(n).equals("NONE")) w_emg.theBaud = Integer.parseInt(w_emg.baudList.get(n));
-}
-
-void SerialSelection(int n) {
-    if (!w_emg.serList.get(n).equals("NONE")) w_emg.theSerial = w_emg.serList.get(n);
-}

@@ -261,7 +261,7 @@ class SessionSettings {
     int loadDatasource;
     boolean dataSourceError = false;
     //used globally to track and determine if expertMode is on or off
-    boolean expertModeToggle = false;
+    public boolean expertModeToggle = false;
 
     String saveDialogName; //Used when Save button is pressed
     String loadDialogName; //Used when Load button is pressed

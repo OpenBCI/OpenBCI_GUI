@@ -190,7 +190,7 @@ class W_timeSeries extends Widget {
         int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton = createHSCButton(hwSettingsButton, "HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
@@ -380,22 +380,8 @@ class W_timeSeries extends Widget {
         setAdsSettingsVisible(false);
     }
 
-    private Button createHSCButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        myButton = tscp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText(text)
-            ;
+    private Button createHSCButton(String name, String text, int _x, int _y, int _w, int _h) {
+        final Button myButton = createButton(tscp5, name, text, _x, _y, _w, _h);
         myButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {    
                 println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());
@@ -474,10 +460,10 @@ class ChannelBar {
     String channelString;
     int x, y, w, h;
     int defaultH;
-    Button_obci onOffButton;
-    int onOff_diameter, impButton_diameter;
-    Button_obci impCheckButton;
     ControlP5 cbCp5;
+    Button onOffButton;
+    Button impCheckButton;
+    int onOff_diameter, impButton_diameter;
     int yScaleButton_h;
     int yScaleButton_w;
     Button yScaleButton_pos;
@@ -526,35 +512,17 @@ class ChannelBar {
         h = _h;
         defaultH = h;
 
-        if(h > 26) {
-            onOff_diameter = 26;
-        } else{
-            onOff_diameter = h - 2;
-        }
-
-        //// Old buttons
-        onOffButton = new Button_obci (x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter, channelString, fontInfo.buttonLabel_size);
-        onOffButton.setHelpText("Click to toggle channel " + channelString + ".");
-        onOffButton.setFont(h2, 16);
-        onOffButton.setCircleButton(true);
-        onOffButton.setColorNotPressed(channelColors[channelIndex%8]); //Set channel button background colors
-        onOffButton.textColorNotActive = color(255); //Set channel button text to white
-        onOffButton.hasStroke(false);
+        onOff_diameter = h > 26 ? 26 : h - 2;
+        createOnOffButton("onOffButton"+channelIndex, channelString, x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter);
 
         if(currentBoard instanceof ImpedanceSettingsBoard) {
             impButton_diameter = 22;
-            impCheckButton = new Button_obci (x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter, "\u2126", fontInfo.buttonLabel_size);
-            impCheckButton.setHelpText("Click to toggle impedance check for channel " + channelString + ".");
-            impCheckButton.setFont(h3, 16); //override the default font and fontsize
-            impCheckButton.setCircleButton(true);
-            impCheckButton.setColorNotPressed(color(255)); //White background
-            impCheckButton.textColorNotActive = color(0); //Black text
-            impCheckButton.textColorActive = color(255); //White text when clicked
-            impCheckButton.hasStroke(false);
+            createImpButton("impButton"+channelIndex, "\u2126", x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter);
         } else {
             impButton_diameter = 0;
         }
 
+        //Create GPlot for this Channel
         uiSpaceWidth = 36 + padding_4 + impButton_diameter;
         yAxisUpperLim = 200;
         yAxisLowerLim = -200;
@@ -575,6 +543,7 @@ class ChannelBar {
         }
         // plot.setBgColor(color(31,69,110));
 
+        //Fill the GPlot with initial data
         nPoints = nPointsBasedOnDataSource();
         channelPoints = new GPointsArray(nPoints);
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
@@ -586,21 +555,22 @@ class ChannelBar {
         }
         plot.setPoints(channelPoints); //set the plot with 0.0 for all channelPoints to start
 
-        // New Buttons
+        //Create a UI to custom scale the Y axis for this channel
         yScaleButton_w = 18;
         yScaleButton_h = 18;
         yAxisLabel_h = 12;
         int padding = 2;
         yAxisMax = createTextfield(yAxisMax, yAxisUpperLim, "yAxisMax", "+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + int(padding*1.5), yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
         yAxisMin = createTextfield(yAxisMin, yAxisLowerLim, "yAxisMin", yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
-
-        yScaleButton_neg = createButton(yScaleButton_neg, channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
-        yScaleButton_pos = createButton(yScaleButton_pos, channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding*2 + yScaleButton_w, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
+        yScaleButton_neg = createYScaleButton(channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
+        yScaleButton_pos = createYScaleButton(channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding*2 + yScaleButton_w, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
         
-        impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, color(bgColor), color(255,255,255,175), RIGHT, TOP);
-        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, color(bgColor), color(255,255,255,175), RIGHT, BOTTOM);
-
+        //Create textBoxes to display the current values
+        impValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0], y + padding, OPENBCI_DARKBLUE, color(255,255,255,175), RIGHT, TOP);
+        voltageValue = new TextBox("", x + uiSpaceWidth + (int)plot.getDim()[0] - padding, y + h, OPENBCI_DARKBLUE, color(255,255,255,175), RIGHT, BOTTOM);
         drawVoltageValue = true;
+
+        //Establish a minimumChannelHeight
         minimumChannelHeight = padding_4 + yAxisLabel_h*2;
     }
 
@@ -629,10 +599,10 @@ class ChannelBar {
         updatePlotPoints();
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
-            onOffButton.setColorNotPressed(channelColors[channelIndex%8]); // power down == false, set color to vibrant
+            onOffButton.setColorBackground(channelColors[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
-            onOffButton.setColorNotPressed(50); // power down == true, set to grey
+            onOffButton.setColorBackground(50); // power down == true, set to grey
         }
 
         if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
@@ -674,9 +644,6 @@ class ChannelBar {
     public void draw(boolean hardwareSettingsAreOpen) {        
         pushStyle();
 
-        //draw onOff Button_obci
-        onOffButton.draw();
-
         plot.beginDraw();
         plot.drawBox();
         plot.drawGridLines(0);
@@ -703,16 +670,16 @@ class ChannelBar {
         //draw channelBar separator line in the middle of interChannelBarSpace
         if (!isBottomChannel()) {
             pushStyle();
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             strokeWeight(1);
             int separator_y = y + h + int(w_timeSeries.interChannelBarSpace/2);
             line(x, separator_y, x + w, separator_y);
         }
 
-        //draw impedance check Button_obci
+        //draw impedance check Button and values
         drawVoltageValue = true;
         if (currentBoard instanceof ImpedanceSettingsBoard) {
-            impCheckButton.draw();
+            impCheckButton.setVisible(true);
             if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
                 impValue.draw();
                 drawVoltageValue = false;
@@ -823,23 +790,12 @@ class ChannelBar {
         yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5));
         yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding);
 
-        if(h > 26) {
-            onOff_diameter = 26;
-            onOffButton.but_dx = onOff_diameter;
-            onOffButton.but_dy = onOff_diameter;
-        } else{
-            // println("h = " + h);
-            onOff_diameter = h - 2;
-            onOffButton.but_dx = onOff_diameter;
-            onOffButton.but_dy = onOff_diameter;
-        }
-
-        onOffButton.but_x = x + 6;
-        onOffButton.but_y = y + int(h/2) - int(onOff_diameter/2);
+        onOff_diameter = h > 26 ? 26 : h - 2;
+        onOffButton.setSize(onOff_diameter, onOff_diameter);
+        onOffButton.setPosition(x + 6, y + int(h/2) - int(onOff_diameter/2));
 
         if(currentBoard instanceof ImpedanceSettingsBoard) {
-            impCheckButton.but_x = x + 36;
-            impCheckButton.but_y = y + int(h/2) - int(impButton_diameter/2);
+            impCheckButton.setPosition(x + 36, y + int(h/2) - int(impButton_diameter/2));
         }
     }
 
@@ -852,54 +808,50 @@ class ChannelBar {
     }
 
     public void mousePressed() {
-        if(onOffButton.isMouseHere()) {
-            println("[" + channelString + "] onOff pressed");
-            onOffButton.setIsActive(true);
-        }
-
-        if(currentBoard instanceof ImpedanceSettingsBoard) {
-            if(impCheckButton.isMouseHere()) {
-                println("[" + channelString + "] imp pressed");
-                impCheckButton.setIsActive(true);
-            }
-        }
-
     }
 
     public void mouseReleased() {
-        if(onOffButton.isMouseHere()) {
-            println("[" + channelString + "] onOff released");
-            currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
-            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
-        }
+    }
 
-        onOffButton.setIsActive(false);
+    private void createOnOffButton(String name, String text, int _x, int _y, int _w, int _h) {
+        onOffButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, channelColors[channelIndex%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
+        onOffButton.setCircularButton(true);
+        onOffButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                println("[" + channelString + "] onOff released");
+                currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
+                w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
+            }
+        });
+        onOffButton.setDescription("Click to toggle channel " + channelString + ".");
+    }
 
-        if(currentBoard instanceof ImpedanceSettingsBoard) {
-            if(impCheckButton.isMouseHere() && impCheckButton.isActive()) {
+    private void createImpButton(String name, String text, int _x, int _y, int _w, int _h) {
+        impCheckButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, WHITE, BLACK, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
+        impCheckButton.setCircularButton(true);
+        impCheckButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
                 println("[" + channelString + "] imp released");
-
                 // flip impedance check
                 ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
                 impBoard.setCheckingImpedance(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
-
                 if(impBoard.isCheckingImpedance(channelIndex)) {
-                    impCheckButton.setColorNotPressed(color(50)); //Dark background
-                    impCheckButton.textColorNotActive = color (255); //White text
+                    impCheckButton.setColorBackground(BUTTON_PRESSED_DARKGREY);
+                    impCheckButton.setColorCaptionLabel(WHITE);
                 } else {
-                    impCheckButton.setColorNotPressed(color(255)); //White background
-                    impCheckButton.textColorNotActive = color(0); //Black text
+                    impCheckButton.setColorBackground(WHITE);
+                    impCheckButton.setColorCaptionLabel(BLACK);
                 }
             }
-            impCheckButton.setIsActive(false);
-        }
+        });
+        impCheckButton.setDescription("Click to toggle impedance check for channel " + channelString + ".");
     }
 
-    private Button createButton (Button myButton, int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {
+    private Button createYScaleButton(int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {
         _default.resize(_w, _h);
         _hover.resize(_w, _h);
         _active.resize(_w, _h);
-        myButton = cbCp5.addButton(bName)
+        final Button myButton = cbCp5.addButton(bName)
                 .setPosition(_x, _y)
                 .setSize(_w, _h)
                 .setColorLabel(color(255))
@@ -907,13 +859,7 @@ class ChannelBar {
                 .setColorBackground(color(144, 100))
                 .setImages(_default, _hover, _active)
                 ;
-        myButton.getCaptionLabel()
-                .setFont(createFont("Arial",12,true))
-                .toUpperCase(false)
-                .setSize(12)
-                .setText("")
-                ;
-        myButton.onClick(new ButtonCallbackListener(chan, shouldIncrease));
+        myButton.onClick(new yScaleButtonCallbackListener(chan, shouldIncrease));
         return myButton;
     }
 
@@ -940,14 +886,14 @@ class ChannelBar {
         return myTextfield;
     }
 
-    private class ButtonCallbackListener implements CallbackListener {
+    private class yScaleButtonCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
         private final int hardLimit = 25;
         private int yLimOption = TimeSeriesYLim.UV_200.getValue();
         //private int delta = 0; //value to change limits by
 
-        ButtonCallbackListener(int theChannel, boolean isIncrease)  {
+        yScaleButtonCallbackListener(int theChannel, boolean isIncrease)  {
             channel = theChannel;
             increase = isIncrease;
         }
@@ -1016,8 +962,6 @@ class ChannelBar {
 //========================================================================================================================
 
 
-
-
 //========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
     private final float ps_Padding = 50.0; //used to make room for skip to start button
@@ -1027,7 +971,8 @@ class PlaybackScrollbar {
     private float sposMin, sposMax; // max and min values of slider
     private boolean over;           // is the mouse over the slider?
     private boolean locked;
-    private Button_obci skipToStartButton;
+    private ControlP5 pbsb_cp5;
+    private Button skipToStartButton;
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
@@ -1048,15 +993,28 @@ class PlaybackScrollbar {
         sposMin = xpos;
         sposMax = xpos + swidth - sheight/2;
 
+        pbsb_cp5 = new ControlP5(ourApplet);
+        pbsb_cp5.setGraphics(ourApplet, 0,0);
+        pbsb_cp5.setAutoDraw(false);
+
         //Let's make a button to return to the start of playback!!
         skipToStart_diameter = 30;
-        skipToStartButton = new Button_obci (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
-        skipToStartButton.setColorNotPressed(color(235)); //Set channel button background colors
-        skipToStartButton.hasStroke(false);
-        PImage bgImage = loadImage("skipToStart-30x26.png");
-        skipToStartButton.setBackgroundImage(bgImage);
+        createSkipToStartButton("skipToStartButton", "", int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter);
 
         fileBoard = (FileBoard)currentBoard;
+    }
+
+    private void createSkipToStartButton(String name, String text, int _x, int _y, int _w, int _h) {
+        skipToStartButton = createButton(pbsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, color(235), OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, (Integer)null, 0);
+        PImage defaultImage = loadImage("skipToStart_default-30x26.png");
+        skipToStartButton.setImage(defaultImage);
+        skipToStartButton.setForceDrawBackground(true);
+        skipToStartButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               skipToStartButtonAction();
+            }
+        });
+        skipToStartButton.setDescription("Click to go back to the beginning of the file.");
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -1076,14 +1034,6 @@ class PlaybackScrollbar {
         }
         else {
             updateCursor();
-        }
-
-        if (mousePressed && skipToStartButton.isMouseHere()) {
-            //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
-            skipToStartButton.setIsActive(true);
-            skipToStartButtonAction(); //skip to start
-        } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
-            skipToStartButton.setIsActive(false); //set button to not active
         }
 
         // update timestamp
@@ -1172,9 +1122,6 @@ class PlaybackScrollbar {
     void draw() {
         pushStyle();
 
-        //draw button to skip to the beginning of recording
-        skipToStartButton.draw();
-
         //draw the playback slider inside the playback sub-widget
         noStroke();
         fill(204);
@@ -1198,6 +1145,8 @@ class PlaybackScrollbar {
         text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
 
         popStyle();
+
+        pbsb_cp5.draw();
     }
 
     void screenResized(float _x, float _y, float _w, float _h) {
@@ -1210,7 +1159,9 @@ class PlaybackScrollbar {
         //update the position of the playback indicator us
         //newspos = updatePos();
 
-        skipToStartButton.setPos(
+        pbsb_cp5.setGraphics(ourApplet, 0, 0);
+
+        skipToStartButton.setPosition(
             int(_x) + int(skipToStart_diameter*.5),
             int(_y) - int(skipToStart_diameter*.5)
             );

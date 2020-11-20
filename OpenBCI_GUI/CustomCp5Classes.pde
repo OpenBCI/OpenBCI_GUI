@@ -1,38 +1,42 @@
 //=======================================================================================================================================
 //
-//                    MenuList Class
-//
-//  Based on ControlP5 Processing Library example, written by Andreas Schlegel
+//                    Custom Cp5 Classes and Methods
 //
 //  Created: Conor Russomanno Oct. 2014
 //  Refactored: Richard Waltman Nov. 2020  
 //
 //=======================================================================================================================================
 
-public Button createButton(ControlP5 _cp5, String name, String text, String _helpText, int _x, int _y, int _w, int _h, int _roundness, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed) {
-    final String helpText = _helpText;
+//Reusable method for creating CP5 buttons throughout the GUI
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, Integer _strokeColor, int _marginTop) {
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
-        //.setColorLabel(bgColor) //Default to dark blue text
+        .setColorLabel(_textColor) //Default to dark blue text
         .setCornerRoundness(_roundness) //From Processing rect(): To draw a rounded rectangle, add a fifth parameter, which is used as the radius value for all four corners.
         .setColorForeground(_colorHover)
         .setColorBackground(_bgColor)
         .setColorActive(_colorPressed)
+        .setBorderColor(_strokeColor)
         ;
     b.getCaptionLabel()
-        .setFont(createFont("Arial", _fontSize, true))
+        .setFont(_font)
         .toUpperCase(false)
         .setSize(_fontSize)
         .setText(text)
         .setColor(_textColor) //This sets the color of the button label
+        .getStyle()
+        .setMarginTop(_marginTop)
         ;
+    //Add Help Text to all Buttons. If description is null or object is locked, take no action.
     b.addCallback(new CallbackListener() {
         public void controlEvent(CallbackEvent theEvent) {
-            if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                buttonHelpText.setButtonHelpText(helpText, (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
-                buttonHelpText.setVisible(true);
-            } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+            if (theEvent.getAction() == ControlP5.ACTION_ENTER && !b.isLock() && b.getDescription() != null) {
+                //Show helpt text if object is not locked and has a description
+                buttonHelpText.setButtonHelpText(b.getDescription(), (int)b.getPosition()[0] + b.getWidth()/2, (int)b.getPosition()[1] + (3*b.getHeight())/4);
+                buttonHelpText.setTimeUserEnteredUIObject();
+            } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE || theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                //Hide help text if clicked or user's mouse leaves object
                 buttonHelpText.setVisible(false);
             }
         }
@@ -40,7 +44,93 @@ public Button createButton(ControlP5 _cp5, String name, String text, String _hel
     return b;
 }
 
+//Square corners and no text label adjustment w/ default hover and press colors
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bgColor, color _textColor) {
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bgColor, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
+}
 
+//Default button colors and fonts
+private Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h) {
+    return createButton(_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
+}
+
+
+///////////////////////////////////////////////////////
+//              BUTTON HELP TEXT CLASS               //
+///////////////////////////////////////////////////////
+class ButtonHelpText{
+    private int x, y, w, h;
+    private String myText = "";
+    private boolean isVisible;
+    private int numLines;
+    private int lineSpacing = 14;
+    private int padding = 10;
+    private int timeUserEnteredUIObject;
+    private final int delay = 1000;
+    private final int fadeInTime = 500;
+    private float masterOpacity;
+
+    ButtonHelpText(){
+
+    }
+
+    public void setTimeUserEnteredUIObject() {
+        timeUserEnteredUIObject = millis();
+        isVisible = true;
+    }
+
+    public void setVisible(boolean _isVisible){
+        isVisible = _isVisible;
+    }
+
+    public void setButtonHelpText(String _myText, int _x, int _y){
+        myText = _myText;
+        x = _x;
+        y = _y;
+    }
+
+    public void draw(){
+        if (!isVisible || settings.expertModeToggle) {
+            return;
+        }
+
+        int delta = millis() - timeUserEnteredUIObject;
+        boolean timeToShowHelpText =  delta > delay;
+
+        if (timeToShowHelpText) {
+            
+            //Fade in the help text
+            masterOpacity = (delta < delay + fadeInTime) ? map(delta, delay, delay + fadeInTime, 0, 255) : 255f;
+
+            pushStyle();
+            textAlign(CENTER, TOP);
+
+            textFont(p5,12);
+            textLeading(lineSpacing); //line spacing
+            stroke(31,69,110, masterOpacity);
+            fill(255, masterOpacity);
+            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
+            // println("numLines: " + numLines);
+            //if on left side of screen, draw box brightness to prevent box off screen
+            if(x <= width/2){
+                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110, masterOpacity); //text colof
+                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
+            } else{ //if on right side of screen, draw box left to prevent box off screen
+                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
+                fill(31,69,110); //text colof
+                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
+            }
+            popStyle();
+        }
+    }
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//                              MENULIST CLASS                                    //
+//   Based on ControlP5 Processing Library example, written by Andreas Schlegel   //
+////////////////////////////////////////////////////////////////////////////////////
 public class MenuList extends controlP5.Controller {
 
     float pos, npos;
@@ -80,7 +170,7 @@ public class MenuList extends controlP5.Controller {
                     } else {
                         ty = 0;
                     }
-                    menu.fill(bgColor, 100);
+                    menu.fill(OPENBCI_DARKBLUE, 100);
                     if(ty > 0){
                         menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
                     }
@@ -134,7 +224,7 @@ public class MenuList extends controlP5.Controller {
             } else {
                 menu.rect(0, 0, getWidth(), itemHeight-1 );
             }
-            menu.fill(bgColor);
+            menu.fill(OPENBCI_DARKBLUE);
             menu.textFont(menuFont);
 
             //make sure there is something in the Ganglion serial list...
@@ -328,51 +418,3 @@ class CustomScrollableList extends ScrollableList {
         }
     }
 }
-
-class ButtonHelpText{
-    int x, y, w, h;
-    String myText = "";
-    boolean isVisible;
-    int numLines;
-    int lineSpacing = 14;
-    int padding = 10;
-
-    ButtonHelpText(){
-
-    }
-
-    public void setVisible(boolean _isVisible){
-        isVisible = _isVisible;
-    }
-
-    public void setButtonHelpText(String _myText, int _x, int _y){
-        myText = _myText;
-        x = _x;
-        y = _y;
-    }
-
-    public void draw(){
-        if(isVisible){
-            pushStyle();
-            textAlign(CENTER, TOP);
-
-            textFont(p5,12);
-            textLeading(lineSpacing); //line spacing
-            stroke(31,69,110);
-            fill(255);
-            numLines = (int)((float)myText.length()/30.0) + 1; //add 1 to round up
-            // println("numLines: " + numLines);
-            //if on left side of screen, draw box brightness to prevent box off screen
-            if(x <= width/2){
-                rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
-            } else{ //if on right side of screen, draw box left to prevent box off screen
-                rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
-                text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
-            }
-            popStyle();
-        }
-    }
-};

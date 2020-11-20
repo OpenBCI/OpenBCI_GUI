@@ -74,7 +74,7 @@ class ADS1299SettingsController {
 
         //color labelBG = color(220);
         color labelBG = color(255,255,255,0);
-        color labelTxt = bgColor;
+        color labelTxt = OPENBCI_DARKBLUE;
         colOffset = (w / 5) / 2;
         int label_y = y - 14 - padding_3;
         gainLabel = new TextBox("PGA Gain", x + colOffset, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
@@ -83,9 +83,9 @@ class ADS1299SettingsController {
         srb2Label = new TextBox("SRB2", x + colOffset + (w/5)*3, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
         srb1Label = new TextBox("SRB1", x + colOffset + (w/5)*4, label_y, labelTxt, labelBG, 12, h5, CENTER, TOP);
 
-        createAllDropdowns(chanBar_h);
-
         createCustomCommandUI();
+
+        createAllDropdowns(chanBar_h);
     }
 
     public void update() {
@@ -240,27 +240,8 @@ class ADS1299SettingsController {
         return isVisible;
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h) {
-        myButton = hwsCp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
     private void createHWSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
-        loadButton = createButton(loadButton, name, text, _x, _y, _w, _h);
+        loadButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (currentBoard.isStreaming()) {
@@ -273,7 +254,7 @@ class ADS1299SettingsController {
     }
 
     private void createHWSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
-        saveButton = createButton(saveButton, name, text, _x, _y, _w, _h);
+        saveButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectOutput("Save settings to file", "storeHardwareSettings");
@@ -282,7 +263,7 @@ class ADS1299SettingsController {
     }
 
     private void createHWSettingsSendButton(String name, String text, int _x, int _y, int _w, int _h) {
-        sendButton = createButton(sendButton, name, text, _x, _y, _w, _h);
+        sendButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 
@@ -382,7 +363,7 @@ class ADS1299SettingsController {
     }
 
     private void createCustomCommandUI() {
-        customCommandTF = hwsCp5.addTextfield("customCommand")
+        final Textfield _tf = hwsCp5.addTextfield("customCommand")
             .setPosition(0, 0)
             .setCaptionLabel("")
             .setSize(10, 10)
@@ -394,40 +375,28 @@ class ADS1299SettingsController {
             .setColorForeground(color(26))  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText("Type Command Here...")
+            .setText("")
             .align(5, 10, 20, 40)
             .setAutoClear(false) //Don't clear textfield when pressing Enter key
             ;
+        _tf.setDescription("Type a custom command and Send to board.");
         //Clear textfield on double click
-        customCommandTF.onDoublePress(new CallbackListener() {
+        _tf.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("[ExpertMode] Enter the custom command you would like to send to the board.");
-                customCommandTF.clear();
+                _tf.clear();
             }
         });
-        customCommandTF.addCallback(new CallbackListener() {
+        _tf.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
-                    customCommandTF.setFocus(false);
+                    _tf.setFocus(false);
                 }
             }
         });
+        customCommandTF = _tf;
 
-        sendCustomCmdButton = hwsCp5.addButton("sendCustomCommand")
-            .setPosition(0, 0)
-            .setSize(10, 10)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        sendCustomCmdButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial",12,true))
-            .toUpperCase(false)
-            .setSize(12)
-            .setText("Send")
-            ;
+        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send", 0, 0, 10, 10);
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = dropNonPrintableChars(customCommandTF.getText());
@@ -437,7 +406,7 @@ class ADS1299SettingsController {
                 } else {
                     outputError("[ExpertMode] Failure sending command to board: " + text);
                 }
-                println(res.getValue());
+                //println("ADSSettingsController: Response == " + res.getValue());
             }
         });
 

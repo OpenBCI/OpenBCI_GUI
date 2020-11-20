@@ -12,14 +12,13 @@
 
 
 class W_GanglionImpedance extends Widget {
-    Button_obci startStopCheck;
+    Button startStopCheck;
     int padding = 24;
 
     W_GanglionImpedance(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        startStopCheck = new Button_obci (x + padding, y + padding, 200, navHeight, "Start Impedance Check", 12);
-        startStopCheck.setFont(p4, 14);
+        createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     void update(){
@@ -32,10 +31,8 @@ class W_GanglionImpedance extends Widget {
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
-        startStopCheck.draw();
-
         //divide by 2 ... we do this assuming that the D_G (driven ground) electrode is "comprable in impedance" to the electrode being used.
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(p4, 14);
 
         BoardGanglion ganglion = (BoardGanglion)currentBoard;
@@ -55,10 +52,10 @@ class W_GanglionImpedance extends Widget {
             } else {
                 toPrint = "Channel[" + i + "] Impedance \u2248 " + adjustedImpedance + " k\u2126";
             }
-            text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.but_dy + padding*(i));
+            text(toPrint, x + padding + 40, y + padding*2 + 12 + startStopCheck.getHeight() + padding*(i));
 
             pushStyle();
-            stroke(bgColor);
+            stroke(OPENBCI_DARKBLUE);
             //change the fill color based on the signal quality...
             if(adjustedImpedance <= 0){ //no data yet...
                 fill(255);
@@ -74,50 +71,51 @@ class W_GanglionImpedance extends Widget {
                 fill(224, 56, 45); //red
             }
 
-            ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.but_dy + padding*(i), padding/2, padding/2);
+            ellipse(x + padding + 10, y + padding*2 + 7 + startStopCheck.getHeight() + padding*(i), padding/2, padding/2);
             popStyle();
         }
 
-        image(loadingGIF_blue, x + padding + startStopCheck.but_dx + 15, y + padding - 8, 40, 40);
+        image(loadingGIF_blue, x + padding + startStopCheck.getWidth() + 15, y + padding - 8, 40, 40);
         popStyle();
     }
 
     void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-        startStopCheck.setPos(x + padding, y + padding);
+        startStopCheck.setPosition(x + padding, y + padding);
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if(startStopCheck.isMouseHere()){
-            startStopCheck.setIsActive(true);
-        }
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
 
-        if (startStopCheck.isActive && startStopCheck.isMouseHere()) {
-            if (currentBoard instanceof BoardGanglion) {
-                // ganglion is the only board which can check impedance, so we don't have an interface for it.
-                // if that changes in the future, consider making an interface.
-                BoardGanglion ganglionBoard = (BoardGanglion)currentBoard;
-                if (!ganglionBoard.isCheckingImpedance()) {
-                    // We need to either stop the time series data, or allow it to scroll, like currently. 
-                    // the values in time series are not meaningful when Impedance check is active
-                    topNav.stopButtonWasPressed();
-                    println("Starting Ganglion impedance check...");
-                    //Start impedance check
-                    ganglionBoard.setCheckingImpedance(true);
-                    startStopCheck.but_txt = "Stop Impedance Check";
-                } else {
-                    //Stop impedance check
-                    ganglionBoard.setCheckingImpedance(false);
-                    //ganglion.impedanceStop();
-                    startStopCheck.but_txt = "Start Impedance Check";
+    private void createStartStopCheck(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        startStopCheck = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
+        startStopCheck.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (currentBoard instanceof BoardGanglion) {
+                    // ganglion is the only board which can check impedance, so we don't have an interface for it.
+                    // if that changes in the future, consider making an interface.
+                    BoardGanglion ganglionBoard = (BoardGanglion)currentBoard;
+                    if (!ganglionBoard.isCheckingImpedance()) {
+                        // We need to either stop the time series data, or allow it to scroll, like currently. 
+                        // the values in time series are not meaningful when Impedance check is active
+                        topNav.stopButtonWasPressed();
+                        println("Starting Ganglion impedance check...");
+                        //Start impedance check
+                        ganglionBoard.setCheckingImpedance(true);
+                        startStopCheck.getCaptionLabel().setText("Stop Impedance Check");
+                    } else {
+                        //Stop impedance check
+                        ganglionBoard.setCheckingImpedance(false);
+                        startStopCheck.getCaptionLabel().setText("Start Impedance Check");
+                    }
                 }
             }
-        }
-        startStopCheck.setIsActive(false);
+        });
+        startStopCheck.setDescription("Click this button to start or stop checking impedance.");
     }
 };

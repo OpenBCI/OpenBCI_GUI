@@ -148,25 +148,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
 //========================================================================================
 //========================================================================================
 
-WidgetManager wm;
-boolean wmVisible = true;
-CColor cp5_colors;
-
-//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
-color[] channelColors = {
-    color(129, 129, 129),
-    color(124, 75, 141),
-    color(54, 87, 158),
-    color(49, 113, 89),
-    color(221, 178, 13),
-    color(253, 94, 52),
-    TURN_OFF_RED,
-    color(162, 82, 49)
-};
-
-//Global variable for general navigation bar height
-int navHeight = 22;
-
 class WidgetManager{
 
     //this holds all of the widgets ... when creating/adding new widgets, we will add them to this ArrayList (below)

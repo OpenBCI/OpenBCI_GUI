@@ -241,7 +241,7 @@ class DataStatus {
     private double threshold_railed_warn;
     private double percentage;
     public String notificationString;
-    private final color default_color = bgColor;
+    private final color default_color = OPENBCI_DARKBLUE;
     private final color yellow = color(254,211,0,255);
     private final color red = color(255,0,0,255);
     private color colorIndicator = default_color;

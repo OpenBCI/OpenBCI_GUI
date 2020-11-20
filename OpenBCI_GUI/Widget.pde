@@ -65,6 +65,7 @@ class Widget{
         rect(x,y-1,w,h+1); //draw white widget background
 
         //draw nav bars and button bars
+        pushStyle();
         fill(150, 150, 150);
         rect(x0, y0, w0, navH); //top bar
         fill(200, 200, 200);
@@ -187,7 +188,7 @@ class Widget{
         textFont(h5);		
         textSize(12);		
         textAlign(CENTER, BOTTOM);		
-        fill(bgColor);		
+        fill(OPENBCI_DARKBLUE);		
         for(int i = 0; i < dropdowns.size(); i++){		
             int dropdownPos = dropdowns.size() - i;		
             // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
@@ -277,18 +278,6 @@ class Widget{
             }
         } else {
             return false;
-        }
-    }
-
-    //For use with old button class
-    public void ignoreButtonCheck(Button_obci b) {
-        //ignore top left button interaction when widgetSelector dropdown is active
-        if (dropdownIsActive) {
-            b.setIgnoreHover(true);
-        } else {
-            if (b.getIgnoreHover()) {
-                b.setIgnoreHover(false);
-            }
         }
     }
     
@@ -519,7 +508,7 @@ class ChannelSelect {
         Toggle myButton = cp5_chanSelect.addToggle(name)
             .setPosition(_x, _y)
             .setSize(_w, _h)
-            .setColorLabel(bgColor)
+            .setColorLabel(OPENBCI_DARKBLUE)
             .setColorForeground(color(120))
             .setColorBackground(color(150))
             .setColorActive(color(57, 128, 204))

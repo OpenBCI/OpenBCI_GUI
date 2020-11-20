@@ -70,11 +70,12 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
+    private final int PAD_3 = 3;
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
-        x = 3;
-        y = 3 + topNav.controlPanelCollapser.getHeight();
+        x = PAD_3;
+        y = PAD_3 + topNav.controlPanelCollapser.getHeight();
         w = topNav.controlPanelCollapser.getWidth();
         h = height - int(helpWidget.h);
 
@@ -82,9 +83,6 @@ class ControlPanel {
         fontInfo = new PlotFontInfo();
 
         globalPadding = 10;  //controls the padding of all elements on the control panel
-
-        cp5 = new ControlP5(mainClass);
-        cp5.setAutoDraw(false);
 
         //boxes active when eegDataSource = Normal (OpenBCI)
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
@@ -148,17 +146,6 @@ class ControlPanel {
     }
 
     public void update() {
-        //toggle view of cp5 / serial list selection table
-        if (isOpen) { // if control panel is open
-            if (!cp5.isVisible()) {  //and cp5 is not visible
-                cp5.show(); // shot it
-            }
-        } else { //the opposite of above
-            if (cp5.isVisible()) {
-                cp5.hide();
-            }
-        }
-
         //update all boxes if they need to be
         dataSourceBox.update();
         serialBox.update();
@@ -205,7 +192,6 @@ class ControlPanel {
         if (systemMode != 10) { // only draw control panel boxes if system running is false
             dataSourceBox.draw();
             drawStopInstructions = false;
-            cp5.setVisible(true);//make sure controlP5 elements are visible
 
             //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
@@ -270,8 +256,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_STREAMING) {
                 streamingBoardBox.draw();
             }
-        } else {
-            cp5.setVisible(false);
         }
 
         //draw the box that tells you to stop the system in order to edit control settings
@@ -284,14 +268,10 @@ class ControlPanel {
             String stopInstructions = "Press the \"STOP SESSION\" button to change your data source or edit system settings.";
             textAlign(CENTER, TOP);
             textFont(p4, 14);
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
         }
-
-        //draw the ControlP5 stuff
-        textFont(p4, 14);
-        cp5.draw();
 
         popStyle();
     }
@@ -346,7 +326,7 @@ class DataSourceBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("DATA SOURCE", x + padding, y + padding);
@@ -423,11 +403,8 @@ class SerialBox {
         cytonsb_cp5.setGraphics(ourApplet, 0,0);
         cytonsb_cp5.setAutoDraw(false);
 
-        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, fontInfo.buttonLabel_size);
-        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24, fontInfo.buttonLabel_size);
-
-        //autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
-        //popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
+        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24);
+        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24);
     }
 
     public void update() {
@@ -439,7 +416,7 @@ class SerialBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL CONNECT", x + padding, y + padding);
@@ -450,36 +427,22 @@ class SerialBox {
         }
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = cytonsb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
+    private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h) {
+        return createButton(cytonsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
     }
 
-    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoConnectButton = createButton(autoConnectButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoConnectButton = createSBButton(name, text, _x, _y, _w, _h);
         autoConnectButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.comPortBox.attemptAutoConnectCyton();
             }
         });
+        autoConnectButton.setDescription("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
     }
 
-    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        popOutRadioConfigButton = createButton(popOutRadioConfigButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h) {
+        popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h);
         popOutRadioConfigButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (selectedProtocol == BoardProtocol.SERIAL) {
@@ -493,6 +456,7 @@ class SerialBox {
                 }
             }
         });
+        popOutRadioConfigButton.setDescription("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 };
 
@@ -520,7 +484,7 @@ class ComPortBox {
         cytoncpb_cp5.setGraphics(ourApplet, 0,0);
         cytoncpb_cp5.setAutoDraw(false);
 
-        createRefreshCytonDonglesButton("refreshCytonDonglesButton", "REFRESH LIST", x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, fontInfo.buttonLabel_size);
+        createRefreshCytonDonglesButton("refreshCytonDonglesButton", "REFRESH LIST", x + padding, y + padding*4 + 72 + 8, w - padding*2, 24);
         createCytonDongleList(cytoncpb_cp5, "cytonDongleList", x + padding, y + padding*3 + 8,  w - padding*2, 72, p3);
     }
 
@@ -544,7 +508,7 @@ class ComPortBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL/COM PORT", x + padding, y + padding);
@@ -553,22 +517,8 @@ class ComPortBox {
         cytoncpb_cp5.draw();
     }
 
-    private void createRefreshCytonDonglesButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        refreshCytonDongles = cytoncpb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        refreshCytonDongles
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
+    private void createRefreshCytonDonglesButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshCytonDongles = createButton(cytoncpb_cp5, name, text, _x, _y, _w, _h);
         refreshCytonDongles.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 refreshPortListCyton();
@@ -686,7 +636,7 @@ class BLEBox {
         bleBox_cp5.setGraphics(ourApplet, 0,0);
         bleBox_cp5.setAutoDraw(false);
 
-        createRefreshBLEButton("refreshGanglionBLEButton", "START SEARCH", x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, fontInfo.buttonLabel_size);
+        createRefreshBLEButton("refreshGanglionBLEButton", "START SEARCH", x + padding, y + padding*4 + 72 + 8, w - padding*5, 24);
         createGanglionBLEMenuList(bleBox_cp5, "bleList", x + padding, y + padding*3 + 8, w - padding*2, 72, p3);
     }
 
@@ -700,7 +650,7 @@ class BLEBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("BLE DEVICES", x + padding, y + padding);
@@ -772,22 +722,8 @@ class BLEBox {
         return null;
     }
 
-    private void createRefreshBLEButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        refreshBLE = bleBox_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        refreshBLE
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
+    private void createRefreshBLEButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshBLE = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
         refreshBLE.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 refreshGanglionBLEList();
@@ -840,12 +776,12 @@ class WifiBox {
         wifiDynamic_x = x + padding;
         wifiStatic_x = x + padding*2 + (w-padding*3)/2;
         wifiButtons_y = y + padding*2 + 16;
-        createDynamicIPAddressButton("wifiIPAddressDynamicButton", "DYNAMIC IP", wifiDynamic_x, wifiButtons_y, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        createStaticIPAddressButton("wifiIPAddressStaticButton", "STATIC IP", wifiStatic_x, wifiButtons_y, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createDynamicIPAddressButton("wifiIPAddressDynamicButton", "DYNAMIC IP", wifiDynamic_x, wifiButtons_y, (w-padding*3)/2, 24);
+        createStaticIPAddressButton("wifiIPAddressStaticButton", "STATIC IP", wifiStatic_x, wifiButtons_y, (w-padding*3)/2, 24);
 
         refreshWifi_x = x + padding;
         refreshWifi_y = y + padding*5 + 72 + 8 + 24;
-        createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24, fontInfo.buttonLabel_size);
+        createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24);
         createWifiList(wifiBox_cp5, "wifiList", x + padding, y + padding*4 + 8 + 24, w - padding*2, 72 + 8, p3);
         createStaticIPAddressTextfield();
     }
@@ -860,7 +796,7 @@ class WifiBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WIFI SHIELDS", x + padding, y + padding);
@@ -872,7 +808,7 @@ class WifiBox {
 
         if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
             pushStyle();
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
@@ -889,7 +825,7 @@ class WifiBox {
                 boardIpInfo += wifi_ipAddress;
             }
             pushStyle();
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
@@ -937,27 +873,8 @@ class WifiBox {
         thread.start();
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = wifiBox_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
-    private void createDynamicIPAddressButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        wifiIPAddressDynamic = createButton(wifiIPAddressDynamic, name, text, _x, _y, _w, _h, _fontSize);
+    private void createDynamicIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
+        wifiIPAddressDynamic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
         wifiIPAddressDynamic.setSwitch(true);
         wifiIPAddressDynamic.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -973,8 +890,8 @@ class WifiBox {
         wifiIPAddressDynamic.setOn();
     }
 
-    private void createStaticIPAddressButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        wifiIPAddressStatic = createButton(wifiIPAddressStatic, name, text, _x, _y, _w, _h, _fontSize);
+    private void createStaticIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
+        wifiIPAddressStatic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
         wifiIPAddressStatic.setSwitch(true);
         wifiIPAddressStatic.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -989,8 +906,8 @@ class WifiBox {
         });
     }
 
-    private void createRefreshWifiButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        refreshWifi = createButton(wifiIPAddressStatic, name, text, _x, _y, _w, _h, _fontSize);
+    private void createRefreshWifiButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshWifi = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
         refreshWifi.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 refreshWifiList();
@@ -1073,8 +990,8 @@ class InterfaceBoxCyton {
         ifbc_cp5.setAutoDraw(false);
 
         //Disabled both toggles by default for this box
-        createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
-        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1085,7 +1002,7 @@ class InterfaceBoxCyton {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
@@ -1094,31 +1011,17 @@ class InterfaceBoxCyton {
         ifbc_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = ifbc_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
+    private Button createIFBCButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ifbc_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
         if (isToggled) {
-            myButton.setOn();
+            b.setOn();
         }
-        return myButton;
+        return b;
     }
 
-    private void createSerialCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        protocolSerialCyton = createButton(protocolSerialCyton, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSerialCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolSerialCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
         protocolSerialCyton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
@@ -1131,8 +1034,8 @@ class InterfaceBoxCyton {
         });
     }
 
-    private void createWifiCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        protocolWifiCyton = createButton(protocolWifiCyton, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createWifiCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolWifiCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
         protocolWifiCyton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
@@ -1170,8 +1073,8 @@ class InterfaceBoxGanglion {
         ifbg_cp5.setGraphics(ourApplet, 0,0);
         ifbg_cp5.setAutoDraw(false);
 
-        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
-        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, fontInfo.buttonLabel_size);
+        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1182,7 +1085,7 @@ class InterfaceBoxGanglion {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
@@ -1191,31 +1094,18 @@ class InterfaceBoxGanglion {
         ifbg_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = ifbg_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
+
+    private Button createIFBGButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ifbg_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
         if (isToggled) {
-            myButton.setOn();
+            b.setOn();
         }
-        return myButton;
+        return b;
     }
 
-    private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        protocolBLED112Ganglion = createButton(protocolBLED112Ganglion, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolBLED112Ganglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolBLED112Ganglion.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
@@ -1228,8 +1118,8 @@ class InterfaceBoxGanglion {
         });
     }
 
-    private void createGanglionWifiButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        protocolWifiGanglion = createButton(protocolWifiGanglion, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createGanglionWifiButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolWifiGanglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolWifiGanglion.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.wifiBox.wifiList.items.clear();
@@ -1284,12 +1174,9 @@ class SessionDataBox {
         createSessionNameTextfield(textfieldName);
 
         //button to autogenerate file name based on time/date
-        createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24, fontInfo.buttonLabel_size);
-        //autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
-        createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        //outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
-        createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        //outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
+        createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24);
+        createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
+        createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
 
         createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
         
@@ -1305,7 +1192,7 @@ class SessionDataBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SESSION DATA", x + padding, y + padding);
@@ -1327,13 +1214,13 @@ class SessionDataBox {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
             //Dropdown is drawn at the end of ControlPanel.draw()
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
             int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
                 ? 20 
                 : 5;
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
             popStyle();
@@ -1435,43 +1322,28 @@ class SessionDataBox {
         });
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = sessionData_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
+    private Button createGUIOutputToggle(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(sessionData_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
     }
 
-    private void createAutoSessionNameButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoSessionName = createButton(autoSessionName, name, text, _x, _y, _w, _h, _fontSize);
+    private void createAutoSessionNameButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoSessionName = createButton(sessionData_cp5, name, text, _x, _y, _w, _h);
         autoSessionName.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 autogenerateSessionName();
             }
         });
+        autoSessionName.setDescription("Autogenerate a session name based on the date and time.");
     }
 
-    private void createODFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
+    private void createODFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h) {
         boolean formatIsODF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_ODF;
-        outputODF = createButton(outputODF, name, text, _x, _y, _w, _h, _fontSize);
-        outputODF.setSwitch(true);
-        if (formatIsODF) {
-            outputODF.setOn();
-        } else {
-            outputODF.setOff();
-        }
+        outputODF = createGUIOutputToggle(name, text, formatIsODF, _x, _y, _w, _h);
         outputODF.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output(odfMessage);
@@ -1481,17 +1353,12 @@ class SessionDataBox {
                 setToODFHeight();
             }
         });
+        outputODF.setDescription("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
     }
 
-    private void createBDFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h, int _fontSize) {
+    private void createBDFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h) {
         boolean formatIsBDF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_BDF;
-        outputBDF = createButton(outputBDF, name, text, _x, _y, _w, _h, _fontSize);
-        outputBDF.setSwitch(true);
-        if (formatIsBDF) {
-            outputBDF.setOn();
-        } else {
-            outputBDF.setOff();
-        }
+        outputBDF = createGUIOutputToggle(name, text, formatIsBDF, _x, _y, _w, _h);
         outputBDF.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output(bdfMessage);
@@ -1501,6 +1368,7 @@ class SessionDataBox {
                 setToBDFHeight();
             }
         });
+        outputBDF.setDescription("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
     }
 
     private void autogenerateSessionName() {
@@ -1573,8 +1441,8 @@ class ChannelCountBox {
         cb16_butX = x + padding*2 + (w-padding*3)/2;
         cb_butY = y + padding*2 + 18;
         boolean is8Channels = (nchan == 8) ? true : false;
-        createChan8Button("cyton8ChanButton", "8 CHANNELS", is8Channels, cb8_butX, cb_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        createChan16Button("cyton16ChanButton", "16 CHANNELS", is8Channels, cb16_butX, cb_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createChan8Button("cyton8ChanButton", "8 CHANNELS", is8Channels, cb8_butX, cb_butY, (w-padding*3)/2, 24);
+        createChan16Button("cyton16ChanButton", "16 CHANNELS", is8Channels, cb16_butX, cb_butY, (w-padding*3)/2, 24);
     }
 
     public void update() {
@@ -1590,11 +1458,11 @@ class ChannelCountBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
@@ -1603,31 +1471,17 @@ class ChannelCountBox {
         ccc_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = ccc_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
+    private Button createCCCButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ccc_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
         if (isToggled) {
-            myButton.setOn();
+            b.setOn();
         }
-        return myButton;
+        return b;
     }
 
-    private void createChan8Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        chanButton8 = createButton(chanButton8, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createChan8Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        chanButton8 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
         chanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(8);
@@ -1637,8 +1491,8 @@ class ChannelCountBox {
         });
     }
 
-    private void createChan16Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        chanButton16 = createButton(chanButton16, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createChan16Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        chanButton16 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
         chanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(16);
@@ -1684,8 +1538,8 @@ class SampleRateGanglionBox {
         sr200_butX = x + padding;
         sr1600_butX = x + padding*2 + (w-padding*3)/2;
         srButton_butY =  y + padding*2 + 18;
-        createSR200Button("cytonSR200", "200Hz", false, sr200_butX, srButton_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        createSR1600Button("cytonSR1600", "1600Hz", true, sr1600_butX, srButton_butY, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
+        createSR200Button("cytonSR200", "200Hz", false, sr200_butX, srButton_butY, (w-padding*3)/2, 24);
+        createSR1600Button("cytonSR1600", "1600Hz", true, sr1600_butX, srButton_butY, (w-padding*3)/2, 24);
     }
 
     public void update() {
@@ -1701,11 +1555,11 @@ class SampleRateGanglionBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
@@ -1713,31 +1567,17 @@ class SampleRateGanglionBox {
         srgb_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = srgb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
+    private Button createSRGBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(srgb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
         if (isToggled) {
-            myButton.setOn();
+            b.setOn();
         }
-        return myButton;
+        return b;
     }
 
-    private void createSR200Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleRate200 = createButton(sampleRate200, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSR200Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate200 = createSRGBButton(name, text, isToggled, _x, _y, _w, _h);
         sampleRate200.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 200;
@@ -1748,8 +1588,8 @@ class SampleRateGanglionBox {
         });
     }
 
-    private void createSR1600Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleRate1600 = createButton(sampleRate1600, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSR1600Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate1600 = createSRGBButton(name, text, isToggled, _x, _y, _w, _h);
         sampleRate1600.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 1600;
@@ -1793,10 +1633,10 @@ class SampleRateCytonBox {
         sr500_butX = x + padding*2 + (w-padding*4)/3;
         sr1000_butX = x + padding*3 + ((w-padding*4)/3)*2;
         srButton_butY =  y + padding*2 + 18;
-        createSR250Button("cytonSR250", "250Hz", false, sr250_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-        createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSR250Button("cytonSR250", "250Hz", false, sr250_butX, srButton_butY, (w-padding*4)/3, 24);
+        createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24);
         //Make 1000Hz option selected by default
-        createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24);
     }
 
     public void update() {
@@ -1815,11 +1655,11 @@ class SampleRateCytonBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
@@ -1827,31 +1667,17 @@ class SampleRateCytonBox {
         srcb_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = srcb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
+    private Button createSRCBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(srcb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
         if (isToggled) {
-            myButton.setOn();
+            b.setOn();
         }
-        return myButton;
+        return b;
     }
 
-    private void createSR250Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleRate250 = createButton(sampleRate250, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSR250Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate250 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
         sampleRate250.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 250;
@@ -1863,8 +1689,8 @@ class SampleRateCytonBox {
         });
     }
 
-    private void createSR500Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleRate500 = createButton(sampleRate500, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSR500Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate500 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
         sampleRate500.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 500;
@@ -1876,8 +1702,8 @@ class SampleRateCytonBox {
         });
     }
 
-    private void createSR1000Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleRate1000 = createButton(sampleRate1000, name, text, isToggled, _x, _y, _w, _h, _fontSize);
+    private void createSR1000Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate1000 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
         sampleRate1000.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectedSamplingRate = 1000;
@@ -1909,9 +1735,9 @@ class SyntheticChannelCountBox {
         sccb_cp5.setGraphics(ourApplet, 0,0);
         sccb_cp5.setAutoDraw(false);
 
-        createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-        createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
-        createSynthChan16Button("synthChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, fontInfo.buttonLabel_size);
+        createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24);
+        createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24);
+        createSynthChan16Button("synthChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24);
     }
 
     public void update() {
@@ -1923,11 +1749,11 @@ class SyntheticChannelCountBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
@@ -1936,28 +1762,17 @@ class SyntheticChannelCountBox {
         sccb_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = sccb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        myButton.setSwitch(true); //This turns the button into a switch
-        return myButton;
+    private Button createSCCBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(sccb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
     }
 
-    private void createSynthChan4Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        synthChanButton4 = createButton(synthChanButton4, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSynthChan4Button(String name, String text, int _x, int _y, int _w, int _h) {
+        synthChanButton4 = createSCCBButton(name, text, false,_x, _y, _w, _h);
         synthChanButton4.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(4);
@@ -1968,8 +1783,9 @@ class SyntheticChannelCountBox {
         });
     }
 
-    private void createSynthChan8Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        synthChanButton8 = createButton(synthChanButton8, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSynthChan8Button(String name, String text, int _x, int _y, int _w, int _h) {
+        //Default is 8 channels when app starts
+        synthChanButton8 = createSCCBButton(name, text, true, _x, _y, _w, _h);
         synthChanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(8);
@@ -1978,12 +1794,10 @@ class SyntheticChannelCountBox {
                 synthChanButton16.setOff();
             }
         });
-        //Default is 8 channels when app starts
-        synthChanButton8.setOn();
     }
 
-    private void createSynthChan16Button(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        synthChanButton16 = createButton(synthChanButton16, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSynthChan16Button(String name, String text, int _x, int _y, int _w, int _h) {
+        synthChanButton16 = createSCCBButton(name, text, false, _x, _y, _w, _h);
         synthChanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 updateToNChan(16);
@@ -2054,7 +1868,7 @@ class RecentPlaybackBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h + recentPlaybackSL.getHeight() - padding*2.5);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
@@ -2190,7 +2004,7 @@ class GaleaBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
@@ -2402,7 +2216,7 @@ class StreamingBoardBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
@@ -2502,12 +2316,8 @@ class PlaybackFileBox {
         pbfb_cp5.setGraphics(ourApplet, 0,0);
         pbfb_cp5.setAutoDraw(false);
 
-        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH, fontInfo.buttonLabel_size);
-        createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, 14);
-        
-        //selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-        //sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
-        //sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
+        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH);
+        createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h);
     }
 
     public void update() {
@@ -2519,7 +2329,7 @@ class PlaybackFileBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK FILE", x + padding, y + padding);
@@ -2528,28 +2338,8 @@ class PlaybackFileBox {
         pbfb_cp5.draw();
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize, color _bgColor, color _textColor) {
-        myButton = pbfb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(_bgColor)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            .setColor(_textColor)
-            ;
-        return myButton;
-    }
-
-    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        selectPlaybackFile = createButton(selectPlaybackFile, name, text, _x, _y, _w, _h, _fontSize, colorNotPressed, color(0));
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        selectPlaybackFile = createButton(pbfb_cp5, name, text, _x, _y, _w, _h);
         selectPlaybackFile.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
@@ -2559,10 +2349,11 @@ class PlaybackFileBox {
                 );
             }
         });
+        selectPlaybackFile.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
     }
 
-    private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        sampleDataButton = createButton(sampleDataButton, name, text, _x, _y, _w, _h, _fontSize, buttonsLightBlue, color(255));
+    private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h) {
+        sampleDataButton = createButton(pbfb_cp5, name, text, _x, _y, _w, _h, p5, 12, buttonsLightBlue, color(255));
         sampleDataButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
@@ -2572,6 +2363,8 @@ class PlaybackFileBox {
                 );
             }
         });
+        //sampleDataButton.setCornerRoundness((int)(sampleDataButton_h));
+        sampleDataButton.setDescription("Click to open the folder containing OpenBCI GUI Sample Data.");
     }
 };
 
@@ -2613,7 +2406,7 @@ class SDBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WRITE TO SD CARD?", x + padding, y + padding);
@@ -2711,18 +2504,10 @@ class RadioConfigBox {
         rcb_cp5.setGraphics(ourApplet, 0,0);
         rcb_cp5.setAutoDraw(false);
 
-        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH,  fontInfo.buttonLabel_size);
-        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH, fontInfo.buttonLabel_size);
-        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24, fontInfo.buttonLabel_size);
-        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, fontInfo.buttonLabel_size);
-        /*
-        //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
-        systemStatus.setHelpText("Get the connection status of your Cyton system.");
-        */
+        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH);
+        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH);
+        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24);
+        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH);
     }
     public void update() {}
 
@@ -2732,7 +2517,7 @@ class RadioConfigBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("RADIO CONFIGURATION", x + padding, y + padding);
@@ -2745,7 +2530,7 @@ class RadioConfigBox {
     public void print_onscreen(String localstring){
         pushStyle();
         textAlign(LEFT);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         rect(x + padding, y + padding*5 + headerH + buttonH*2 + autoscanH, w-(padding*2), statusWindowH);
         fill(255);
         textFont(h3, 15);
@@ -2779,63 +2564,48 @@ class RadioConfigBox {
         cytonRadioCfg.closeSerialPort();
     }
 
-    private Button createButton(Button myButton, String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        myButton = rcb_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
-        return myButton;
-    }
-
-    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        autoscanButton = createButton(autoscanButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoscanButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         autoscanButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 scanChannels();
                 controlPanel.hideChannelListCP();
             }
         });
+        autoscanButton.setDescription("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
     }
 
-    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        systemStatusButton = createButton(systemStatusButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h) {
+        systemStatusButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         systemStatusButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 getChannel();
                 controlPanel.hideChannelListCP();
             }
         });
+        systemStatusButton.setDescription("Get connection status and the current channel of your Cyton and USB Dongle.");
     }
 
-    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        setChannelButton = createButton(setChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        setChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         setChannelButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.channelPopup.setClicked(true);
                 controlPanel.channelPopup.setTitleChangeChannel();
             }
         });
+        setChannelButton.setDescription("Change the channel of your Cyton and USB Dongle.");
     }
 
-    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        ovrChannelButton = createButton(ovrChannelButton, name, text, _x, _y, _w, _h, _fontSize);
+    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        ovrChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
         ovrChannelButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.channelPopup.setClicked(true);
                 controlPanel.channelPopup.setTitlteOvrDongle();
             }
         });
+        ovrChannelButton.setDescription("Change the channel of the USB Dongle only.");
     }
 };
 
@@ -2890,7 +2660,7 @@ class ChannelPopup {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text(title, x + padding, y + padding);
@@ -2922,7 +2692,7 @@ class InitBox {
         initBox_cp5.setGraphics(ourApplet, 0,0);
         initBox_cp5.setAutoDraw(false);
 
-        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2,  fontInfo.buttonLabel_size);
+        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2);
     }
 
     public void update() {
@@ -2939,28 +2709,14 @@ class InitBox {
         initBox_cp5.draw();
     }
 
-    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h, int _fontSize) {
-        initSystemButton = initBox_cp5.addButton(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(bgColor)
-            .setColorForeground(BUTTON_HOVER)
-            .setColorBackground(colorNotPressed)
-            .setColorActive(BUTTON_PRESSED)
-            ;
-        initSystemButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(text)
-            ;
+    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h) {
+        initSystemButton = createButton(initBox_cp5, name, text, _x, _y, _w, _h);
         initSystemButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (controlPanel.rcBox.isShowing) {
                     controlPanel.hideRadioPopoutBox();
                 }
-                //if system is not active ... initate system and flip button state
+                //If session is not active, start session and flip button state
                 initButtonPressed();
             }
         });
@@ -3013,6 +2769,7 @@ class InitBox {
 
                 //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
                 midInit = true;
+                buttonHelpText.setVisible(false);
                 output("Attempting to Start Session..."); // Show this at the bottom of the GUI
                 println("initButtonPressed: Calling initSystem() after next draw()");
             }
@@ -3020,6 +2777,7 @@ class InitBox {
             //if system is already active ... stop session and flip button state back
             outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
             setInitSessionButtonText("START SESSION");
+            topNav.setLockTopLeftSubNavCp5Objects(false); //Unlock top left subnav buttons
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());

@@ -69,6 +69,8 @@ String localGUIVersionDate = "November 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
+PApplet ourApplet;
+
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
@@ -76,7 +78,6 @@ final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
 
 ControlPanel controlPanel;
-ControlP5 cp5; //program-wide instance of ControlP5
 
 int selectedSamplingRate = -1; //program-wide variable to track sampling rate, which can change depending on selected data source
 
@@ -89,10 +90,6 @@ boolean reinitRequested = false;
 final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
-
-PImage cog;
-Gif loadingGIF;
-Gif loadingGIF_blue;
 
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
@@ -194,6 +191,10 @@ boolean textFieldIsActive = false;
 int win_w;  //window width
 int win_h; //window height
 
+PImage cog;
+Gif loadingGIF;
+Gif loadingGIF_blue;
+
 PImage logo_blue;
 PImage logo_white;
 PImage consoleImgBlue;
@@ -215,18 +216,18 @@ PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
 PFont p15;
-PFont p4; //medium/small Open Sans
+static PFont p4; //medium/small Open Sans
 PFont p13;
-PFont p5; //small Open Sans
+static PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
 boolean setupComplete = false;
 
-//Starting to collect the GUI-wide color pallet here. Rename to constants all caps later...
-final color bgColor = color(1, 18, 41);
+//Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
+final color OPENBCI_DARKBLUE = color(1, 18, 41);
 final color OPENBCI_BLUE = color(31, 69, 110);
 final color boxColor = color(200);
-final color boxStrokeColor = color(bgColor);
+final color boxStrokeColor = OPENBCI_DARKBLUE;
 final color isSelected_color = color(184, 220, 105);
 final color colorNotPressed = color(255);
 final color buttonsLightBlue = color(57,128,204);
@@ -235,14 +236,37 @@ final color WHITE = color(255);
 final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
-final color BUTTON_PRESSED = color(150,170,200); //bgColor;
+final color BUTTON_PRESSED = color(150,170,200); //OPENBCI_DARKBLUE;
+final color BUTTON_LOCKED_GREY = color(128);
+final color BUTTON_PRESSED_DARKGREY = color(50);
+final color BUTTON_NOOBGREEN = color(114,204,171);
+final color BUTTON_EXPERTPURPLE = color(135,95,154);
+final color BUTTON_CAUTIONRED = color(214,100,100);
+
 
 final int COLOR_SCHEME_DEFAULT = 1;
 final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
-PApplet ourApplet;
+WidgetManager wm;
+boolean wmVisible = true;
+CColor cp5_colors;
+
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+final color[] channelColors = {
+    color(129, 129, 129),
+    color(124, 75, 141),
+    color(54, 87, 158),
+    color(49, 113, 89),
+    color(221, 178, 13),
+    color(253, 94, 52),
+    TURN_OFF_RED,
+    color(162, 82, 49)
+};
+
+//Global variable for general navigation bar height
+final int navHeight = 22;
 
 ButtonHelpText buttonHelpText;
 
@@ -443,9 +467,7 @@ private void prepareExitHandler () {
     ));
 }
 
-//used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
-
-//Initialize the system
+//Init system based on default settings. Called from the "START SESSION" button in the GUI's ControlPanel.
 void initSystem() {
     println("");
     println("");
@@ -486,13 +508,16 @@ void initSystem() {
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardBrainFlowSynthetic(nchan);
+            println("OpenBCI_GUI: Init session using Synthetic data source");
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {
                 currentBoard = new DataSourcePlayback(playbackData_fname);
+                println("OpenBCI_GUI: Init session using Playback data source");
             } else {
                 if (!sdData_fname.equals("N/A")) {
                     currentBoard = new DataSourceSDCard(sdData_fname);
+                    println("OpenBCI_GUI: Init session using Playback data source");
                 }
                 else {
                     // no code path to it
@@ -528,6 +553,7 @@ void initSystem() {
                     controlPanel.streamingBoardBox.getIP(),
                     controlPanel.streamingBoardBox.getPort()
                     );
+            println("OpenBCI_GUI: Init session using Streaming data source");
         default:
             break;
     }
@@ -557,7 +583,7 @@ void initSystem() {
 
     if (abandonInit) {
         haltSystem();
-        outputError("Failed to initialize board. Please check that the board is on and has power.");
+        outputError("Failed to initialize board. Please check that the board is on and has power. See Console Log for more details.");
         controlPanel.open();
         return;
     } else {
@@ -698,6 +724,8 @@ void haltSystem() {
         
         stopRunning();  //stop data transfer
 
+        topNav.resetStartStopButton();
+
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
         if (systemMode == SYSTEMMODE_POSTINIT && 
@@ -782,7 +810,7 @@ void systemUpdate() { // for updating data values and variables
 
 void systemDraw() { //for drawing to the screen
     //redraw the screen...not every time, get paced by when data is being plotted
-    background(bgColor);  //clear the screen
+    background(OPENBCI_DARKBLUE);  //clear the screen
     noStroke();
     //background(255);  //clear the screen
 
@@ -884,7 +912,7 @@ void drawStartupError() {
     final int padding = 20;
 
     pushStyle();
-    background(bgColor);
+    background(OPENBCI_DARKBLUE);
     stroke(204);
     fill(238);
     rect((width - w)/2, (height - h)/2, w, h);
@@ -913,9 +941,9 @@ void drawOverlay(String text) {
     pushStyle();
     textFont(p0, 24);
     fill(boxColor, 255);
-    stroke(bgColor, 200);
+    stroke(OPENBCI_DARKBLUE, 200);
     rect(width/2 - (textWidth(text)+20)/2, height/2 - 80/2, textWidth(text) + 20, 80);
-    fill(bgColor, 255);
+    fill(OPENBCI_DARKBLUE, 255);
     text(text, width/2 - textWidth(text)/2, height/2 + 8);
     popStyle();
 }

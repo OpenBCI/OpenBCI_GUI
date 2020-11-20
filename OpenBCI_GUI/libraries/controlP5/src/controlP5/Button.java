@@ -28,6 +28,7 @@ package controlP5;
  */
 
 import processing.core.PGraphics;
+import processing.core.PImage;
 
 /**
  * <p>
@@ -48,6 +49,9 @@ public class Button extends Controller< Button > {
 	protected int activateBy = RELEASE;
 	protected boolean isSwitch = false;
 	protected int cornerRoundness = 0;
+	protected Integer buttonStrokeColor;
+	protected boolean isCircularButton;
+	protected boolean forceDrawBackground;
 
 	/**
 	 * Convenience constructor to extend Button.
@@ -220,11 +224,46 @@ public class Button extends Controller< Button > {
 
 	/**
 	 * Set the corner roundess of this button. Default value is 0 and right-angle corners.
-	 *
+	 * @param _cornerRoundness
 	 * @return Button
 	 */
     public Button setCornerRoundness(int _cornerRoundness){
 		cornerRoundness = _cornerRoundness;
+		return this;
+	}
+
+	/**
+	 * Set the border color of this button. Default value is null.
+	 * When null, noStroke() is used during draw loop
+	 * @param theColor
+	 * @return Button
+	 */
+    public Button setBorderColor(Integer theColor){
+		buttonStrokeColor = theColor;
+		return this;
+	}
+
+	/**
+	 * Draw a circular button instead of a rectangular one.
+	 * Default value is false.
+	 * 
+	 * @param theFlag
+	 * @return Button
+	 */
+    public Button setCircularButton(boolean theFlag){
+		isCircularButton = theFlag;
+		return this;
+	}
+
+	/**
+	 * Force draw the button background when using images
+	 * Default value is false.
+	 * 
+	 * @param theFlag
+	 * @return Button
+	 */
+    public Button setForceDrawBackground(boolean theFlag){
+		forceDrawBackground = theFlag;
 		return this;
 	}
 	
@@ -270,7 +309,13 @@ public class Button extends Controller< Button > {
 	private class ButtonView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
-			theGraphics.noStroke( );
+			theGraphics.pushStyle();
+			if (buttonStrokeColor != null) {
+				theGraphics.stroke( buttonStrokeColor );
+			} else {
+				theGraphics.noStroke( );
+			}
+			
 			if ( isOn && isSwitch ) {
 				theGraphics.fill( color.getActive( ) );
 			} else {
@@ -284,29 +329,78 @@ public class Button extends Controller< Button > {
 					theGraphics.fill( color.getBackground( ) );
 				}
 			}
-			theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+
+			if (isCircularButton) {
+				theGraphics.ellipseMode( theGraphics.CORNER );
+				theGraphics.ellipse( 0 , 0 , getWidth( ) , getHeight( ));
+			} else {
+				theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+			}
+
 			if ( isLabelVisible ) {
 				_myCaptionLabel.draw( theGraphics , 0 , 0 , theController );
 			}
+			theGraphics.popStyle();
 		}
 	}
 
 	private class ButtonImageView implements ControllerView< Button > {
 
 		public void display( PGraphics theGraphics , Button theController ) {
+			
+			PImage img;
+			int imgX = 0;
+			int imgY = 0;
+			int imgW = 0;
+			int imgH = 0;
+			
+			theGraphics.pushStyle();
+
+			if (buttonStrokeColor != null) {
+				theGraphics.stroke( buttonStrokeColor );
+			} else {
+				theGraphics.noStroke( );
+			}
+			
+			if (forceDrawBackground) {
+				theGraphics.imageMode(theGraphics.CENTER);
+				imgX = 0 + (getWidth() / 2);
+				imgY = 0 + (getHeight() / 2);
+				imgW = getWidth() - 8;
+				imgH = getHeight() - 8;
+			}
+
 			if ( isOn && isSwitch ) {
-				theGraphics.image( ( availableImages[ HIGHLIGHT ] == true ) ? images[ HIGHLIGHT ] : images[ DEFAULT ] , 0 , 0 );
+				img = availableImages[ HIGHLIGHT ] == true ? images[ HIGHLIGHT ] : images[ DEFAULT ];
+				if (forceDrawBackground) {
+					theGraphics.image( img, imgX, imgY, imgW, imgH );
+				} else {
+					theGraphics.image( img, 0, 0);
+				}
 				return;
 			}
+
 			if ( getIsInside( ) ) {
 				if ( isPressed ) {
-					theGraphics.image( ( availableImages[ ACTIVE ] == true ) ? images[ ACTIVE ] : images[ DEFAULT ] , 0 , 0 );
+					theGraphics.fill( color.getActive( ) );
+					img = availableImages[ ACTIVE ] == true ? images[ ACTIVE ] : images[ DEFAULT ];
 				} else {
-					theGraphics.image( ( availableImages[ OVER ] == true ) ? images[ OVER ] : images[ DEFAULT ] , 0 , 0 );
+					theGraphics.fill( color.getForeground( ) );
+					img = availableImages[ OVER ] == true ? images[ OVER ] : images[ DEFAULT ];
 				}
 			} else {
-				theGraphics.image( images[ DEFAULT ] , 0 , 0 );
+				theGraphics.fill( color.getBackground( ) );
+				img = images[ DEFAULT ];
 			}
+
+			if (forceDrawBackground) {
+				theGraphics.rect( 0 , 0 , getWidth( ) , getHeight( ) , cornerRoundness);
+				theGraphics.image( img, imgX, imgY, imgW, imgH);
+			} else {
+				theGraphics.image( img, imgX, imgY);
+			}
+			
+			theGraphics.popStyle();
 		}
 	}
 
