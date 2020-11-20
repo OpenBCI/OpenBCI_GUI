@@ -239,6 +239,10 @@ final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
 final color BUTTON_PRESSED = color(150,170,200); //OPENBCI_DARKBLUE;
 final color BUTTON_LOCKED_GREY = color(128);
 final color BUTTON_PRESSED_DARKGREY = color(50);
+final color BUTTON_NOOBGREEN = color(114,204,171);
+final color BUTTON_EXPERTPURPLE = color(135,95,154);
+final color BUTTONN_CAUTIONRED = color(214,100,100);
+
 
 final int COLOR_SCHEME_DEFAULT = 1;
 final int COLOR_SCHEME_ALTERNATIVE_A = 2;

@@ -202,11 +202,7 @@ class TopNav {
 
     void update() {
         //ignore settings button when help dropdown is open
-        if (tutorialSelector.isVisible) {
-            settingsButton.setLock(true);
-        } else {
-            settingsButton.setLock(false);
-        }
+        settingsButton.setLock(tutorialSelector.isVisible);
 
         //Make sure these buttons don't get accidentally locked
         if (systemMode >= SYSTEMMODE_POSTINIT) {
@@ -311,17 +307,18 @@ class TopNav {
         updateGuiVersionButton.setPosition(shopButton.getPosition()[0] - shopButton.getWidth() - PAD_3, PAD_3);
         settingsButton.setPosition(width - settingsButton.getWidth() - PAD_3, SUBNAV_BUT_Y);
 
-        toggleDataStreamingButton.setPosition(PAD_3, SUBNAV_BUT_Y);
-        filtNotchButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
-        filtBPButton.setPosition(PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y);
-
         if (systemMode == SYSTEMMODE_POSTINIT) {
+            toggleDataStreamingButton.setPosition(PAD_3, SUBNAV_BUT_Y);
+            filtNotchButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
+            filtBPButton.setPosition(PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y);
+
             layoutButton.setPosition(width - 3 - layoutButton.getWidth(), SUBNAV_BUT_Y);
             settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, SUBNAV_BUT_Y);
             //Make sure to re-position UI in selector boxes
             layoutSelector.screenResized();
-            tutorialSelector.screenResized();
         }
+        
+        tutorialSelector.screenResized();
         configSelector.screenResized();
     }
 
@@ -667,6 +664,9 @@ class LayoutSelector {
             //   toggleVisibility();
             // }
         }
+
+        //Update the X position of this box on every update
+        x = width - w - 3;
     }
 
     public void draw() {
@@ -763,18 +763,16 @@ class LayoutSelector {
 }
 
 class ConfigSelector {
-    int x, y, w, h, margin, b_w, b_h;
-    boolean clearAllSettingsPressed;
-    boolean isVisible;
-    ArrayList<Button> configOptions;
-    int configHeight = 0;
-    color newGreen = color(114,204,171);
-    color expertPurple = color(135,95,154);
-    color cautionRed = color(214,100,100);
+    private int x, y, w, h, margin, b_w, b_h;
+    private boolean clearAllSettingsPressed;
+    public boolean isVisible;
+    private ControlP5 settings_cp5;
+    public ArrayList<Button> configOptions;
+    private int configHeight = 0;
 
-    int osPadding = 0;
-    int osPadding2 = 0;
-    int buttonSpacer = 0;
+    private int osPadding = 0;
+    private int osPadding2 = 0;
+    private int buttonSpacer = 0;
 
     ConfigSelector() {
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
@@ -788,6 +786,11 @@ class ConfigSelector {
         //makes the setting text "are you sure" display correctly on linux
         osPadding = isLinux() ? -3 : -2;
         osPadding2 = isLinux() ? 5 : 0;
+
+        //Instantiate local cp5 for this box
+        settings_cp5 = new ControlP5(ourApplet);
+        settings_cp5.setGraphics(ourApplet, 0,0);
+        settings_cp5.setAutoDraw(false);
 
         isVisible = false;
 
@@ -851,6 +854,7 @@ class ConfigSelector {
     }
 
     void screenResized() {
+        settings_cp5.setGraphics(ourApplet, 0,0);
         updateConfigButtonPositions();
     }
 
@@ -891,7 +895,7 @@ class ConfigSelector {
         int buttonNumber = 0;
         Button_obci tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Turn Expert Mode On");
         tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setColorNotPressed(newGreen);
+        tempConfigButton.setColorNotPressed(BUTTON_NOOBGREEN);
         tempConfigButton.setFontColorNotActive(color(255));
         tempConfigButton.setHelpText("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
         configOptions.add(tempConfigButton);
@@ -920,7 +924,7 @@ class ConfigSelector {
         h = margin*(buttonNumber+1) + b_h*(buttonNumber+1);
         tempConfigButton = new Button_obci (x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Clear All");
         tempConfigButton.setFont(p5, 12);
-        tempConfigButton.setColorNotPressed(cautionRed);
+        tempConfigButton.setColorNotPressed(BUTTON_CAUTIONRED);
         tempConfigButton.setFontColorNotActive(color(255));
         tempConfigButton.setHelpText("This will clear all user settings and playback history. You will be asked to confirm.");
         configOptions.add(tempConfigButton);
@@ -954,7 +958,7 @@ class ConfigSelector {
             for (int i = 0; i < configOptions.size(); i++) {
                 int spacer = (i > configOptions.size() - 3) ? 1 : 0;
                 int newY = y + margin*(i+spacer+1) + b_h*(i+spacer);
-                configOptions.get(i).setPosition(x + multiplier*2, newY);
+                //configOptions.get(i).setPosition(x + multiplier*2, newY);
             }
         } else if (systemMode < SYSTEMMODE_POSTINIT) {
             int[] t = {4, 5, 6}; //button numbers
@@ -962,7 +966,7 @@ class ConfigSelector {
                 //configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
                 int spacer = (t[i] > 4) ? i + 1 : i;
                 int newY = y + margin*(spacer+1) + b_h*(spacer);
-                configOptions.get(t[i]).setPosition(configOptions.get(t[i]).getPosition()[0] - dx, newY);
+                //configOptions.get(t[i]).setPosition(configOptions.get(t[i]).getPosition()[0] - dx, newY);
             }
         }
         //println("TopNav: ConfigSelector: Button Positions Updated");
@@ -971,12 +975,12 @@ class ConfigSelector {
     public void toggleExpertMode(boolean b) {
         if (b) {
             configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode Off");
-            configOptions.get(0).setColorBackground(expertPurple);
+            configOptions.get(0).setColorBackground(BUTTON_EXPERTPURPLE);
             println("LoadGUISettings: Expert Mode On");
             settings.expertModeToggle = true;
         } else {
             configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode On");
-            configOptions.get(0).setColorBackground(newGreen);
+            configOptions.get(0).setColorBackground(BUTTON_NOOBGREEN);
             println("LoadGUISettings: Expert Mode Off");
             settings.expertModeToggle = false;
         }
@@ -985,10 +989,15 @@ class ConfigSelector {
 
 class TutorialSelector {
 
-    int x, y, w, h, margin, b_w, b_h;
-    boolean isVisible;
-
-    ArrayList<Button> tutorialOptions; //
+    private int x, y, w, h, margin, b_w, b_h;
+    public boolean isVisible;
+    private ControlP5 tutorial_cp5;
+    private Button gettingStarted;
+    private Button testingImpedance;
+    private Button troubleshootingGuide;
+    private Button customWidgets;
+    private Button openbciForum;
+    private final int numButtons = 5;
 
     TutorialSelector() {
         w = 180;
@@ -998,13 +1007,25 @@ class TutorialSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*3 + b_h*2;
+        h = margin*(numButtons+1) + b_h*numButtons;
 
+        //Instantiate local cp5 for this box
+        tutorial_cp5 = new ControlP5(ourApplet);
+        tutorial_cp5.setGraphics(ourApplet, 0,0);
+        tutorial_cp5.setAutoDraw(false);
 
         isVisible = false;
 
-        tutorialOptions = new ArrayList<Button>();
-        addTutorialButtons();
+        int buttonNumber = 0;
+        createGettingStartedButton("gettingStarted", "Getting Started", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createTestingImpedanceButton("testingImpedance", "Testing Impedance", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createTroubleshootingGuideButton("troubleshootingGuide", "Troubleshooting Guide", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createCustomWidgetsButton("customWidgets", "Building Custom Widgets", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createOpenbciForumButton("openbciForum", "OpenBCI Forum", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
     }
 
     void update() {
@@ -1022,22 +1043,18 @@ class TutorialSelector {
 
             stroke(OPENBCI_DARKBLUE);
             // fill(229); //bg
-            fill(31, 69, 110); //bg
+            fill(OPENBCI_BLUE); //bg
             rect(x, y, w, h);
 
 
-            /*
-            for (int i = 0; i < tutorialOptions.size(); i++) {
-                tutorialOptions.get(i).draw();
-            }
-            */
-
-            fill(OPENBCI_BLUE);
             // fill(177, 184, 193);
             noStroke();
+            //Draw a tiny rectangle to make it look like the box and button are connected
             rect(x+w-(topNav.tutorialsButton.getWidth()-1), y, (topNav.tutorialsButton.getWidth()-1), 1);
 
             popStyle();
+
+            tutorial_cp5.draw();
         }
     }
 
@@ -1058,13 +1075,19 @@ class TutorialSelector {
     }
 
     void screenResized() {
-        //update position of outer box and buttons
+
+        tutorial_cp5.setGraphics(ourApplet, 0,0);
+
+        //update position of outer box and buttons. Y values do not change for this box.
         int oldX = x;
-        x = width - w - 3;
+        x = width - 33 - w - 3*2;
         int dx = oldX - x;
-        for (int i = 0; i < tutorialOptions.size(); i++) {
-            //tutorialOptions.get(i).setX(tutorialOptions.get(i).getPosition()[0] - dx);
+
+        for (int j = 0; j < tutorial_cp5.getAll().size(); j++) {
+            Button c = (Button) tutorial_cp5.getController(tutorial_cp5.getAll().get(j).getAddress());
+            c.setPosition(c.getPosition()[0] - dx, c.getPosition()[1]);
         }
+        
     }
 
     void toggleVisibility() {
@@ -1088,58 +1111,58 @@ class TutorialSelector {
         }
     }
 
-    void addTutorialButtons() {
-
-        /*
-        for (int i = 0; i < tutorialOptions.size(); i++) {
-            if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {
-                int tutorialSelected = i+1;
-                tutorialOptions.get(i).setIsActive(false);
-                tutorialOptions.get(i).goToURL();
-                println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
-                //output("Help button [" + tutorialSelected + "] selected.");
+    private void createGettingStartedButton(String name, String text, int _x, int _y, int _w, int _h) {
+        gettingStarted = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        gettingStarted.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
                 toggleVisibility(); //shut layoutSelector if something is selected
-                //open corresponding link
             }
-        }
-        */
-        /*
-        //FIRST ROW
+        });
+        //gettingStarted.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    }
 
-        //setup button 1 -- full screen
-        int buttonNumber = 0;
-        Button_obci tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Getting Started");
-        tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
-        tutorialOptions.add(tempTutorialButton);
+    private void createTestingImpedanceButton(String name, String text, int _x, int _y, int _w, int _h) {
+        testingImpedance = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        testingImpedance.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        //testingImpedance.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    }
 
-        buttonNumber = 1;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Testing Impedance");
-        tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
-        tutorialOptions.add(tempTutorialButton);
+    private void createTroubleshootingGuideButton(String name, String text, int _x, int _y, int _w, int _h) {
+        troubleshootingGuide = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        troubleshootingGuide.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        //troubleshootingGuide.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    }
 
-        buttonNumber = 2;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Troubleshooting Guide");
-        tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
-        tutorialOptions.add(tempTutorialButton);
+    private void createCustomWidgetsButton(String name, String text, int _x, int _y, int _w, int _h) {
+        customWidgets = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        customWidgets.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        //customWidgets.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+    }
 
-        buttonNumber = 3;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "Building Custom Widgets");
-        tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
-        tutorialOptions.add(tempTutorialButton);
-
-        buttonNumber = 4;
-        h = margin*(buttonNumber+2) + b_h*(buttonNumber+1);
-        tempTutorialButton = new Button_obci(x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h, "OpenBCI Forum");
-        tempTutorialButton.setFont(p5, 12);
-        tempTutorialButton.setURL("https://openbci.com/forum/");
-        tutorialOptions.add(tempTutorialButton);
-        */
+    private void createOpenbciForumButton(String name, String text, int _x, int _y, int _w, int _h) {
+        openbciForum = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        openbciForum.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                openURLInBrowser("https://openbci.com/forum/");
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        //openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     }
 }
