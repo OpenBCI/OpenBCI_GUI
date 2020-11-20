@@ -8,7 +8,7 @@
 //=======================================================================================================================================
 
 //Reusable method for creating CP5 buttons throughout the GUI
-public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, color _strokeColor, int _marginTop) {
+public Button createButton(ControlP5 _cp5, String name, String text, int _x, int _y, int _w, int _h, int _roundness, PFont _font, int _fontSize, color _bgColor, color _textColor, color _colorHover, color _colorPressed, Integer _strokeColor, int _marginTop) {
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
