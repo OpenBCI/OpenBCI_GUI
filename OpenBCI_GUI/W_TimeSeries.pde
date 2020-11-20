@@ -976,8 +976,6 @@ class ChannelBar {
 //========================================================================================================================
 
 
-
-
 //========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
     private final float ps_Padding = 50.0; //used to make room for skip to start button
@@ -987,7 +985,8 @@ class PlaybackScrollbar {
     private float sposMin, sposMax; // max and min values of slider
     private boolean over;           // is the mouse over the slider?
     private boolean locked;
-    private Button_obci skipToStartButton;
+    private ControlP5 pbsb_cp5;
+    private Button skipToStartButton;
     private int skipToStart_diameter;
     private String currentAbsoluteTimeToDisplay = "";
     private String currentTimeInSecondsToDisplay = "";
@@ -1008,15 +1007,29 @@ class PlaybackScrollbar {
         sposMin = xpos;
         sposMax = xpos + swidth - sheight/2;
 
+        pbsb_cp5 = new ControlP5(ourApplet);
+        pbsb_cp5.setGraphics(ourApplet, 0,0);
+        pbsb_cp5.setAutoDraw(false);
+
         //Let's make a button to return to the start of playback!!
-        skipToStart_diameter = 30;
-        skipToStartButton = new Button_obci (int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, skipToStart_diameter, "");
-        skipToStartButton.setColorNotPressed(color(235)); //Set channel button background colors
-        skipToStartButton.hasStroke(false);
-        PImage bgImage = loadImage("skipToStart-30x26.png");
-        skipToStartButton.setBackgroundImage(bgImage);
+        skipToStart_diameter = sheight;
+        createSkipToStartButton("skipToStartButton", "", int(xp) + int(skipToStart_diameter*.5), int(yp) + int(sh/2) - skipToStart_diameter, skipToStart_diameter, 26);
 
         fileBoard = (FileBoard)currentBoard;
+    }
+
+    private void createSkipToStartButton(String name, String text, int _x, int _y, int _w, int _h) {
+        skipToStartButton = createButton(pbsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, color(235), OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, (Integer)null, 0);
+        PImage defaultImage = loadImage("skipToStart_default-30x26.png");
+        PImage imageOver = loadImage("skipToStart_hover-30x26.png");
+        PImage imageActive = loadImage("skipToStart_active-30x26.png");
+        skipToStartButton.setImages(defaultImage, imageOver, imageActive);
+        skipToStartButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+               skipToStartButtonAction();
+            }
+        });
+        skipToStartButton.setDescription("Click to go back to the beginning of the file.");
     }
 
     /////////////// Update loop for PlaybackScrollbar
@@ -1036,14 +1049,6 @@ class PlaybackScrollbar {
         }
         else {
             updateCursor();
-        }
-
-        if (mousePressed && skipToStartButton.isMouseHere()) {
-            //println("Playback Scrollbar: Skip to start button pressed"); //This does not print!!
-            skipToStartButton.setIsActive(true);
-            skipToStartButtonAction(); //skip to start
-        } else if (!mousePressed && !skipToStartButton.isMouseHere()) {
-            skipToStartButton.setIsActive(false); //set button to not active
         }
 
         // update timestamp
@@ -1132,9 +1137,6 @@ class PlaybackScrollbar {
     void draw() {
         pushStyle();
 
-        //draw button to skip to the beginning of recording
-        skipToStartButton.draw();
-
         //draw the playback slider inside the playback sub-widget
         noStroke();
         fill(204);
@@ -1158,6 +1160,8 @@ class PlaybackScrollbar {
         text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
 
         popStyle();
+
+        pbsb_cp5.draw();
     }
 
     void screenResized(float _x, float _y, float _w, float _h) {
@@ -1170,7 +1174,9 @@ class PlaybackScrollbar {
         //update the position of the playback indicator us
         //newspos = updatePos();
 
-        skipToStartButton.setPos(
+        pbsb_cp5.setGraphics(ourApplet, 0, 0);
+
+        skipToStartButton.setPosition(
             int(_x) + int(skipToStart_diameter*.5),
             int(_y) - int(skipToStart_diameter*.5)
             );
