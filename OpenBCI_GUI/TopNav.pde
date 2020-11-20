@@ -767,7 +767,14 @@ class ConfigSelector {
     private boolean clearAllSettingsPressed;
     public boolean isVisible;
     private ControlP5 settings_cp5;
-    public ArrayList<Button> configOptions;
+    private Button expertMode;
+    private Button saveSessionSettings;
+    private Button loadSessionSettings;
+    private Button defaultSessionSettings;
+    private Button clearAllGUISettings;
+    private Button clearAllSettingsNo;
+    private Button clearAllSettingsYes;
+
     private int configHeight = 0;
 
     private int osPadding = 0;
@@ -794,10 +801,22 @@ class ConfigSelector {
 
         isVisible = false;
 
-        configOptions = new ArrayList<Button>();
-        addConfigButtons();
+        int buttonNumber = 0;
+        createExpertModeButton("expertMode", "Turn Expert Mode On", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createSaveSettingsButton("saveSessionSettings", "Save", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createLoadSettingsButton("loadSessionSettings", "Load", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createDefaultSettingsButton("defaultSessionSettings", "Default", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createClearAllSettingsButton("clearAllGUISettings", "Clear All", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createClearSettingsNoButton("clearAllSettingsNo", "No", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createClearSettingsYesButton("clearAllSettingsYes", "Yes", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
 
-        buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
+        //buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
     }
 
     void update() {
@@ -812,13 +831,23 @@ class ConfigSelector {
             fill(57, 128, 204); //bg
             rect(x, y, w, h);
 
+            clearAllGUISettings.setVisible(true);
+
             //configOptions.get(0).draw();
             if (systemMode == SYSTEMMODE_POSTINIT) {
+                /*
                 for (int i = 0; i < 4; i++) {
                     //configOptions.get(i).draw();
                 }
+                */
+                saveSessionSettings.setVisible(true);
+                loadSessionSettings.setVisible(true);
+                defaultSessionSettings.setVisible(true);
             }
             //configOptions.get(4).draw();
+
+            clearAllSettingsYes.setVisible(clearAllSettingsPressed);
+            clearAllSettingsNo.setVisible(clearAllSettingsPressed);
             if (clearAllSettingsPressed) {
                 int fontSize = 16;
                 textFont(p2, fontSize);
@@ -834,6 +863,8 @@ class ConfigSelector {
             rect(x+w-(topNav.settingsButton.getWidth()-1), y, (topNav.settingsButton.getWidth()-1), 1);
 
             popStyle();
+
+            settings_cp5.draw();
         }
     }
 
@@ -869,7 +900,9 @@ class ConfigSelector {
                     }
                 }
                 //resize the height of the settings dropdown
+                /* FIX ME 
                 h = margin*(configOptions.size()-4) + b_h*(configOptions.size()-1);
+                */
                 clearAllSettingsPressed = false;
             } else {
                 //the very convoluted way of unlocking all controllers of a single controlP5 instance...
@@ -884,6 +917,82 @@ class ConfigSelector {
             h = margin*2 + b_h;
             clearAllSettingsPressed = false;
         }
+    }
+
+    private void createExpertModeButton(String name, String text, int _x, int _y, int _w, int _h) {
+        expertMode = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        expertMode.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        expertMode.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
+    }
+
+    private void createSaveSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+        saveSessionSettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        saveSessionSettings.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        saveSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
+    }
+
+    private void createLoadSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+        loadSessionSettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        loadSessionSettings.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        loadSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
+    }
+
+     private void createDefaultSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+        defaultSessionSettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        defaultSessionSettings.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        defaultSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
+    }
+
+     private void createClearAllSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+        clearAllGUISettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        clearAllGUISettings.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        clearAllGUISettings.setDescription("This will clear all user settings and playback history. You will be asked to confirm.");
+    }
+
+     private void createClearSettingsNoButton(String name, String text, int _x, int _y, int _w, int _h) {
+        clearAllSettingsNo = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        clearAllSettingsNo.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+    }
+
+     private void createClearSettingsYesButton(String name, String text, int _x, int _y, int _w, int _h) {
+        clearAllSettingsYes = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        clearAllSettingsYes.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                toggleVisibility();
+            }
+        });
+        clearAllSettingsYes.setDescription("Clicking 'Yes' will delete all user settings and stop the session if running.");
     }
 
     void addConfigButtons() {
@@ -953,6 +1062,8 @@ class ConfigSelector {
         int _padding = (systemMode == SYSTEMMODE_POSTINIT) ? -3 : 3;
         x = width - 70*multiplier - _padding;
         int dx = oldX - x;
+
+        /*
         buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
         if (systemMode == SYSTEMMODE_POSTINIT) {
             for (int i = 0; i < configOptions.size(); i++) {
@@ -969,18 +1080,20 @@ class ConfigSelector {
                 //configOptions.get(t[i]).setPosition(configOptions.get(t[i]).getPosition()[0] - dx, newY);
             }
         }
+        */
+
         //println("TopNav: ConfigSelector: Button Positions Updated");
     }
 
     public void toggleExpertMode(boolean b) {
         if (b) {
-            configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode Off");
-            configOptions.get(0).setColorBackground(BUTTON_EXPERTPURPLE);
+            expertMode.getCaptionLabel().setText("Turn Expert Mode Off");
+            expertMode.setColorBackground(BUTTON_EXPERTPURPLE);
             println("LoadGUISettings: Expert Mode On");
             settings.expertModeToggle = true;
         } else {
-            configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode On");
-            configOptions.get(0).setColorBackground(BUTTON_NOOBGREEN);
+            expertMode.getCaptionLabel().setText("Turn Expert Mode On");
+            expertMode.setColorBackground(BUTTON_NOOBGREEN);
             println("LoadGUISettings: Expert Mode Off");
             settings.expertModeToggle = false;
         }
