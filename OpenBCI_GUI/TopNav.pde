@@ -766,7 +766,7 @@ class ConfigSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean clearAllSettingsPressed;
     boolean isVisible;
-    ArrayList<Button_obci> configOptions;
+    ArrayList<Button> configOptions;
     int configHeight = 0;
     color newGreen = color(114,204,171);
     color expertPurple = color(135,95,154);
@@ -791,7 +791,7 @@ class ConfigSelector {
 
         isVisible = false;
 
-        configOptions = new ArrayList<Button_obci>();
+        configOptions = new ArrayList<Button>();
         addConfigButtons();
 
         buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
@@ -812,17 +812,17 @@ class ConfigSelector {
             //configOptions.get(0).draw();
             if (systemMode == SYSTEMMODE_POSTINIT) {
                 for (int i = 0; i < 4; i++) {
-                    configOptions.get(i).draw();
+                    //configOptions.get(i).draw();
                 }
             }
-            configOptions.get(4).draw();
+            //configOptions.get(4).draw();
             if (clearAllSettingsPressed) {
                 int fontSize = 16;
                 textFont(p2, fontSize);
                 fill(255);
                 text("Are You Sure?", x + margin, y + margin*(buttonSpacer + osPadding) + b_h*(buttonSpacer-1) + osPadding2);
-                configOptions.get(configOptions.size()-2).draw();
-                configOptions.get(configOptions.size()-1).draw();
+                //configOptions.get(configOptions.size()-2).draw();
+                //configOptions.get(configOptions.size()-1).draw();
             }
 
             fill(57, 128, 204);
@@ -838,38 +838,6 @@ class ConfigSelector {
     }
 
     void mousePressed() {
-        //only allow button interactivity if isVisible==true
-        if (isVisible) {
-            for (int i = 0; i < configOptions.size(); i++) {
-                //Allow interaction with all settings buttons after init
-                if (systemMode == SYSTEMMODE_POSTINIT) {
-                    if (i >= 0 && i < 5) {
-                        if (configOptions.get(i).isMouseHere()) {
-                            configOptions.get(i).setIsActive(true);
-                            //println("TopNav: Settings: Button Pressed");
-                        }
-                    } else if (i == 5 || i == 6){
-                        if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
-                            configOptions.get(i).setIsActive(true);
-                            //println("TopNav: ClearSettings: AreYouSure? Button Pressed");
-                        }
-                    }
-                //Before system start, Only allow interaction with "Expert Mode" and "Clear All"
-                } else if (systemMode == SYSTEMMODE_PREINIT) {
-                    if (i == 4) {
-                        if (configOptions.get(i).isMouseHere()) {
-                            configOptions.get(i).setIsActive(true);
-                            //println("TopNav: Settings: Clear Settings Pressed");
-                        }
-                    } else if (i == 5 || i == 6){
-                        if (configOptions.get(i).isMouseHere() && clearAllSettingsPressed) {
-                            configOptions.get(i).setIsActive(true);
-                            //println("TopNav: ClearSettings: AreYouSure? Button Pressed");
-                        }
-                    }
-                }
-            }
-        }
     }
 
     void mouseReleased() {
@@ -879,50 +847,6 @@ class ConfigSelector {
                 toggleVisibility();
                 clearAllSettingsPressed = false;
             }
-            for (int i = 0; i < configOptions.size(); i++) {
-                if (configOptions.get(i).isMouseHere() && configOptions.get(i).isActive()) {
-                    int configSelected = i;
-                    configOptions.get(i).setIsActive(false);
-                    if (configSelected == 0) { //If expert mode toggle button is pressed...
-                        if (configOptions.get(0).getButtonText().equals("Turn Expert Mode On")) {
-                            configOptions.get(0).setString("Turn Expert Mode Off");
-                            configOptions.get(0).setColorNotPressed(expertPurple);
-                            println("TopNav: Expert Mode On");
-                            output("Expert Mode ON: All keyboard shortcuts and features are enabled!");
-                            settings.expertModeToggle = true;
-                        } else {
-                            configOptions.get(0).setString("Turn Expert Mode On");
-                            configOptions.get(0).setColorNotPressed(newGreen);
-                            println("TopNav: Expert Mode Off");
-                            output("Expert Mode OFF: Use spacebar to start/stop the data stream.");
-                            settings.expertModeToggle = false;
-                        }
-                    } else if (configSelected == 1) { ////Save Button
-                        settings.saveButtonPressed();
-                    } else if (configSelected == 2) { ////Load Button
-                        settings.loadButtonPressed();
-                    } else if (configSelected == 3) { ////Default Button
-                        settings.defaultButtonPressed();
-                    } else if (configSelected == 4) { ///ClearAllSettings Button
-                        clearAllSettingsPressed = true;
-                        //expand the height of the dropdown
-                        h = margin*(buttonSpacer+2) + b_h*(buttonSpacer+1);
-                    } else if (configSelected == 5 && clearAllSettingsPressed) {
-                        //Do nothing because the user clicked Are You Sure?->No
-                        clearAllSettingsPressed = false;
-                    } else if (configSelected == 6 && clearAllSettingsPressed) {
-                        //User has selected Are You Sure?->Yes
-                        settings.clearAll();
-                        clearAllSettingsPressed = false;
-                        //Stop the system if the user clears all settings
-                        if (systemMode == SYSTEMMODE_POSTINIT) {
-                            haltSystem();
-                        }
-                    }
-                    //shut configSelector if something other than clear settings was pressed
-                    if (!clearAllSettingsPressed) toggleVisibility();
-                } //end case mouseHere && Active
-            } //end for all configOptions loop
         }
     }
 
@@ -959,6 +883,9 @@ class ConfigSelector {
     }
 
     void addConfigButtons() {
+
+
+        /*
         //Customize initial button appearance here
         //setup button 0 -- Expert Mode Toggle Button
         int buttonNumber = 0;
@@ -1012,6 +939,7 @@ class ConfigSelector {
         tempConfigButton.setFont(p5, 12);
         tempConfigButton.setHelpText("Clicking 'Yes' will delete all user settings and stop the session if running.");
         configOptions.add(tempConfigButton);
+        */
     }
 
     void updateConfigButtonPositions() {
@@ -1024,18 +952,17 @@ class ConfigSelector {
         buttonSpacer = (systemMode == SYSTEMMODE_POSTINIT) ? configOptions.size() : configOptions.size() - 4;
         if (systemMode == SYSTEMMODE_POSTINIT) {
             for (int i = 0; i < configOptions.size(); i++) {
-                configOptions.get(i).setX(x + multiplier*2);
                 int spacer = (i > configOptions.size() - 3) ? 1 : 0;
                 int newY = y + margin*(i+spacer+1) + b_h*(i+spacer);
-                configOptions.get(i).setY(newY);
+                configOptions.get(i).setPosition(x + multiplier*2, newY);
             }
         } else if (systemMode < SYSTEMMODE_POSTINIT) {
             int[] t = {4, 5, 6}; //button numbers
             for (int i = 0; i < t.length; i++) {
-                configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
+                //configOptions.get(t[i]).setX(configOptions.get(t[i]).but_x - dx);
                 int spacer = (t[i] > 4) ? i + 1 : i;
                 int newY = y + margin*(spacer+1) + b_h*(spacer);
-                configOptions.get(t[i]).setY(newY);
+                configOptions.get(t[i]).setPosition(configOptions.get(t[i]).getPosition()[0] - dx, newY);
             }
         }
         //println("TopNav: ConfigSelector: Button Positions Updated");
@@ -1043,13 +970,13 @@ class ConfigSelector {
 
     public void toggleExpertMode(boolean b) {
         if (b) {
-            configOptions.get(0).setString("Turn Expert Mode Off");
-            configOptions.get(0).setColorNotPressed(expertPurple);
+            configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode Off");
+            configOptions.get(0).setColorBackground(expertPurple);
             println("LoadGUISettings: Expert Mode On");
             settings.expertModeToggle = true;
         } else {
-            configOptions.get(0).setString("Turn Expert Mode On");
-            configOptions.get(0).setColorNotPressed(newGreen);
+            configOptions.get(0).getCaptionLabel().setText("Turn Expert Mode On");
+            configOptions.get(0).setColorBackground(newGreen);
             println("LoadGUISettings: Expert Mode Off");
             settings.expertModeToggle = false;
         }
@@ -1061,7 +988,7 @@ class TutorialSelector {
     int x, y, w, h, margin, b_w, b_h;
     boolean isVisible;
 
-    ArrayList<Button_obci> tutorialOptions; //
+    ArrayList<Button> tutorialOptions; //
 
     TutorialSelector() {
         w = 180;
@@ -1076,7 +1003,7 @@ class TutorialSelector {
 
         isVisible = false;
 
-        tutorialOptions = new ArrayList<Button_obci>();
+        tutorialOptions = new ArrayList<Button>();
         addTutorialButtons();
     }
 
@@ -1098,9 +1025,12 @@ class TutorialSelector {
             fill(31, 69, 110); //bg
             rect(x, y, w, h);
 
+
+            /*
             for (int i = 0; i < tutorialOptions.size(); i++) {
                 tutorialOptions.get(i).draw();
             }
+            */
 
             fill(OPENBCI_BLUE);
             // fill(177, 184, 193);
@@ -1115,14 +1045,6 @@ class TutorialSelector {
     }
 
     void mousePressed() {
-        //only allow button interactivity if isVisible==true
-        if (isVisible) {
-            for (int i = 0; i < tutorialOptions.size(); i++) {
-                if (tutorialOptions.get(i).isMouseHere()) {
-                    tutorialOptions.get(i).setIsActive(true);
-                }
-            }
-        }
     }
 
     void mouseReleased() {
@@ -1131,17 +1053,6 @@ class TutorialSelector {
             if ((mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) && !topNav.tutorialsButton.isInside()) {
                 toggleVisibility();
                 //topNav.configButton.setIgnoreHover(false);
-            }
-            for (int i = 0; i < tutorialOptions.size(); i++) {
-                if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {
-                    int tutorialSelected = i+1;
-                    tutorialOptions.get(i).setIsActive(false);
-                    tutorialOptions.get(i).goToURL();
-                    println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
-                    //output("Help button [" + tutorialSelected + "] selected.");
-                    toggleVisibility(); //shut layoutSelector if something is selected
-                    //open corresponding link
-                }
             }
         }
     }
@@ -1152,7 +1063,7 @@ class TutorialSelector {
         x = width - w - 3;
         int dx = oldX - x;
         for (int i = 0; i < tutorialOptions.size(); i++) {
-            tutorialOptions.get(i).setX(tutorialOptions.get(i).but_x - dx);
+            //tutorialOptions.get(i).setX(tutorialOptions.get(i).getPosition()[0] - dx);
         }
     }
 
@@ -1179,6 +1090,20 @@ class TutorialSelector {
 
     void addTutorialButtons() {
 
+        /*
+        for (int i = 0; i < tutorialOptions.size(); i++) {
+            if (tutorialOptions.get(i).isMouseHere() && tutorialOptions.get(i).isActive()) {
+                int tutorialSelected = i+1;
+                tutorialOptions.get(i).setIsActive(false);
+                tutorialOptions.get(i).goToURL();
+                println("Attempting to use your default web browser to open " + tutorialOptions.get(i).myURL);
+                //output("Help button [" + tutorialSelected + "] selected.");
+                toggleVisibility(); //shut layoutSelector if something is selected
+                //open corresponding link
+            }
+        }
+        */
+        /*
         //FIRST ROW
 
         //setup button 1 -- full screen
@@ -1215,5 +1140,6 @@ class TutorialSelector {
         tempTutorialButton.setFont(p5, 12);
         tempTutorialButton.setURL("https://openbci.com/forum/");
         tutorialOptions.add(tempTutorialButton);
+        */
     }
 }
