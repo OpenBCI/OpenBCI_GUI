@@ -306,6 +306,10 @@ class TopNav {
         updateGuiVersionButton.setPosition(shopButton.getPosition()[0] - shopButton.getWidth() - PAD_3, PAD_3);
         settingsButton.setPosition(width - settingsButton.getWidth() - PAD_3, SUBNAV_BUT_Y);
 
+        toggleDataStreamingButton.setPosition(PAD_3, SUBNAV_BUT_Y);
+        filtNotchButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
+        filtBPButton.setPosition(PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y);
+
         if (systemMode == SYSTEMMODE_POSTINIT) {
             layoutButton.setPosition(width - 3 - layoutButton.getWidth(), SUBNAV_BUT_Y);
             settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, SUBNAV_BUT_Y);
@@ -594,6 +598,11 @@ class TopNav {
                 nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             }
         }
+    }
+
+    public void resetStartStopButton() {
+        toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
+        toggleDataStreamingButton.setColorBackground(isSelected_color);
     }
 
     private void incrementFilterConfiguration() {

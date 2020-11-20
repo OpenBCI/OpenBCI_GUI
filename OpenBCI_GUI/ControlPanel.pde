@@ -2798,6 +2798,7 @@ class InitBox {
             //if system is already active ... stop session and flip button state back
             outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
             setInitSessionButtonText("START SESSION");
+            topNav.setLockTopLeftSubNavCp5Objects(false); //Unlock top left subnav buttons
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());

@@ -722,6 +722,8 @@ void haltSystem() {
         
         stopRunning();  //stop data transfer
 
+        topNav.resetStartStopButton();
+
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
         if (systemMode == SYSTEMMODE_POSTINIT && 
