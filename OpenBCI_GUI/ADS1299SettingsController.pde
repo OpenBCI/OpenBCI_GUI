@@ -406,7 +406,7 @@ class ADS1299SettingsController {
                 } else {
                     outputError("[ExpertMode] Failure sending command to board: " + text);
                 }
-                //println("ADSSettingsController: Response == " + res.getValue());
+                println("ADSSettingsController: Response == " + res.getValue());
             }
         });
 
