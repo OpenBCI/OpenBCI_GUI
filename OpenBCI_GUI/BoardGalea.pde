@@ -80,8 +80,8 @@ class GaleaDefaultSettings extends ADS1299Settings {
             case DEMO:
                 Arrays.fill(values.gain, 0, 8, Gain.X2);
                 Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X24;
-                values.gain[14] = Gain.X24;
+                values.gain[9] = Gain.X12;
+                values.gain[14] = Gain.X12;
 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
