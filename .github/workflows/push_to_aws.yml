@@ -47,6 +47,7 @@ jobs:
         sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. ~/sketchbook/libraries/
         echo ~/sketchbook/libraries/
         ls ~/sketchbook/libraries/
+        echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3
         ls ${GITHUB_WORKSPACE}/temp/processing-3.5.3
     - name: Processing MacOS
       if: matrix.os == 'macos-10.15'
