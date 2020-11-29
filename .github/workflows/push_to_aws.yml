@@ -49,6 +49,7 @@ jobs:
         ls ~/sketchbook/libraries/
         echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3
         ls ${GITHUB_WORKSPACE}/temp/processing-3.5.3
+        bash ${GITHUB_WORKSPACE}/temp/processing-3.5.3/install.sh
     - name: Processing MacOS
       if: matrix.os == 'macos-10.15'
       run: |
