@@ -38,18 +38,20 @@ jobs:
       if: matrix.os == 'ubuntu-18.04'
       run: |
         sudo -H mkdir $GITHUB_WORKSPACE/temp
-        sudo -H cd $GITHUB_WORKSPACE/temp
+        cd $GITHUB_WORKSPACE/temp
         sudo -H curl -O -L --insecure https://download.processing.org/processing-3.5.3-linux64.tgz
         sudo -H tar -xzvf processing-3.5.3-linux64.tgz
         echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3>>$GITHUB_PATH
         sudo -H echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3>>$GITHUB_PATH
         sudo -H mkdir -p $HOME/sketchbook/libraries/
         sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. ~/sketchbook/libraries/
+        echo ~/sketchbook/libraries/
+        ls ~/sketchbook/libraries/
     - name: Processing MacOS
       if: matrix.os == 'macos-10.15'
       run: |
         sudo -H mkdir $GITHUB_WORKSPACE/temp
-        sudo -H cd $GITHUB_WORKSPACE/temp
+        cd $GITHUB_WORKSPACE/temp
         sudo -H curl -O -L --insecure https://download.processing.org/processing-3.5.3-macosx.zip
         sudo -H unzip processing-3.5.3-macosx.zip
         sudo -H mv Processing.app /Applications/Processing.app
@@ -60,10 +62,12 @@ jobs:
         sudo -H python3 -m pip install dmgbuild
         sudo -H mkdir -p $HOME/sketchbook/libraries/
         sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/sketchbook/libraries/
+        echo ~/sketchbook/libraries/
+        ls ~/sketchbook/libraries/
     - name: Run Make Release Script
       if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18.04')
       run: |
-        sudo -H cd $GITHUB_WORKSPACE
+        cd $GITHUB_WORKSPACE
         sudo -H python3 $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
         sudo -H GUI_COMMIT_TIME=`cat temp/timestamp.txt`
         sudo -H GUI_VERSION_STRING=`cat temp/versionstring.txt`
