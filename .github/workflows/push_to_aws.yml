@@ -31,7 +31,7 @@ jobs:
     - name: MacOS Signing
       if: matrix.os == 'macos-10.15'
       run: |
-        openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc_new -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
+        openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc_new2 -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
         bash release_script/mac_only/add-osx-cert.sh
       env:
         MAC_DECRYPT_KEY: ${{ secrets.MAC_DECRYPT_KEY }}
@@ -52,7 +52,7 @@ jobs:
         echo ~/sketchbook/libraries/
         ls ~/sketchbook/libraries/
     - name: Run Make Release Script
-      if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18.04')
+      if: matrix.os == 'macos-10.15'
       run: |
         cd $GITHUB_WORKSPACE
         python3 $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
