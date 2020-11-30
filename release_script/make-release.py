@@ -45,7 +45,7 @@ def custom_check_call(args):
     process = subprocess.Popen(args, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
     try:
         outs, errs = process.communicate(timeout = 1800)
-    except TimeoutExpired:
+    except subprocess.TimeoutExpired:
         process.kill()
         outs, errs = proc.communicate()
         print('stdout: %s' % outs)
