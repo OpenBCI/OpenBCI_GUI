@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       max-parallel: 4
       matrix:
-        os: [ubuntu-18.04, macos-10.15]
+        os: [macos-10.15]
 
     steps:
     - name: Clone Repository
@@ -27,68 +27,43 @@ jobs:
         sudo -H python3 -m pip install requests
         sudo -H python3 -m pip install beautifulsoup4
         sudo -H python3 -m pip install awscli
+        sudo -H python3 -m pip install dmgbuild
     - name: MacOS Signing
       if: matrix.os == 'macos-10.15'
       run: |
-        sudo -H openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc_new -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
-        sudo -H bash release_script/mac_only/add-osx-cert.sh
+        openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc_new -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
+        bash release_script/mac_only/add-osx-cert.sh
       env:
         MAC_DECRYPT_KEY: ${{ secrets.MAC_DECRYPT_KEY }}
-    - name: Processing Linux
-      if: matrix.os == 'ubuntu-18.04'
-      run: |
-        sudo -H mkdir $GITHUB_WORKSPACE/temp
-        cd $GITHUB_WORKSPACE/temp
-        sudo -H curl -O -L --insecure https://download.processing.org/processing-3.5.3-linux64.tgz
-        sudo -H tar -xzvf processing-3.5.3-linux64.tgz
-        echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3>>$GITHUB_PATH
-        sudo -H echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3>>$GITHUB_PATH
-        sudo -H mkdir -p ~/sketchbook/libraries/
-        sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. ~/sketchbook/libraries/
-        echo ~/sketchbook/libraries/
-        ls ~/sketchbook/libraries/
-        echo ${GITHUB_WORKSPACE}/temp/processing-3.5.3
-        ls ${GITHUB_WORKSPACE}/temp/processing-3.5.3
-        bash ${GITHUB_WORKSPACE}/temp/processing-3.5.3/install.sh
     - name: Processing MacOS
       if: matrix.os == 'macos-10.15'
       run: |
-        sudo -H mkdir $GITHUB_WORKSPACE/temp
+        mkdir $GITHUB_WORKSPACE/temp
         cd $GITHUB_WORKSPACE/temp
-        sudo -H curl -O -L --insecure https://download.processing.org/processing-3.5.3-macosx.zip
-        sudo -H unzip processing-3.5.3-macosx.zip
-        sudo -H mv Processing.app /Applications/Processing.app
-        sudo -H echo ${GITHUB_WORKSPACE}/release_script/mac_only>>$GITHUB_PATH
-        sudo -H chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
-        sudo -H mkdir -p ~/Documents/Processing/libraries/
-        sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/Documents/Processing/libraries/
-        sudo -H python3 -m pip install dmgbuild
-        sudo -H mkdir -p ~/sketchbook/libraries/
-        sudo -H cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/sketchbook/libraries/
+        curl -O -L --insecure https://download.processing.org/processing-3.5.3-macosx.zip
+        unzip processing-3.5.3-macosx.zip
+        mv Processing.app /Applications/Processing.app
+        echo ${GITHUB_WORKSPACE}/release_script/mac_only>>$GITHUB_PATH
+        chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
+        mkdir -p ~/Documents/Processing/libraries/
+        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/Documents/Processing/libraries/
+        mkdir -p ~/sketchbook/libraries/
+        cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/sketchbook/libraries/
         echo ~/sketchbook/libraries/
         ls ~/sketchbook/libraries/
     - name: Run Make Release Script
       if: (matrix.os == 'macos-10.15') || (matrix.os == 'ubuntu-18.04')
       run: |
         cd $GITHUB_WORKSPACE
-        sudo -H python3 $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
-        sudo -H GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-        sudo -H GUI_VERSION_STRING=`cat temp/versionstring.txt`
+        python3 $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
+        GUI_COMMIT_TIME=`cat temp/timestamp.txt`
+        GUI_VERSION_STRING=`cat temp/versionstring.txt`
     - name: MacOS Publish
       if: matrix.os == 'macos-10.15'
       run: |
-        sudo -H aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-        sudo -H aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-        sudo -H aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    - name: Linux Publish
-      if: matrix.os == 'ubuntu-18.04'
-      run: |
-        sudo -H aws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
-        sudo -H aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
-        sudo -H aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
+        suaws s3 rm s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+        aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/${GUI_VERSION_STRING}_${GUI_COMMIT_TIME}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+        aws s3 cp $TRAVIS_BUILD_DIR/. s3://openbci-gui/${GITHUB_REF}/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
