@@ -552,9 +552,13 @@ class TopNav {
         updateGuiVersionButton = createTNButton("updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         //Attempt to compare local and remote GUI versions when TopNav is instantiated
         //This will also set the description/help-text for this cp5 button
-        final boolean upToDate = guiVersionIsUpToDate();
+        final Boolean upToDate = guiVersionIsUpToDate();
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                if (upToDate == null) {
+                    return;
+                }
+
                 if (!upToDate) {
                     openURLInBrowser(guiLatestReleaseLocation);
                     outputInfo("Update GUI: Opening latest Github release page using default browser");
