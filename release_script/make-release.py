@@ -47,7 +47,7 @@ def custom_check_call(args):
         outs, errs = process.communicate(timeout = 1800)
     except subprocess.TimeoutExpired:
         process.kill()
-        outs, errs = proc.communicate()
+        outs, errs = process.communicate()
         print('stdout: %s' % outs)
         print('stderr: %s' % errs)
         raise subprocess.CalledProcessError(process.returncode, args)
