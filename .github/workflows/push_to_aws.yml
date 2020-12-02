@@ -31,7 +31,8 @@ jobs:
     - name: MacOS Signing
       if: matrix.os == 'macos-10.15'
       run: |
-        openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc_new2 -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
+        openssl enc -aes-256-cbc -a -d -in ./release_script/mac_only/Certificates.p12.enc -out ./release_script/mac_only/Certificates.p12 -k $MAC_DECRYPT_KEY
+        md5 ./release_script/mac_only/Certificates.p12
         bash release_script/mac_only/add-osx-cert.sh
       env:
         MAC_DECRYPT_KEY: ${{ secrets.MAC_DECRYPT_KEY }}
