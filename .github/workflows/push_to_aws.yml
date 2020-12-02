@@ -52,6 +52,11 @@ jobs:
         cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/ ~/sketchbook/libraries/
         echo ~/sketchbook/libraries/
         ls ~/sketchbook/libraries/
+    - name: Run Make Release Script - TEST
+      if: matrix.os == 'macos-10.15'
+      run: |
+        cd $GITHUB_WORKSPACE
+        $GITHUB_WORKSPACE/release_script/mac_only/processing-java --sketch=$GITHUB_WORKSPACE/OpenBCI_GUI/ --output=$GITHUB_WORKSPACE/OpenBCI_GUI/OpenBCI_GUIapplication.macosx --export
     - name: Run Make Release Script
       if: matrix.os == 'macos-10.15'
       run: |
