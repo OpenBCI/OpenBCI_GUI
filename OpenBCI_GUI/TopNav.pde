@@ -63,7 +63,7 @@ class TopNav {
         topNav_cp5.setAutoDraw(false);
 
         //TOP LEFT OF GUI
-        createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H + PAD_3, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
 
         //TOP RIGHT OF GUI, FROM LEFT<---Right
         createDebugButton(" ", width - DEBUG_BUT_W - PAD_3, PAD_3, DEBUG_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
