@@ -820,7 +820,9 @@ class ChannelBar {
             public void controlEvent(CallbackEvent theEvent) {
                 println("[" + channelString + "] onOff released");
                 currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
-                w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
+                if (currentBoard instanceof ADS1299SettingsBoard) {
+                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
+                }
             }
         });
         onOffButton.setDescription("Click to toggle channel " + channelString + ".");

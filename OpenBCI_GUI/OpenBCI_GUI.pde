@@ -64,8 +64,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.2-beta.3";
-String localGUIVersionDate = "November 2020";
+String localGUIVersionString = "v5.0.2-beta.4";
+String localGUIVersionDate = "December 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -281,6 +281,9 @@ DirectoryManager directoryManager;
 
 final int navBarHeight = 32;
 TopNav topNav;
+
+FFT[] fftBuff = new FFT[nchan];    //from the minim library
+boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 //------------------------------------------------------------------------
 //                       Global Functions
