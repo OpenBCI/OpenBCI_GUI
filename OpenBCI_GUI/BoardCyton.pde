@@ -318,6 +318,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean canDeactivateAccelerometer() {
+        //Accelerometer is on by default for Cyton, and can not be disabled using a command.
+        //Disabling another Cyton Aux mode (ex. Analog Read) will default the board back to Accelerometer mode.
         return false;
     }
 
