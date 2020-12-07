@@ -613,6 +613,9 @@ void initSystem() {
         //After TopNav has been instantiated, default to Expert mode for Galea
         topNav.configSelector.toggleExpertMode(true);
     }
+    
+    //Make sure topNav buttons draw in the correct spot
+    topNav.screenHasBeenResized(width, height);
 
     midInit = false;
 } //end initSystem

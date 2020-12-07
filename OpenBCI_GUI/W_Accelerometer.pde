@@ -71,7 +71,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
 
-        createAccelModeButton("accelModeButton", "Accel Mode X", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -105,22 +105,15 @@ class W_Accelerometer extends Widget {
         //ignore top left button interaction when widgetSelector dropdown is active
         lockElementOnOverlapCheck(accelModeButton);
         
-        updateOnOffButton();
+        if(!accelBoard.canDeactivateAccelerometer() && !(currentBoard instanceof BoardCyton)) {
+            accelModeButton.getCaptionLabel().setText("Accel. On");
+            accelModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+            accelModeButton.setLock(true);
+        }
     }
 
     public float getLastAccelVal(int val) {
         return lastAccelVals[val];
-    }
-
-    private void updateOnOffButton() {	  
-        if (accelBoard.isAccelerometerActive()) {	
-            accelModeButton.getCaptionLabel().setText("Turn Accel. Off");
-            accelModeButton.setOn();
-        }
-        else {
-            accelModeButton.getCaptionLabel().setText("Turn Accel. On");
-            accelModeButton.setOff();
-        }
     }
 
     void draw() {
@@ -195,15 +188,24 @@ class W_Accelerometer extends Widget {
                 if (!accelBoard.isAccelerometerActive()) {
                     accelBoard.setAccelerometerActive(true);
                     output("Starting to read accelerometer");
-                } else {                    
-                    accelBoard.setAccelerometerActive(false);
+                    accelModeButton.getCaptionLabel().setText("Turn Accel. Off");
+                    w_digitalRead.toggleDigitalReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
+                    w_analogRead.toggleAnalogReadButton(false);
+                } else {
+                    if (accelBoard.canDeactivateAccelerometer()) {
+                        accelBoard.setAccelerometerActive(false);
+                        accelModeButton.getCaptionLabel().setText("Turn Accel. On");
+                    } else {
+                        accelModeButton.setOn();
+                    }
                 }
             }
         });
-        accelModeButton.setDescription("Click to activate/deactivate the accelerometer!");
-        if(!accelBoard.canDeactivateAccelerometer()) {
-            accelModeButton.setLock(true);
-            accelModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+        accelModeButton.setDescription("Click to activate/deactivate the accelerometer for capable boards.");
+        if (accelBoard.canDeactivateAccelerometer() || (currentBoard instanceof BoardCyton)) {
+            //Set button switch to On of it can be toggled
+            accelModeButton.setOn();
         }
     }
 
@@ -239,8 +241,17 @@ class W_Accelerometer extends Widget {
         strokeWeight(1);
     }
 
+    //This public method allows Analog, Digital, and Pulse Widgets to turn off Accelerometer display
+    //Happens only when buttons can be toggled
     public void accelBoardSetActive(boolean _value) {
         accelBoard.setAccelerometerActive(_value);
+        String s = _value ? "Turn Accel. Off" : "Turn Accel. On";
+        accelModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            accelModeButton.setOn();
+        } else {
+            accelModeButton.setOff();
+        }
     }
 
 };//end W_Accelerometer class

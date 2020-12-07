@@ -102,18 +102,10 @@ class W_AnalogRead extends Widget {
         //ignore top left button interaction when widgetSelector dropdown is active
         lockElementOnOverlapCheck(analogModeButton);
 
-        updateOnOffButton();
-    }
-
-    private void updateOnOffButton() {	
-        if (!analogBoard.canDeactivateAnalog()) { 
-            if (analogBoard.isAnalogActive()) {	
-                analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
-                analogModeButton.setOn();
-            } else {
-                analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
-                analogModeButton.setOff();
-            }
+        if (!analogBoard.canDeactivateAnalog()) {
+            analogModeButton.setLock(true);
+            analogModeButton.getCaptionLabel().setText("Analog Read On");
+            analogModeButton.setColorBackground(BUTTON_LOCKED_GREY);
         }
     }
 
@@ -164,16 +156,23 @@ class W_AnalogRead extends Widget {
         analogModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!analogBoard.isAnalogActive()) {
-                    analogBoard.setAnalogActive(true);
+                    analogBoard.setAnalogActive(true);  
+                    analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
                     if (selectedProtocol == BoardProtocol.WIFI) {
                         output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
                     } else {
                         output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
                     }
+                    w_pulsesensor.toggleAnalogReadButton(true);
+                    w_accelerometer.accelBoardSetActive(false);
+                    w_digitalRead.toggleDigitalReadButton(false);
                 } else {
                     analogBoard.setAnalogActive(false);
-                    w_accelerometer.accelBoardSetActive(true);
+                    analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
                     output("Starting to read accelerometer");
+                    w_accelerometer.accelBoardSetActive(true);
+                    w_digitalRead.toggleDigitalReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 }
             }
         });
@@ -182,9 +181,15 @@ class W_AnalogRead extends Widget {
             "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
             ;
         analogModeButton.setDescription(_helpText);
-        if (!analogBoard.canDeactivateAnalog()) {
-            analogModeButton.setLock(true);
-            analogModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+    }
+
+    public void toggleAnalogReadButton(boolean _value) {
+        String s = _value ? "Turn Analog Read Off" : "Turn Analog Read On";
+        analogModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            analogModeButton.setOn();
+        } else {
+            analogModeButton.setOff();
         }
     }
 };

@@ -17,6 +17,7 @@ class Widget{
     private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
     protected boolean dropdownIsActive = false;
+    private boolean previousDropdownIsActive = false;
     private boolean widgetSelectorIsActive = false;
 
     private ArrayList<NavBarDropdown> dropdowns;
@@ -283,7 +284,11 @@ class Widget{
     
     //For use with Cp5 Elements
     protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        c.setLock(dropdownIsActive);
+        if (dropdownIsActive != previousDropdownIsActive) {
+            //println(c.getName(), " lock == ", dropdownIsActive);
+            c.setLock(dropdownIsActive);
+            previousDropdownIsActive = dropdownIsActive;
+        }
     }
 };
 

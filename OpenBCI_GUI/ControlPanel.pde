@@ -2769,7 +2769,6 @@ class InitBox {
 
                 //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
                 midInit = true;
-                buttonHelpText.setVisible(false);
                 output("Attempting to Start Session..."); // Show this at the bottom of the GUI
                 println("initButtonPressed: Calling initSystem() after next draw()");
             }

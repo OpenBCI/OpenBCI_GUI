@@ -73,7 +73,7 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        createDigitalModeButton("digitalModeButton", "DIGITAL TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
+        createDigitalModeButton("digitalModeButton", "Turn Digital Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
     }
 
     public int getNumDigitalReads() {
@@ -91,16 +91,10 @@ class W_DigitalRead extends Widget {
         //ignore top left button interaction when widgetSelector dropdown is active
         lockElementOnOverlapCheck(digitalModeButton);
 
-        updateOnOffButton();
-    }
-
-    private void updateOnOffButton() {	
-        if (digitalBoard.isDigitalActive()) {	
-            digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
-            digitalModeButton.setOn();
-        } else {
-            digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");	
-            digitalModeButton.setOff();
+        if (!digitalBoard.canDeactivateDigital()) {
+            digitalModeButton.setLock(true);
+            digitalModeButton.getCaptionLabel().setText("Digital Read On");
+            digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
         }
     }
 
@@ -161,15 +155,22 @@ class W_DigitalRead extends Widget {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!digitalBoard.isDigitalActive()) {
                     digitalBoard.setDigitalActive(true);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
                     if (selectedProtocol == BoardProtocol.WIFI) {
                         output("Starting to read digital inputs on pin marked D11, D12 and D17");
                     } else {
                         output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                     }
+                    w_accelerometer.accelBoardSetActive(false);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 } else {
                     digitalBoard.setDigitalActive(false);
-                    w_accelerometer.accelBoardSetActive(true);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");
                     output("Starting to read accelerometer");
+                    w_accelerometer.accelBoardSetActive(true);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 }
             }
         });
@@ -178,9 +179,15 @@ class W_DigitalRead extends Widget {
             "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18."
             ;
         digitalModeButton.setDescription(_helpText);
-        if (!digitalBoard.canDeactivateDigital()) {
-            digitalModeButton.setLock(true);
-            digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+    }
+
+    public void toggleDigitalReadButton(boolean _value) {
+        String s = _value ? "Turn Digital Read Off" : "Turn Digital Read On";
+        digitalModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            digitalModeButton.setOn();
+        } else {
+            digitalModeButton.setOff();
         }
     }
 };
