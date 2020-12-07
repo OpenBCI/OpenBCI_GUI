@@ -297,8 +297,8 @@ class ADS1299SettingsController {
             .setColorValueLabel(color(0))       // text color
             .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
-            .setBackgroundColor(150)
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
+            .setBackgroundColor(OBJECT_BACKGROUND_GREY)
             .setSize(dropdownW, dropdownH)//temporary size
             .setBarHeight(dropdownH) //height of top/primary bar
             .setItemHeight(dropdownH) //height of all item/dropdown bars

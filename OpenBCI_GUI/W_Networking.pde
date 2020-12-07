@@ -589,7 +589,7 @@ class W_Networking extends Widget {
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
                 .setColorForeground(color(125))    // border color when not selected
-                .setColorActive(color(150, 170, 200))       // border color when selected
+                .setColorActive(BUTTON_PRESSED)       // border color when selected
                 // .setColorCursor(color(26,26,26))
 
                 .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
@@ -626,7 +626,7 @@ class W_Networking extends Widget {
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
                 .setColorForeground(color(125))    // border color when not selected
-                .setColorActive(color(150, 170, 200))       // border color when selected
+                .setColorActive(BUTTON_PRESSED)       // border color when selected
                 // .setColorCursor(color(26,26,26))
 
                 .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
@@ -663,7 +663,7 @@ class W_Networking extends Widget {
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             // .setColorCursor(color(26,26,26))
             .setSize(itemWidth,(_items.size()+1)*(navH-4))// + maxFreqList.size())
             .setBarHeight(navH-4) //height of top/primary bar
