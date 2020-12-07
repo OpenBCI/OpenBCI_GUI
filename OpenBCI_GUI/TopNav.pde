@@ -587,6 +587,11 @@ class TopNav {
         }
     }
 
+    public void destroySmoothingButton() {
+        topNav_cp5.remove("smoothingButton");
+        smoothingButton = null;
+    }
+
     private void incrementFilterConfiguration() {
         dataProcessing.incrementFilterConfiguration();
 
