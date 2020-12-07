@@ -242,7 +242,11 @@ final color BUTTON_PRESSED_DARKGREY = color(50);
 final color BUTTON_NOOBGREEN = color(114,204,171);
 final color BUTTON_EXPERTPURPLE = color(135,95,154);
 final color BUTTON_CAUTIONRED = color(214,100,100);
-final color OBJECT_BACKGROUND_GREY = color(150);
+final color OBJECT_BORDER_GREY = color(150);
+//Use the same colors for X,Y,Z throughout Accelerometer widget
+final color ACCEL_X_COLOR = TURN_OFF_RED;
+final color ACCEL_Y_COLOR = color(49, 113, 89);
+final color ACCEL_Z_COLOR = color(54, 87, 158);
 
 
 final int COLOR_SCHEME_DEFAULT = 1;

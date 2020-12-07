@@ -173,7 +173,7 @@ class W_DigitalRead extends Widget {
     }
 
     private void createDigitalModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
+        digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
         digitalModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!digitalBoard.isDigitalActive()) {

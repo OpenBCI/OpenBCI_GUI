@@ -382,6 +382,7 @@ class W_timeSeries extends Widget {
 
     private Button createHSCButton(String name, String text, int _x, int _y, int _w, int _h) {
         final Button myButton = createButton(tscp5, name, text, _x, _y, _w, _h);
+        myButton.setBorderColor(OBJECT_BORDER_GREY);
         myButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {    
                 println("HardwareSettings Toggle: " + !adsSettingsController.getIsVisible());

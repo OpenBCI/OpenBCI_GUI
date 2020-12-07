@@ -522,7 +522,7 @@ class W_Networking extends Widget {
     }
 
     void createStartButton() {
-        startButton = createButton(cp5_networking, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, p4, 14, TURN_ON_GREEN, BLACK);
+        startButton = createButton(cp5_networking, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, 0, p4, 14, TURN_ON_GREEN, BLACK, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
         startButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!networkActive) {
@@ -560,6 +560,7 @@ class W_Networking extends Widget {
 
     void createGuideButton() {
         guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        guideButton.setBorderColor(OBJECT_BORDER_GREY);
         guideButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 openURLInBrowser(networkingGuideURL);
@@ -571,6 +572,7 @@ class W_Networking extends Widget {
 
     void createDataOutputsButton() {
         dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        dataOutputsButton.setBorderColor(OBJECT_BORDER_GREY);
         dataOutputsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 openURLInBrowser(dataOutputsURL);

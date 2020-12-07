@@ -174,7 +174,7 @@ class W_AnalogRead extends Widget {
     }
 
     private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        analogModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
+        analogModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
         analogModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!analogBoard.isAnalogActive()) {

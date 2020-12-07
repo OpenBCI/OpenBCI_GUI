@@ -242,6 +242,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
         loadButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        loadButton.setBorderColor(OBJECT_BORDER_GREY);
+        loadButton.setDescription("Load hardware settings from file.");
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (currentBoard.isStreaming()) {
@@ -255,6 +257,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
         saveButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        saveButton.setBorderColor(OBJECT_BORDER_GREY);
+        saveButton.setDescription("Save hardware settings to file.");
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectOutput("Save settings to file", "storeHardwareSettings");
@@ -264,6 +268,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsSendButton(String name, String text, int _x, int _y, int _w, int _h) {
         sendButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        sendButton.setBorderColor(OBJECT_BORDER_GREY);
+        sendButton.setDescription("Send hardware settings to the board.");
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 
@@ -298,7 +304,7 @@ class ADS1299SettingsController {
             .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(OBJECT_BACKGROUND_GREY)
+            .setBackgroundColor(OBJECT_BORDER_GREY)
             .setSize(dropdownW, dropdownH)//temporary size
             .setBarHeight(dropdownH) //height of top/primary bar
             .setItemHeight(dropdownH) //height of all item/dropdown bars

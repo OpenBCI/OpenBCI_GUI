@@ -11,12 +11,6 @@
 //
 ////////////////////////////////////////////////////
 
-//Use the same colors for X,Y,Z throughout Accelerometer widget
-final color ACCEL_X_COLOR = TURN_OFF_RED;
-final color ACCEL_Y_COLOR = color(49, 113, 89);
-final color ACCEL_Z_COLOR = color(54, 87, 158);
-
-
 class W_Accelerometer extends Widget {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
@@ -200,7 +194,7 @@ class W_Accelerometer extends Widget {
     }
 
     private void createAccelModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        accelModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
+        accelModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
         accelModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!accelBoard.isAccelerometerActive()) {
