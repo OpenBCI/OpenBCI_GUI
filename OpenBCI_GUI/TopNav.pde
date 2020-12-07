@@ -610,9 +610,11 @@ class TopNav {
         }
     }
 
-    public void destroySmoothingButton() {
+    public void destroySmoothingGainButtons() {
         topNav_cp5.remove("smoothingButton");
+        topNav_cp5.remove("gainButton");
         smoothingButton = null;
+        gainButton = null;
     }
 
     private void incrementFilterConfiguration() {
