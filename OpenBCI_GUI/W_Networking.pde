@@ -559,7 +559,7 @@ class W_Networking extends Widget {
     }
 
     void createGuideButton() {
-        guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         guideButton.setBorderColor(OBJECT_BORDER_GREY);
         guideButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -571,7 +571,7 @@ class W_Networking extends Widget {
     }
 
     void createDataOutputsButton() {
-        dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, buttonsLightBlue, WHITE);
+        dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         dataOutputsButton.setBorderColor(OBJECT_BORDER_GREY);
         dataOutputsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {

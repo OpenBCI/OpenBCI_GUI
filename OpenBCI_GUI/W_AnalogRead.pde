@@ -27,18 +27,19 @@ class W_AnalogRead extends Widget {
     int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
     private boolean allowSpillover = false;
-    private boolean visible = true;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
     private int arInitialHorizScaleIndex = 0;
 
-    Button analogModeButton;
+    private Button analogModeButton;
 
     private AnalogCapableBoard analogBoard;
 
     W_AnalogRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        analogBoard = (AnalogCapableBoard)currentBoard;
 
         //Analog Read settings
         settings.arVertScaleSave = 5; //updates in VertScale_AR()
@@ -83,35 +84,23 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         }
 
-        createAnalogModeButton("analogModeButton", "ANALOG TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
-
-        analogBoard = (AnalogCapableBoard)currentBoard;
-    }
-
-    public boolean isVisible() {
-        return visible;
+        createAnalogModeButton("analogModeButton", "ANALOG TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public int getNumAnalogReads() {
         return numAnalogReadBars;
     }
 
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     void update() {
-        if(visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numAnalogReadBars; i++) {
-                analogReadBars[i].update();
-            }
-
-            //ignore top left button interaction when widgetSelector dropdown is active
-            lockElementOnOverlapCheck(analogModeButton);
+        //update channel bars ... this means feeding new EEG data into plots
+        for(int i = 0; i < numAnalogReadBars; i++) {
+            analogReadBars[i].update();
         }
+
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(analogModeButton);
 
         updateOnOffButton();
     }
@@ -119,26 +108,20 @@ class W_AnalogRead extends Widget {
     private void updateOnOffButton() {	
         if (analogBoard.isAnalogActive()) {	
             analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
-            analogModeButton.setLock(!analogBoard.canDeactivateAnalog());
-            if (!analogBoard.canDeactivateAnalog()) {
-                analogModeButton.setColorBackground(BUTTON_LOCKED_GREY);
-            }
+            analogModeButton.setOn();
         } else {
             analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
-            analogModeButton.setLock(false);
-            analogModeButton.setColorBackground(buttonsLightBlue);
+            analogModeButton.setOff();
         }
     }
 
     void draw() {
-        if(visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-            if (analogBoard.isAnalogActive()) {
-                for(int i = 0; i < numAnalogReadBars; i++) {
-                    analogReadBars[i].draw();
-                }
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        if (analogBoard.isAnalogActive()) {
+            for(int i = 0; i < numAnalogReadBars; i++) {
+                analogReadBars[i].draw();
             }
         }
     }
@@ -175,6 +158,7 @@ class W_AnalogRead extends Widget {
 
     private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
         analogModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        analogModeButton.setSwitch(true);
         analogModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!analogBoard.isAnalogActive()) {
@@ -186,6 +170,7 @@ class W_AnalogRead extends Widget {
                     }
                 } else {
                     analogBoard.setAnalogActive(false);
+                    w_accelerometer.accelBoardSetActive(true);
                     output("Starting to read accelerometer");
                 }
             }
@@ -195,6 +180,10 @@ class W_AnalogRead extends Widget {
             "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
             ;
         analogModeButton.setDescription(_helpText);
+        if (!analogBoard.canDeactivateAnalog()) {
+            analogModeButton.setLock(true);
+            analogModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+        }
     }
 };
 

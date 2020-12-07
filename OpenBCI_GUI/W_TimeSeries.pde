@@ -122,7 +122,6 @@ class W_timeSeries extends Widget {
 
     private boolean allowSpillover = false;
     private TextBox[] impValuesMontage;
-    private boolean visible = true;
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
     W_timeSeries(PApplet _parent) {
@@ -195,93 +194,81 @@ class W_timeSeries extends Widget {
         }
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     void update() {
-        if(visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            // offset based on whether channel select or hardware settings are open or not
-            int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
-            }
+        // offset based on whether channel select or hardware settings are open or not
+        int chanSelectOffset = tsChanSelect.isVisible() ? navHeight : 0;
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            chanSelectOffset += adsSettingsController.getIsVisible() ? navHeight : 0;
+        }
 
-            //Responsively size the channelBarHeight
-            channelBarHeight = int((ts_h - chanSelectOffset) / tsChanSelect.activeChan.size());
+        //Responsively size the channelBarHeight
+        channelBarHeight = int((ts_h - chanSelectOffset) / tsChanSelect.activeChan.size());
 
-            //Update channel checkboxes
-            tsChanSelect.update(x, y, w);
+        //Update channel checkboxes
+        tsChanSelect.update(x, y, w);
 
-            //Update and resize all active channels
-            for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-                int activeChan = tsChanSelect.activeChan.get(i);
-                int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
-                //To make room for channel bar separator, subtract space between channel bars from height
-                int cb_h = channelBarHeight - interChannelBarSpace;
-                channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), cb_h);
-                channelBars[activeChan].update();
-            }
-            
-            //Responsively size and update the HardwareSettingsController
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                int cb_h = channelBarHeight + interChannelBarSpace - 2;
-                int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
-                adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
-                adsSettingsController.update(); //update channel controller
-                //ignore top left button interaction when widgetSelector dropdown is active
-                lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
-            }
-            
-            //Update Playback scrollbar and/or display time
-            if((currentBoard instanceof FileBoard) && hasScrollbar) {
-                //scrub playback file
-                scrollbar.update();
-            } else {
-                timeDisplay.update();
-            }
+        //Update and resize all active channels
+        for(int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            int channelBarY = int(ts_y + chanSelectOffset) + i*(channelBarHeight); //iterate through bar locations
+            //To make room for channel bar separator, subtract space between channel bars from height
+            int cb_h = channelBarHeight - interChannelBarSpace;
+            channelBars[activeChan].resize(int(ts_x), channelBarY, int(ts_w), cb_h);
+            channelBars[activeChan].update();
+        }
+        
+        //Responsively size and update the HardwareSettingsController
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            int cb_h = channelBarHeight + interChannelBarSpace - 2;
+            int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
+            adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
+            adsSettingsController.update(); //update channel controller
+            //ignore top left button interaction when widgetSelector dropdown is active
+            lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
+        }
+        
+        //Update Playback scrollbar and/or display time
+        if((currentBoard instanceof FileBoard) && hasScrollbar) {
+            //scrub playback file
+            scrollbar.update();
+        } else {
+            timeDisplay.update();
         }
     }
 
     void draw() {
-        if (visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-            pushStyle();
-            //draw channel bars
-            for (int i = 0; i < tsChanSelect.activeChan.size(); i++) {
-                int activeChan = tsChanSelect.activeChan.get(i);
-                channelBars[activeChan].draw(getAdsSettingsVisible());
-            }
-            popStyle();
-
-            //Display playback scrollbar or timeDisplay, depending on data source
-            if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-                fill(0,0,0,20);
-                stroke(31,69,110);
-                rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
-                scrollbar.draw();
-            } else {
-                timeDisplay.draw();
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                adsSettingsController.draw();
-            }
-
-            tscp5.draw();
-            
-            tsChanSelect.draw();
-
-            popStyle();
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        pushStyle();
+        //draw channel bars
+        for (int i = 0; i < tsChanSelect.activeChan.size(); i++) {
+            int activeChan = tsChanSelect.activeChan.get(i);
+            channelBars[activeChan].draw(getAdsSettingsVisible());
         }
+        popStyle();
+
+        //Display playback scrollbar or timeDisplay, depending on data source
+        if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
+            fill(0,0,0,20);
+            stroke(31,69,110);
+            rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
+            scrollbar.draw();
+        } else {
+            timeDisplay.draw();
+        }
+
+        if (currentBoard instanceof ADS1299SettingsBoard) {
+            adsSettingsController.draw();
+        }
+
+        tscp5.draw();
+        
+        tsChanSelect.draw();
+
+        popStyle();
     }
 
     void screenResized() {

@@ -19,14 +19,14 @@ class W_DigitalRead extends Widget {
 
     DigitalReadDot[] digitalReadDots;
 
-    private boolean visible = true;
-
-    Button digitalModeButton;
+    private Button digitalModeButton;
 
     private DigitalCapableBoard digitalBoard;
 
     W_DigitalRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
 
         //set number of digital reads
         if (selectedProtocol == BoardProtocol.WIFI) {
@@ -74,34 +74,22 @@ class W_DigitalRead extends Widget {
         }
 
         createDigitalModeButton("digitalModeButton", "DIGITAL TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
-
-        digitalBoard = (DigitalCapableBoard)currentBoard;
     }
 
     public int getNumDigitalReads() {
         return numDigitalReadDots;
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     public void update() {
-        if (visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
-            for (int i = 0; i < numDigitalReadDots; i++) {
-                digitalReadDots[i].update();
-            }
-
-            //ignore top left button interaction when widgetSelector dropdown is active
-            lockElementOnOverlapCheck(digitalModeButton);
+        //update channel bars ... this means feeding new EEG data into plots
+        for (int i = 0; i < numDigitalReadDots; i++) {
+            digitalReadDots[i].update();
         }
+
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(digitalModeButton);
 
         updateOnOffButton();
     }
@@ -109,26 +97,20 @@ class W_DigitalRead extends Widget {
     private void updateOnOffButton() {	
         if (digitalBoard.isDigitalActive()) {	
             digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
-            digitalModeButton.setLock(!digitalBoard.canDeactivateDigital());
-            if (!digitalBoard.canDeactivateDigital()) {
-                digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
-            }
+            digitalModeButton.setOn();
         } else {
             digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");	
-            digitalModeButton.setLock(false);
-            digitalModeButton.setColorBackground(buttonsLightBlue);
+            digitalModeButton.setOff();
         }
     }
 
     public void draw() {
-        if (visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //draw channel bars
-            if (digitalBoard.isDigitalActive()) {
-                for (int i = 0; i < numDigitalReadDots; i++) {
-                    digitalReadDots[i].draw();
-                }
+        //draw channel bars
+        if (digitalBoard.isDigitalActive()) {
+            for (int i = 0; i < numDigitalReadDots; i++) {
+                digitalReadDots[i].draw();
             }
         }
     }
@@ -174,6 +156,7 @@ class W_DigitalRead extends Widget {
 
     private void createDigitalModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
         digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        digitalModeButton.setSwitch(true);
         digitalModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!digitalBoard.isDigitalActive()) {
@@ -185,6 +168,7 @@ class W_DigitalRead extends Widget {
                     }
                 } else {
                     digitalBoard.setDigitalActive(false);
+                    w_accelerometer.accelBoardSetActive(true);
                     output("Starting to read accelerometer");
                 }
             }
@@ -194,6 +178,10 @@ class W_DigitalRead extends Widget {
             "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18."
             ;
         digitalModeButton.setDescription(_helpText);
+        if (!digitalBoard.canDeactivateDigital()) {
+            digitalModeButton.setLock(true);
+            digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+        }
     }
 };
 

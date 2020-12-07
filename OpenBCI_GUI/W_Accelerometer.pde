@@ -43,7 +43,6 @@ class W_Accelerometer extends Widget {
 
     float yMaxMin;
 
-    private boolean visible = true;
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
 
@@ -72,7 +71,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
         accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
 
-        createAccelModeButton("accelModeButton", "Accel Mode X", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
+        createAccelModeButton("accelModeButton", "Accel Mode X", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -92,25 +91,20 @@ class W_Accelerometer extends Widget {
         return accelHorizLimit * currentBoard.getSampleRate();
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if (visible && accelBoard.isAccelerometerActive()) {
+        if (accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
             accelerometerBar.update();
 
             //update the current Accelerometer values
             lastAccelVals = accelerometerBar.getLastAccelVals();
         }
-
+        
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(accelModeButton);
+        
         updateOnOffButton();
     }
 
@@ -118,14 +112,14 @@ class W_Accelerometer extends Widget {
         return lastAccelVals[val];
     }
 
-    private void updateOnOffButton() {	
+    private void updateOnOffButton() {	  
         if (accelBoard.isAccelerometerActive()) {	
-            accelModeButton.getCaptionLabel().setText("Turn Accel. Off");	
-            accelModeButton.setLock(!accelBoard.canDeactivateAccelerometer());
+            accelModeButton.getCaptionLabel().setText("Turn Accel. Off");
+            accelModeButton.setOn();
         }
         else {
-            accelModeButton.getCaptionLabel().setText("Turn Accel. On");	
-            accelModeButton.setLock(false);
+            accelModeButton.getCaptionLabel().setText("Turn Accel. On");
+            accelModeButton.setOff();
         }
     }
 
@@ -195,6 +189,7 @@ class W_Accelerometer extends Widget {
 
     private void createAccelModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
         accelModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        accelModeButton.setSwitch(true);
         accelModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!accelBoard.isAccelerometerActive()) {
@@ -242,6 +237,10 @@ class W_Accelerometer extends Widget {
         stroke(ACCEL_Z_COLOR);
         line(polarWindowX, polarWindowY, polarWindowX, polarWindowY+map(displayZ, -yMaxMin, yMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
         strokeWeight(1);
+    }
+
+    public void accelBoardSetActive(boolean _value) {
+        accelBoard.setAccelerometerActive(_value);
     }
 
 };//end W_Accelerometer class

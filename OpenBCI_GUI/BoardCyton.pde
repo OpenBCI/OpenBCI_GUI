@@ -348,7 +348,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean canDeactivateAnalog() {
-        return false;
+        return true;
     }
 
     @Override

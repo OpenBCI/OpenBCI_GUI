@@ -23,7 +23,6 @@ class W_AuraAux extends Widget {
     private String[] vertScaleOptions = {"Auto", "50", "100", "200", "400", "1000", "10000"};
     private String[] horizScaleOptions = {"1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
     private boolean allowSpillover = false;
-    private boolean visible = true;
 
     //Initial dropdown settings
     private int naInitialVertScaleIndex = 0;
@@ -67,33 +66,21 @@ class W_AuraAux extends Widget {
         adjustVertScaleAllPlots(yLimOptions[naInitialVertScaleIndex]);
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     public void update() {
-        if(visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-            batteryMeter.update();
-            //Feed new data into plots
-            ppgReadBar1.update();
-            ppgReadBar2.update();
-            edaReadBar.update();
-        }
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        batteryMeter.update();
+        //Feed new data into plots
+        ppgReadBar1.update();
+        ppgReadBar2.update();
+        edaReadBar.update();
     }
 
     public void draw() {
-        if(visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-            batteryMeter.draw();
-            ppgReadBar1.draw();
-            ppgReadBar2.draw();
-            edaReadBar.draw();
-        }
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        batteryMeter.draw();
+        ppgReadBar1.draw();
+        ppgReadBar2.draw();
+        edaReadBar.draw();
     }
 
     public void screenResized() {

@@ -12,7 +12,7 @@ public Button createButton(ControlP5 _cp5, String name, String text, int _x, int
     final Button b = _cp5.addButton(name)
         .setPosition(_x, _y)
         .setSize(_w, _h)
-        .setColorLabel(_textColor) //Default to dark blue text
+        .setColorLabel(_textColor)
         .setCornerRoundness(_roundness) //From Processing rect(): To draw a rounded rectangle, add a fifth parameter, which is used as the radius value for all four corners.
         .setColorForeground(_colorHover)
         .setColorBackground(_bgColor)
