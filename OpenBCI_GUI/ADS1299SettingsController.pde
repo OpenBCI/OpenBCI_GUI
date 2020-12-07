@@ -100,7 +100,8 @@ class ADS1299SettingsController {
         if (isVisible) {
             //Control button space above channels
             pushStyle();
-            stroke(31,69,110, 50);
+            //stroke(31,69,110, 50);
+            stroke(OBJECT_BORDER_GREY);
             fill(0, 0, 0, 100);
             rect(x, y - columnLabelH, w, columnLabelH);
 
@@ -378,7 +379,7 @@ class ADS1299SettingsController {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(color(26))  // border color when not selected
+            .setColorForeground(OBJECT_BORDER_GREY)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText("")
@@ -403,6 +404,7 @@ class ADS1299SettingsController {
         customCommandTF = _tf;
 
         sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send", 0, 0, 10, 10);
+        sendCustomCmdButton.setBorderColor(OBJECT_BORDER_GREY);
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = dropNonPrintableChars(customCommandTF.getText());
@@ -431,7 +433,7 @@ class ADS1299SettingsController {
         int but_x = tf_x + customCommandTF.getWidth() + padding_3;
         int but_w = customCmdUI_w - customCommandTF.getWidth() - padding_3*3;
         sendCustomCmdButton.setPosition(but_x, tf_y);
-        sendCustomCmdButton.setSize(but_w, tf_h);
+        sendCustomCmdButton.setSize(but_w, tf_h - 1);
     }
 
     public void updateChanSettingsDropdowns(int chan, boolean isActive) {

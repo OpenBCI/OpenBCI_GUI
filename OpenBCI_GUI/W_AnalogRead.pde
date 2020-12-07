@@ -84,7 +84,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         }
 
-        createAnalogModeButton("analogModeButton", "ANALOG TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public int getNumAnalogReads() {
@@ -106,12 +106,14 @@ class W_AnalogRead extends Widget {
     }
 
     private void updateOnOffButton() {	
-        if (analogBoard.isAnalogActive()) {	
-            analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
-            analogModeButton.setOn();
-        } else {
-            analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
-            analogModeButton.setOff();
+        if (!analogBoard.canDeactivateAnalog()) { 
+            if (analogBoard.isAnalogActive()) {	
+                analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
+                analogModeButton.setOn();
+            } else {
+                analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
+                analogModeButton.setOff();
+            }
         }
     }
 
