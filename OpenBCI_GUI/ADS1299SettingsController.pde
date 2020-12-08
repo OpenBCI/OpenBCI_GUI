@@ -403,8 +403,9 @@ class ADS1299SettingsController {
         });
         customCommandTF = _tf;
 
-        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send", 0, 0, 10, 10);
+        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send Custom Command", 0, 0, 10, 10);
         sendCustomCmdButton.setBorderColor(OBJECT_BORDER_GREY);
+        sendCustomCmdButton.getCaptionLabel().getStyle().setMarginLeft(1);
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = dropNonPrintableChars(customCommandTF.getText());
@@ -422,16 +423,18 @@ class ADS1299SettingsController {
     }
 
     private void resizeCustomCommandUI() {
-        customCmdUI_x = x + Math.round(w / 6f) - 24;
-        customCmdUI_w = (int)Math.ceil(w * (2f/3f)) + 24;
-        int tf_x = customCmdUI_x + padding_3;
+        customCmdUI_x = x;
+        customCmdUI_w = w + 1;
+        int tf_w = Math.round(button_w * 1.8);
+        int but_w = tf_w;
+        //customCmdUI_w = (int)Math.ceil(w * (2f/3f)) + 24;
+        int tf_x = customCmdUI_x + Math.round(customCmdUI_w / 2f) - Math.round((tf_w + but_w + padding_3) / 2) + padding_3;
         int tf_y = y + h + commandBarH + padding_3;
-        int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
+        //int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
         int tf_h = commandBarH - padding_3*2;
         customCommandTF.setPosition(tf_x, tf_y);
         customCommandTF.setSize(tf_w, tf_h);
         int but_x = tf_x + customCommandTF.getWidth() + padding_3;
-        int but_w = customCmdUI_w - customCommandTF.getWidth() - padding_3*3;
         sendCustomCmdButton.setPosition(but_x, tf_y);
         sendCustomCmdButton.setSize(but_w, tf_h - 1);
     }

@@ -250,18 +250,20 @@ class W_timeSeries extends Widget {
         }
         popStyle();
 
-        //Display playback scrollbar or timeDisplay, depending on data source
+        //Display playback scrollbar, timeDisplay, or ADSSettingsController depending on data source
         if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
             fill(0,0,0,20);
             stroke(31,69,110);
             rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
             scrollbar.draw();
+        } else if (currentBoard instanceof ADS1299SettingsBoard) {
+            //Hide time display when ADSSettingsController is open for compatible boards
+            if (!getAdsSettingsVisible()) {
+                timeDisplay.draw();
+            }
+            adsSettingsController.draw();
         } else {
             timeDisplay.draw();
-        }
-
-        if (currentBoard instanceof ADS1299SettingsBoard) {
-            adsSettingsController.draw();
         }
 
         tscp5.draw();
