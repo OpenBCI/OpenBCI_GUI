@@ -93,15 +93,40 @@ class ADS1299SettingsController {
             pushStyle();
             noStroke();
             fill(0, 0, 0, 100);
-            rect(x, y, w, h);
+            rect(x, y, w + 1, h);
 
-            for (int i : activeChannels) {
-                // grab the name out of the enum directly.
-                gainButtons[i].draw();
-                inputTypeButtons[i].draw();
-                biasButtons[i].draw();
-                srb2Buttons[i].draw();
-                srb1Buttons[i].draw();
+            gainLabel.draw();
+            inputTypeLabel.draw();
+            biasLabel.draw();
+            srb2Label.draw();
+            srb1Label.draw();
+
+            for (int i = 0; i < channelCount; i++) {
+                boolean b = activeChannels.contains(i);
+                gainLists[i].setVisible(b);
+                inputTypeLists[i].setVisible(b);
+                biasLists[i].setVisible(b);
+                srb2Lists[i].setVisible(b);
+                srb1Lists[i].setVisible(b);
+
+                if (hasUnappliedChanges[i]) {
+                    pushStyle();
+                    fill(color(57, 128, 204, 190)); //light blue from TopNav
+                    //fill(color(245, 64, 64, 180)); //light red
+                    rect(x, y + chanBar_h * i, w, chanBar_h);
+                }
+            }
+
+            //Draw background behind command buttons
+            pushStyle();
+            fill(0, 0, 0, 100);
+            rect(x, y + h, w + 1, commandBarH);
+
+            boolean showCustomCommandUI = settings.expertModeToggle && !(currentBoard instanceof BoardCyton);
+            customCommandTF.setVisible(showCustomCommandUI);
+            sendCustomCmdButton.setVisible(showCustomCommandUI);
+            if (showCustomCommandUI) {
+                rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons
             }
 
             //draw column headers for channel settings behind EEG graph
