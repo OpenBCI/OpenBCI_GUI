@@ -1,10 +1,13 @@
 import brainflow.*;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 public enum BrainFlowStreaming_Boards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),
+    CYTONDAISY("CytonDaisy", BoardIds.CYTON_DAISY_BOARD),
     GANGLION("Ganglion", BoardIds.GANGLION_BOARD),
-    NOVAXR("NovaXR", BoardIds.NOVAXR_BOARD),
+    GALEA("Galea", BoardIds.GALEA_BOARD),
     SYNTHETIC("Synthetic", BoardIds.SYNTHETIC_BOARD);
 
     private String name;
@@ -122,7 +125,13 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
 
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
-        return null;
+        if (masterBoardId == BoardIds.CYTON_DAISY_BOARD) {
+                return new PacketLossTrackerCytonSerialDaisy(getSampleIndexChannel(), getTimestampChannel());
+        }
+        final int minSampleIndex = 0;
+        final int maxSampleIndex = 255;
+        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
+                                    minSampleIndex, maxSampleIndex);
     }
 
 };

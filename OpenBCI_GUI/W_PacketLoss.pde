@@ -65,7 +65,7 @@ class W_PacketLoss extends Widget {
             .setDrawOutlineWhenClosed(false)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setBackgroundColor(OBJECT_BORDER_GREY)
             .setBarHeight(cellHeight) //height of top/primary bar
             .setItemHeight(cellHeight) //height of all item/dropdown bars
             ;

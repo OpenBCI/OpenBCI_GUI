@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
+ * @modified 11/19/2020
+ * @version 2.3.1
  * 
  */
 

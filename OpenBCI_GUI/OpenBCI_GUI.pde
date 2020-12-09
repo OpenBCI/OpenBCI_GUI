@@ -64,16 +64,22 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.1";
-String localGUIVersionDate = "September 2020";
+String localGUIVersionString = "v5.0.2-beta.4";
+String localGUIVersionDate = "December 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+
+PApplet ourApplet;
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
 final int SYSTEMMODE_POSTINIT = 10;
 int systemMode = SYSTEMMODE_INTROANIMATION; /* Modes: -10 = intro sequence; 0 = system stopped/control panel setings; 10 = gui; 20 = help guide */
+
+ControlPanel controlPanel;
+
+int selectedSamplingRate = -1; //program-wide variable to track sampling rate, which can change depending on selected data source
 
 boolean midInit = false;
 boolean midInitCheck2 = false;
@@ -85,16 +91,12 @@ final int NCHAN_CYTON = 8;
 final int NCHAN_CYTON_DAISY = 16;
 final int NCHAN_GANGLION = 4;
 
-PImage cog;
-Gif loadingGIF;
-Gif loadingGIF_blue;
-
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
-final int DATASOURCE_NOVAXR = 4;
+final int DATASOURCE_GALEA = 4;
 final int DATASOURCE_STREAMING = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
@@ -121,7 +123,7 @@ DataSource currentBoard = new BoardNull();
 DataLogger dataLogger = new DataLogger();
 
 // Intialize interface protocols
-InterfaceSerial iSerial = new InterfaceSerial();
+InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
 String openBCI_portName = "N/A";  //starts as N/A but is selected from control panel to match your OpenBCI USB Dongle's serial/COM
 int openBCI_baud = 115200; //baud rate from the Arduino
 
@@ -143,9 +145,9 @@ final double threshold_railed_warn = 75.0;
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
 
-//NovaXR Default Settings
-NovaXRMode novaXR_boardSetting = NovaXRMode.DEFAULT; //default mode
-NovaXRSR novaXR_sampleRate = NovaXRSR.SR_250;
+//Galea Default Settings
+GaleaMode galea_boardSetting = GaleaMode.DEMO; //default mode
+GaleaSR galea_sampleRate = GaleaSR.SR_250;
 
 // Calculate nPointsPerUpdate based on sampling rate and buffer update rate
 // @UPDATE_MILLIS: update the buffer every 40 milliseconds
@@ -159,19 +161,13 @@ float dataProcessingRawBuffer[][]; //2D array to handle multiple data channels, 
 float dataProcessingFilteredBuffer[][];
 float data_elec_imp_ohm[];
 
-int displayTime_sec = 20;    //define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
-int dataBuff_len_sec = displayTime_sec + 3; //needs to be wider than actual display so that filter startup is hidden
+//define how much time is shown on the time-domain montage plot (and how much is used in the FFT plot?)
+int dataBuff_len_sec = 20 + 2; //Add two seconds to max buffer to account for filter artifact on the left of the graph
 
 StopWatch sessionTimeElapsed;
 StopWatch streamTimeElapsed;
 
 String output_fname;
-String sessionName = "N/A";
-final int OUTPUT_SOURCE_NONE = 0;
-final int OUTPUT_SOURCE_ODF = 1; // The OpenBCI CSV Data Format
-final int OUTPUT_SOURCE_BDF = 2; // The BDF data format http://www.biosemi.com/faq/file_format.htm
-public int outputDataSource = OUTPUT_SOURCE_ODF;
-// public int outputDataSource = OUTPUT_SOURCE_BDF;
 
 //Used mostly in W_playback.pde
 JSONObject savePlaybackHistoryJSON;
@@ -188,12 +184,16 @@ Serial serial_output;
 PlotFontInfo fontInfo;
 
 //program variables
-boolean isRunning = false;
 StringBuilder board_message;
+boolean textFieldIsActive = false;
 
 //set window size
-int win_x = 1024;  //window width
-int win_y = 768; //window height
+int win_w;  //window width
+int win_h; //window height
+
+PImage cog;
+Gif loadingGIF;
+Gif loadingGIF_blue;
 
 PImage logo_blue;
 PImage logo_white;
@@ -216,22 +216,64 @@ PFont p1; //large Open Sans
 PFont p2; //large/medium Open Sans
 PFont p3; //medium Open Sans
 PFont p15;
-PFont p4; //medium/small Open Sans
+static PFont p4; //medium/small Open Sans
 PFont p13;
-PFont p5; //small Open Sans
+static PFont p5; //small Open Sans
 PFont p6; //small Open Sans
 
-ButtonHelpText buttonHelpText;
-
 boolean setupComplete = false;
-color bgColor = color(1, 18, 41);
-color openbciBlue = color(31, 69, 110);
-int COLOR_SCHEME_DEFAULT = 1;
-int COLOR_SCHEME_ALTERNATIVE_A = 2;
+
+//Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
+final color OPENBCI_DARKBLUE = color(1, 18, 41);
+final color OPENBCI_BLUE = color(31, 69, 110);
+final color boxColor = color(200);
+final color boxStrokeColor = OPENBCI_DARKBLUE;
+final color isSelected_color = color(184, 220, 105);
+final color colorNotPressed = color(255);
+final color buttonsLightBlue = color(57,128,204);
+final color TURN_ON_GREEN = color(184,220,105);
+final color WHITE = color(255);
+final color BLACK = color(0);
+final color TURN_OFF_RED = color(224, 56, 45);
+final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
+final color BUTTON_PRESSED = color(150, 170, 200); //OPENBCI_DARKBLUE;
+final color BUTTON_LOCKED_GREY = color(128);
+final color BUTTON_PRESSED_DARKGREY = color(50);
+final color BUTTON_NOOBGREEN = color(114,204,171);
+final color BUTTON_EXPERTPURPLE = color(135,95,154);
+final color BUTTON_CAUTIONRED = color(214,100,100);
+final color OBJECT_BORDER_GREY = color(150);
+//Use the same colors for X,Y,Z throughout Accelerometer widget
+final color ACCEL_X_COLOR = TURN_OFF_RED;
+final color ACCEL_Y_COLOR = color(49, 113, 89);
+final color ACCEL_Z_COLOR = color(54, 87, 158);
+
+
+final int COLOR_SCHEME_DEFAULT = 1;
+final int COLOR_SCHEME_ALTERNATIVE_A = 2;
 // int COLOR_SCHEME_ALTERNATIVE_B = 3;
 int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
-PApplet ourApplet;
+WidgetManager wm;
+boolean wmVisible = true;
+CColor cp5_colors;
+
+//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
+final color[] channelColors = {
+    color(129, 129, 129),
+    color(124, 75, 141),
+    color(54, 87, 158),
+    color(49, 113, 89),
+    color(221, 178, 13),
+    color(253, 94, 52),
+    TURN_OFF_RED,
+    color(162, 82, 49)
+};
+
+//Global variable for general navigation bar height
+final int navHeight = 22;
+
+ButtonHelpText buttonHelpText;
 
 static CustomOutputStream outputStream;
 
@@ -242,28 +284,37 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 SessionSettings settings;
 DirectoryManager directoryManager;
 
+final int navBarHeight = 32;
+TopNav topNav;
+
+FFT[] fftBuff = new FFT[nchan];    //from the minim library
+boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
 
 //========================SETUP============================//
 
-int frameRateCounter = 1; //0 = 24, 1 = 30, 2 = 45, 3 = 60
-
 void settings() {
     //LINUX GFX FIX #816
     System.setProperty("jogl.disable.openglcore", "false");
 
-    // If 1366x768, set GUI to 976x549 to fix #378 regarding some laptop resolutions
-    // Later changed to 976x742 so users can access full control panel
-    if (displayWidth == 1366 && displayHeight == 768) {
-        win_x = 976;
-        win_y = 742;
+    win_w = 1024;
+    win_h = 768;
+
+    // If less than 1366x768, set smaller minimum GUI size
+    // Nov 2020 - Accomodate as low as 1024 X 640
+    if (displayWidth <= 1366 || displayHeight <= 768) {
+        win_w = 980;
+        win_h = 580;
     }
-    size(win_x, win_y, P2D);
+    size(win_w, win_h, P2D);
 }
 
 void setup() {
+    frameRate(120);
+
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
     f2 = createFont("fonts/Raleway-Regular.otf", 15);
@@ -320,19 +371,6 @@ void setup() {
     //open window
     ourApplet = this;
 
-    if(frameRateCounter==0) {
-        frameRate(24); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==1) {
-        frameRate(30); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==2) {
-        frameRate(45); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-    if(frameRateCounter==3) {
-        frameRate(60); //refresh rate ... this will slow automatically, if your processor can't handle the specified rate
-    }
-
     // Bug #426: If setup takes too long, JOGL will time out waiting for the GUI to draw something.
     // moving the setup to a separate thread solves this. We just have to make sure not to
     // start drawing until delayed setup is done.
@@ -347,11 +385,12 @@ void delayedSetup() {
     settings.heightOfLastScreen = height;
 
     setupContainers();
-
+    
     //listen for window resize ... used to adjust elements in application
+    //Doesn't seem to work...
     frame.addComponentListener(new ComponentAdapter() {
         public void componentResized(ComponentEvent e) {
-            if (e.getSource()==frame) {
+            if (e.getSource().equals(frame)) {
                 settings.screenHasBeenResized = true;
                 settings.timeOfLastScreenResize = millis();
                 // initializeGUI();
@@ -361,7 +400,9 @@ void delayedSetup() {
     );
 
     fontInfo = new PlotFontInfo();
-    helpWidget = new HelpWidget(0, win_y - 30, win_x, 30);
+    helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
+    //Instantiate buttonHelpText before any buttons have been made
+    buttonHelpText = new ButtonHelpText();
 
     //setup topNav
     topNav = new TopNav();
@@ -374,8 +415,6 @@ void delayedSetup() {
     loadingGIF.loop();
     loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
     loadingGIF_blue.loop();
-
-    buttonHelpText = new ButtonHelpText();
 
     prepareExitHandler();
 
@@ -436,9 +475,7 @@ private void prepareExitHandler () {
     ));
 }
 
-//used to init system based on initial settings...Called from the "START SESSION" button in the GUI's ControlPanel
-
-//Initialize the system
+//Init system based on default settings. Called from the "START SESSION" button in the GUI's ControlPanel.
 void initSystem() {
     println("");
     println("");
@@ -448,10 +485,6 @@ void initSystem() {
     println("");
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 0 -- ");
-
-    if (initSystemButton.but_txt == "START SESSION") {
-        initSystemButton.but_txt = "STOP SESSION";
-    }
 
     //reset init variables
     systemHasHalted = false;
@@ -483,13 +516,16 @@ void initSystem() {
             break;
         case DATASOURCE_SYNTHETIC:
             currentBoard = new BoardBrainFlowSynthetic(nchan);
+            println("OpenBCI_GUI: Init session using Synthetic data source");
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {
                 currentBoard = new DataSourcePlayback(playbackData_fname);
+                println("OpenBCI_GUI: Init session using Playback data source");
             } else {
                 if (!sdData_fname.equals("N/A")) {
                     currentBoard = new DataSourceSDCard(sdData_fname);
+                    println("OpenBCI_GUI: Init session using Playback data source");
                 }
                 else {
                     // no code path to it
@@ -503,15 +539,19 @@ void initSystem() {
             }
             else {
                 // todo[brainflow] temp hardcode
-                String ganglionName = (String)(bleList.getItem(bleList.activeItem).get("headline"));
-                String ganglionPort = (String)(bleList.getItem(bleList.activeItem).get("subline"));
-                String ganglionMac = BLEMACAddrMap.get(ganglionName);
+                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
+                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
             }
             break;
-        case DATASOURCE_NOVAXR:
-            currentBoard = new BoardNovaXR(novaXR_boardSetting, novaXR_sampleRate);
+        case DATASOURCE_GALEA:
+            currentBoard = new BoardGalea(
+                    controlPanel.galeaBox.getIPAddress(),
+                    galea_boardSetting,
+                    galea_sampleRate
+                    );
             // Replace line above with line below to test brainflow synthetic
             //currentBoard = new BoardBrainFlowSynthetic(16);
             break;
@@ -521,6 +561,7 @@ void initSystem() {
                     controlPanel.streamingBoardBox.getIP(),
                     controlPanel.streamingBoardBox.getPort()
                     );
+            println("OpenBCI_GUI: Init session using Streaming data source");
         default:
             break;
     }
@@ -544,47 +585,37 @@ void initSystem() {
     verbosePrint("OpenBCI_GUI: initSystem: Closing ControlPanel...");
 
     controlPanel.close();
-    topNav.controlPanelCollapser.setIsActive(false);
+    topNav.controlPanelCollapser.setOff();
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 3 -- " + millis());
 
     if (abandonInit) {
         haltSystem();
-        println("Failed to connect to data source... 1");
-        outputError("Failed to connect to data source fail point 1");
+        outputError("Failed to initialize board. Please check that the board is on and has power. See Console Log for more details.");
+        controlPanel.open();
+        return;
     } else {
-        //initilize the GUI
+        //initilize the secondary topnav and all applicable widgets
         topNav.initSecondaryNav();
-
         wm = new WidgetManager(this);
-
-        if (!abandonInit) {
-            nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
-
-            systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
-
-            if (!abandonInit) {
-                controlPanel.close();
-            } else {
-                haltSystem();
-                println("Failed to connect to data source... 2");
-                // output("Failed to connect to data source...");
-            }
-        } else {
-            haltSystem();
-            println("Failed to connect to data source... 3");
-            // output("Failed to connect to data source...");
-        }
+        nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+        systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
     }
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 4 -- " + millis());
 
-     //don't save default session settings for NovaXR or StreamingBoard
-    if (eegDataSource != DATASOURCE_NOVAXR && eegDataSource != DATASOURCE_STREAMING) {
+     //don't save default session settings for Galea or StreamingBoard
+    if (eegDataSource != DATASOURCE_GALEA && eegDataSource != DATASOURCE_STREAMING) {
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
+    } else if (eegDataSource == DATASOURCE_GALEA) {
+        //After TopNav has been instantiated, default to Expert mode for Galea
+        topNav.configSelector.toggleExpertMode(true);
     }
+    
+    //Make sure topNav buttons draw in the correct spot
+    topNav.screenHasBeenResized(width, height);
 
     midInit = false;
 } //end initSystem
@@ -647,79 +678,70 @@ void initFFTObjectsAndBuffer() {
 }
 
 void startRunning() {
-    verbosePrint("startRunning...");
-    output("Data stream started.");
-
-    dataLogger.onStartStreaming();
-
     // start streaming on the chosen board
     currentBoard.startStreaming();
-    isRunning = true;
-
-    // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
-    // close hardware settings if user starts streaming
-    w_timeSeries.closeADSSettings();
-
-    streamTimeElapsed.reset();
-    streamTimeElapsed.start();
-    sessionTimeElapsed.resume();
+    if (currentBoard.isStreaming()) {
+        output("Data stream started.");
+        dataLogger.onStartStreaming();
+        // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
+        // close hardware settings if user starts streaming
+        w_timeSeries.closeADSSettings();
+        try {
+            streamTimeElapsed.reset();
+            streamTimeElapsed.start();
+            sessionTimeElapsed.resume();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            outputError("Failed to start Timer.");
+        }
+    } else {
+        outputError("Failed to start data stream. Please check hardware. See Console Log or BrainFlow Log for more details.");
+    }
 }
 
 void stopRunning() {
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
-    verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
-    if (isRunning) {
-        output("Data stream stopped.");
-
-        streamTimeElapsed.stop();
-        sessionTimeElapsed.suspend();
-    }
-
-    dataLogger.onStopStreaming();
-
-    // stop streaming on chosen board
-    currentBoard.stopStreaming();
-    isRunning = false;
-}
-
-//execute this function whenver the stop button is pressed
-void stopButtonWasPressed() {
-    //toggle the data transfer state of the ADS1299...stop it or start it...
-    if (isRunning) {
-        verbosePrint("openBCI_GUI: stopButton was pressed...stopping data transfer...");
-        stopRunning();
-        topNav.stopButton.setString(stopButton_pressToStart_txt);
-        topNav.stopButton.setColorNotPressed(color(184, 220, 105));
-    } else { //not running
-        verbosePrint("openBCI_GUI: startButton was pressed...starting data transfer...");
-
-        startRunning();
-        topNav.stopButton.setString(stopButton_pressToStop_txt);
-        topNav.stopButton.setColorNotPressed(color(224, 56, 45));
-        nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+    //Check again if board is streaming to avoid IllegalStateException
+    if (currentBoard.isStreaming()) {
+        //If streaming, attempt to stop stream
+        currentBoard.stopStreaming();
+        if (!currentBoard.isStreaming()) {
+            output("Data stream stopped.");
+            try {
+                streamTimeElapsed.stop();
+                sessionTimeElapsed.suspend();
+                dataLogger.onStopStreaming();
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+                outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
+            }
+        }
+    } else {
+        output("Data stream is already stopped.");
     }
 }
-
 
 //halt the data collection
 void haltSystem() {
     if (!systemHasHalted) { //prevents system from halting more than once\
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
-        if (initSystemButton.but_txt == "STOP SESSION") {
-            initSystemButton.but_txt = "START SESSION";
-        }
+        
+        //Reset the text for the Start Session button
+        controlPanel.initBox.setInitSessionButtonText("START SESSION");
 
         if (w_networking != null && w_networking.getNetworkActive()) {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
         }
-
+        
         stopRunning();  //stop data transfer
+
+        topNav.resetStartStopButton();
+        topNav.destroySmoothingGainButtons();
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
         if (systemMode == SYSTEMMODE_POSTINIT && 
-            eegDataSource != DATASOURCE_NOVAXR && 
+            eegDataSource != DATASOURCE_GALEA && 
             eegDataSource != DATASOURCE_STREAMING) {
                 settings.save(settings.getPath("User", eegDataSource, nchan));
         }
@@ -751,8 +773,9 @@ void haltSystem() {
 
 void systemUpdate() { // for updating data values and variables
     //prepare for updating the GUI
-    win_x = width;
-    win_y = height;
+    win_w = width;
+    win_h = height;
+    textFieldIsActive = false;
 
     currentBoard.update();
 
@@ -765,7 +788,6 @@ void systemUpdate() { // for updating data values and variables
         controlPanel.update();
 
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
-            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             settings.widthOfLastScreen = width;
             settings.heightOfLastScreen = height;
@@ -775,7 +797,8 @@ void systemUpdate() { // for updating data values and variables
     if (systemMode == SYSTEMMODE_POSTINIT) {
         processNewData();
         
-        //alternative component listener function (line 177 - 187 frame.addComponentListener) for processing 3,
+        //alternative component listener function (line 177 mouseReleased- 187 frame.addComponentListener) for processing 3,
+        //Component listener doesn't seem to work, so staying with this method for now
         if (settings.widthOfLastScreen != width || settings.heightOfLastScreen != height) {
             settings.screenHasBeenResized = true;
             settings.timeOfLastScreenResize = millis();
@@ -784,11 +807,11 @@ void systemUpdate() { // for updating data values and variables
         }
 
         //re-initialize GUI if screen has been resized and it's been more than 1/2 seccond (to prevent reinitialization of GUI from happening too often)
-        if (settings.screenHasBeenResized) {
+        if (settings.screenHasBeenResized && settings.timeOfLastScreenResize + 500 > millis()) {
             ourApplet = this; //reset PApplet...
-            imposeMinimumGUIDimensions();
             topNav.screenHasBeenResized(width, height);
             wm.screenResized();
+            settings.screenHasBeenResized = false;
         }
 
         if (wm.isWMInitialized) {
@@ -799,7 +822,7 @@ void systemUpdate() { // for updating data values and variables
 
 void systemDraw() { //for drawing to the screen
     //redraw the screen...not every time, get paced by when data is being plotted
-    background(bgColor);  //clear the screen
+    background(OPENBCI_DARKBLUE);  //clear the screen
     noStroke();
     //background(255);  //clear the screen
 
@@ -825,7 +848,9 @@ void systemDraw() { //for drawing to the screen
 
     //Draw Session Start overlay on top of everything
     if (midInit) {
-        drawOverlay();
+        drawOverlay("Starting Session...");
+    } else if (controlPanel.comPortBox.isAutoScanningForCytonSerial()) {
+        drawOverlay("Auto-Scanning for Cyton...");
     }
 
     //Display GUI version and FPS in the title bar of the app
@@ -851,6 +876,14 @@ void systemInitSession() {
     } else {
         midInitCheck2 = true;
     }
+}
+
+//Global function to update the number of channels
+void updateToNChan(int _nchan) {
+    nchan = _nchan;
+    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
+    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    println("Channel count set to " + str(nchan));
 }
 
 void introAnimation() {
@@ -891,7 +924,7 @@ void drawStartupError() {
     final int padding = 20;
 
     pushStyle();
-    background(bgColor);
+    background(OPENBCI_DARKBLUE);
     stroke(204);
     fill(238);
     rect((width - w)/2, (height - h)/2, w, h);
@@ -909,7 +942,7 @@ void drawStartupError() {
     popStyle();
 }
 
-void drawOverlay() {
+void drawOverlay(String text) {
     //Draw a gray overlay when the Start Session button is pressed
     pushStyle();
     //imageMode(CENTER);
@@ -920,10 +953,9 @@ void drawOverlay() {
     pushStyle();
     textFont(p0, 24);
     fill(boxColor, 255);
-    stroke(bgColor, 200);
-    rect(width/2 - 240/2, height/2 - 80/2, 240, 80);
-    fill(bgColor, 255);
-    String s = "Starting Session...";
-    text(s, width/2 - textWidth(s)/2, height/2 + 8);
+    stroke(OPENBCI_DARKBLUE, 200);
+    rect(width/2 - (textWidth(text)+20)/2, height/2 - 80/2, textWidth(text) + 20, 80);
+    fill(OPENBCI_DARKBLUE, 255);
+    text(text, width/2 - textWidth(text)/2, height/2 + 8);
     popStyle();
 }

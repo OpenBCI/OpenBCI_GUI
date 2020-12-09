@@ -18,8 +18,8 @@ class PopupMessage extends PApplet implements Runnable {
     private String buttonMessage = "OK";
     private String buttonLink = null;
 
-    private color headerColor = openbciBlue;
-    private color buttonColor = openbciBlue;
+    private color headerColor = OPENBCI_BLUE;
+    private color buttonColor = OPENBCI_BLUE;
     
     private ControlP5 cp5;
 
@@ -71,7 +71,7 @@ class PopupMessage extends PApplet implements Runnable {
             .setColorBackground(buttonColor);
         cp5.getController("onButtonPressed")
             .getCaptionLabel()
-            .setFont(createFont("Arial",20,true))
+            .setFont(p1)
             .toUpperCase(false)
             .setSize(20)
             .setText(buttonMessage);
@@ -85,7 +85,7 @@ class PopupMessage extends PApplet implements Runnable {
         pushStyle();
 
         // draw bg
-        background(bgColor);
+        background(OPENBCI_DARKBLUE);
         stroke(204);
         fill(238);
         rect((width - w)/2, (height - h)/2, w, h);

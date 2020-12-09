@@ -44,7 +44,7 @@ public class DataWriterBDF {
     final static int BDF_HEADER_BYTES_BLOCK = 256;
 
     DateFormat startDateFormat = new SimpleDateFormat("dd.MM.yy");
-    DateFormat startTimeFormat = new SimpleDateFormat("hh.mm.ss");
+    DateFormat startTimeFormat = new SimpleDateFormat("HH.mm.ss");
 
     private char bdf_version_header = 0xFF;
     private char[] bdf_version = {'B', 'I', 'O', 'S', 'E', 'M', 'I'};

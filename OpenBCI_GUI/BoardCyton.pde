@@ -269,7 +269,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
-        useDynamicScaler = false;
+        useDynamicScaler = true;
     }
 
     // implement mandatory abstract functions
@@ -318,6 +318,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean canDeactivateAccelerometer() {
+        //Accelerometer is on by default for Cyton, and can not be disabled using a command.
+        //Disabling another Cyton Aux mode (ex. Analog Read) will default the board back to Accelerometer mode.
         return false;
     }
 
@@ -348,7 +350,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean canDeactivateAnalog() {
-        return false;
+        //For Cyton in the GUI, you can switch to another board mode and essentially deactivate analog read mode
+        return true;
     }
 
     @Override
@@ -378,7 +381,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public boolean canDeactivateDigital() {
-        return false;
+        //For Cyton in the GUI, you can switch to another board mode and essentially deactivate digital read mode
+        return true;
     }
 
     @Override

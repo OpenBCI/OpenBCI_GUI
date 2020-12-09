@@ -30,8 +30,8 @@ If you find a bug, or have a suggestion on how to improve the project, please fi
 
 1. Fork it!
 2. Branch off of `development`: `git checkout development`
-2. Create your feature branch: `git checkout -b my-new-feature`
-3. Make changes
-4. Commit your changes: `git commit -m 'Add some feature'`
-5. Push to the branch: `git push origin my-new-feature`
-6. Submit a pull request. Make sure it is based off of the `development` branch when submitting! :D
+3. Create your feature branch: `git checkout -b my-new-feature`
+4. Make changes
+5. Commit your changes: `git commit -m 'Add some feature'`
+6. Push to the branch: `git push origin my-new-feature`
+7. Submit a pull request. Make sure it is based off of the `development` branch when submitting! :D

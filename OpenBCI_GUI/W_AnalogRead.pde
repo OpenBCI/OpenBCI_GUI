@@ -27,18 +27,19 @@ class W_AnalogRead extends Widget {
     int[] yLimOptions = {0, 50, 100, 200, 400, 1000, 10000}; // 0 = Autoscale ... everything else is uV
 
     private boolean allowSpillover = false;
-    private boolean visible = true;
 
     //Initial dropdown settings
     private int arInitialVertScaleIndex = 5;
     private int arInitialHorizScaleIndex = 0;
 
-    Button_obci analogModeButton;
+    private Button analogModeButton;
 
     private AnalogCapableBoard analogBoard;
 
     W_AnalogRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        analogBoard = (AnalogCapableBoard)currentBoard;
 
         //Analog Read settings
         settings.arVertScaleSave = 5; //updates in VertScale_AR()
@@ -83,77 +84,39 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         }
 
-        analogModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "ANALOG TOGGLE", 12);
-        analogModeButton.setCornerRoundess((int)(navHeight-6));
-        analogModeButton.setFont(p5,12);
-        analogModeButton.textColorNotActive = color(255);
-        analogModeButton.hasStroke(false);
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12).");
-        } else {
-            analogModeButton.setHelpText("Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).");
-        }
-
-        analogBoard = (AnalogCapableBoard)currentBoard;
-    }
-
-    public boolean isVisible() {
-        return visible;
+        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public int getNumAnalogReads() {
         return numAnalogReadBars;
     }
 
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     void update() {
-        if(visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numAnalogReadBars; i++) {
-                analogReadBars[i].update();
-            }
-
-            //ignore top left button interaction when widgetSelector dropdown is active
-            ignoreButtonCheck(analogModeButton);
+        //update channel bars ... this means feeding new EEG data into plots
+        for(int i = 0; i < numAnalogReadBars; i++) {
+            analogReadBars[i].update();
         }
 
-        updateOnOffButton();
-    }
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(analogModeButton);
 
-    private void updateOnOffButton() {	
-        if (analogBoard.isAnalogActive()) {	
-            analogModeButton.setString("Turn Analog Read Off");	
-            analogModeButton.setIgnoreHover(!analogBoard.canDeactivateAnalog());
-            if(!analogBoard.canDeactivateAnalog()) {
-                analogModeButton.setColorNotPressed(color(128));
-            }
-        }
-        else {
-            analogModeButton.setString("Turn Analog Read On");	
-            analogModeButton.setIgnoreHover(false);
-            analogModeButton.setColorNotPressed(color(57,128,204));
+        if (!analogBoard.canDeactivateAnalog()) {
+            analogModeButton.setLock(true);
+            analogModeButton.getCaptionLabel().setText("Analog Read On");
+            analogModeButton.setColorBackground(BUTTON_LOCKED_GREY);
         }
     }
 
     void draw() {
-        if(visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-            pushStyle();
-            //draw channel bars
-            analogModeButton.draw();
-            if (analogBoard.isAnalogActive()) {
-                for(int i = 0; i < numAnalogReadBars; i++) {
-                    analogReadBars[i].draw();
-                }
+        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
+        if (analogBoard.isAnalogActive()) {
+            for(int i = 0; i < numAnalogReadBars; i++) {
+                analogReadBars[i].draw();
             }
-            popStyle();
         }
     }
 
@@ -176,35 +139,58 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
         }
 
-        analogModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
+        analogModeButton.setPosition(x + 3, y + 3 - navHeight);
     }
 
     void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        if (analogModeButton.isMouseHere()) {
-            analogModeButton.setIsActive(true);
-        }
     }
 
     void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
 
-        if(analogModeButton.isActive && analogModeButton.isMouseHere()) {
-            // println("analogModeButton...");
-            if (!analogBoard.isAnalogActive()) {
-                analogBoard.setAnalogActive(true);
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
+    private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        analogModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        analogModeButton.setSwitch(true);
+        analogModeButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!analogBoard.isAnalogActive()) {
+                    analogBoard.setAnalogActive(true);  
+                    analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
+                    if (selectedProtocol == BoardProtocol.WIFI) {
+                        output("Starting to read analog inputs on pin marked A5 (D11) and A6 (D12)");
+                    } else {
+                        output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+                    }
+                    w_pulsesensor.toggleAnalogReadButton(true);
+                    w_accelerometer.accelBoardSetActive(false);
+                    w_digitalRead.toggleDigitalReadButton(false);
                 } else {
-                    output("Starting to read analog inputs on pin marked A5 (D11), A6 (D12) and A7 (D13)");
+                    analogBoard.setAnalogActive(false);
+                    analogModeButton.getCaptionLabel().setText("Turn Analog Read On");	
+                    output("Starting to read accelerometer");
+                    w_accelerometer.accelBoardSetActive(true);
+                    w_digitalRead.toggleDigitalReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 }
-            } else {
-                analogBoard.setAnalogActive(false);
-                output("Starting to read accelerometer");
             }
+        });
+        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
+            "Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12)." :
+            "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
+            ;
+        analogModeButton.setDescription(_helpText);
+    }
+
+    public void toggleAnalogReadButton(boolean _value) {
+        String s = _value ? "Turn Analog Read Off" : "Turn Analog Read On";
+        analogModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            analogModeButton.setOn();
+        } else {
+            analogModeButton.setOff();
         }
-        analogModeButton.setIsActive(false);
     }
 };
 
@@ -312,17 +298,17 @@ class AnalogReadBar{
         
         
         analogValue = new TextBox("t", x + 36 + 4 + (w - 36 - 4) - 2, y + h);
-        analogValue.textColor = color(bgColor);
+        analogValue.textColor = OPENBCI_DARKBLUE;
         analogValue.alignH = RIGHT;
         analogValue.alignV = BOTTOM;
         analogValue.drawBackground = true;
         analogValue.backgroundColor = color(255,255,255,125);
 
         analogPin = new TextBox("A" + analogInputString, x+3, y + h);
-        analogPin.textColor = color(bgColor);
+        analogPin.textColor = OPENBCI_DARKBLUE;
         analogPin.alignH = CENTER;
         digitalPin = new TextBox("(D" + digitalPinNum + ")", x+3, y + h + 12);
-        digitalPin.textColor = color(bgColor);
+        digitalPin.textColor = OPENBCI_DARKBLUE;
         digitalPin.alignH = CENTER;
 
         drawAnalogValue = true;

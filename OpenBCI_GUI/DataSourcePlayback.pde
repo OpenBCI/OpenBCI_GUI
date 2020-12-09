@@ -1,9 +1,11 @@
-class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard, FileBoard  {
+class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, FileBoard  {
     private String playbackFilePath;
     private ArrayList<double[]> rawData;
     private int currentSample;
     private int timeOfLastUpdateMS;
     private String underlyingClassName;
+    private Integer batteryChannelCache = null;
+    private int numNewSamplesThisFrame;
 
     private boolean initialized = false;
     private boolean streaming = false;
@@ -129,7 +131,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         float sampleRateMS = getSampleRate() / 1000.f;
 
         int timeElapsedMS = millis() - timeOfLastUpdateMS;
-        int numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
+        numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
 
         // account for the fact that each update will not coincide with a sample exactly. 
         // to keep the streaming rate accurate, we increment the time of last update
@@ -139,7 +141,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         currentSample += numNewSamplesThisFrame;
         
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
@@ -155,6 +157,11 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     @Override
     public void stopStreaming() {
         streaming = false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override
@@ -219,8 +226,14 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     @Override
     public double[][] getFrameData() {
-        // empty data (for now?)
-        return new double[getTotalChannelCount()][0];
+        double[][] array = new double[getTotalChannelCount()][numNewSamplesThisFrame];
+        List<double[]> list = getData(numNewSamplesThisFrame);
+        for (int i = 0; i < numNewSamplesThisFrame; i++) {
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                array[j][i] = list.get(i)[j];
+            }
+        }
+        return array;
     }
 
     @Override
@@ -353,6 +366,19 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         }
 
         return new int[0];
+    }
+
+    @Override
+    public Integer getBatteryChannel() {
+        if (batteryChannelCache == null && underlyingBoard instanceof BatteryInfoCapableBoard) {
+            try {
+                batteryChannelCache = BoardShim.get_battery_channel(((BoardBrainFlow)underlyingBoard).getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return batteryChannelCache;
     }
 
     @Override

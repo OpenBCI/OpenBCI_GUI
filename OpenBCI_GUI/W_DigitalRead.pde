@@ -19,18 +19,14 @@ class W_DigitalRead extends Widget {
 
     DigitalReadDot[] digitalReadDots;
 
-    private boolean visible = true;
-
-    Button_obci digitalModeButton;
+    private Button digitalModeButton;
 
     private DigitalCapableBoard digitalBoard;
 
-    W_DigitalRead(PApplet _parent){
+    W_DigitalRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
+        digitalBoard = (DigitalCapableBoard)currentBoard;
 
         //set number of digital reads
         if (selectedProtocol == BoardProtocol.WIFI) {
@@ -54,7 +50,7 @@ class W_DigitalRead extends Widget {
         digitalReadDots = new DigitalReadDot[numDigitalReadDots];
 
         //create our channel bars and populate our digitalReadDots array!
-        for(int i = 0; i < numDigitalReadDots; i++){
+        for (int i = 0; i < numDigitalReadDots; i++) {
             int digitalReaddotY = int(dot_y) + i*(digitalReaddotHeight); //iterate through bar locations
             int digitalReaddotX = int(dot_x) + i*(digitalReaddotHeight); //iterate through bar locations
             int digitalPin = 0;
@@ -77,83 +73,43 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        digitalModeButton = new Button_obci((int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, "DIGITAL TOGGLE", 12);
-        digitalModeButton.setCornerRoundess((int)(navHeight-6));
-        digitalModeButton.setFont(p5,12);
-        digitalModeButton.setColorNotPressed(color(57,128,204));
-        digitalModeButton.textColorNotActive = color(255);
-        digitalModeButton.hasStroke(false);
-
-        if (selectedProtocol == BoardProtocol.WIFI) {
-            digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, and D17.");
-        } else {
-            digitalModeButton.setHelpText("Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18.");
-        }
-
-        digitalBoard = (DigitalCapableBoard)currentBoard;
+        createDigitalModeButton("digitalModeButton", "Turn Digital Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
     }
 
     public int getNumDigitalReads() {
         return numDigitalReadDots;
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
+    public void update() {
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
-    void update(){
-        if(visible){
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-            //update channel bars ... this means feeding new EEG data into plots
-            for(int i = 0; i < numDigitalReadDots; i++){
-                digitalReadDots[i].update();
-            }
-
-            //ignore top left button interaction when widgetSelector dropdown is active
-            ignoreButtonCheck(digitalModeButton);
+        //update channel bars ... this means feeding new EEG data into plots
+        for (int i = 0; i < numDigitalReadDots; i++) {
+            digitalReadDots[i].update();
         }
 
-        updateOnOffButton();
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(digitalModeButton);
+
+        if (!digitalBoard.canDeactivateDigital()) {
+            digitalModeButton.setLock(true);
+            digitalModeButton.getCaptionLabel().setText("Digital Read On");
+            digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
+        }
     }
 
-    private void updateOnOffButton() {	
-        if (digitalBoard.isDigitalActive()) {	
-            digitalModeButton.setString("Turn Digital Read Off");	
-            digitalModeButton.setIgnoreHover(!digitalBoard.canDeactivateDigital());
-            if(!digitalBoard.canDeactivateDigital()) {
-                digitalModeButton.setColorNotPressed(color(128));
+    public void draw() {
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+
+        //draw channel bars
+        if (digitalBoard.isDigitalActive()) {
+            for (int i = 0; i < numDigitalReadDots; i++) {
+                digitalReadDots[i].draw();
             }
         }
-        else {
-            digitalModeButton.setString("Turn Digital Read On");	
-            digitalModeButton.setIgnoreHover(false);
-            digitalModeButton.setColorNotPressed(color(57,128,204));
-        }
     }
 
-    void draw(){
-        if(visible){
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
-            //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-            pushStyle();
-            //draw channel bars
-            digitalModeButton.draw();
-            if (digitalBoard.isDigitalActive()) {
-                for(int i = 0; i < numDigitalReadDots; i++){
-                    digitalReadDots[i].draw();
-                }
-            }
-            popStyle();
-        }
-    }
-
-    void screenResized(){
+    public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
@@ -181,34 +137,58 @@ class W_DigitalRead extends Widget {
 
         }
 
-        digitalModeButton.setPos((int)(x + 3), (int)(y + 3 - navHeight));
+        digitalModeButton.setPosition((int)(x + 3), (int)(y + 3 - navHeight));
     }
 
-    void mousePressed(){
+    public void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-
-        if (digitalModeButton.isMouseHere()) {
-            digitalModeButton.setIsActive(true);
-        }
     }
 
-    void mouseReleased(){
+    public void mouseReleased() {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
 
-        if(digitalModeButton.isActive && digitalModeButton.isMouseHere()){
-            if (!digitalBoard.isDigitalActive()) {
-                digitalBoard.setDigitalActive(true);
-                if (selectedProtocol == BoardProtocol.WIFI) {
-                    output("Starting to read digital inputs on pin marked D11, D12 and D17");
+    private void createDigitalModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
+        digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        digitalModeButton.setSwitch(true);
+        digitalModeButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!digitalBoard.isDigitalActive()) {
+                    digitalBoard.setDigitalActive(true);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
+                    if (selectedProtocol == BoardProtocol.WIFI) {
+                        output("Starting to read digital inputs on pin marked D11, D12 and D17");
+                    } else {
+                        output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
+                    }
+                    w_accelerometer.accelBoardSetActive(false);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 } else {
-                    output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
+                    digitalBoard.setDigitalActive(false);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");
+                    output("Starting to read accelerometer");
+                    w_accelerometer.accelBoardSetActive(true);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 }
-            } else {
-                digitalBoard.setDigitalActive(false);
-                output("Starting to read accelerometer");
             }
+        });
+        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
+            "Click this button to activate/deactivate digital read on Cyton pins D11, D12, and D17." :
+            "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18."
+            ;
+        digitalModeButton.setDescription(_helpText);
+    }
+
+    public void toggleDigitalReadButton(boolean _value) {
+        String s = _value ? "Turn Digital Read Off" : "Turn Digital Read On";
+        digitalModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            digitalModeButton.setOn();
+        } else {
+            digitalModeButton.setOff();
         }
-        digitalModeButton.setIsActive(false);
     }
 };
 
@@ -243,7 +223,7 @@ class DigitalReadDot{
 
     DigitalCapableBoard digitalBoard;
 
-    DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding){ // channel number, x/y location, height, width
+    DigitalReadDot(PApplet _parent, int _digitalInputPin, int _x, int _y, int _w, int _h, int _padding) { // channel number, x/y location, height, width
 
         digitalBoard = (DigitalCapableBoard)currentBoard;
 
@@ -276,7 +256,7 @@ class DigitalReadDot{
         drawDigitalValue = true;
 
         digitalPin = new TextBox("D" + digitalInputString, dotX, dotY - dotWidth);
-        digitalPin.textColor = color(bgColor);
+        digitalPin.textColor = OPENBCI_DARKBLUE;
         digitalPin.alignH = CENTER;
     }
 
@@ -302,7 +282,7 @@ class DigitalReadDot{
         digitalValue.string = String.format("%d", digitalInputVal);
     }
 
-    void draw(){
+    void draw() {
         pushStyle();
 
         if (digitalInputVal == 1) {
@@ -315,7 +295,7 @@ class DigitalReadDot{
         stroke(dotStroke);
         ellipse(dotX, dotY, dotWidth, dotHeight);
 
-        if(drawDigitalValue){
+        if (drawDigitalValue) {
             digitalValue.draw();
             digitalPin.draw();
         }
@@ -327,7 +307,7 @@ class DigitalReadDot{
         return digitalInputVal;
     }
 
-    void screenResized(int _x, int _y, int _w, int _h){
+    void screenResized(int _x, int _y, int _w, int _h) {
         dotX = _x;
         dotY = _y;
         dotWidth = _w;

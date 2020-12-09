@@ -1,59 +1,37 @@
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
 //    W_playback.pde (ie "Playback History")
 //
 //    Allow user to load playback files from within GUI without having to restart the system
 //                       Created: Richard Waltman - August 2018
-*/
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 import java.io.FileReader;
-
-ControlP5 cp5_playback;
 
 class W_playback extends Widget {
     //allow access to dataProcessing
     DataProcessing dataProcessing;
     //Set up variables for Playback widget
-    Button_obci selectPlaybackFileButton;
+    ControlP5 cp5_playback;
+    Button selectPlaybackFileButton;
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
 
-    private boolean visible = true;
     private boolean menuHasUpdated = false;
-    private boolean menuListIsLocked = false;
 
     W_playback(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
-        //make a button to load new files
-        selectPlaybackFileButton = new Button_obci (
-            x + w/2 - (padding*2),
-            y - navHeight + 2,
-            200,
-            navHeight - 6,
-            "SELECT PLAYBACK FILE",
-            fontInfo.buttonLabel_size);
-        selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-        //make a MenuList
-        int initialWidth = w - padding*2;
         cp5_playback = new ControlP5(pApplet);
-        playbackMenuList = new MenuList(cp5_playback, "playbackMenuList", initialWidth, h - padding*2, p3);
-        playbackMenuList.setPosition(x + padding/2, y + 2);
-        playbackMenuList.setSize(initialWidth, h - padding*2);
-        playbackMenuList.scrollerLength = 40;
-        cp5_playback.get(MenuList.class, "playbackMenuList").setVisible(true);
+        cp5_playback.setGraphics(ourApplet, 0,0);
         cp5_playback.setAutoDraw(false);
-    }
 
-    public boolean isVisible() {
-        return visible;
-    }
+        //selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
 
-    public void setVisible(boolean _visible) {
-        visible = _visible;
+        int initialWidth = w - padding*2;
+        createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
+        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
     }
 
     void update() {
@@ -64,47 +42,38 @@ class W_playback extends Widget {
         }
         //Lock the MenuList if Widget selector is open, otherwise update
         if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
-            if (!menuListIsLocked) {
-                cp5_playback.get(MenuList.class, "playbackMenuList").lock();
-                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(false);
-                menuListIsLocked = true;
+            if (!playbackMenuList.isLock()) {
+                playbackMenuList.lock();
+                playbackMenuList.setUpdate(false);
             }
         } else {
-            if (menuListIsLocked) {
-                cp5_playback.get(MenuList.class, "playbackMenuList").unlock();
-                cp5_playback.get(MenuList.class, "playbackMenuList").setUpdate(true);
-                menuListIsLocked = false;
+            if (playbackMenuList.isLock()) {
+                playbackMenuList.unlock();
+                playbackMenuList.setUpdate(true);
             }
             playbackMenuList.updateMenu();
         }
-
     }
 
     void draw() {
-        //Only draw if the widget is visible
-        if(visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //x,y,w,h are the positioning variables of the Widget class
-            pushStyle();
-            fill(boxColor);
-            stroke(boxStrokeColor);
-            strokeWeight(1);
-            rect(x, y, w, h);
-            //Add text if needed
-            /*
-            fill(bgColor);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text("PLAYBACK FILE", x + padding, y + padding);
-            */
-            popStyle();
+        //x,y,w,h are the positioning variables of the Widget class
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        //Add text if needed
+        /*
+        fill(OPENBCI_DARKBLUE);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("PLAYBACK FILE", x + padding, y + padding);
+        */
+        popStyle();
 
-            pushStyle();
-            selectPlaybackFileButton.draw();
-            cp5_playback.draw();
-            popStyle();
-        }
+        cp5_playback.draw();
     } //end draw loop
 
     void screenResized() {
@@ -114,39 +83,13 @@ class W_playback extends Widget {
         //This makes the cp5 objects within the widget scale properly
         cp5_playback.setGraphics(pApplet, 0, 0);
 
-        //resize and position the playback file box and button
-        selectPlaybackFileButton.setPos(x + w - selectPlaybackFileButton.but_dx - padding, y - navHeight + 2);
+        //Resize and position cp5 objects within this widget
+        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - padding, y - navHeight + 2);
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
         refreshPlaybackList();
-    } //end screen Resized
-
-    void mouseOver() {
-        if (topNav.configSelector.isVisible) {
-            selectPlaybackFileButton.setIsActive(false);
-        }
     }
-
-    void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        if (!topNav.configSelector.isVisible) {
-            //check if mouse is over the select playback file button
-            if (selectPlaybackFileButton.isMouseHere()) {
-                selectPlaybackFileButton.setIsActive(true);
-            }
-        }
-    } // end mouse Pressed
-
-    void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        //check if user has clicked on the select playback file button
-        if (selectPlaybackFileButton.isMouseHere() && selectPlaybackFileButton.isActive) {
-            output("select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
-        }
-        selectPlaybackFileButton.setIsActive(false);
-    } // end mouse Released
 
     public void refreshPlaybackList() {
         try {
@@ -164,13 +107,45 @@ class W_playback extends Widget {
                 int totalPadding = padding + playbackMenuList.padding;
                 shortFileName = shortenString(shortFileName, w-totalPadding*2.f, p4);
                 //add as an item in the MenuList
-                playbackMenuList.addItem(makeItem(shortFileName, Integer.toString(fileNumber), longFilePath));
+                playbackMenuList.addItem(shortFileName, Integer.toString(fileNumber), longFilePath);
                 currentFileNameToDraw++;
             }
             playbackMenuList.updateMenu();
         } catch (NullPointerException e) {
             println("PlaybackWidget: Playback history file not found.");
         }
+    }
+
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        selectPlaybackFileButton = createButton(cp5_playback, name, text, _x, _y, _w, _h);
+        selectPlaybackFileButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
+            }
+        });
+        selectPlaybackFileButton.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+    }
+
+    private void createPlaybackMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        playbackMenuList = new MenuList(_cp5, name, _w, _h, font);
+        playbackMenuList.setPosition(_x, _y);
+        playbackMenuList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    //Check to make sure value of clicked item is in valid range. Fixes #480
+                    float valueOfItem = playbackMenuList.getValue();
+                    if (valueOfItem < 0 || valueOfItem > (playbackMenuList.items.size() - 1) ) {
+                        //println("CP: No such item " + value + " found in list.");
+                    } else {
+                        Map m = playbackMenuList.getItem(int(valueOfItem));
+                        //println("got a menu event from item " + value + " : " + m);
+                        userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
+                    }
+                }
+            }
+        });
+        playbackMenuList.scrollerLength = 40;
     }
 }; //end Playback widget class
 
