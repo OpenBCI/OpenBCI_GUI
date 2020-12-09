@@ -5,11 +5,12 @@
 * Update Hardware Settings UI for ADS1299 boards
 * Highlight channels in Hardware Settings that are out of sync with board
 * Require users to send or revert Hardware Settings before closing UI
-* Add "send" button to hardware settings
+* Add "Send" button to Hardware Settings
 * Update SessionData UI in Control Panel
 * Update ChannelSelect Feature in Widget Class to show what channels are on or off
 * Improve Time Series y-axis autoscale performance
 * Add channel select feature to FFT widget
+* Remove configurable gain behaviour and default to dynamic gain scaler
 
 ### Bug Fixes
 * Exit session init when current board fails to initialize

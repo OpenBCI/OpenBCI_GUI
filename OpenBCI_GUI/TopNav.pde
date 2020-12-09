@@ -27,7 +27,6 @@ class TopNav {
     public Button filtBPButton;
     public Button filtNotchButton;
     public Button smoothingButton;
-    public Button gainButton;
 
     public Button debugButton;
     public Button tutorialsButton;
@@ -85,7 +84,6 @@ class TopNav {
     void initSecondaryNav() {
 
         boolean needToMakeSmoothingButton = (currentBoard instanceof SmoothingCapableBoard) && smoothingButton == null;
-        boolean needToMakeGainButton = (currentBoard instanceof ADS1299SettingsBoard) && gainButton == null;
 
         if (!secondaryNavInit) {
             //Buttons on the left side of the GUI secondary nav bar
@@ -98,13 +96,8 @@ class TopNav {
             secondaryNavInit = true;
         }
 
-        if (needToMakeGainButton) {
-            int pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3;
-            createGainButton(getGainString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-        }
-
         if (needToMakeSmoothingButton) {
-            int pos_x = (int)gainButton.getPosition()[0] + gainButton.getWidth() + PAD_3;
+            int pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3;
             createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
         
@@ -275,9 +268,6 @@ class TopNav {
         }
         if (smoothingButton != null) {
             smoothingButton.setVisible(isSession);
-        }
-        if (gainButton != null) {
-            gainButton.setVisible(isSession);
         }
 
         //Draw CP5 Objects
@@ -480,19 +470,6 @@ class TopNav {
         smoothingButton.setDescription("Click here to turn data smoothing on or off.");
     }
 
-    private void createGainButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        gainButton = createTNButton("gainButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        gainButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
-        gainButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                ADS1299SettingsBoard adsBoard = (ADS1299SettingsBoard)currentBoard;
-                adsBoard.setUseDynamicScaler(!adsBoard.getUseDynamicScaler());
-                gainButton.getCaptionLabel().setText(getGainString());;
-            }
-        });
-        gainButton.setDescription("Click here to switch gain convention.");
-    }
-
     private void createLayoutButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         layoutButton = createTNButton("layoutButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         layoutButton.onRelease(new CallbackListener() {
@@ -612,9 +589,7 @@ class TopNav {
 
     public void destroySmoothingGainButtons() {
         topNav_cp5.remove("smoothingButton");
-        topNav_cp5.remove("gainButton");
         smoothingButton = null;
-        gainButton = null;
     }
 
     private void incrementFilterConfiguration() {
