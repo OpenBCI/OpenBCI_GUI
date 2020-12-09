@@ -143,7 +143,8 @@ class ADS1299SettingsController {
             sendCustomCmdButton.setVisible(showCustomCommandUI);
             if (showCustomCommandUI) {
                 rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons
-
+            }
+            
             //Draw cp5 objects on top of everything
             hwsCp5.draw();
         }
