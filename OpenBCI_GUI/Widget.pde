@@ -17,6 +17,7 @@ class Widget{
     private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
     protected boolean dropdownIsActive = false;
+    private boolean previousDropdownIsActive = false;
     private boolean widgetSelectorIsActive = false;
 
     private ArrayList<NavBarDropdown> dropdowns;
@@ -86,7 +87,7 @@ class Widget{
             // .setFont(h2)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setBackgroundColor(OBJECT_BORDER_GREY)
             //.setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
             // .setScrollSensitivity(0.0)
@@ -125,7 +126,7 @@ class Widget{
                 .setFont(h5)
                 .setOpen(false)
                 .setColor(settings.dropdownColors)
-                .setBackgroundColor(150)
+                .setBackgroundColor(OBJECT_BORDER_GREY)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
                 .setItemHeight(navH-4)
@@ -283,7 +284,11 @@ class Widget{
     
     //For use with Cp5 Elements
     protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        c.setLock(dropdownIsActive);
+        if (dropdownIsActive != previousDropdownIsActive) {
+            //println(c.getName(), " lock == ", dropdownIsActive);
+            c.setLock(dropdownIsActive);
+            previousDropdownIsActive = dropdownIsActive;
+        }
     }
 };
 

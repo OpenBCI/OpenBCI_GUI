@@ -81,6 +81,8 @@ class W_template extends Widget {
     private void createWidgetTemplateButton() {
         //This is a generalized createButton method that allows us to save code by using a few patterns and method overloading
         widgetTemplateButton = createButton(localCP5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
+        //Set the border color explicitely
+        widgetTemplateButton.setBorderColor(OBJECT_BORDER_GREY);
         //For this button, only call the callback listener on mouse release
         widgetTemplateButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {

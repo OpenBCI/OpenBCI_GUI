@@ -1279,7 +1279,7 @@ class SessionDataBox {
             //.setColorValueLabel(color(0))       // text color
             //.setColorCaptionLabel(color(255))
             //.setColorForeground(color(125))    // border color when not selected
-            //.setColorActive(color(150, 170, 200))       // border color when selected
+            //.setColorActive(BUTTON_PRESSED)       // border color when selected
             // .setColorCursor(color(26,26,26))
             .setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding)
             .setSize((w-padding*3)/2, (_items.size() + 1) * 24)// + maxFreqList.size())
@@ -1916,7 +1916,7 @@ class RecentPlaybackBox {
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             // .setColorCursor(color(26,26,26))
 
             .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
@@ -2060,7 +2060,7 @@ class GaleaBox {
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setBackgroundColor(150)
             .setSize(w - padding*2, uiElementH)//temporary size
             .setBarHeight(24) //height of top/primary bar
@@ -2239,7 +2239,7 @@ class StreamingBoardBox {
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setBackgroundColor(150)
             .setSize(w - padding*2, objectH)//temporary size
             .setBarHeight(objectH) //height of top/primary bar
@@ -2769,7 +2769,6 @@ class InitBox {
 
                 //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
                 midInit = true;
-                buttonHelpText.setVisible(false);
                 output("Attempting to Start Session..."); // Show this at the bottom of the GUI
                 println("initButtonPressed: Calling initSystem() after next draw()");
             }

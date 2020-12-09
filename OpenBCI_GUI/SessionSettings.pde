@@ -274,7 +274,7 @@ class SessionSettings {
 
     SessionSettings() {
         //Instantiated on app start in OpenBCI_GUI.pde
-        dropdownColors.setActive((int)color(150, 170, 200)); //bg color of box when pressed
+        dropdownColors.setActive((int)BUTTON_PRESSED); //bg color of box when pressed
         dropdownColors.setForeground((int)BUTTON_HOVER); //when hovering over any box (primary or dropdown)
         dropdownColors.setBackground((int)color(255)); //bg color of boxes (including primary)
         dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box

@@ -18,7 +18,6 @@ class W_playback extends Widget {
     //Used for spacing
     int padding = 10;
 
-    private boolean visible = true;
     private boolean menuHasUpdated = false;
 
     W_playback(PApplet _parent) {
@@ -33,14 +32,6 @@ class W_playback extends Widget {
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
         createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
-    }
-
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
     }
 
     void update() {
@@ -65,27 +56,24 @@ class W_playback extends Widget {
     }
 
     void draw() {
-        //Only draw if the widget is visible
-        if(visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //x,y,w,h are the positioning variables of the Widget class
-            pushStyle();
-            fill(boxColor);
-            stroke(boxStrokeColor);
-            strokeWeight(1);
-            rect(x, y, w, h);
-            //Add text if needed
-            /*
-            fill(OPENBCI_DARKBLUE);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text("PLAYBACK FILE", x + padding, y + padding);
-            */
-            popStyle();
+        //x,y,w,h are the positioning variables of the Widget class
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        //Add text if needed
+        /*
+        fill(OPENBCI_DARKBLUE);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("PLAYBACK FILE", x + padding, y + padding);
+        */
+        popStyle();
 
-            cp5_playback.draw();
-        }
+        cp5_playback.draw();
     } //end draw loop
 
     void screenResized() {

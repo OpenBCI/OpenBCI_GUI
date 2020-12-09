@@ -19,14 +19,14 @@ class W_DigitalRead extends Widget {
 
     DigitalReadDot[] digitalReadDots;
 
-    private boolean visible = true;
-
-    Button digitalModeButton;
+    private Button digitalModeButton;
 
     private DigitalCapableBoard digitalBoard;
 
     W_DigitalRead(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        digitalBoard = (DigitalCapableBoard)currentBoard;
 
         //set number of digital reads
         if (selectedProtocol == BoardProtocol.WIFI) {
@@ -73,62 +73,38 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        createDigitalModeButton("digitalModeButton", "DIGITAL TOGGLE", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
-
-        digitalBoard = (DigitalCapableBoard)currentBoard;
+        createDigitalModeButton("digitalModeButton", "Turn Digital Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
     }
 
     public int getNumDigitalReads() {
         return numDigitalReadDots;
     }
 
-    public boolean isVisible() {
-        return visible;
-    }
-
-    public void setVisible(boolean _visible) {
-        visible = _visible;
-    }
-
     public void update() {
-        if (visible) {
-            super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-            //update channel bars ... this means feeding new EEG data into plots
-            for (int i = 0; i < numDigitalReadDots; i++) {
-                digitalReadDots[i].update();
-            }
-
-            //ignore top left button interaction when widgetSelector dropdown is active
-            lockElementOnOverlapCheck(digitalModeButton);
+        //update channel bars ... this means feeding new EEG data into plots
+        for (int i = 0; i < numDigitalReadDots; i++) {
+            digitalReadDots[i].update();
         }
 
-        updateOnOffButton();
-    }
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(digitalModeButton);
 
-    private void updateOnOffButton() {	
-        if (digitalBoard.isDigitalActive()) {	
-            digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
-            digitalModeButton.setLock(!digitalBoard.canDeactivateDigital());
-            if (!digitalBoard.canDeactivateDigital()) {
-                digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
-            }
-        } else {
-            digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");	
-            digitalModeButton.setLock(false);
-            digitalModeButton.setColorBackground(buttonsLightBlue);
+        if (!digitalBoard.canDeactivateDigital()) {
+            digitalModeButton.setLock(true);
+            digitalModeButton.getCaptionLabel().setText("Digital Read On");
+            digitalModeButton.setColorBackground(BUTTON_LOCKED_GREY);
         }
     }
 
     public void draw() {
-        if (visible) {
-            super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-            //draw channel bars
-            if (digitalBoard.isDigitalActive()) {
-                for (int i = 0; i < numDigitalReadDots; i++) {
-                    digitalReadDots[i].draw();
-                }
+        //draw channel bars
+        if (digitalBoard.isDigitalActive()) {
+            for (int i = 0; i < numDigitalReadDots; i++) {
+                digitalReadDots[i].draw();
             }
         }
     }
@@ -173,19 +149,28 @@ class W_DigitalRead extends Widget {
     }
 
     private void createDigitalModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
+        digitalModeButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        digitalModeButton.setSwitch(true);
         digitalModeButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!digitalBoard.isDigitalActive()) {
                     digitalBoard.setDigitalActive(true);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read Off");	
                     if (selectedProtocol == BoardProtocol.WIFI) {
                         output("Starting to read digital inputs on pin marked D11, D12 and D17");
                     } else {
                         output("Starting to read digital inputs on pin marked D11, D12, D13, D17 and D18");
                     }
+                    w_accelerometer.accelBoardSetActive(false);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 } else {
                     digitalBoard.setDigitalActive(false);
+                    digitalModeButton.getCaptionLabel().setText("Turn Digital Read On");
                     output("Starting to read accelerometer");
+                    w_accelerometer.accelBoardSetActive(true);
+                    w_analogRead.toggleAnalogReadButton(false);
+                    w_pulsesensor.toggleAnalogReadButton(false);
                 }
             }
         });
@@ -194,6 +179,16 @@ class W_DigitalRead extends Widget {
             "Click this button to activate/deactivate digital read on Cyton pins D11, D12, D13, D17 and D18."
             ;
         digitalModeButton.setDescription(_helpText);
+    }
+
+    public void toggleDigitalReadButton(boolean _value) {
+        String s = _value ? "Turn Digital Read Off" : "Turn Digital Read On";
+        digitalModeButton.getCaptionLabel().setText(s);
+        if (_value) {
+            digitalModeButton.setOn();
+        } else {
+            digitalModeButton.setOff();
+        }
     }
 };
 

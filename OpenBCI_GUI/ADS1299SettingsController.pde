@@ -100,7 +100,8 @@ class ADS1299SettingsController {
         if (isVisible) {
             //Control button space above channels
             pushStyle();
-            stroke(31,69,110, 50);
+            //stroke(31,69,110, 50);
+            stroke(OBJECT_BORDER_GREY);
             fill(0, 0, 0, 100);
             rect(x, y - columnLabelH, w, columnLabelH);
 
@@ -242,6 +243,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
         loadButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        loadButton.setBorderColor(OBJECT_BORDER_GREY);
+        loadButton.setDescription("Load hardware settings from file.");
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (currentBoard.isStreaming()) {
@@ -255,6 +258,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
         saveButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        saveButton.setBorderColor(OBJECT_BORDER_GREY);
+        saveButton.setDescription("Save hardware settings to file.");
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 selectOutput("Save settings to file", "storeHardwareSettings");
@@ -264,6 +269,8 @@ class ADS1299SettingsController {
 
     private void createHWSettingsSendButton(String name, String text, int _x, int _y, int _w, int _h) {
         sendButton = createButton(hwsCp5, name, text, _x, _y, _w, _h);
+        sendButton.setBorderColor(OBJECT_BORDER_GREY);
+        sendButton.setDescription("Send hardware settings to the board.");
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 
@@ -297,8 +304,8 @@ class ADS1299SettingsController {
             .setColorValueLabel(color(0))       // text color
             .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
-            .setBackgroundColor(150)
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
+            .setBackgroundColor(OBJECT_BORDER_GREY)
             .setSize(dropdownW, dropdownH)//temporary size
             .setBarHeight(dropdownH) //height of top/primary bar
             .setItemHeight(dropdownH) //height of all item/dropdown bars
@@ -372,7 +379,7 @@ class ADS1299SettingsController {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(color(26))  // border color when not selected
+            .setColorForeground(OBJECT_BORDER_GREY)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText("")
@@ -396,7 +403,9 @@ class ADS1299SettingsController {
         });
         customCommandTF = _tf;
 
-        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send", 0, 0, 10, 10);
+        sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send Custom Command", 0, 0, 10, 10);
+        sendCustomCmdButton.setBorderColor(OBJECT_BORDER_GREY);
+        sendCustomCmdButton.getCaptionLabel().getStyle().setMarginLeft(1);
         sendCustomCmdButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 String text = dropNonPrintableChars(customCommandTF.getText());
@@ -414,18 +423,20 @@ class ADS1299SettingsController {
     }
 
     private void resizeCustomCommandUI() {
-        customCmdUI_x = x + Math.round(w / 6f) - 24;
-        customCmdUI_w = (int)Math.ceil(w * (2f/3f)) + 24;
-        int tf_x = customCmdUI_x + padding_3;
+        customCmdUI_x = x;
+        customCmdUI_w = w + 1;
+        int tf_w = Math.round(button_w * 1.8);
+        int but_w = tf_w;
+        //customCmdUI_w = (int)Math.ceil(w * (2f/3f)) + 24;
+        int tf_x = customCmdUI_x + Math.round(customCmdUI_w / 2f) - Math.round((tf_w + but_w + padding_3) / 2) + padding_3;
         int tf_y = y + h + commandBarH + padding_3;
-        int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
+        //int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
         int tf_h = commandBarH - padding_3*2;
         customCommandTF.setPosition(tf_x, tf_y);
         customCommandTF.setSize(tf_w, tf_h);
         int but_x = tf_x + customCommandTF.getWidth() + padding_3;
-        int but_w = customCmdUI_w - customCommandTF.getWidth() - padding_3*3;
         sendCustomCmdButton.setPosition(but_x, tf_y);
-        sendCustomCmdButton.setSize(but_w, tf_h);
+        sendCustomCmdButton.setSize(but_w, tf_h - 1);
     }
 
     public void updateChanSettingsDropdowns(int chan, boolean isActive) {

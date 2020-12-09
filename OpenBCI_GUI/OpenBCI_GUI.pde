@@ -64,8 +64,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.2-beta.3";
-String localGUIVersionDate = "November 2020";
+String localGUIVersionString = "v5.0.2-beta.4";
+String localGUIVersionDate = "December 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -236,12 +236,17 @@ final color WHITE = color(255);
 final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
-final color BUTTON_PRESSED = color(150,170,200); //OPENBCI_DARKBLUE;
+final color BUTTON_PRESSED = color(150, 170, 200); //OPENBCI_DARKBLUE;
 final color BUTTON_LOCKED_GREY = color(128);
 final color BUTTON_PRESSED_DARKGREY = color(50);
 final color BUTTON_NOOBGREEN = color(114,204,171);
 final color BUTTON_EXPERTPURPLE = color(135,95,154);
 final color BUTTON_CAUTIONRED = color(214,100,100);
+final color OBJECT_BORDER_GREY = color(150);
+//Use the same colors for X,Y,Z throughout Accelerometer widget
+final color ACCEL_X_COLOR = TURN_OFF_RED;
+final color ACCEL_Y_COLOR = color(49, 113, 89);
+final color ACCEL_Z_COLOR = color(54, 87, 158);
 
 
 final int COLOR_SCHEME_DEFAULT = 1;
@@ -281,6 +286,9 @@ DirectoryManager directoryManager;
 
 final int navBarHeight = 32;
 TopNav topNav;
+
+FFT[] fftBuff = new FFT[nchan];    //from the minim library
+boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -605,6 +613,9 @@ void initSystem() {
         //After TopNav has been instantiated, default to Expert mode for Galea
         topNav.configSelector.toggleExpertMode(true);
     }
+    
+    //Make sure topNav buttons draw in the correct spot
+    topNav.screenHasBeenResized(width, height);
 
     midInit = false;
 } //end initSystem
@@ -725,6 +736,7 @@ void haltSystem() {
         stopRunning();  //stop data transfer
 
         topNav.resetStartStopButton();
+        topNav.destroySmoothingGainButtons();
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
