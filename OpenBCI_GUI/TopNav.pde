@@ -587,7 +587,7 @@ class TopNav {
         }
     }
 
-    public void destroySmoothingGainButtons() {
+    public void destroySmoothingButton() {
         topNav_cp5.remove("smoothingButton");
         smoothingButton = null;
     }

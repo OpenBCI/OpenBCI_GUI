@@ -736,7 +736,7 @@ void haltSystem() {
         stopRunning();  //stop data transfer
 
         topNav.resetStartStopButton();
-        topNav.destroySmoothingGainButtons();
+        topNav.destroySmoothingButton(); //Destroy this button if exists and make null, will be re-init if needed next time session starts
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
