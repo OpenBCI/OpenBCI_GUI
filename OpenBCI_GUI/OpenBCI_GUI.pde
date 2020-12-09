@@ -64,7 +64,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.2-beta.4";
+String localGUIVersionString = "v5.0.2-beta.5";
 String localGUIVersionDate = "December 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -736,7 +736,7 @@ void haltSystem() {
         stopRunning();  //stop data transfer
 
         topNav.resetStartStopButton();
-        topNav.destroySmoothingGainButtons();
+        topNav.destroySmoothingButton(); //Destroy this button if exists and make null, will be re-init if needed next time session starts
 
         //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
         //This method establishes default and user settings for all data modes
