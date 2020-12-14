@@ -27,8 +27,6 @@ class W_playback extends Widget {
         cp5_playback.setGraphics(ourApplet, 0,0);
         cp5_playback.setAutoDraw(false);
 
-        //selectPlaybackFileButton.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
         createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
@@ -118,6 +116,7 @@ class W_playback extends Widget {
 
     private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
         selectPlaybackFileButton = createButton(cp5_playback, name, text, _x, _y, _w, _h);
+        selectPlaybackFileButton.setBorderColor(OBJECT_BORDER_GREY);
         selectPlaybackFileButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
