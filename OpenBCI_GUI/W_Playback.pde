@@ -118,6 +118,7 @@ class W_playback extends Widget {
 
     private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
         selectPlaybackFileButton = createButton(cp5_playback, name, text, _x, _y, _w, _h);
+        selectPlaybackFileButton.setBorderColor(OBJECT_BORDER_GREY);
         selectPlaybackFileButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");

@@ -91,6 +91,10 @@ class W_PulseSensor extends Widget {
     void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        if(currentBoard instanceof DataSourcePlayback && !((DataSourcePlayback)currentBoard).isAnalogActive()) {
+            return;
+        }
+
         List<double[]> allData = currentBoard.getData(PulseBuffSize);
         int[] analogChannels = analogBoard.getAnalogChannels();
 

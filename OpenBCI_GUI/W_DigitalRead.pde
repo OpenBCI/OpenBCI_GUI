@@ -83,6 +83,10 @@ class W_DigitalRead extends Widget {
     public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        if(currentBoard instanceof DataSourcePlayback && !((DataSourcePlayback)currentBoard).isDigitalActive()) {
+            return;
+        }
+
         //update channel bars ... this means feeding new EEG data into plots
         for (int i = 0; i < numDigitalReadDots; i++) {
             digitalReadDots[i].update();
