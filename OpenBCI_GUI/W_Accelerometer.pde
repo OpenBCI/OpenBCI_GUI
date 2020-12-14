@@ -196,6 +196,10 @@ class W_Accelerometer extends Widget {
                         w_pulsesensor.toggleAnalogReadButton(false);
                         w_analogRead.toggleAnalogReadButton(false);
                     }
+                    ///Hide button when set On for Cyton board only. This is a special case for Cyton board Aux mode behavior. See BoardCyton.pde for more info.
+                    if ((currentBoard instanceof BoardCyton)) {
+                        accelModeButton.setVisible(false);
+                    }
                 } else {
                     if (accelBoard.canDeactivateAccelerometer()) {
                         accelBoard.setAccelerometerActive(false);
@@ -210,6 +214,10 @@ class W_Accelerometer extends Widget {
         if (accelBoard.canDeactivateAccelerometer() || (currentBoard instanceof BoardCyton)) {
             //Set button switch to On of it can be toggled
             accelModeButton.setOn();
+            //Hide button when set On for Cyton board only. This is a special case for Cyton board Aux mode behavior. See BoardCyton.pde for more info.
+            if ((currentBoard instanceof BoardCyton)) {
+                accelModeButton.setVisible(false);
+            }
         }
     }
 
@@ -255,6 +263,10 @@ class W_Accelerometer extends Widget {
             accelModeButton.setOn();
         } else {
             accelModeButton.setOff();
+        }
+        //Hide button when set On for Cyton board only. This is a special case for Cyton board Aux mode behavior. See BoardCyton.pde for more info.
+        if ((currentBoard instanceof BoardCyton)) {
+            accelModeButton.setVisible(!_value);
         }
     }
 
