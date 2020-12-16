@@ -13,7 +13,6 @@ jobs:
 branches:
   only:
   - master
-  - development
   - novaxr-dev
 
 before_install:

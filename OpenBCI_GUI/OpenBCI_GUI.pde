@@ -64,7 +64,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.2-beta.6";
+String localGUIVersionString = "v5.0.2";
 String localGUIVersionDate = "December 2020";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -358,8 +358,18 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
+    String osName = "Operating System: ";
+    if (isLinux()) {
+        osName += "Linux";
+    } else if (isWindows()) {
+        osName += "Windows";
+    } else if (isMac()) {
+        osName += "Mac";
+    }
+
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
+    println(osName);
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
     
