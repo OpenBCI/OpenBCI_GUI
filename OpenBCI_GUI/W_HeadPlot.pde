@@ -40,7 +40,7 @@ class W_HeadPlot extends Widget {
     }
 
     void updateHeadPlot(int _nchan) {
-        headPlot = new HeadPlot(x, y, w, h, win_x, win_y);
+        headPlot = new HeadPlot(x, y, w, h, win_w, win_h);
         //FROM old Gui_Manager
         headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
         headPlot.setPolarityData_byRef(dataProcessing.polarity);

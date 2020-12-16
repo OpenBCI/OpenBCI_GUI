@@ -1,6 +1,3 @@
-
-int navHeight = 22;
-
 //========================================================================================
 //=================              ADD NEW WIDGETS HERE            =========================
 //========================================================================================
@@ -26,7 +23,7 @@ W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
-W_NovaAux w_novaAux;
+W_AuraAux w_galeaAux;
 W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -52,11 +49,18 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_accelerometer, w);
     }
 
-    if (novaXREnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
-        //NovaXR_Widget_2
-        w_novaAux = new W_NovaAux(_this);
-        w_novaAux.setTitle("NovaXR Aux");
-        addWidget(w_novaAux, w);
+    if(currentBoard instanceof DataSourcePlayback){
+        //Playback Widget_3
+        w_playback = new W_playback(_this);
+        w_playback.setTitle("Playback History");
+        addWidget(w_playback, w);
+    }
+
+    if (galeaEnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
+        //Galea_Widget_2
+        w_galeaAux = new W_AuraAux(_this);
+        w_galeaAux.setTitle("Galea Aux");
+        addWidget(w_galeaAux, w);
     }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
@@ -65,13 +69,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
         addWidget(w_ganglionImpedance, w);
-    }
-
-    if(currentBoard instanceof DataSourcePlayback){
-        //Playback Widget_3
-        w_playback = new W_playback(_this);
-        w_playback.setTitle("Playback History");
-        addWidget(w_playback, w);
     }
 
     //Cyton/Synthetic Widget_3, Ganglion/Playback Widget_4
@@ -150,23 +147,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
 //========================================================================================
 //========================================================================================
 //========================================================================================
-
-WidgetManager wm;
-boolean wmVisible = true;
-CColor cp5_colors;
-
-//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
-color[] channelColors = {
-    color(129, 129, 129),
-    color(124, 75, 141),
-    color(54, 87, 158),
-    color(49, 113, 89),
-    color(221, 178, 13),
-    color(253, 94, 52),
-    color(224, 56, 45),
-    color(162, 82, 49)
-};
-
 
 class WidgetManager{
 

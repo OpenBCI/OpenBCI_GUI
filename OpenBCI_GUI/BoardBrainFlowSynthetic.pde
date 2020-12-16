@@ -1,5 +1,7 @@
 import brainflow.*;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 class BoardBrainFlowSynthetic extends BoardBrainFlow
 implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryInfoCapableBoard {
 

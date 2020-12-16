@@ -9,6 +9,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     private double startTime;
     private int counter;
     private int currentSample;
+    private int numNewSamplesThisFrame;
     private int timeOfLastUpdateMS;
     private double accel_x;
     private double accel_y;
@@ -126,7 +127,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
 
         float sampleRateMS = getSampleRate() / 1000.f;
         int timeElapsedMS = millis() - timeOfLastUpdateMS;
-        int numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
+        numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
 
         // account for the fact that each update will not coincide with a sample exactly. 
         // to keep the streaming rate accurate, we increment the time of last update
@@ -136,7 +137,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         currentSample += numNewSamplesThisFrame;
 
         if (endOfFileReached()) {
-            stopButtonWasPressed();
+            topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
@@ -152,6 +153,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     @Override
     public void stopStreaming() {
         streaming = false;
+    }
+
+    @Override
+    public boolean isStreaming() {
+        return streaming;
     }
 
     @Override
@@ -196,8 +202,14 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
 
     @Override
     public double[][] getFrameData() {
-        // empty data (for now?)
-        return new double[getTotalChannelCount()][0];
+        double[][] array = new double[getTotalChannelCount()][numNewSamplesThisFrame];
+        List<double[]> list = getData(numNewSamplesThisFrame);
+        for (int i = 0; i < numNewSamplesThisFrame; i++) {
+            for (int j = 0; j < getTotalChannelCount(); j++) {
+                array[j][i] = list.get(i)[j];
+            }
+        }
+        return array;
     }
 
     @Override

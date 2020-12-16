@@ -11,12 +11,14 @@
 //
 ///////////////////////////////////////////////////
 
-FFT[] fftBuff = new FFT[nchan];    //from the minim library
-boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
-
 class W_fft extends Widget {
+
+    public ChannelSelect fftChanSelect;
+    boolean prevChanSelectIsVisible = false;
+
     GPlot fft_plot; //create an fft plot for each active channel
     GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
+    
     int[] lineColor = {
         (int)color(129, 129, 129),
         (int)color(124, 75, 141),
@@ -24,7 +26,7 @@ class W_fft extends Widget {
         (int)color(49, 113, 89),
         (int)color(221, 178, 13),
         (int)color(253, 94, 52),
-        (int)color(224, 56, 45),
+        (int)TURN_OFF_RED,
         (int)color(162, 82, 49),
         (int)color(129, 129, 129),
         (int)color(124, 75, 141),
@@ -32,7 +34,7 @@ class W_fft extends Widget {
         (int)color(49, 113, 89),
         (int)color(221, 178, 13),
         (int)color(253, 94, 52),
-        (int)color(224, 56, 45),
+        (int)TURN_OFF_RED,
         (int)color(162, 82, 49)
     };
 
@@ -44,9 +46,12 @@ class W_fft extends Widget {
     int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/currentBoard.getSampleRate()));   // maxim value of FFT index
     int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
 
-
     W_fft(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        //Add channel select dropdown to this widget
+        fftChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
+        fftChanSelect.activateAllButtons();
 
         //Default FFT plot settings
         settings.fftMaxFrqSave = 2;
@@ -110,17 +115,22 @@ class W_fft extends Widget {
         float sr = currentBoard.getSampleRate();
         int nfft = getNfftSafe();
 
-        //update the points of the FFT channel arrays
-        //update fft point arrays
+        //update the points of the FFT channel arrays for all channels
         for (int i = 0; i < fft_points.length; i++) {
             for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
                 GPoint powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
                 fft_points[i].set(j, powerAtBin);
             }
         }
-        //remap fft point arrays to fft plots
-        fft_plot.setPoints(fft_points[0]);
 
+        //Update channel select checkboxes and active channels
+        fftChanSelect.update(x, y, w);
+
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (fftChanSelect.isVisible() != prevChanSelectIsVisible) {
+            flexGPlotSizeAndPosition();
+            prevChanSelectIsVisible = fftChanSelect.isVisible();
+        }
     }
 
     void draw(){
@@ -137,12 +147,14 @@ class W_fft extends Widget {
         fft_plot.drawXAxis();
         fft_plot.drawYAxis();
         fft_plot.drawGridLines(2);
-        //here is where we will update points & loop...
-        for (int i = 0; i < fft_points.length; i++) {
-            fft_plot.setLineColor(lineColor[i]);
-            fft_plot.setPoints(fft_points[i]);
+        //Update and draw active channels that have been selected via channel select for this widget
+        for (int j = 0; j < fftChanSelect.activeChan.size(); j++) {
+            int chan = fftChanSelect.activeChan.get(j);
+            fft_plot.setLineColor(lineColor[chan]);
+            //remap fft point arrays to fft plots
+            fft_plot.setPoints(fft_points[chan]);
             fft_plot.drawLines();
-        }
+        }  
         fft_plot.endDraw();
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
@@ -151,6 +163,7 @@ class W_fft extends Widget {
 
         popStyle();
 
+        fftChanSelect.draw();
     }
 
     void screenResized(){
@@ -159,14 +172,27 @@ class W_fft extends Widget {
         //update position/size of FFT plot
         fft_plot.setPos(x, y-navHeight);//update position
         fft_plot.setOuterDim(w, h+navHeight);//update dimensions
+
+        fftChanSelect.screenResized(pApplet);
     }
 
     void mousePressed(){
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        fftChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     void mouseReleased(){
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    }
+
+    void flexGPlotSizeAndPosition() {
+        if (fftChanSelect.isVisible()) {
+                fft_plot.setPos(x, y);
+                fft_plot.setOuterDim(w, h);
+        } else {
+            fft_plot.setPos(x, y - navHeight);
+            fft_plot.setOuterDim(w, h + navHeight);
+        }
     }
 };
 

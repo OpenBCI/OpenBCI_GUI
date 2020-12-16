@@ -11,6 +11,7 @@
 //        - buttons to start/stop/reset application
 //
 //        Written by: Conor Russomanno (Oct. 2014)
+//        Refactored by: Richard Waltman (Nov. 2020)
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -25,255 +26,9 @@ import openbci_gui_helpers.GanglionError;
 import com.vmichalak.protocol.ssdp.Device;
 import com.vmichalak.protocol.ssdp.SSDPClient;
 
-//------------------------------------------------------------------------
-//                       Global Variables  & Instances
-//------------------------------------------------------------------------
-
-ControlPanel controlPanel;
-
-ControlP5 cp5; //program-wide instance of ControlP5
-ControlP5 cp5Popup;
-CallbackListener cb = new CallbackListener() { //used by ControlP5 to clear text field on double-click
-    public void controlEvent(CallbackEvent theEvent) {
-
-        if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameCyton"))){
-            println("CallbackListener: controlEvent: clearing cyton");
-            cp5.get(Textfield.class, "fileNameCyton").clear();
-            // cp5.get(Textfield.class, "fileNameGanglion").clear();
-
-        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "fileNameGanglion"))){
-            println("CallbackListener: controlEvent: clearing ganglion");
-            cp5.get(Textfield.class, "fileNameGanglion").clear();
-
-        } else if (cp5.isMouseOver(cp5.get(Textfield.class, "staticIPAddress"))){
-            println("CallbackListener: controlEvent: clearing static IP Address");
-            cp5.get(Textfield.class, "staticIPAddress").clear();
-        }
-    }
-};
-
-MenuList sourceList;
-
-//Global buttons and elements for the control panel (changed within the classes below)
-MenuList bleList;
-MenuList wifiList;
-MenuList sdTimes;
-MenuList channelList;
-MenuList pollList;
-
-color boxColor = color(200);
-color boxStrokeColor = color(bgColor);
-color isSelected_color = color(184, 220, 105);
-color colorNotPressed = color(255);
-
-Button_obci refreshPort;
-Button_obci refreshBLE;
-Button_obci refreshWifi;
-Button_obci protocolSerialCyton;
-Button_obci protocolWifiCyton;
-Button_obci protocolWifiGanglion;
-Button_obci protocolBLED112Ganglion;
-
-Button_obci initSystemButton;
-Button_obci autoSessionName; // Reuse these buttons for Cyton and Ganglion
-Button_obci outputBDF;
-Button_obci outputODF;
-
-Button_obci sampleDataButton; // Used to easily find GUI sample data for Playback mode #645
-
-Button_obci chanButton8;
-Button_obci chanButton16;
-Button_obci selectPlaybackFile;
-Button_obci popOutRadioConfigButton;
-
-//Radio Button_obci Definitions
-Button_obci getChannel;
-Button_obci setChannel;
-Button_obci ovrChannel;
-Button_obci autoscan;
-Button_obci systemStatus;
-
-Button_obci sampleRate200; //Ganglion
-Button_obci sampleRate250; //Cyton
-Button_obci sampleRate500; //Cyton
-Button_obci sampleRate1000;  //Cyton
-Button_obci sampleRate1600; //Ganglion
-Button_obci wifiIPAddressDynamic;
-Button_obci wifiIPAddressStatic;
-
-Button_obci synthChanButton4;
-Button_obci synthChanButton8;
-Button_obci synthChanButton16;
-
-ChannelPopup channelPopup;
-PollPopup pollPopup;
-RadioConfigBox rcBox;
-
-Map<String, String> BLEMACAddrMap = new HashMap<String, String>();
-int selectedSamplingRate = -1;
-
-//------------------------------------------------------------------------
-//                       Global Functions
-//------------------------------------------------------------------------
-
-public void controlEvent(ControlEvent theEvent) {
-
-    if (theEvent.isFrom("sourceList")) {
-        // THIS IS TRIGGERED WHEN A USER SELECTS 'LIVE (from Cyton) or LIVE (from Ganglion), etc...'
-        controlPanel.hideAllBoxes();
-
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
-        int newDataSource = (int)bob.get("value");
-        settings.controlEventDataSource = str; //Used for output message on system start
-        eegDataSource = newDataSource;
-
-        protocolWifiGanglion.setColorNotPressed(colorNotPressed);
-        protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
-        protocolWifiCyton.setColorNotPressed(colorNotPressed);
-        protocolSerialCyton.setColorNotPressed(colorNotPressed);
-
-        //Reset protocol
-        selectedProtocol = BoardProtocol.NONE;
-
-        //Perform this check in a way that ignores order of items in the menulist
-        if (eegDataSource == DATASOURCE_CYTON) {
-            updateToNChan(8);
-            chanButton8.setColorNotPressed(isSelected_color);
-            chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-            // WiFi autoconnect is used for "Dynamic IP"
-            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            updateToNChan(4);
-            // WiFi autoconnect is used for "Dynamic IP"
-            wifiIPAddressDynamic.setColorNotPressed(isSelected_color);
-            wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            //GUI auto detects number of channels for playback when file is selected
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-            synthChanButton4.setColorNotPressed(colorNotPressed);
-            synthChanButton8.setColorNotPressed(isSelected_color);
-            synthChanButton16.setColorNotPressed(colorNotPressed);
-        } else if (eegDataSource == DATASOURCE_NOVAXR) {
-            selectedSamplingRate = 250; //default sampling rate
-        } else if (eegDataSource == DATASOURCE_STREAMING) {
-            //do nothing for now
-        }
-    }
-
-    if (theEvent.isFrom("serialList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        openBCI_portName = (String)bob.get("subline");
-        output("OpenBCI Port Name = " + openBCI_portName);
-    }
-
-    if (theEvent.isFrom("bleList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        ganglion_portName = (String)bob.get("headline");
-        output("Ganglion Device Name = " + ganglion_portName);
-    }
-
-    if (theEvent.isFrom("wifiList")) {
-        Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        wifi_portName = (String)bob.get("headline");
-        wifi_ipAddress = (String)bob.get("subline");
-        output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
-    }
-
-    // This dropdown menu sets Cyton maximum SD-Card file size (for users doing very long recordings)
-    if (theEvent.isFrom("sdCardTimes")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        cyton_sdSetting = (CytonSDMode)bob.get("value");
-        String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
-        if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
-            outputString += " recording time";
-        }
-        output(outputString);
-        verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
-    }
-
-    if (theEvent.isFrom("channelListCP")) {
-        int setChannelInt = int(theEvent.getValue()) + 1;
-        //Map bob = ((MenuList)theEvent.getController()).getItem(int(theEvent.getValue()));
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        channelPopup.setClicked(false);
-        if (setChannel.wasPressed) {
-            rcBox.setChannel(setChannelInt);
-            setChannel.wasPressed = false;
-        } else if(ovrChannel.wasPressed) {
-            rcBox.setChannelOverride(setChannelInt);
-            ovrChannel.wasPressed = false;
-        }
-    }
-
-    //Check for event in PlaybackHistory Dropdown List in Control Panel
-    if (theEvent.isFrom("recentFiles")) {
-        int s = (int)(theEvent.getController()).getValue();
-        //println("got a menu event from item " + s);
-        String filePath = controlPanel.recentPlaybackBox.longFilePaths.get(s);
-        if (new File(filePath).isFile()) {
-            playbackFileFromList(filePath, s);
-        } else {
-            verbosePrint("Playback History: " + filePath);
-            outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
-        }
-    }
-
-    //Check for event in NovaXR Mode List in Control Panel
-    if (theEvent.isFrom("novaXR_SampleRates")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        // this will retrieve the enum object stored in the dropdown!
-        novaXR_sampleRate = (NovaXRSR)bob.get("value");
-        println("ControlPanel: User selected NovaXR Sample Rate: " + novaXR_sampleRate.getName());
-    }
-
-    //Check for event in NovaXR Mode List in Control Panel
-    if (theEvent.isFrom("novaXR_Modes")) {
-        int val = (int)(theEvent.getController()).getValue();
-        Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-        // this will retrieve the enum object stored in the dropdown!
-        novaXR_boardSetting = (NovaXRMode)bob.get("value");
-        println("ControlPanel: User selected NovaXR Mode: " + novaXR_boardSetting.getName());
-    }
-
-    //This dropdown is in the SessionData Box
-    if (theEvent.isFrom("maxFileDuration")) {
-        int n = (int)theEvent.getValue();
-        settings.setLogFileDurationChoice(n);
-        println("ControlPanel: Chosen Recording Duration: " + n);
-    }
-
-    //Check control events from widgets
-    if (systemMode >= SYSTEMMODE_POSTINIT) {
-        //Check for event in PlaybackHistory Widget MenuList
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-            if(theEvent.isFrom("playbackMenuList")) {
-                //Check to make sure value of clicked item is in valid range. Fixes #480
-                float valueOfItem = theEvent.getValue();
-                if (valueOfItem < 0 || valueOfItem > (((MenuList)theEvent.getController()).items.size() - 1) ) {
-                    //println("CP: No such item " + value + " found in list.");
-                } else {
-                    Map m = ((MenuList)theEvent.getController()).getItem(int(valueOfItem));
-                    //println("got a menu event from item " + value + " : " + m);
-                    userSelectedPlaybackMenuList(m.get("copy").toString(), int(valueOfItem));
-                }
-            }
-        }
-        //Check for event in band power channel select checkBoxes, if needed
-        /*
-        if (theEvent.isFrom(w_bandPower.bpChanSelect.checkList)) {
-            println(w_bandPower.bpChanSelect.checkList.getArrayValue());
-        }
-        */
-    }
-}
-
-//------------------------------------------------------------------------
-//                            Classes
-//------------------------------------------------------------------------
+//------------------------------------------------------------------------//
+//                      Main Control Panel Class                          //
+//------------------------------------------------------------------------//
 
 class ControlPanel {
 
@@ -286,22 +41,26 @@ class ControlPanel {
     DataSourceBox dataSourceBox;
     SerialBox serialBox;
     ComPortBox comPortBox;
-    SessionDataBox dataLogBoxCyton;
+    public SessionDataBox dataLogBoxCyton;
     ChannelCountBox channelCountBox;
     InitBox initBox;
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
-    NovaXRBox novaXRBox;
+    GaleaBox galeaBox;
+    public SessionDataBox dataLogBoxGalea;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
-    SessionDataBox dataLogBoxGanglion;
+    public SessionDataBox dataLogBoxGanglion;
     WifiBox wifiBox;
     InterfaceBoxCyton interfaceBoxCyton;
     InterfaceBoxGanglion interfaceBoxGanglion;
     SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
+
+    ChannelPopup channelPopup;
+    RadioConfigBox rcBox;
 
     //Track Dynamic and Static WiFi mode in Control Panel
     final public String WIFI_DYNAMIC = "dynamic";
@@ -311,13 +70,13 @@ class ControlPanel {
     boolean drawStopInstructions;
     int globalPadding; //design feature: passed through to all box classes as the global spacing .. in pixels .. for all elements/subelements
     boolean convertingSD = false;
-    String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
+    private final int PAD_3 = 3;
 
     ControlPanel(OpenBCI_GUI mainClass) {
 
-        x = 3;
-        y = 3 + topNav.controlPanelCollapser.but_dy;
-        w = topNav.controlPanelCollapser.but_dx;
+        x = PAD_3;
+        y = PAD_3 + topNav.controlPanelCollapser.getHeight();
+        w = topNav.controlPanelCollapser.getWidth();
         h = height - int(helpWidget.h);
 
         isOpen = false;
@@ -325,20 +84,18 @@ class ControlPanel {
 
         globalPadding = 10;  //controls the padding of all elements on the control panel
 
-        cp5 = new ControlP5(mainClass);
-        cp5Popup = new ControlP5(mainClass);
-        cp5.setAutoDraw(false);
-        cp5Popup.setAutoDraw(false);
-
         //boxes active when eegDataSource = Normal (OpenBCI)
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
         interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
         interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
+        
+        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
+        rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
 
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
         wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
 
-        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON);
+        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON, dataLogger.getDataLoggerOutputFormat(), "sessionNameCyton");
         channelCountBox = new ChannelCountBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding);
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
@@ -349,37 +106,35 @@ class ControlPanel {
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
 
-        novaXRBox = new NovaXRBox(x + w, dataSourceBox.y, w, h, globalPadding);
-
-        streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        galeaBox = new GaleaBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        dataLogBoxGalea = new SessionDataBox(x + w, (galeaBox.y + galeaBox.h), w, h, globalPadding, DATASOURCE_GALEA, dataLogger.getDataLoggerOutputFormat(), "sessionNameGalea");
         
-        comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
-        rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
+        streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
+
         channelPopup = new ChannelPopup(x+w, y, w, h, globalPadding);
-        pollPopup = new PollPopup(x+w,y,w,h,globalPadding);
 
         initBox = new InitBox(x, (dataSourceBox.y + dataSourceBox.h), w, h, globalPadding);
 
         // Ganglion
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
-        dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION);
+        dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION, dataLogger.getDataLoggerOutputFormat(), "sessionNameGanglion");
         sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
     }
 
     public void resetListItems(){
         comPortBox.serialList.activeItem = -1;
-        bleList.activeItem = -1;
-        wifiList.activeItem = -1;
+        bleBox.bleList.activeItem = -1;
+        wifiBox.wifiList.activeItem = -1;
     }
 
     public void open(){
         isOpen = true;
-        topNav.controlPanelCollapser.setIsActive(true);
+        topNav.controlPanelCollapser.setOn();
     }
 
     public void close(){
         isOpen = false;
-        topNav.controlPanelCollapser.setIsActive(false);
+        topNav.controlPanelCollapser.setOff();
     }
 
     public String getWifiSearchStyle() {
@@ -391,19 +146,6 @@ class ControlPanel {
     }
 
     public void update() {
-        //toggle view of cp5 / serial list selection table
-        if (isOpen) { // if control panel is open
-            if (!cp5.isVisible()) {  //and cp5 is not visible
-                cp5.show(); // shot it
-                cp5Popup.show();
-            }
-        } else { //the opposite of above
-            if (cp5.isVisible()) {
-                cp5.hide();
-                cp5Popup.hide();
-            }
-        }
-
         //update all boxes if they need to be
         dataSourceBox.update();
         serialBox.update();
@@ -416,7 +158,9 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
 
-        novaXRBox.update();
+        dataLogBoxGalea.update();
+        galeaBox.update();
+
         streamingBoardBox.update();
 
         sdBox.update();
@@ -425,8 +169,7 @@ class ControlPanel {
         initBox.update();
 
         channelPopup.update();
-        bleList.updateMenu();
-        wifiList.updateMenu();
+
         dataLogBoxGanglion.update();
 
         wifiBox.update();
@@ -449,9 +192,8 @@ class ControlPanel {
         if (systemMode != 10) { // only draw control panel boxes if system running is false
             dataSourceBox.draw();
             drawStopInstructions = false;
-            cp5.setVisible(true);//make sure controlP5 elements are visible
-            cp5Popup.setVisible(true);
 
+            //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
                 if (selectedProtocol == BoardProtocol.NONE) {
                     interfaceBoxCyton.draw();
@@ -467,14 +209,6 @@ class ControlPanel {
                             comPortBox.serialList.setVisible(true);
                             if (channelPopup.wasClicked()) {
                                 channelPopup.draw();
-                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(true);
-                                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-                            } else if (pollPopup.wasClicked()) {
-                                pollPopup.draw();
-                                cp5Popup.get(MenuList.class, "pollList").setVisible(true);
-                                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-                                cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                                cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                             }
                         }
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
@@ -483,13 +217,6 @@ class ControlPanel {
                         wifiBox.draw();
                         dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
 
-                        if (getWifiSearchStyle() == WIFI_STATIC) {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
-                            cp5.get(MenuList.class, "wifiList").setVisible(false);
-                        } else {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-                            cp5.get(MenuList.class, "wifiList").setVisible(true);
-                        }
                         sampleRateCytonBox.draw();
                     }
                     channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
@@ -497,21 +224,15 @@ class ControlPanel {
                     sampleRateCytonBox.y = channelCountBox.y;
                     channelCountBox.draw();
                     sdBox.draw();
-                    cp5.get(Textfield.class, "fileNameCyton").setVisible(true); //make sure the data file field is visible
-                    cp5.get(Textfield.class, "fileNameGanglion").setVisible(false); //make sure the data file field is not visible
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-
-                //set other CP5 controllers invisible
-                comPortBox.serialList.setVisible(false);
-                cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-                cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-
-            } else if (eegDataSource == DATASOURCE_NOVAXR) {
-                novaXRBox.draw();
+            } else if (eegDataSource == DATASOURCE_GALEA) {
+                dataLogBoxGalea.y = galeaBox.y + galeaBox.h;  
+                dataLogBoxGalea.draw();
+                galeaBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -523,36 +244,18 @@ class ControlPanel {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
-                        cp5.get(MenuList.class, "bleList").setVisible(true);
-                        cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
                         wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
                         wifiBox.draw();
-                        if (getWifiSearchStyle() == WIFI_STATIC) {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(true);
-                            cp5.get(MenuList.class, "wifiList").setVisible(false);
-                        } else {
-                            cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-                            cp5.get(MenuList.class, "wifiList").setVisible(true);
-                        }
                         sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
                     }
                     dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
-                    cp5.get(Textfield.class, "fileNameCyton").setVisible(false); //make sure the data file field is visible
-                    cp5.get(Textfield.class, "fileNameGanglion").setVisible(true); //make sure the data file field is visible
                 }
             } else if (eegDataSource == DATASOURCE_STREAMING) {
                 streamingBoardBox.draw();
-            } else {
-                //set other CP5 controllers invisible
-                hideAllBoxes();
             }
-        } else {
-            cp5.setVisible(false); // if isRunning is true, hide all controlP5 elements
-            cp5Popup.setVisible(false);
-            // cp5Serial.setVisible(false);    //%%%
         }
 
         //draw the box that tells you to stop the system in order to edit control settings
@@ -565,23 +268,9 @@ class ControlPanel {
             String stopInstructions = "Press the \"STOP SESSION\" button to change your data source or edit system settings.";
             textAlign(CENTER, TOP);
             textFont(p4, 14);
-            fill(bgColor);
+            fill(OPENBCI_DARKBLUE);
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
-        }
-
-        //draw the ControlP5 stuff
-        textFont(p4, 14);
-        cp5Popup.draw();
-        cp5.draw();
-
-        //Drawing here allows max file size dropdown to be drawn on top of all other cp5 elements
-        if (systemMode != 10 && outputDataSource == OUTPUT_SOURCE_ODF) {
-            if (eegDataSource == DATASOURCE_CYTON && selectedProtocol != BoardProtocol.NONE) {
-                dataLogBoxCyton.cp5_dataLog_dropdown.draw();
-            } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol != BoardProtocol.NONE) {
-                dataLogBoxGanglion.cp5_dataLog_dropdown.draw();
-            }
         }
 
         popStyle();
@@ -590,657 +279,45 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         comPortBox.isShowing = false;
-        cp5Popup.hide(); // make sure to hide the controlP5 object
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-        comPortBox.serialList.setVisible(false);
-        popOutRadioConfigButton.setString("Manual >");
+        serialBox.popOutRadioConfigButton.getCaptionLabel().setText("Manual >");
         rcBox.closeSerialPort();
     }
 
-    public void hideAllBoxes() {
-        //set other CP5 controllers invisible
-        cp5.get(Textfield.class, "fileNameCyton").setVisible(false);
-        cp5.get(Textfield.class, "staticIPAddress").setVisible(false);
-        cp5.get(Textfield.class, "fileNameGanglion").setVisible(false);
-        comPortBox.serialList.setVisible(false);
-        cp5.get(MenuList.class, "bleList").setVisible(false);
-        cp5.get(MenuList.class, "wifiList").setVisible(false);
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
-        cp5Popup.get(MenuList.class, "pollList").setVisible(false);
-    }
-
     private void hideChannelListCP() {
-        cp5Popup.get(MenuList.class, "channelListCP").setVisible(false);
         channelPopup.setClicked(false);
-        if (setChannel.wasPressed) {
-            setChannel.wasPressed = false;
-        } else if(ovrChannel.wasPressed) {
-            ovrChannel.wasPressed = false;
-        }
     }
 
-    //mouse pressed in control panel
-    public void CPmousePressed() {
-        verbosePrint("CPmousePressed");
-
-        if (initSystemButton.isMouseHere()) {
-            initSystemButton.setIsActive(true);
-            initSystemButton.wasPressed = true;
-        }
-    
-        //only able to click buttons of control panel when system is not running
-        if (systemMode != SYSTEMMODE_POSTINIT) {
-
-            //active buttons during DATASOURCE_CYTON
-            if (eegDataSource == DATASOURCE_CYTON) {
-                
-                if (selectedProtocol == BoardProtocol.SERIAL) {
-                    if (popOutRadioConfigButton.isMouseHere()){
-                        popOutRadioConfigButton.setIsActive(true);
-                        popOutRadioConfigButton.wasPressed = true;
-                    }
-                    if (refreshPort.isMouseHere()) {
-                        refreshPort.setIsActive(true);
-                        refreshPort.wasPressed = true;
-                    }
-                    if (serialBox.autoConnect.isMouseHere()) {
-                        serialBox.autoConnect.setIsActive(true);
-                        serialBox.autoConnect.wasPressed = true;
-                    }
-                }
-
-                if (chanButton8.isMouseHere()) {
-                    chanButton8.setIsActive(true);
-                    chanButton8.wasPressed = true;
-                    chanButton8.setColorNotPressed(isSelected_color);
-                    chanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (chanButton16.isMouseHere()) {
-                    chanButton16.setIsActive(true);
-                    chanButton16.wasPressed = true;
-                    chanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                    chanButton16.setColorNotPressed(isSelected_color);
-                }
-
-                if (getChannel.isMouseHere()){
-                    getChannel.setIsActive(true);
-                    getChannel.wasPressed = true;
-                }
-
-                if (setChannel.isMouseHere()){
-                    setChannel.setIsActive(true);
-                    setChannel.wasPressed = true;
-                    ovrChannel.wasPressed = false;
-                }
-
-                if (ovrChannel.isMouseHere()){
-                    ovrChannel.setIsActive(true);
-                    ovrChannel.wasPressed = true;
-                    setChannel.wasPressed = false;
-                }
-
-                if (protocolWifiCyton.isMouseHere()) {
-                    protocolWifiCyton.setIsActive(true);
-                    protocolWifiCyton.wasPressed = true;
-                    protocolWifiCyton.setColorNotPressed(isSelected_color);
-                    protocolSerialCyton.setColorNotPressed(colorNotPressed);
-                }
-
-                if (protocolSerialCyton.isMouseHere()) {
-                    protocolSerialCyton.setIsActive(true);
-                    protocolSerialCyton.wasPressed = true;
-                    protocolWifiCyton.setColorNotPressed(colorNotPressed);
-                    protocolSerialCyton.setColorNotPressed(isSelected_color);
-                }
-
-                if (autoscan.isMouseHere()){
-                    autoscan.setIsActive(true);
-                    autoscan.wasPressed = true;
-                }
-
-                if (systemStatus.isMouseHere()){
-                    systemStatus.setIsActive(true);
-                    systemStatus.wasPressed = true;
-                }
-
-                if (sampleRate250.isMouseHere()) {
-                    sampleRate250.setIsActive(true);
-                    sampleRate250.wasPressed = true;
-                    sampleRate250.setColorNotPressed(isSelected_color);
-                    sampleRate500.setColorNotPressed(colorNotPressed);
-                    sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate500.isMouseHere()) {
-                    sampleRate500.setIsActive(true);
-                    sampleRate500.wasPressed = true;
-                    sampleRate500.setColorNotPressed(isSelected_color);
-                    sampleRate250.setColorNotPressed(colorNotPressed);
-                    sampleRate1000.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate1000.isMouseHere()) {
-                    sampleRate1000.setIsActive(true);
-                    sampleRate1000.wasPressed = true;
-                    sampleRate1000.setColorNotPressed(isSelected_color);
-                    sampleRate250.setColorNotPressed(colorNotPressed); //default color of button
-                    sampleRate500.setColorNotPressed(colorNotPressed);
-                }
-            }
-
-            else if (eegDataSource == DATASOURCE_GANGLION) {
-                // This is where we check for button presses if we are searching for BLE devices
-                
-                if (refreshBLE.isMouseHere()) {
-                    refreshBLE.setIsActive(true);
-                    refreshBLE.wasPressed = true;
-                }
-
-                if (protocolWifiGanglion.isMouseHere()) {
-                    protocolWifiGanglion.setIsActive(true);
-                    protocolWifiGanglion.wasPressed = true;
-                    protocolBLED112Ganglion.setColorNotPressed(colorNotPressed);
-                    protocolWifiGanglion.setColorNotPressed(isSelected_color);
-                }
-
-                if (protocolBLED112Ganglion.isMouseHere()) {
-                    protocolBLED112Ganglion.setIsActive(true);
-                    protocolBLED112Ganglion.wasPressed = true;
-                    protocolBLED112Ganglion.setColorNotPressed(isSelected_color);
-                    protocolWifiGanglion.setColorNotPressed(colorNotPressed);
-                }
-
-                if (sampleRate200.isMouseHere()) {
-                    sampleRate200.setIsActive(true);
-                    sampleRate200.wasPressed = true;
-                    sampleRate200.setColorNotPressed(isSelected_color);
-                    sampleRate1600.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (sampleRate1600.isMouseHere()) {
-                    sampleRate1600.setIsActive(true);
-                    sampleRate1600.wasPressed = true;
-                    sampleRate1600.setColorNotPressed(isSelected_color);
-                    sampleRate200.setColorNotPressed(colorNotPressed); //default color of button
-                }
-            }
-
-            //active buttons during DATASOURCE_PLAYBACKFILE
-            else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
-                if (selectPlaybackFile.isMouseHere()) {
-                    selectPlaybackFile.setIsActive(true);
-                    selectPlaybackFile.wasPressed = true;
-                }
-                if (sampleDataButton.isMouseHere()) {
-                    sampleDataButton.setIsActive(true);
-                    sampleDataButton.wasPressed = true;
-                }
-            }
-
-            //active buttons during DATASOURCE_SYNTHETIC
-            else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                if (synthChanButton4.isMouseHere()) {
-                    synthChanButton4.setIsActive(true);
-                    synthChanButton4.wasPressed = true;
-                    synthChanButton4.setColorNotPressed(isSelected_color);
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton8.isMouseHere()) {
-                    synthChanButton8.setIsActive(true);
-                    synthChanButton8.wasPressed = true;
-                    synthChanButton8.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton16.isMouseHere()) {
-                    synthChanButton16.setIsActive(true);
-                    synthChanButton16.wasPressed = true;
-                    synthChanButton16.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                }
-            }
-
-            else if (eegDataSource == DATASOURCE_NOVAXR) {
-                novaXRBox.mousePressed();
-            }
-
-            
-            //The following buttons apply only to Cyton and Ganglion Modes for now
-            if (autoSessionName.isMouseHere()) {
-                autoSessionName.setIsActive(true);
-                autoSessionName.wasPressed = true;
-            }
-
-            if (outputODF.isMouseHere()) {
-                outputODF.setIsActive(true);
-                outputODF.wasPressed = true;
-            }
-
-            if (outputBDF.isMouseHere()) {
-                outputBDF.setIsActive(true);
-                outputBDF.wasPressed = true;
-            }
-
-            if (selectedProtocol == BoardProtocol.WIFI) {
-                if (refreshWifi.isMouseHere()) {
-                    refreshWifi.setIsActive(true);
-                    refreshWifi.wasPressed = true;
-                }
-                if (wifiIPAddressDynamic.isMouseHere()) {		
-                    wifiIPAddressDynamic.setIsActive(true);		
-                    wifiIPAddressDynamic.wasPressed = true;		
-                    wifiIPAddressDynamic.setColorNotPressed(isSelected_color);		
-                    wifiIPAddressStatic.setColorNotPressed(colorNotPressed);		
-                }		
-
-                if (wifiIPAddressStatic.isMouseHere()) {		
-                    wifiIPAddressStatic.setIsActive(true);		
-                    wifiIPAddressStatic.wasPressed = true;		
-                    wifiIPAddressStatic.setColorNotPressed(isSelected_color);		
-                    wifiIPAddressDynamic.setColorNotPressed(colorNotPressed);		
-                }
-            }
-
-        }
-        // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
-    }
-
-    //mouse released in control panel
-    public void CPmouseReleased() {
-        //verbosePrint("CPMouseReleased: CPmouseReleased start...");
-        if (popOutRadioConfigButton.isMouseHere() && popOutRadioConfigButton.wasPressed) {
-            popOutRadioConfigButton.wasPressed = false;
-            popOutRadioConfigButton.setIsActive(false);
-            if (selectedProtocol == BoardProtocol.SERIAL) {
-                if (rcBox.isShowing) {
-                    hideRadioPopoutBox();
-                } else {
-                    rcBox.isShowing = true;
-                    rcBox.print_onscreen(rcBox.initial_message);
-                    popOutRadioConfigButton.setString("Manual <");
-                }
-            }
-        }
-
-        if (serialBox.autoConnect.isMouseHere() && serialBox.autoConnect.wasPressed) {
-            serialBox.autoConnect.wasPressed = false;
-            serialBox.autoConnect.setIsActive(false);
-            comPortBox.attemptAutoConnectCyton();
-        }
-
-        if (rcBox.isShowing) {
-            if(getChannel.isMouseHere() && getChannel.wasPressed){
-                rcBox.getChannel();
-                getChannel.wasPressed = false;
-                getChannel.setIsActive(false);
-                hideChannelListCP();
-            }
-
-            if (setChannel.isMouseHere() && setChannel.wasPressed){
-                channelPopup.setClicked(true);
-                channelPopup.setTitle("Change Channel");
-                pollPopup.setClicked(false);
-                setChannel.setIsActive(false);
-            }
-
-            if (ovrChannel.isMouseHere() && ovrChannel.wasPressed){
-                channelPopup.setClicked(true);
-                channelPopup.setTitle("Override Dongle");
-                pollPopup.setClicked(false);
-                ovrChannel.setIsActive(false);
-            }
-
-            if(autoscan.isMouseHere() && autoscan.wasPressed){
-                rcBox.scanChannels();
-                autoscan.wasPressed = false;
-                autoscan.setIsActive(false);
-                hideChannelListCP();
-            }
-
-            if(systemStatus.isMouseHere() && systemStatus.wasPressed){
-                rcBox.getSystemStatus();
-                systemStatus.setIsActive(false);
-                systemStatus.wasPressed = false;
-                hideChannelListCP();
-            }
-        }
-
-        if (initSystemButton.isMouseHere() && initSystemButton.wasPressed) {
-            if (rcBox.isShowing) {
-                hideRadioPopoutBox();
-            }
-            //if system is not active ... initate system and flip button state
-            initButtonPressed();
-            //cursor(ARROW); //this this back to ARROW
-        }
-
-        //open or close serial port if serial port button is pressed (left button in serial widget)
-        if (refreshPort.isMouseHere() && refreshPort.wasPressed) {
-            comPortBox.refreshPortListCyton();
-        }
-
-        if (refreshBLE.isMouseHere() && refreshBLE.wasPressed) {
-            bleBox.refreshGanglionBLEList();
-        }
-
-        if (refreshWifi.isMouseHere() && refreshWifi.wasPressed) {
-            wifiBox.refreshWifiList();
-        }
-
-        // Dynamic = Autoconnect, Static = Manually type IP address
-        if(wifiIPAddressDynamic.isMouseHere() && wifiIPAddressDynamic.wasPressed) {
-            wifiBox.h = 208;
-            setWiFiSearchStyle(WIFI_DYNAMIC);
-            String output = "Using Dynamic IP address of the WiFi Shield!";
-            println("CP: WiFi IP: " + output);
-        }
-
-        if(wifiIPAddressStatic.isMouseHere() && wifiIPAddressStatic.wasPressed) {
-            wifiBox.h = 120;
-            setWiFiSearchStyle(WIFI_STATIC);
-            String output = "Using Static IP address of the WiFi Shield!";
-            outputInfo(output);
-            println("CP: WiFi IP: " + output);
-        }
-
-        if (protocolBLED112Ganglion.isMouseHere() && protocolBLED112Ganglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.BLED112;
-            bleBox.refreshGanglionBLEList();
-        }
-
-        if (protocolWifiGanglion.isMouseHere() && protocolWifiGanglion.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
-        }
-
-        if (protocolSerialCyton.isMouseHere() && protocolSerialCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.SERIAL;
-            comPortBox.refreshPortListCyton();
-        }
-
-        if (protocolWifiCyton.isMouseHere() && protocolWifiCyton.wasPressed) {
-            wifiList.items.clear();
-            bleList.items.clear();
-            controlPanel.hideAllBoxes();
-            selectedProtocol = BoardProtocol.WIFI;
-        }
-
-        if (autoSessionName.isMouseHere() && autoSessionName.wasPressed) {
-            String _board = (eegDataSource == DATASOURCE_CYTON) ? "Cyton" : "Ganglion";
-            String _textField = (eegDataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";
-            output("Autogenerated " + _board + " Session Name based on current date & time.");
-            cp5.get(Textfield.class, _textField).setText(directoryManager.getFileNameDateTime());
-        }
-
-        if (outputODF.isMouseHere() && outputODF.wasPressed) {
-            output("Output has been set to OpenBCI Data Format.");
-            outputDataSource = OUTPUT_SOURCE_ODF;
-            outputODF.setColorNotPressed(isSelected_color);
-            outputBDF.setColorNotPressed(colorNotPressed);
-            if (eegDataSource == DATASOURCE_CYTON) {
-                controlPanel.dataLogBoxCyton.setToODFHeight();
-            } else {
-                controlPanel.dataLogBoxGanglion.setToODFHeight();
-            }
-        }
-
-        if (outputBDF.isMouseHere() && outputBDF.wasPressed) {
-            output(bdfMessage);
-            outputDataSource = OUTPUT_SOURCE_BDF;
-            outputBDF.setColorNotPressed(isSelected_color);
-            outputODF.setColorNotPressed(colorNotPressed);
-            if (eegDataSource == DATASOURCE_CYTON) {
-                controlPanel.dataLogBoxCyton.setToBDFHeight();
-            } else {
-                controlPanel.dataLogBoxGanglion.setToBDFHeight();
-            }
-        }
-
-        if (chanButton8.isMouseHere() && chanButton8.wasPressed) {
-            updateToNChan(8);
-        }
-
-        if (chanButton16.isMouseHere() && chanButton16.wasPressed ) {
-            updateToNChan(16);
-        }
-
-        if (sampleRate200.isMouseHere() && sampleRate200.wasPressed) {
-            selectedSamplingRate = 200;
-        }
-
-        if (sampleRate1600.isMouseHere() && sampleRate1600.wasPressed) {
-            selectedSamplingRate = 1600;
-        }
-
-        if (sampleRate250.isMouseHere() && sampleRate250.wasPressed) {
-            selectedSamplingRate = 250;
-        }
-
-        if (sampleRate500.isMouseHere() && sampleRate500.wasPressed) {
-            selectedSamplingRate = 500;
-        }
-
-        if (sampleRate1000.isMouseHere() && sampleRate1000.wasPressed) {
-            selectedSamplingRate = 1000;
-        }
-
-        if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
-            updateToNChan(4);
-        }
-
-        if (synthChanButton8.isMouseHere() && synthChanButton8.wasPressed) {
-            updateToNChan(8);
-        }
-
-        if (synthChanButton16.isMouseHere() && synthChanButton16.wasPressed) {
-            updateToNChan(16);
-        }
-
-        if (selectPlaybackFile.isMouseHere() && selectPlaybackFile.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected",
-                        new File(directoryManager.getGuiDataPath() + "Recordings"));
-        }
-
-
-        if (sampleDataButton.isMouseHere() && sampleDataButton.wasPressed) {
-            output("Select a file for playback");
-            selectInput("Select a pre-recorded file for playback:", 
-                        "playbackFileSelected", 
-                        new File(directoryManager.getGuiDataPath() + 
-                                "Sample_Data" + System.getProperty("file.separator") + 
-                                "OpenBCI-sampleData-2-meditation.txt"));
-        }
-
-        novaXRBox.mouseReleased();
-
-        //reset all buttons to false
-        refreshPort.setIsActive(false);
-        refreshPort.wasPressed = false;
-        refreshBLE.setIsActive(false);
-        refreshBLE.wasPressed = false;
-        refreshWifi.setIsActive(false);
-        refreshWifi.wasPressed = false;
-        protocolBLED112Ganglion.setIsActive(false);
-        protocolBLED112Ganglion.wasPressed = false;
-        protocolWifiGanglion.setIsActive(false);
-        protocolWifiGanglion.wasPressed = false;
-        protocolSerialCyton.setIsActive(false);
-        protocolSerialCyton.wasPressed = false;
-        protocolWifiCyton.setIsActive(false);
-        protocolWifiCyton.wasPressed = false;
-        initSystemButton.setIsActive(false);
-        initSystemButton.wasPressed = false;
-        autoSessionName.setIsActive(false);
-        autoSessionName.wasPressed = false;
-        outputBDF.setIsActive(false);
-        outputBDF.wasPressed = false;
-        outputODF.setIsActive(false);
-        outputODF.wasPressed = false;
-        wifiIPAddressDynamic.setIsActive(false);
-        wifiIPAddressDynamic.wasPressed = false;
-        wifiIPAddressStatic.setIsActive(false);
-        wifiIPAddressStatic.wasPressed = false;
-        chanButton8.setIsActive(false);
-        chanButton8.wasPressed = false;
-        sampleRate200.setIsActive(false);
-        sampleRate200.wasPressed = false;
-        sampleRate1600.setIsActive(false);
-        sampleRate1600.wasPressed = false;
-        sampleRate250.setIsActive(false);
-        sampleRate250.wasPressed = false;
-        sampleRate500.setIsActive(false);
-        sampleRate500.wasPressed = false;
-        sampleRate1000.setIsActive(false);
-        sampleRate1000.wasPressed = false;
-        synthChanButton4.setIsActive(false);
-        synthChanButton4.wasPressed = false;
-        synthChanButton8.setIsActive(false);
-        synthChanButton8.wasPressed = false;
-        synthChanButton16.setIsActive(false);
-        synthChanButton16.wasPressed = false;
-        chanButton16.setIsActive(false);
-        chanButton16.wasPressed  = false;
-        selectPlaybackFile.setIsActive(false);
-        selectPlaybackFile.wasPressed = false;
-        sampleDataButton.setIsActive(false);
-        sampleDataButton.wasPressed = false;
-    }
-};
-
-public void initButtonPressed(){
-    if (initSystemButton.but_txt == "START SESSION") {
-        if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
-            output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
-            output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-            output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
-            output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
-            output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-            output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else if (eegDataSource == -1) {//if no data source selected
-            output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
-            initSystemButton.wasPressed = false;
-            initSystemButton.setIsActive(false);
-            return;
-        } else { //otherwise, initiate system!
-            //verbosePrint("ControlPanel: CPmouseReleased: init");
-            initSystemButton.setString("STOP SESSION");
-            // Global steps to START SESSION
-            // Prepare the serial port
-            if (eegDataSource == DATASOURCE_CYTON) {
-                sessionName = cp5.get(Textfield.class, "fileNameCyton").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
-                controlPanel.serialBox.autoConnect.setIgnoreHover(false); //reset the auto-connect button
-                controlPanel.serialBox.autoConnect.setColorNotPressed(255);
-            } else if (eegDataSource == DATASOURCE_GANGLION) {
-                // store the current text field value of "File Name" to be passed along to dataFiles
-                sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText();
-            } else {
-                sessionName = directoryManager.getFileNameDateTime();
-            }
-
-            if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
-                wifi_ipAddress = cp5.get(Textfield.class, "staticIPAddress").getText();
-                println("Static IP address of " + wifi_ipAddress);
-            }
-
-            //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
-            midInit = true;
-            output("Attempting to Start Session..."); // Show this at the bottom of the GUI
-            println("initButtonPressed: Calling initSystem() after next draw()");
-        }
-    } else {
-        //if system is already active ... stop session and flip button state back
-        outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
-        initSystemButton.setString("START SESSION");
-        cp5.get(Textfield.class, "fileNameCyton").setText(directoryManager.getFileNameDateTime()); //creates new data file name so that you don't accidentally overwrite the old one
-        cp5.get(Textfield.class, "fileNameGanglion").setText(directoryManager.getFileNameDateTime()); //creates new data file name so that you don't accidentally overwrite the old one
-        cp5.get(Textfield.class, "staticIPAddress").setText(wifi_ipAddress); // Fills the last (or default) IP address
-        haltSystem();
-    }
-}
-
-void updateToNChan(int _nchan) {
-    nchan = _nchan;
-    settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    println("Channel count set to " + str(nchan));
-}
+}; //end of ControlPanel class
 
 //==============================================================================//
-//                	BELOW ARE THE CLASSES FOR THE VARIOUS                         //
-//                	CONTROL PANEL BOXes (control widgets)                        //
+//                	BELOW ARE THE CLASSES FOR THE VARIOUS                       //
+//                	CONTROL PANEL BOXES (control widgets)                       //
 //==============================================================================//
 
 class DataSourceBox {
-    int x, y, w, h, padding; //size and position
-    int numItems;
-    int boxHeight = 24;
-    int spacing = 43;
+    public int x, y, w, h, padding; //size and position
+    private int numItems;
+    private int boxHeight = 24;
+    private int spacing = 43;
+    private ControlP5 datasource_cp5;
+    private MenuList sourceList;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = novaXREnabled ? 6 : 5;
+        numItems = galeaEnabled ? 6 : 5;
         x = _x;
         y = _y;
         w = _w;
         h = spacing + (numItems * boxHeight);
         padding = _padding;
 
-        sourceList = new MenuList(cp5, "sourceList", w - padding*2, numItems * boxHeight, p3);
-        // sourceList.itemHeight = 28;
-        // sourceList.padding = 9;
-        sourceList.setPosition(x + padding, y + padding*2 + 13);
-        sourceList.addItem(makeItem("CYTON (live)", DATASOURCE_CYTON));
-        sourceList.addItem(makeItem("GANGLION (live)", DATASOURCE_GANGLION));
-        if (novaXREnabled) {
-            sourceList.addItem(makeItem("NOVAXR (live)", DATASOURCE_NOVAXR));
-        }
-        sourceList.addItem(makeItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE));
-        sourceList.addItem(makeItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC));
-        sourceList.addItem(makeItem("STREAMING (from external)", DATASOURCE_STREAMING));
-
-        sourceList.scrollerLength = 10;
+        //Instantiate local cp5 for this box
+        datasource_cp5 = new ControlP5(ourApplet);
+        datasource_cp5.setGraphics(ourApplet, 0,0);
+        datasource_cp5.setAutoDraw(false);
+        createDatasourceList(datasource_cp5, "sourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, p3);
     }
 
     public void update() {
-
     }
 
     public void draw() {
@@ -1249,20 +326,70 @@ class DataSourceBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("DATA SOURCE", x + padding, y + padding);
         popStyle();
-        //draw contents of Data Source Box at top of control panel
-        //Title
-        //checkboxes of system states
+        
+        datasource_cp5.draw();
+    }
+
+    private void createDatasourceList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        sourceList = new MenuList(_cp5, name, _w, _h, font);
+        sourceList.setPosition(_x, _y);
+        // sourceList.itemHeight = 28;
+        // sourceList.padding = 9;
+        sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
+        sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
+        if (galeaEnabled) {
+            sourceList.addItem("GALEA (live)", DATASOURCE_GALEA);
+        }
+        sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
+        sourceList.addItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC);
+        sourceList.addItem("STREAMING (from external)", DATASOURCE_STREAMING);
+        sourceList.scrollerLength = 10;
+        sourceList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = sourceList.getItem(int(sourceList.getValue()));
+                    String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
+                    int newDataSource = (int)bob.get("value");
+                    settings.controlEventDataSource = str; //Used for output message on system start
+                    eegDataSource = newDataSource;
+
+                    //Reset protocol
+                    selectedProtocol = BoardProtocol.NONE;
+
+                    //Perform this check in a way that ignores order of items in the menulist
+                    if (eegDataSource == DATASOURCE_CYTON) {
+                        controlPanel.channelCountBox.set8ChanButtonActive();
+                        controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
+                        controlPanel.wifiBox.setDefaultToDynamicIP();
+                    } else if (eegDataSource == DATASOURCE_GANGLION) {
+                        updateToNChan(4);
+                        controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
+                        controlPanel.wifiBox.setDefaultToDynamicIP();
+                    } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
+                        //GUI auto detects number of channels for playback when file is selected
+                    } else if (eegDataSource == DATASOURCE_GALEA) {
+                        selectedSamplingRate = 250; //default sampling rate
+                    } else if (eegDataSource == DATASOURCE_STREAMING) {
+                        //do nothing for now
+                    } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+                        controlPanel.synthChannelCountBox.set8ChanButtonActive();
+                    }
+                }
+            }
+        });
     }
 };
 
 class SerialBox {
-    int x, y, w, h, padding; //size and position
-    Button_obci autoConnect;
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 cytonsb_cp5;
+    private Button autoConnectButton;
+    private Button popOutRadioConfigButton;
 
     SerialBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1271,10 +398,13 @@ class SerialBox {
         h = 70;
         padding = _padding;
 
-        autoConnect = new Button_obci(x + padding, y + padding*3 + 4, w - padding*3 - 70, 24, "AUTO-CONNECT", fontInfo.buttonLabel_size);
-        autoConnect.setHelpText("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
-        popOutRadioConfigButton = new Button_obci(x + w - 70 - padding, y + padding*3 + 4, 70, 24,"Manual >",fontInfo.buttonLabel_size);
-        popOutRadioConfigButton.setHelpText("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
+        //Instantiate local cp5 for this box
+        cytonsb_cp5 = new ControlP5(ourApplet);
+        cytonsb_cp5.setGraphics(ourApplet, 0,0);
+        cytonsb_cp5.setAutoDraw(false);
+
+        createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24);
+        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24);
     }
 
     public void update() {
@@ -1286,24 +416,59 @@ class SerialBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL CONNECT", x + padding, y + padding);
         popStyle();
 
         if (selectedProtocol == BoardProtocol.SERIAL) {
-            popOutRadioConfigButton.draw();
-            autoConnect.draw();
+            cytonsb_cp5.draw();
         }
+    }
+
+    private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h) {
+        return createButton(cytonsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, colorNotPressed, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, 0);
+    }
+
+    private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoConnectButton = createSBButton(name, text, _x, _y, _w, _h);
+        autoConnectButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.comPortBox.attemptAutoConnectCyton();
+            }
+        });
+        autoConnectButton.setDescription("Attempt to auto-connect to Cyton. Try \"Manual\" if this does not work.");
+    }
+
+    private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h) {
+        popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h);
+        popOutRadioConfigButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (selectedProtocol == BoardProtocol.SERIAL) {
+                    if (controlPanel.rcBox.isShowing) {
+                        controlPanel.hideRadioPopoutBox();
+                    } else {
+                        controlPanel.rcBox.isShowing = true;
+                        controlPanel.rcBox.print_onscreen(controlPanel.rcBox.initial_message);
+                        popOutRadioConfigButton.getCaptionLabel().setText("Manual <");
+                    }
+                }
+            }
+        });
+        popOutRadioConfigButton.setDescription("Having trouble connecting to Cyton? Click here to access Radio Configuration tools.");
     }
 };
 
 class ComPortBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     public boolean isShowing;
+    private ControlP5 cytoncpb_cp5;
+    private Button refreshCytonDongles;
     public MenuList serialList;
-    RadioConfig cytonRadioCfg;
+    public RadioConfig cytonRadioCfg;
+    private boolean midAutoScan = false;
+    private boolean midAutoScanCheck2 = false;
 
     ComPortBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1314,13 +479,27 @@ class ComPortBox {
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
 
-        refreshPort = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*2, 24, "REFRESH LIST", fontInfo.buttonLabel_size);
-        serialList = new MenuList(cp5, "serialList", w - padding*2, 72, p3);
-        serialList.setPosition(x + padding, y + padding*3 + 8);
+        //Instantiate local cp5 for this box
+        cytoncpb_cp5 = new ControlP5(ourApplet);
+        cytoncpb_cp5.setGraphics(ourApplet, 0,0);
+        cytoncpb_cp5.setAutoDraw(false);
+
+        createRefreshCytonDonglesButton("refreshCytonDonglesButton", "REFRESH LIST", x + padding, y + padding*4 + 72 + 8, w - padding*2, 24);
+        createCytonDongleList(cytoncpb_cp5, "cytonDongleList", x + padding, y + padding*3 + 8,  w - padding*2, 72, p3);
     }
 
     public void update() {
         serialList.updateMenu();
+        //Allow two drawing/update cycles to pass so that overlay can be drawn
+        //This lets users know that auto-scan is working and GUI is not frozen
+        if (midAutoScan) {
+            if (midAutoScanCheck2) {
+                cytonAutoConnect_AutoScan();
+                midAutoScanCheck2 = false;
+                midAutoScan = midAutoScanCheck2;
+            }
+            midAutoScanCheck2 = midAutoScan;
+        }
     }
 
     public void draw() {
@@ -1329,46 +508,80 @@ class ComPortBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SERIAL/COM PORT", x + padding, y + padding);
-        refreshPort.draw();
         popStyle();
+
+        cytoncpb_cp5.draw();
     }
 
+    private void createRefreshCytonDonglesButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshCytonDongles = createButton(cytoncpb_cp5, name, text, _x, _y, _w, _h);
+        refreshCytonDongles.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshPortListCyton();
+            }
+        });
+    }
+
+    private void createCytonDongleList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        serialList = new MenuList(_cp5, name, _w, _h, font);
+        serialList.setPosition(_x, _y);
+        serialList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = serialList.getItem(int(serialList.getValue()));
+                    openBCI_portName = (String)bob.get("subline");
+                    output("ControlPanel: Selected OpenBCI Port " + openBCI_portName);
+                }
+            }
+        });
+    }
+
+    //This is called when the Auto-Connect button is pressed in another Control Panel Box
     public void attemptAutoConnectCyton() {
-        println("ControlPanel: Attempting to Auto-Connect to Cyton");
+        println("\n-------------------------------------------------\nControlPanel: Attempting to Auto-Connect to Cyton\n-------------------------------------------------\n");
         LinkedList<String> comPorts = getCytonComPorts();
         if (!comPorts.isEmpty()) {
             openBCI_portName = comPorts.getFirst();
             if (cytonRadioCfg.get_channel()) {
-                initButtonPressed();
-                buttonHelpText.setVisible(false);
+                controlPanel.initBox.initButtonPressed();
+            } else {                
+                outputWarn("Found a Cyton dongle, but could not connect to the board. Auto-Scanning now...");
+                midAutoScan = true;
             }
-            else {                
-                outputWarn("Found a Cyton dongle, but could not connect to the board.");
-            }
-        }
-        else {
+        } else {
             outputWarn("No Cyton dongles were found.");
         }
     }
 
+    //If Cyton dongle exists, and fails to connect, try to Auto-Scan in the background to align Cyton/Dongle Channel
+    //This is called after overlay has a chance to draw on top to inform users the GUI is working and not crashed
+    private void cytonAutoConnect_AutoScan() {
+        if (cytonRadioCfg.scan_channels()) {
+            println("Successfully connected to Cyton using " + openBCI_portName);
+            controlPanel.initBox.initButtonPressed();
+        } else {
+            outputError("Unable to connect to Cyton. Please check hardware and power source.");
+        }
+    }
+
+    //Refresh the Cyton Dongle list
     public void refreshPortListCyton(){
         serialList.items.clear();
 
         Thread thread = new Thread(){
             public void run(){
-                refreshPort.setString("SEARCHING...");
+                refreshCytonDongles.getCaptionLabel().setText("SEARCHING...");
 
                 LinkedList<String> comPorts = getCytonComPorts();
                 for (String comPort : comPorts) {
-                    serialList.addItem(makeItem("(Cyton) " + comPort, comPort, ""));
+                    serialList.addItem("(Cyton) " + comPort, comPort, "");
                 }
                 serialList.updateMenu();
-
-                refreshPort.setString("REFRESH LIST");
+                refreshCytonDongles.getCaptionLabel().setText("REFRESH LIST");
             }
         };
 
@@ -1382,6 +595,10 @@ class ComPortBox {
         for (SerialPort comPort : comPorts) {
             for (String name : names) {
                 if (comPort.toString().startsWith(name)) {
+                    // on macos need to drop tty ports
+                    if (isMac() && comPort.getSystemPortName().startsWith("tty")) {
+                        continue;
+                    }
                     String found = "";
                     if (isMac() || isLinux()) found += "/dev/";
                     found += comPort.getSystemPortName();
@@ -1394,11 +611,18 @@ class ComPortBox {
         return results;
     }
 
+    public boolean isAutoScanningForCytonSerial() {
+        return midAutoScan;
+    }
 };
 
 class BLEBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private volatile boolean bleIsRefreshing = false;
+    private ControlP5 bleBox_cp5;
+    private MenuList bleList;
+    private Button refreshBLE;
+    Map<String, String> bleMACAddrMap = new HashMap<String, String>();
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1406,12 +630,18 @@ class BLEBox {
         w = _w;
         h = 140 + _padding;
         padding = _padding;
-        refreshBLE = new Button_obci (x + padding, y + padding*4 + 72 + 8, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        bleList = new MenuList(cp5, "bleList", w - padding*2, 72, p3);
-        bleList.setPosition(x + padding, y + padding*3 + 8);
+
+        //Instantiate local cp5 for this box
+        bleBox_cp5 = new ControlP5(ourApplet);
+        bleBox_cp5.setGraphics(ourApplet, 0,0);
+        bleBox_cp5.setAutoDraw(false);
+
+        createRefreshBLEButton("refreshGanglionBLEButton", "START SEARCH", x + padding, y + padding*4 + 72 + 8, w - padding*5, 24);
+        createGanglionBLEMenuList(bleBox_cp5, "bleList", x + padding, y + padding*3 + 8, w - padding*2, 72, p3);
     }
 
     public void update() {
+        bleList.updateMenu();
     }
 
     public void draw() {
@@ -1420,7 +650,7 @@ class BLEBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("BLE DEVICES", x + padding, y + padding);
@@ -1428,21 +658,17 @@ class BLEBox {
 
         if (bleIsRefreshing) {
             //Display spinning cog gif
-            image(loadingGIF_blue, w + 225,  refreshBLE.but_y + 4, 20, 20);
+            image(loadingGIF_blue, w + 225,  refreshBLE.getPosition()[1] + 4, 20, 20);
         } else {
             //Draw small grey circle
             pushStyle();
             fill(#999999);
             ellipseMode(CENTER);
-            ellipse(w + 225 + 10, refreshBLE.but_y + 12, 12, 12);
+            ellipse(w + 225 + 10, refreshBLE.getPosition()[1] + 12, 12, 12);
             popStyle();
         }
 
-        refreshBLE.draw();
-    }
-
-    public void mousePressed() {
-        
+        bleBox_cp5.draw();
     }
 
     private void refreshGanglionBLEList() {
@@ -1455,15 +681,15 @@ class BLEBox {
         
         Thread thread = new Thread(){
             public void run(){
-                refreshBLE.setString("SEARCHING...");
+                refreshBLE.getCaptionLabel().setText("SEARCHING...");
                 bleIsRefreshing = true;
                 final String comPort = getBLED112Port();
                 if (comPort != null) {
                     try {
-                        BLEMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : BLEMACAddrMap.entrySet ())
+                        bleMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
                         {
-                            bleList.addItem(makeItem(entry.getKey(), comPort, ""));
+                            bleList.addItem(entry.getKey(), comPort, "");
                             bleList.updateMenu();
                         }
                     } catch (GanglionError e)
@@ -1473,7 +699,7 @@ class BLEBox {
                 } else {
                     outputError("No BLED112 Dongle Found");
                 }
-                refreshBLE.setString("START SEARCH");
+                refreshBLE.getCaptionLabel().setText("START SEARCH");
                 bleIsRefreshing = false;
             }
         };
@@ -1495,11 +721,45 @@ class BLEBox {
         }
         return null;
     }
+
+    private void createRefreshBLEButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshBLE = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
+        refreshBLE.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshGanglionBLEList();
+            }
+        });
+    }
+
+    private void createGanglionBLEMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        bleList = new MenuList(_cp5, name, _w, _h, font);
+        bleList.setPosition(_x, _y);
+        bleList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = bleList.getItem(int(bleList.getValue()));
+                    ganglion_portName = (String)bob.get("headline");
+                    output("Ganglion Device Name = " + ganglion_portName);
+                }
+            }
+        });
+    }
 };
 
 class WifiBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private boolean wifiIsRefreshing = false;
+    private ControlP5 wifiBox_cp5;
+    private MenuList wifiList;
+    private Button refreshWifi;
+    private Button wifiIPAddressDynamic;
+    private Button wifiIPAddressStatic;
+    private Textfield staticIPAddressTF;
+    private int wifiDynamic_x;
+    private int wifiStatic_x;
+    private int wifiButtons_y;
+    private int refreshWifi_x;
+    private int refreshWifi_y;
 
     WifiBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1508,18 +768,170 @@ class WifiBox {
         h = 184 + _padding + 14;
         padding = _padding;
 
-        wifiIPAddressDynamic = new Button_obci (x + padding, y + padding*2 + 30, (w-padding*3)/2, 24, "DYNAMIC IP", fontInfo.buttonLabel_size);
-        wifiIPAddressDynamic.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        wifiIPAddressStatic = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 30, (w-padding*3)/2, 24, "STATIC IP", fontInfo.buttonLabel_size);
-        wifiIPAddressStatic.setColorNotPressed(colorNotPressed);
+        //Instantiate local cp5 for this box
+        wifiBox_cp5 = new ControlP5(ourApplet);
+        wifiBox_cp5.setGraphics(ourApplet, 0,0);
+        wifiBox_cp5.setAutoDraw(false);
 
-        refreshWifi = new Button_obci (x + padding, y + padding*5 + 72 + 8 + 24, w - padding*5, 24, "START SEARCH", fontInfo.buttonLabel_size);
-        wifiList = new MenuList(cp5, "wifiList", w - padding*2, 72 + 8, p3);
+        wifiDynamic_x = x + padding;
+        wifiStatic_x = x + padding*2 + (w-padding*3)/2;
+        wifiButtons_y = y + padding*2 + 16;
+        createDynamicIPAddressButton("wifiIPAddressDynamicButton", "DYNAMIC IP", wifiDynamic_x, wifiButtons_y, (w-padding*3)/2, 24);
+        createStaticIPAddressButton("wifiIPAddressStaticButton", "STATIC IP", wifiStatic_x, wifiButtons_y, (w-padding*3)/2, 24);
 
-        wifiList.setPosition(x + padding, y + padding*4 + 8 + 24);
-        // Call to update the list
+        refreshWifi_x = x + padding;
+        refreshWifi_y = y + padding*5 + 72 + 8 + 24;
+        createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24);
+        createWifiList(wifiBox_cp5, "wifiList", x + padding, y + padding*4 + 8 + 24, w - padding*2, 72 + 8, p3);
+        createStaticIPAddressTextfield();
+    }
 
-        cp5.addTextfield("staticIPAddress")
+    public void update() {
+        wifiList.updateMenu();
+    }
+
+    public void draw() {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(OPENBCI_DARKBLUE);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("WIFI SHIELDS", x + padding, y + padding);
+        popStyle();
+
+        wifiButtons_y = y + padding*2 + 16;
+        wifiIPAddressDynamic.setPosition(wifiDynamic_x, wifiButtons_y);
+        wifiIPAddressStatic.setPosition(wifiStatic_x, wifiButtons_y);
+
+        if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
+            pushStyle();
+            fill(OPENBCI_DARKBLUE);
+            textFont(h3, 16);
+            textAlign(LEFT, TOP);
+            text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
+            popStyle();
+            staticIPAddressTF.setPosition(x + padding, y + h - 24 - padding);
+        } else {
+            wifiList.setPosition(x + padding, wifiButtons_y + 24 + padding);
+
+            refreshWifi_y = y + h - padding - 24;
+            refreshWifi.setPosition(refreshWifi_x, refreshWifi_y);
+
+            String boardIpInfo = "BOARD IP: ";
+            if (wifi_portName != "N/A") { // If user has selected a board from the menulist...
+                boardIpInfo += wifi_ipAddress;
+            }
+            pushStyle();
+            fill(OPENBCI_DARKBLUE);
+            textFont(h3, 16);
+            textAlign(LEFT, TOP);
+            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
+
+            if (wifiIsRefreshing){
+                //Display spinning cog gif
+                image(loadingGIF_blue, w + 225,  refreshWifi_y + 4, 20, 20);
+            } else {
+                //Draw small grey circle
+                pushStyle();
+                fill(#999999);
+                ellipseMode(CENTER);
+                ellipse(w + 225 + 10, refreshWifi_y + 12, 12, 12);
+                popStyle();
+            }
+        }
+
+        wifiBox_cp5.draw();
+    }
+
+    public void refreshWifiList() {
+        output("Wifi Devices Refreshing");
+        wifiList.items.clear();
+        Thread thread = new Thread(){
+            public void run() {
+                refreshWifi.getCaptionLabel().setText("SEARCHING...");
+                wifiIsRefreshing = true;
+                try {
+                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
+                    if (devices.isEmpty ()) {
+                        println("No WIFI Shields found");
+                    }
+                    for (int i = 0; i < devices.size(); i++) {
+                        wifiList.addItem(devices.get(i).getName(), devices.get(i).getIPAddress(), "");
+                    }
+                    wifiList.updateMenu();
+                } catch (Exception e) {
+                    println("Exception in wifi shield scanning");
+                    e.printStackTrace ();
+                }
+                refreshWifi.getCaptionLabel().setText("START SEARCH");
+                wifiIsRefreshing = false;
+            }
+        };
+        thread.start();
+    }
+
+    private void createDynamicIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
+        wifiIPAddressDynamic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
+        wifiIPAddressDynamic.setSwitch(true);
+        wifiIPAddressDynamic.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                h = 208;
+                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
+                println("ControlPanel: Using Dynamic IP address of the WiFi Shield!");
+                wifiIPAddressDynamic.setOn();
+                wifiIPAddressStatic.setOff();
+                staticIPAddressTF.setVisible(false);
+                wifiList.setVisible(true);
+            }
+        });
+        wifiIPAddressDynamic.setOn();
+    }
+
+    private void createStaticIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
+        wifiIPAddressStatic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
+        wifiIPAddressStatic.setSwitch(true);
+        wifiIPAddressStatic.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                h = 120;
+                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_STATIC);
+                println("ControlPanel: Using Static IP address of the WiFi Shield!");
+                wifiIPAddressDynamic.setOff();
+                wifiIPAddressStatic.setOn();
+                staticIPAddressTF.setVisible(true);
+                wifiList.setVisible(false);
+            }
+        });
+    }
+
+    private void createRefreshWifiButton(String name, String text, int _x, int _y, int _w, int _h) {
+        refreshWifi = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
+        refreshWifi.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                refreshWifiList();
+            }
+        });
+    }
+
+    private void createWifiList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
+        wifiList = new MenuList(_cp5, name, _w, _h, font);
+        wifiList.setPosition(_x, _y);
+        wifiList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    Map bob = wifiList.getItem(int(wifiList.getValue()));
+                    wifi_portName = (String)bob.get("headline");
+                    wifi_ipAddress = (String)bob.get("subline");
+                    output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
+                }
+            }
+        });
+    }
+
+    private void createStaticIPAddressTextfield() {
+        staticIPAddressTF = wifiBox_cp5.addTextfield("staticIPAddress")
             .setPosition(x + 90, y + 100)
             .setCaptionLabel("")
             .setSize(w - padding*2, 26)
@@ -1534,96 +946,36 @@ class WifiBox {
             .setText(wifi_ipAddress)
             .align(5, 10, 20, 40)
             .onDoublePress(cb)
-            .setAutoClear(true);
+            .setAutoClear(true)
+            .setVisible(false);
     }
 
-    public void update() {
+    public void setDefaultToDynamicIP() {
+        h = 208;
+        controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
+        wifiIPAddressDynamic.setOn();
+        wifiIPAddressStatic.setOff();
+        staticIPAddressTF.setVisible(false);
+        wifiList.setVisible(true);
     }
 
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WIFI SHIELDS", x + padding, y + padding);
-        wifiIPAddressDynamic.draw();
-        wifiIPAddressStatic.draw();
-        wifiIPAddressDynamic.but_y = y + padding*2 + 16;
-        wifiIPAddressStatic.but_y = wifiIPAddressDynamic.but_y;
+    private void setStaticIPTextfield(String text) {
+        staticIPAddressTF.getCaptionLabel().setText(text);
+    }
 
-        popStyle();
-
-        if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
-            pushStyle();
-            fill(bgColor);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
-            popStyle();
-            cp5.get(Textfield.class, "staticIPAddress").setPosition(x + padding, y + h - 24 - padding);
-        } else {
-            wifiList.setPosition(x + padding, wifiIPAddressDynamic.but_y + 24 + padding);
-
-            refreshWifi.draw();
-            refreshWifi.but_y = y + h - padding - 24;
-
-            String boardIpInfo = "BOARD IP: ";
-            if (wifi_portName != "N/A") { // If user has selected a board from the menulist...
-                boardIpInfo += wifi_ipAddress;
-            }
-            fill(bgColor);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
-
-            if (wifiIsRefreshing){
-                //Display spinning cog gif
-                image(loadingGIF_blue, w + 225,  refreshWifi.but_y + 4, 20, 20);
-            } else {
-                //Draw small grey circle
-                pushStyle();
-                fill(#999999);
-                ellipseMode(CENTER);
-                ellipse(w + 225 + 10, refreshWifi.but_y + 12, 12, 12);
-                popStyle();
-            }
+    //Clear text field on double-click
+    CallbackListener cb = new CallbackListener() { 
+        public void controlEvent(CallbackEvent theEvent) {
+            staticIPAddressTF.clear();
         }
-    }
-
-    public void refreshWifiList() {
-        output("Wifi Devices Refreshing");
-        wifiList.items.clear();
-        Thread thread = new Thread(){
-            public void run() {
-                refreshWifi.setString("SEARCHING...");
-                wifiIsRefreshing = true;
-                try {
-                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-                    if (devices.isEmpty ()) {
-                        println("No WIFI Shields found");
-                    }
-                    for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(makeItem(devices.get(i).getName(), devices.get(i).getIPAddress(), ""));
-                    }
-                    wifiList.updateMenu();
-                } catch (Exception e) {
-                    println("Exception in wifi shield scanning");
-                    e.printStackTrace ();
-                }
-                refreshWifi.setString("START SEARCH");
-                wifiIsRefreshing = false;
-            }
-        };
-        thread.start();
-    }
+    };
 };
 
 class InterfaceBoxCyton {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 ifbc_cp5;
+    private Button protocolSerialCyton;
+    private Button protocolWifiCyton;
 
     InterfaceBoxCyton(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1632,8 +984,14 @@ class InterfaceBoxCyton {
         h = (24 + _padding) * 3;
         padding = _padding;
 
-        protocolSerialCyton = new Button_obci (x + padding, y + padding * 3 + 4, w - padding * 2, 24, "Serial (from Dongle)", fontInfo.buttonLabel_size);
-        protocolWifiCyton = new Button_obci (x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
+        //Instantiate local cp5 for this box
+        ifbc_cp5 = new ControlP5(ourApplet);
+        ifbc_cp5.setGraphics(ourApplet, 0,0);
+        ifbc_cp5.setAutoDraw(false);
+
+        //Disabled both toggles by default for this box
+        createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1644,19 +1002,63 @@ class InterfaceBoxCyton {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
 
-        protocolSerialCyton.draw();
-        protocolWifiCyton.draw();
+        ifbc_cp5.draw();
+    }
+
+    private Button createIFBCButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ifbc_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createSerialCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolSerialCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolSerialCyton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.SERIAL;
+                controlPanel.comPortBox.refreshPortListCyton();
+                protocolSerialCyton.setOn();
+                protocolWifiCyton.setOff();
+            }
+        });
+    }
+
+    private void createWifiCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolWifiCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolWifiCyton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.WIFI;
+                protocolSerialCyton.setOff();
+                protocolWifiCyton.setOn();
+            }
+        });
+    }
+
+    public void resetCytonSelectedProtocol() {
+        protocolSerialCyton.setOff();
+        protocolWifiCyton.setOff();
+        selectedProtocol = BoardProtocol.NONE;
     }
 };
 
 class InterfaceBoxGanglion {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 ifbg_cp5;
+    private Button protocolBLED112Ganglion;
+    private Button protocolWifiGanglion;
 
     InterfaceBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1666,11 +1068,13 @@ class InterfaceBoxGanglion {
         h = (24 + _padding) * 3;
         int buttonHeight = 24;
 
-        int paddingCount = 1;
-        protocolBLED112Ganglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Bluetooth (BLED112 Dongle)", fontInfo.buttonLabel_size);
-        paddingCount ++;
-        protocolWifiGanglion = new Button_obci (x + padding, y + padding * paddingCount + buttonHeight * paddingCount, w - padding * 2, 24, "Wifi (from Wifi Shield)", fontInfo.buttonLabel_size);
-        paddingCount ++;
+            //Instantiate local cp5 for this box
+        ifbg_cp5 = new ControlP5(ourApplet);
+        ifbg_cp5.setGraphics(ourApplet, 0,0);
+        ifbg_cp5.setAutoDraw(false);
+
+        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1681,30 +1085,78 @@ class InterfaceBoxGanglion {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
         popStyle();
         
-        protocolWifiGanglion.draw();
-        protocolBLED112Ganglion.draw();
+        ifbg_cp5.draw();
+    }
+
+
+    private Button createIFBGButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ifbg_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolBLED112Ganglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolBLED112Ganglion.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.BLED112;
+                controlPanel.bleBox.refreshGanglionBLEList();
+                protocolBLED112Ganglion.setOn();
+                protocolWifiGanglion.setOff();
+            }
+        });
+    }
+
+    private void createGanglionWifiButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolWifiGanglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolWifiGanglion.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.WIFI;
+                protocolBLED112Ganglion.setOff();
+                protocolWifiGanglion.setOn();
+            }
+        });
+    }
+
+    public void resetGanglionSelectedProtocol() {
+        protocolBLED112Ganglion.setOff();
+        protocolWifiGanglion.setOff();
+        selectedProtocol = BoardProtocol.NONE;
     }
 };
 
 class SessionDataBox {
-    int x, y, w, h, padding; //size and position
-    int i; //0 for Cyton, 1 for Ganglion
-    String textfieldName;
-    final int bdfModeHeight = 127;
-    int odfModeHeight;
+    public int x, y, w, h, padding; //size and position
+    private int datasource;
+    private final int bdfModeHeight = 127;
+    private int odfModeHeight;
 
-    ControlP5 cp5_dataLog_dropdown;
-    int maxDurTextWidth = 82;
-    int maxDurText_x = 0;
-    String maxDurDropdownName;
+    private ControlP5 sessionData_cp5;
+    private int maxDurTextWidth = 82;
+    private int maxDurText_x = 0;
+    private Textfield sessionNameTextfield;
+    private Button autoSessionName;
+    private Button outputODF;
+    private Button outputBDF;
+    private ScrollableList maxDurationDropdown;
+    private String odfMessage = "Output has been set to OpenBCI Data Format (CSV).";
+    private String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
-    SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource) {
+    SessionDataBox (int _x, int _y, int _w, int _h, int _padding, int _dataSource, int output, String textfieldName) {
+        datasource = _dataSource;
         odfModeHeight = bdfModeHeight + 24 + _padding;
         x = _x;
         y = _y;
@@ -1714,20 +1166,71 @@ class SessionDataBox {
         maxDurText_x = x + padding;
         maxDurTextWidth += padding*5 + 1;
 
-        //button to autogenerate file name based on time/date
-        autoSessionName = new Button_obci (x + padding, y + 66, w-(padding*2), 24, "GENERATE SESSION NAME", fontInfo.buttonLabel_size);
-        autoSessionName.setHelpText("Autogenerate a session name based on the date and time.");
-        outputODF = new Button_obci (x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "OpenBCI", fontInfo.buttonLabel_size);
-        outputODF.setHelpText("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
-        //Output source is ODF by default
-        if (outputDataSource == OUTPUT_SOURCE_ODF) outputODF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        outputBDF = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24, "BDF+", fontInfo.buttonLabel_size);
-        outputBDF.setHelpText("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
-        if (outputDataSource == OUTPUT_SOURCE_BDF) outputBDF.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        sessionData_cp5 = new ControlP5(ourApplet);
+        sessionData_cp5.setGraphics(ourApplet, 0,0);
+        sessionData_cp5.setAutoDraw(false);
 
-        //This textfield is controlled by the global cp5 instance
-        textfieldName = (_dataSource == DATASOURCE_CYTON) ? "fileNameCyton" : "fileNameGanglion";
-        cp5.addTextfield(textfieldName)
+        createSessionNameTextfield(textfieldName);
+
+        //button to autogenerate file name based on time/date
+        createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24);
+        createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
+        createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
+
+        createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
+        
+    }
+
+    public void update() {
+
+    }
+
+    public void draw() {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(OPENBCI_DARKBLUE);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("SESSION DATA", x + padding, y + padding);
+        textFont(p4, 14);
+        text("Name", x + padding, y + padding*2 + 14);
+        popStyle();
+        
+        //Update the position of UI elements here, as this changes when user selects WiFi mode
+        sessionNameTextfield.setPosition(x + 60, y + 32);
+        autoSessionName.setPosition(x + padding, y + 66);
+        outputODF.setPosition(x + padding, y + padding*2 + 18 + 58);
+        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58);
+        maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
+        
+        boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
+        maxDurationDropdown.setVisible(odfIsSelected);
+        
+        if (odfIsSelected) {
+            pushStyle();
+            //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
+            //Dropdown is drawn at the end of ControlPanel.draw()
+            fill(OPENBCI_DARKBLUE);
+            maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
+            //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
+            int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
+                ? 20 
+                : 5;
+            fill(OPENBCI_DARKBLUE);
+            textFont(p4, 14);
+            text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
+            popStyle();
+        }
+        sessionData_cp5.draw();
+    }
+
+    private void createSessionNameTextfield(String name) {
+        //Create textfield to allow user to type custom session folder name
+        sessionNameTextfield = sessionData_cp5.addTextfield(name)
             .setPosition(x + 60, y + 32)
             .setCaptionLabel("")
             .setSize(187, 26)
@@ -1741,84 +1244,51 @@ class SessionDataBox {
             .setColorCursor(color(26, 26, 26))
             .setText(directoryManager.getFileNameDateTime())
             .align(5, 10, 20, 40)
-            .onDoublePress(cb)
-            .setAutoClear(true);
-
-        //The OpenBCI data format max duration dropdown is controlled by the local cp5 instance
-        cp5_dataLog_dropdown = new ControlP5(ourApplet);
-        maxDurDropdownName = "maxFileDuration";
-        createDropdown(maxDurDropdownName, Arrays.asList(settings.fileDurations));
-        cp5_dataLog_dropdown.setGraphics(ourApplet, 0,0);
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
-        cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setSize((w-padding*3)/2, (settings.fileDurations.length + 1) * 24);
-        cp5_dataLog_dropdown.setAutoDraw(false);
+            .setAutoClear(false); //Don't clear textfield when pressing Enter key
+        //Clear textfield on double click
+        sessionNameTextfield.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("SessionData: Enter your custom session name.");
+                sessionNameTextfield.clear();
+            }
+        });
+        //Autogenerate session name if user presses Enter key and textfield value is null
+        sessionNameTextfield.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && sessionNameTextfield.getText().equals("")) {
+                    autogenerateSessionName();
+                }
+            }
+        });
+        //Autogenerate session name if user leaves textfield and value is null
+        sessionNameTextfield.onReleaseOutside(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!sessionNameTextfield.isActive() && sessionNameTextfield.getText().equals("")) {
+                    autogenerateSessionName();
+                }
+            }
+        });
     }
 
-    public void update() {
-
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("SESSION DATA", x + padding, y + padding);
-        textFont(p4, 14);
-        text("Name", x + padding, y + padding*2 + 14);
-        popStyle();
-        cp5.get(Textfield.class, textfieldName).setPosition(x + 60, y + 32);
-        autoSessionName.but_y = y + 66;
-        autoSessionName.draw();
-        outputODF.but_y = y + padding*2 + 18 + 58;
-        outputODF.draw();
-        outputBDF.but_y = y + padding*2 + 18 + 58;
-        outputBDF.draw();
-        if (outputDataSource == OUTPUT_SOURCE_ODF) {
-            pushStyle();
-            //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
-            //Dropdown is drawn at the end of ControlPanel.draw()
-            fill(bgColor);
-            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setVisible(true);
-            cp5_dataLog_dropdown.get(ScrollableList.class, maxDurDropdownName).setPosition(x + maxDurTextWidth, outputODF.but_y + 24 + padding);
-            //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
-            int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
-                ? 20 
-                : 5;
-            fill(bgColor);
-            textFont(p4, 14);
-            text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
-            popStyle();
-            
-        }
-    }
-
-    void createDropdown(String name, List<String> _items){
-
-        ScrollableList scrollList = new CustomScrollableList(cp5_dataLog_dropdown, name)
+    private void createMaxDurationDropdown(String name, List<String> _items){
+        maxDurationDropdown = new CustomScrollableList(sessionData_cp5, name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setBackgroundColor(150)
-            /*
-            .setColorBackground(color(31,69,110)) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(255))
-            .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
-            */
+            //.setColorBackground(color(31,69,110)) // text field bg color
+            //.setColorValueLabel(color(0))       // text color
+            //.setColorCaptionLabel(color(255))
+            //.setColorForeground(color(125))    // border color when not selected
+            //.setColorActive(BUTTON_PRESSED)       // border color when selected
             // .setColorCursor(color(26,26,26))
-
-            .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
+            .setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding)
+            .setSize((w-padding*3)/2, (_items.size() + 1) * 24)// + maxFreqList.size())
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(false)
             ;
-        cp5_dataLog_dropdown.getController(name)
+        maxDurationDropdown
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
@@ -1827,7 +1297,7 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_dataLog_dropdown.getController(name)
+        maxDurationDropdown
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
@@ -1836,25 +1306,74 @@ class SessionDataBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
-        scrollList.onEnter(new CallbackListener() {
-            public void controlEvent(CallbackEvent event) {
-                lockElements(true);
+        maxDurationDropdown.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {    
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int n = (int)(theEvent.getController()).getValue();
+                    settings.setLogFileDurationChoice(n);
+                    println("ControlPanel: Chosen Recording Duration: " + n);
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    lockOutsideElements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    ScrollableList theList = (ScrollableList)(theEvent.getController());
+                    lockOutsideElements(theList.isOpen());
+                }
             }
         });
-
-        scrollList.onLeave(new CallbackListener() {
-            public void controlEvent(CallbackEvent event) {
-                ScrollableList theList = (ScrollableList)(event.getController());
-                lockElements(theList.isOpen());
-            }
-        });
-
     }
 
-    //Returns: 0 for Cyton, 1 for Ganglion
-    public int getBoardType() {
-        return i;
+    private Button createGUIOutputToggle(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(sessionData_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createAutoSessionNameButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoSessionName = createButton(sessionData_cp5, name, text, _x, _y, _w, _h);
+        autoSessionName.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                autogenerateSessionName();
+            }
+        });
+        autoSessionName.setDescription("Autogenerate a session name based on the date and time.");
+    }
+
+    private void createODFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h) {
+        boolean formatIsODF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_ODF;
+        outputODF = createGUIOutputToggle(name, text, formatIsODF, _x, _y, _w, _h);
+        outputODF.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output(odfMessage);
+                dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
+                outputODF.setOn();
+                outputBDF.setOff();
+                setToODFHeight();
+            }
+        });
+        outputODF.setDescription("Set GUI data output to OpenBCI Data Format (.txt). A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
+    }
+
+    private void createBDFButton(String name, String text, int dataLoggerFormat, int _x, int _y, int _w, int _h) {
+        boolean formatIsBDF = dataLoggerFormat == dataLogger.OUTPUT_SOURCE_BDF;
+        outputBDF = createGUIOutputToggle(name, text, formatIsBDF, _x, _y, _w, _h);
+        outputBDF.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output(bdfMessage);
+                dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
+                outputBDF.setOn();
+                outputODF.setOff();
+                setToBDFHeight();
+            }
+        });
+        outputBDF.setDescription("Set GUI data output to BioSemi Data Format (.bdf). All session data is contained in one .bdf file. View using an EDF/BDF browser.");
+    }
+
+    private void autogenerateSessionName() {
+        output("Autogenerated Session Name based on current date & time.");
+        sessionNameTextfield.setText(directoryManager.getFileNameDateTime());
     }
 
     public void setToODFHeight() {
@@ -1865,12 +1384,19 @@ class SessionDataBox {
         h = bdfModeHeight;
     }
 
+    public String getSessionTextfieldString() {
+        return sessionNameTextfield.getText();
+    }
+
+    public void setSessionTextfieldText(String s) {
+        sessionNameTextfield.setText(s);
+    }
+
     // True locks elements, False unlocks elements
-    void lockElements (boolean _toggle) {
+    private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
             //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
-            chanButton8.setIgnoreHover(_toggle);
-            chanButton16.setIgnoreHover(_toggle);
+            controlPanel.channelCountBox.lockCp5Objects(_toggle);
             if (_toggle) {
                 controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
             } else {
@@ -1878,16 +1404,26 @@ class SessionDataBox {
             }
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         } else {
-            //Ganglion + Wifi
-            sampleRate200.setIgnoreHover(_toggle);
-            sampleRate1600.setIgnoreHover(_toggle);
+            controlPanel.sampleRateGanglionBox.lockCp5Objects(_toggle);
         }
+    }
+
+    public void lockSessionDataBoxCp5Elements(boolean b) {
+        sessionNameTextfield.setLock(b);
+        autoSessionName.setLock(b);
+        outputODF.setLock(b);
+        outputBDF.setLock(b);
     }
 };
 
 class ChannelCountBox {
-    int x, y, w, h, padding; //size and position
-
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 ccc_cp5;
+    private Button chanButton8;
+    private Button chanButton16;
+    private int cb8_butX;
+    private int cb16_butX;
+    private int cb_butY;
 
     ChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1896,40 +1432,96 @@ class ChannelCountBox {
         h = 73;
         padding = _padding;
 
-        chanButton8 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "8 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 8) chanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        chanButton16 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "16 CHANNELS", fontInfo.buttonLabel_size);
-        if (nchan == 16) chanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        ccc_cp5 = new ControlP5(ourApplet);
+        ccc_cp5.setGraphics(ourApplet, 0,0);
+        ccc_cp5.setAutoDraw(false);
+
+        cb8_butX = x + padding;
+        cb16_butX = x + padding*2 + (w-padding*3)/2;
+        cb_butY = y + padding*2 + 18;
+        boolean is8Channels = (nchan == 8) ? true : false;
+        createChan8Button("cyton8ChanButton", "8 CHANNELS", is8Channels, cb8_butX, cb_butY, (w-padding*3)/2, 24);
+        createChan16Button("cyton16ChanButton", "16 CHANNELS", is8Channels, cb16_butX, cb_butY, (w-padding*3)/2, 24);
     }
 
     public void update() {
     }
 
     public void draw() {
+        cb_butY = y + padding*2 + 18;
+        chanButton8.setPosition(cb8_butX, cb_butY);
+        chanButton16.setPosition(cb16_butX, cb_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
-        chanButton8.draw();
-        chanButton8.but_y = y + padding*2 + 18;
-        chanButton16.draw();
-        chanButton16.but_y = y + padding*2 + 18;
+        ccc_cp5.draw();
+    }
+
+    private Button createCCCButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(ccc_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createChan8Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        chanButton8 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
+        chanButton8.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(8);
+                chanButton8.setOn();
+                chanButton16.setOff();
+            }
+        });
+    }
+
+    private void createChan16Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        chanButton16 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
+        chanButton16.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(16);
+                chanButton8.setOff();
+                chanButton16.setOn();
+            }
+        });
+    }
+
+    public void lockCp5Objects(boolean flag) {
+        chanButton8.setLock(flag);
+        chanButton16.setLock(flag);
+    }
+
+    public void set8ChanButtonActive() {
+        updateToNChan(8);
+        chanButton8.setOn();
+        chanButton16.setOff();
     }
 };
 
 class SampleRateGanglionBox {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 srgb_cp5;
+    private Button sampleRate200;
+    private Button sampleRate1600;
+    private int sr200_butX;
+    private int sr1600_butX;
+    private int srButton_butY;
 
     SampleRateGanglionBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1938,38 +1530,92 @@ class SampleRateGanglionBox {
         h = 73;
         padding = _padding;
 
-        sampleRate200 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*3)/2, 24, "200Hz", fontInfo.buttonLabel_size);
-        sampleRate1600 = new Button_obci (x + padding*2 + (w-padding*3)/2, y + padding*2 + 18, (w-padding*3)/2, 24, "1600Hz", fontInfo.buttonLabel_size);
-        sampleRate1600.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        srgb_cp5 = new ControlP5(ourApplet);
+        srgb_cp5.setGraphics(ourApplet, 0,0);
+        srgb_cp5.setAutoDraw(false);
+
+        sr200_butX = x + padding;
+        sr1600_butX = x + padding*2 + (w-padding*3)/2;
+        srButton_butY =  y + padding*2 + 18;
+        createSR200Button("cytonSR200", "200Hz", false, sr200_butX, srButton_butY, (w-padding*3)/2, 24);
+        createSR1600Button("cytonSR1600", "1600Hz", true, sr1600_butX, srButton_butY, (w-padding*3)/2, 24);
     }
 
     public void update() {
     }
 
     public void draw() {
+        srButton_butY =  y + padding*2 + 18;
+        sampleRate200.setPosition(sr200_butX, srButton_butY);
+        sampleRate1600.setPosition(sr1600_butX, srButton_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
 
-        sampleRate200.draw();
-        sampleRate1600.draw();
-        sampleRate200.but_y = y + padding*2 + 18;
-        sampleRate1600.but_y = sampleRate200.but_y;
+        srgb_cp5.draw();
+    }
+
+    private Button createSRGBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(srgb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createSR200Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate200 = createSRGBButton(name, text, isToggled, _x, _y, _w, _h);
+        sampleRate200.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 200;
+                println("ControlPanel: User selected Ganglion+WiFi 200Hz");
+                sampleRate200.setOn();
+                sampleRate1600.setOff();
+            }
+        });
+    }
+
+    private void createSR1600Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate1600 = createSRGBButton(name, text, isToggled, _x, _y, _w, _h);
+        sampleRate1600.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 1600;
+                println("ControlPanel: User selected Ganglion+WiFi 1600Hz");
+                sampleRate200.setOff();
+                sampleRate1600.setOn();
+            }
+        });
+    }
+
+    public void lockCp5Objects(boolean flag) {
+        sampleRate200.setLock(flag);
+        sampleRate1600.setLock(flag);
     }
 };
 
 class SampleRateCytonBox {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 srcb_cp5;
+    private Button sampleRate250;
+    private Button sampleRate500;
+    private Button sampleRate1000;
+    private int sr250_butX;
+    private int sr500_butX;
+    private int sr1000_butX;
+    private int srButton_butY;
 
     SampleRateCytonBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -1978,41 +1624,104 @@ class SampleRateCytonBox {
         h = 73;
         padding = _padding;
 
-        sampleRate250 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "250Hz", fontInfo.buttonLabel_size);
-        sampleRate500 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "500Hz", fontInfo.buttonLabel_size);
-        sampleRate1000 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "1000Hz", fontInfo.buttonLabel_size);
-        sampleRate1000.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        srcb_cp5 = new ControlP5(ourApplet);
+        srcb_cp5.setGraphics(ourApplet, 0,0);
+        srcb_cp5.setAutoDraw(false);
+
+        sr250_butX = x + padding;
+        sr500_butX = x + padding*2 + (w-padding*4)/3;
+        sr1000_butX = x + padding*3 + ((w-padding*4)/3)*2;
+        srButton_butY =  y + padding*2 + 18;
+        createSR250Button("cytonSR250", "250Hz", false, sr250_butX, srButton_butY, (w-padding*4)/3, 24);
+        createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24);
+        //Make 1000Hz option selected by default
+        createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24);
     }
 
     public void update() {
+
     }
 
     public void draw() {
+
+        srButton_butY =  y + padding*2 + 18;
+        sampleRate250.setPosition(sr250_butX, srButton_butY);
+        sampleRate500.setPosition(sr500_butX, srButton_butY);
+        sampleRate1000.setPosition(sr1000_butX, srButton_butY);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("SAMPLE RATE ", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         popStyle();
 
-        sampleRate250.draw();
-        sampleRate500.draw();
-        sampleRate1000.draw();
-        sampleRate250.but_y = y + padding*2 + 18;
-        sampleRate500.but_y = sampleRate250.but_y;
-        sampleRate1000.but_y = sampleRate250.but_y;
+        srcb_cp5.draw();
+    }
+
+    private Button createSRCBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(srcb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createSR250Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate250 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
+        sampleRate250.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 250;
+                println("ControlPanel: User selected Cyton+WiFi 250Hz");
+                sampleRate250.setOn();
+                sampleRate500.setOff();
+                sampleRate1000.setOff();
+            }
+        });
+    }
+
+    private void createSR500Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate500 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
+        sampleRate500.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 500;
+                println("ControlPanel: User selected Cyton+WiFi 500Hz");
+                sampleRate250.setOff();
+                sampleRate500.setOn();
+                sampleRate1000.setOff();
+            }
+        });
+    }
+
+    private void createSR1000Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        sampleRate1000 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
+        sampleRate1000.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectedSamplingRate = 1000;
+                println("ControlPanel: User selected Cyton+WiFi 1000Hz");
+                sampleRate250.setOff();
+                sampleRate500.setOff();
+                sampleRate1000.setOn();
+            }
+        });
     }
 };
 
 class SyntheticChannelCountBox {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 sccb_cp5;
+    private Button synthChanButton4;
+    private Button synthChanButton8;
+    private Button synthChanButton16;
 
     SyntheticChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2021,12 +1730,14 @@ class SyntheticChannelCountBox {
         h = 73;
         padding = _padding;
 
-        synthChanButton4 = new Button_obci (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "4 chan", fontInfo.buttonLabel_size);
-        if (nchan == 4) synthChanButton4.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        synthChanButton8 = new Button_obci (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
-        if (nchan == 8) synthChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
-        synthChanButton16 = new Button_obci (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
-        if (nchan == 16) synthChanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        //Instantiate local cp5 for this box
+        sccb_cp5 = new ControlP5(ourApplet);
+        sccb_cp5.setGraphics(ourApplet, 0,0);
+        sccb_cp5.setAutoDraw(false);
+
+        createSynthChan4Button("synthChan4Button", "4 chan", x + padding, y + padding*2 + 18, (w-padding*4)/3, 24);
+        createSynthChan8Button("synthChan8Button", "8 chan", x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24);
+        createSynthChan16Button("synthChan16Button", "16 chan", x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24);
     }
 
     public void update() {
@@ -2038,28 +1749,80 @@ class SyntheticChannelCountBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("CHANNEL COUNT", x + padding, y + padding);
-        fill(bgColor); //set color to green
+        fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
-        synthChanButton4.draw();
-        synthChanButton8.draw();
-        synthChanButton16.draw();
+        sccb_cp5.draw();
+    }
+
+    private Button createSCCBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(sccb_cp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createSynthChan4Button(String name, String text, int _x, int _y, int _w, int _h) {
+        synthChanButton4 = createSCCBButton(name, text, false,_x, _y, _w, _h);
+        synthChanButton4.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(4);
+                synthChanButton4.setOn();
+                synthChanButton8.setOff();
+                synthChanButton16.setOff();
+            }
+        });
+    }
+
+    private void createSynthChan8Button(String name, String text, int _x, int _y, int _w, int _h) {
+        //Default is 8 channels when app starts
+        synthChanButton8 = createSCCBButton(name, text, true, _x, _y, _w, _h);
+        synthChanButton8.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(8);
+                synthChanButton4.setOff();
+                synthChanButton8.setOn();
+                synthChanButton16.setOff();
+            }
+        });
+    }
+
+    private void createSynthChan16Button(String name, String text, int _x, int _y, int _w, int _h) {
+        synthChanButton16 = createSCCBButton(name, text, false, _x, _y, _w, _h);
+        synthChanButton16.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                updateToNChan(16);
+                synthChanButton4.setOff();
+                synthChanButton8.setOff();
+                synthChanButton16.setOn();
+            }
+        });
+    }
+
+    public void set8ChanButtonActive() {
+        updateToNChan(8);
+        synthChanButton4.setOff();
+        synthChanButton8.setOn();
+        synthChanButton16.setOff();
     }
 };
 
 class RecentPlaybackBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private StringList shortFileNames = new StringList();
     private StringList longFilePaths = new StringList();
     private String filePickedShort = "Select Recent Playback File";
-    private ControlP5 cp5_recentPlayback_dropdown;
+    private ControlP5 rpb_cp5;
+    private ScrollableList recentPlaybackSL;
     private int titleH = 14;
     private int buttonH = 24;
 
@@ -2070,26 +1833,24 @@ class RecentPlaybackBox {
         h = titleH + buttonH + _padding*3;
         padding = _padding;
 
-        cp5_recentPlayback_dropdown = new ControlP5(ourApplet);
-        cp5_recentPlayback_dropdown.setAutoDraw(false);
+        rpb_cp5 = new ControlP5(ourApplet);
+        rpb_cp5.setGraphics(ourApplet, 0,0);
+        rpb_cp5.setAutoDraw(false);
+
         getRecentPlaybackFiles();
 
         String[] temp = shortFileNames.array();
-        createDropdown("recentFiles", Arrays.asList(temp));
-        cp5_recentPlayback_dropdown.setGraphics(ourApplet, 0,0);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setPosition(x + padding, y + padding*2 + 13);
-        cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
+        createRecentPlaybackFilesDropdown("recentPlaybackFilesCP", Arrays.asList(temp));
     }
 
-    /////*Update occurs while control panel is open*/////
     public void update() {
         //Update the dropdown list if it has not already been done
         if (!recentPlaybackFilesHaveUpdated) {
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").clear();
+            recentPlaybackSL.clear();
             getRecentPlaybackFiles();
             String[] temp = shortFileNames.array();
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").addItems(temp);
-            cp5_recentPlayback_dropdown.get(ScrollableList.class, "recentFiles").setSize(w - padding*2, (temp.length + 1) * buttonH);
+            recentPlaybackSL.addItems(temp);
+            recentPlaybackSL.setSize(w - padding*2, (temp.length + 1) * buttonH);
         }
     }
 
@@ -2106,13 +1867,14 @@ class RecentPlaybackBox {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h + cp5_recentPlayback_dropdown.getController("recentFiles").getHeight() - padding*2.5);
-        fill(bgColor);
+        rect(x, y, w, h + recentPlaybackSL.getHeight() - padding*2.5);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK HISTORY", x + padding, y + padding);
         popStyle();
-        cp5_recentPlayback_dropdown.draw();
+        recentPlaybackSL.setVisible(true);
+        rpb_cp5.draw();
     }
 
     private void getRecentPlaybackFiles() {
@@ -2147,15 +1909,14 @@ class RecentPlaybackBox {
         recentPlaybackFilesHaveUpdated = true;
     }
 
-    void createDropdown(String name, List<String> _items){
-
-        ScrollableList scrollList = new CustomScrollableList(cp5_recentPlayback_dropdown, name)
+    void createRecentPlaybackFilesDropdown(String name, List<String> _items){
+        recentPlaybackSL = new CustomScrollableList(rpb_cp5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             // .setColorCursor(color(26,26,26))
 
             .setSize(w - padding*2,(_items.size()+1)*24)// + maxFreqList.size())
@@ -2164,7 +1925,7 @@ class RecentPlaybackBox {
             .addItems(_items) // used to be .addItems(maxFreqList)
             .setVisible(true)
             ;
-        cp5_recentPlayback_dropdown.getController(name)
+        recentPlaybackSL
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(filePickedShort)
@@ -2173,7 +1934,7 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(4)
             ;
-        cp5_recentPlayback_dropdown.getController(name)
+        recentPlaybackSL
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
             .setText(filePickedShort)
@@ -2182,33 +1943,51 @@ class RecentPlaybackBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+        recentPlaybackSL.setPosition(x + padding, y + padding*2 + 13);
+        recentPlaybackSL.setSize(w - padding*2, (_items.size() + 1) * buttonH);
+        recentPlaybackSL.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int s = (int)recentPlaybackSL.getValue();
+                    //println("got a menu event from item " + s);
+                    String filePath = longFilePaths.get(s);
+                    if (new File(filePath).isFile()) {
+                        playbackFileFromList(filePath, s);
+                    } else {
+                        verbosePrint("Playback History: " + filePath);
+                        outputError("Playback History: Selected file does not exist. Try another file or clear settings to remove this entry.");
+                    }
+                }
+            }
+        });
     }
 };
 
-class NovaXRBox {
-    private int x, y, w, h, padding; //size and position
-    private String boxLabel = "NOVAXR CONFIG";
-    private String sampleRateLabel = "SAMPLE RATE";
+class GaleaBox {
+    public int x, y, w, h, padding; //size and position
+    private final String boxLabel = "GALEA CONFIG";
+    private final String ipAddressLabel = "IP Address";
+    private final String sampleRateLabel = "Sample Rate";
+    private String ipAddress = "192.168.4.1";
     private ControlP5 localCP5;
+    private Textfield ipAddressTF;
     private ScrollableList srList;
     private ScrollableList modeList;
+    private final int titleH = 14;
+    private final int uiElementH = 24;
 
-    NovaXRBox(int _x, int _y, int _w, int _h, int _padding) {
+    GaleaBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = 104;
+        h = titleH + uiElementH*3 + _padding*5;
         padding = _padding;
         localCP5 = new ControlP5(ourApplet);
         localCP5.setGraphics(ourApplet, 0,0);
         localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
-
-        modeList = createDropdown("novaXR_Modes", NovaXRMode.values());
-        modeList.setPosition(x + padding, y + h - 24 - padding);
-        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*24);
-        srList = createDropdown("novaXR_SampleRates", NovaXRSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*24);
+        createIPTextfield();
+        createModeListDropdown();
+        createSampleRateDropdown(); //Create this last so it draws on top of Mode List Dropdown
     }
 
     public void update() {
@@ -2225,42 +2004,71 @@ class NovaXRBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
         text(boxLabel, x + padding, y + padding);
         textAlign(LEFT, TOP);
         textFont(p4, 14);
-        text(sampleRateLabel, x + padding, y + padding*2 + 18);
+        text(sampleRateLabel, x + padding, srList.getPosition()[1] + 2);
+        text(ipAddressLabel, x + padding, ipAddressTF.getPosition()[1] + 2);
         popStyle();
         
         //draw cp5 last, on top of everything in this box
         localCP5.draw();
     }
 
-    public void mousePressed() {
+    private void createIPTextfield() {
+        ipAddressTF = localCP5.addTextfield("ipAddress")
+            .setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2)
+            .setCaptionLabel("")
+            .setSize(120 + padding, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(ipAddress)
+            .align(5, 10, 20, 40)
+            .setAutoClear(false) //Don't clear textfield when pressing Enter key
+            ;
+        //Clear textfield on double click
+        ipAddressTF.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("ControlPanel: Enter IP address of the Galea you wish to connect to.");
+                ipAddressTF.clear();
+            }
+        });
+        ipAddressTF.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
+                    ipAddress = ipAddressTF.getText();
+                    ipAddressTF.setFocus(false);
+                }
+            }
+        });
     }
 
-    public void mouseReleased() {
-    }
-
-    private ScrollableList createDropdown(String name, NovaXRSettingsEnum[] enumValues){
+    private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
         ScrollableList list = new CustomScrollableList(localCP5, name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setBackgroundColor(150)
-            .setSize(w - padding*2, 24)//temporary size
+            .setSize(w - padding*2, uiElementH)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
             .setVisible(true)
             ;
         // for each entry in the enum, add it to the dropdown.
-        for (NovaXRSettingsEnum value : enumValues) {
+        for (GaleaSettingsEnum value : enumValues) {
             // this will store the *actual* enum object inside the dropdown!
             list.addItem(value.getName(), value);
         }
@@ -2281,13 +2089,60 @@ class NovaXRBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-
         return list;
+    }
+
+    private void createSampleRateDropdown() {
+        srList = createDropdown("galea_SampleRates", GaleaSR.values());
+        srList.setPosition(x + w - padding*2 - 60*2, y + titleH + uiElementH + padding*3);
+        srList.setSize(120 + padding,(srList.getItems().size()+1)*uiElementH);
+        srList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)srList.getValue();
+                    Map bob = srList.getItem(val);
+                    // this will retrieve the enum object stored in the dropdown!
+                    galea_sampleRate = (GaleaSR)bob.get("value");
+                    println("ControlPanel: User selected Galea Sample Rate: " + galea_sampleRate.getName());
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    //Lock the box below this one when user is interacting with this dropdown
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
+                }
+            }
+        });
+    }
+
+    private void createModeListDropdown() {
+        modeList = createDropdown("galea_Modes", GaleaMode.values());
+        modeList.setPosition(x + padding, y + titleH + uiElementH*2 + padding*4);
+        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*uiElementH);
+        modeList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)modeList.getValue();
+                    Map bob = modeList.getItem(val);
+                    // this will retrieve the enum object stored in the dropdown!
+                    galea_boardSetting = (GaleaMode)bob.get("value");
+                    println("ControlPanel: User selected Galea Mode: " + galea_boardSetting.getName());
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    //Lock the box below this one when user is interacting with this dropdown
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
+                }
+            }
+        });
+    }
+
+    public String getIPAddress() {
+        return ipAddress;
     }
 };
 
 class StreamingBoardBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private final String boxLabel = "STREAMING BOARD CONFIG";
     private final String ipLabel = "IP";
     private final String portLabel = "PORT";
@@ -2361,7 +2216,7 @@ class StreamingBoardBox {
         popStyle();
 
         pushStyle();
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         //draw text labels
@@ -2384,7 +2239,7 @@ class StreamingBoardBox {
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(color(150, 170, 200))       // border color when selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setBackgroundColor(150)
             .setSize(w - padding*2, objectH)//temporary size
             .setBarHeight(objectH) //height of top/primary bar
@@ -2430,10 +2285,20 @@ class StreamingBoardBox {
     public int getPort() {
         return Integer.parseInt(port.getText());
     }
+
+    //Clear text field on double-click
+    CallbackListener cb = new CallbackListener() { 
+        public void controlEvent(CallbackEvent theEvent) {
+            port.clear();
+        }
+    };
 };
 
 class PlaybackFileBox {
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 pbfb_cp5;
+    private Button sampleDataButton;
+    private Button selectPlaybackFile;
     private int sampleDataButton_w = 100;
     private int sampleDataButton_h = 20;
     private int titleH = 14;
@@ -2446,17 +2311,13 @@ class PlaybackFileBox {
         h = buttonH + (_padding * 3) + titleH;
         padding = _padding;
 
-        selectPlaybackFile = new Button_obci (x + padding, y + padding*2 + titleH, w - padding*2, buttonH, "SELECT OPENBCI PLAYBACK FILE", fontInfo.buttonLabel_size);
-        selectPlaybackFile.setHelpText("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
-    
-        // Sample data button
-        sampleDataButton = new Button_obci(x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h, "Sample Data", 14);
-        sampleDataButton.setCornerRoundess((int)(sampleDataButton_h));
-        sampleDataButton.setFont(p4, 14);
-        sampleDataButton.setColorNotPressed(color(57,128,204));
-        sampleDataButton.setFontColorNotActive(color(255));
-        sampleDataButton.setHelpText("Click to open the folder containing OpenBCI GUI Sample Data.");
-        sampleDataButton.hasStroke(false);
+        //Instantiate local cp5 for this box
+        pbfb_cp5 = new ControlP5(ourApplet);
+        pbfb_cp5.setGraphics(ourApplet, 0,0);
+        pbfb_cp5.setAutoDraw(false);
+
+        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH);
+        createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h);
     }
 
     public void update() {
@@ -2468,20 +2329,48 @@ class PlaybackFileBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("PLAYBACK FILE", x + padding, y + padding);
         popStyle();
 
-        selectPlaybackFile.draw();
-        sampleDataButton.draw();
+        pbfb_cp5.draw();
+    }
+
+    private void createSelectPlaybackFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        selectPlaybackFile = createButton(pbfb_cp5, name, text, _x, _y, _w, _h);
+        selectPlaybackFile.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", 
+                            "playbackFileSelected",
+                            new File(directoryManager.getGuiDataPath() + "Recordings")
+                );
+            }
+        });
+        selectPlaybackFile.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+    }
+
+    private void createSampleDataButton(String name, String text, int _x, int _y, int _w, int _h) {
+        sampleDataButton = createButton(pbfb_cp5, name, text, _x, _y, _w, _h, p5, 12, buttonsLightBlue, color(255));
+        sampleDataButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", 
+                            "playbackFileSelected", 
+                            new File(directoryManager.getGuiDataPath() + "Sample_Data" + System.getProperty("file.separator") + "OpenBCI-sampleData-2-meditation.txt")
+                );
+            }
+        });
+        //sampleDataButton.setCornerRoundness((int)(sampleDataButton_h));
+        sampleDataButton.setDescription("Click to open the folder containing OpenBCI GUI Sample Data.");
     }
 };
 
 class SDBox {
     final private String sdBoxDropdownName = "sdCardTimes";
-    private int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
     private ControlP5 cp5_sdBox;
     private ScrollableList sdList;
     private int prevY;
@@ -2495,9 +2384,11 @@ class SDBox {
         prevY = y;
 
         cp5_sdBox = new ControlP5(ourApplet);
-        cp5_sdBox.setAutoDraw(false);
-        createDropdown(sdBoxDropdownName);
         cp5_sdBox.setGraphics(ourApplet, 0,0);
+        cp5_sdBox.setAutoDraw(false);
+
+        createDropdown(sdBoxDropdownName);
+
         updatePosition();
         sdList.setSize(w - padding*2, (int((sdList.getItems().size()+1)/1.5)) * 24);
     }
@@ -2515,7 +2406,7 @@ class SDBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("WRITE TO SD CARD?", x + padding, y + padding);
@@ -2560,6 +2451,21 @@ class SDBox {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
+        sdList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)sdList.getValue();
+                    Map bob = sdList.getItem(val);
+                    cyton_sdSetting = (CytonSDMode)bob.get("value");
+                    String outputString = "OpenBCI microSD Setting = " + cyton_sdSetting.getName();
+                    if (cyton_sdSetting != CytonSDMode.NO_WRITE) {
+                        outputString += " recording time";
+                    }
+                    output(outputString);
+                    verbosePrint("SD Command = " + cyton_sdSetting.getCommand());
+                }
+            }
+        });
     }
 
     public void updatePosition() {
@@ -2569,8 +2475,8 @@ class SDBox {
 
 
 class RadioConfigBox {
-    private int x, y, w, h, padding; //size and position
-    private String initial_message = "Having trouble connecting to your Cyton? Try AutoScan!\n\nUse this tool to get Cyton status or change settings.";
+    public int x, y, w, h, padding; //size and position
+    private String initial_message = "Having trouble connecting to your Cyton? Try Auto-Scan!\n\nUse this tool to get Cyton status or change settings.";
     private String last_message = initial_message;
     public boolean isShowing;
     private RadioConfig cytonRadioCfg;
@@ -2578,6 +2484,11 @@ class RadioConfigBox {
     private int autoscanH = 45;
     private int buttonH = 24;
     private int statusWindowH = 115;
+    private ControlP5 rcb_cp5;
+    private Button autoscanButton;
+    private Button systemStatusButton;
+    private Button setChannelButton;
+    private Button ovrChannelButton;
 
     RadioConfigBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w;
@@ -2588,22 +2499,15 @@ class RadioConfigBox {
         isShowing = false;
         cytonRadioCfg = new RadioConfig();
 
-        //typical button height + 20 for larger autoscan button, full box width minus padding
-        autoscan = new Button_obci(x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH, "AUTOSCAN", fontInfo.buttonLabel_size);
-        //smaller buttons below autoscan - left column
-        systemStatus = new Button_obci(x + padding, y + padding*3 + headerH + autoscanH, (w-padding*4)/2, buttonH, "STATUS", fontInfo.buttonLabel_size);
-        getChannel = new Button_obci(x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*4)/2, buttonH, "GET CHANNEL", fontInfo.buttonLabel_size);
-        //right column
-        setChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*3 + headerH + autoscanH, (w-padding*3)/2, 24, "CHANGE CHAN.", fontInfo.buttonLabel_size);
-        ovrChannel = new Button_obci(x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH, "OVERRIDE DONGLE", fontInfo.buttonLabel_size);
-        
+        //Instantiate local cp5 for this box
+        rcb_cp5 = new ControlP5(ourApplet);
+        rcb_cp5.setGraphics(ourApplet, 0,0);
+        rcb_cp5.setAutoDraw(false);
 
-        //Set help text
-        getChannel.setHelpText("Get the current channel of your Cyton and USB Dongle.");
-        setChannel.setHelpText("Change the channel of your Cyton and USB Dongle.");
-        ovrChannel.setHelpText("Change the channel of the USB Dongle only.");
-        autoscan.setHelpText("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
-        systemStatus.setHelpText("Get the connection status of your Cyton system.");
+        createAutoscanButton("CytonRadioAutoscan", "AUTO-SCAN",x + padding, y + padding*2 + headerH, w-(padding*2), autoscanH);
+        createSystemStatusButton("CytonSystemStatus", "SYSTEM STATUS", x + padding, y + padding*3 + headerH + autoscanH, w-(padding*2), buttonH);
+        createSetChannelButton("CytonSetRadioChannel", "CHANGE CHAN.",x + padding, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, 24);
+        createOverrideChannelButton("CytonOverrideDongleChannel", "OVERRIDE DONGLE", x + 2*padding + (w-padding*3)/2, y + padding*4 + headerH + buttonH + autoscanH, (w-padding*3)/2, buttonH);
     }
     public void update() {}
 
@@ -2613,24 +2517,20 @@ class RadioConfigBox {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text("RADIO CONFIGURATION", x + padding, y + padding);
         popStyle();
-        getChannel.draw();
-        setChannel.draw();
-        ovrChannel.draw();
-        systemStatus.draw();
-        autoscan.draw();
 
+        rcb_cp5.draw();
         this.print_onscreen(last_message);
     }
 
     public void print_onscreen(String localstring){
         pushStyle();
         textAlign(LEFT);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         rect(x + padding, y + padding*5 + headerH + buttonH*2 + autoscanH, w-(padding*2), statusWindowH);
         fill(255);
         textFont(h3, 15);
@@ -2663,12 +2563,60 @@ class RadioConfigBox {
         print_onscreen("");
         cytonRadioCfg.closeSerialPort();
     }
+
+    private void createAutoscanButton(String name, String text, int _x, int _y, int _w, int _h) {
+        autoscanButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
+        autoscanButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                scanChannels();
+                controlPanel.hideChannelListCP();
+            }
+        });
+        autoscanButton.setDescription("Scan through channels and connect to a nearby Cyton. This button solves most connection issues!");
+    }
+
+    private void createSystemStatusButton(String name, String text, int _x, int _y, int _w, int _h) {
+        systemStatusButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
+        systemStatusButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                getChannel();
+                controlPanel.hideChannelListCP();
+            }
+        });
+        systemStatusButton.setDescription("Get connection status and the current channel of your Cyton and USB Dongle.");
+    }
+
+    private void createSetChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        setChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
+        setChannelButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.channelPopup.setClicked(true);
+                controlPanel.channelPopup.setTitleChangeChannel();
+            }
+        });
+        setChannelButton.setDescription("Change the channel of your Cyton and USB Dongle.");
+    }
+
+    private void createOverrideChannelButton(String name, String text, int _x, int _y, int _w, int _h) {
+        ovrChannelButton = createButton(rcb_cp5, name, text, _x, _y, _w, _h);
+        ovrChannelButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.channelPopup.setClicked(true);
+                controlPanel.channelPopup.setTitlteOvrDongle();
+            }
+        });
+        ovrChannelButton.setDescription("Change the channel of the USB Dongle only.");
+    }
 };
 
 class ChannelPopup {
-    int x, y, w, h, padding; //size and position
-    boolean clicked;
-    String title = "";
+    public int x, y, w, h, padding; //size and position
+    private boolean clicked;
+    private final String CHANGE_CHAN = "Change Channel";
+    private final String OVR_DONGLE = "Override Dongle";
+    private String title = "";
+    private ControlP5 cp_cp5;
+    private MenuList channelList;
 
     ChannelPopup(int _x, int _y, int _w, int _h, int _padding) {
         x = _x + _w * 2;
@@ -2678,12 +2626,29 @@ class ChannelPopup {
         padding = _padding;
         clicked = false;
 
-        channelList = new MenuList(cp5Popup, "channelListCP", w - padding*2, 140, p3);
-        channelList.setPosition(x+padding, y+padding*3);
+        //Instantiate local cp5 for this box
+        cp_cp5 = new ControlP5(ourApplet);
+        cp_cp5.setGraphics(ourApplet, 0,0);
+        cp_cp5.setAutoDraw(false);
 
+        channelList = new MenuList(cp_cp5, "channelListCP", w - padding*2, 140, p3);
+        channelList.setPosition(x+padding, y+padding*3);
         for (int i = 1; i < 26; i++) {
-            channelList.addItem(makeItem(String.valueOf(i)));
+            channelList.addItem(String.valueOf(i));
         }
+        channelList.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int setChannelInt = (int)(theEvent.getController()).getValue() + 1;
+                    setClicked(false);
+                    if (title.equals(CHANGE_CHAN)) {
+                        controlPanel.rcBox.setChannel(setChannelInt);
+                    } else if (title.equals(OVR_DONGLE)) {
+                        controlPanel.rcBox.setChannelOverride(setChannelInt);
+                    }
+                }
+            }
+        });
     }
 
     public void update() {
@@ -2695,60 +2660,25 @@ class ChannelPopup {
         stroke(boxStrokeColor);
         strokeWeight(1);
         rect(x, y, w, h);
-        fill(bgColor);
+        fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
         text(title, x + padding, y + padding);
         popStyle();
+        cp_cp5.draw();
     }
 
     public void setClicked(boolean click) { this.clicked = click; }
     public boolean wasClicked() { return this.clicked; }
-    public void setTitle(String s) { title = s; }
+    public void setTitleChangeChannel() { title = CHANGE_CHAN; }
+    public void setTitlteOvrDongle() { title = OVR_DONGLE; }
 };
 
-class PollPopup {
-    int x, y, w, h, padding; //size and position
-    boolean clicked;
-
-    PollPopup(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x + _w * 2;
-        y = _y;
-        w = _w;
-        h = 171 + _padding;
-        padding = _padding;
-        clicked = false;
-
-        pollList = new MenuList(cp5Popup, "pollList", w - padding*2, 140, p3);
-        pollList.setPosition(x+padding, y+padding*3);
-
-        for (int i = 0; i < 256; i++) {
-            pollList.addItem(makeItem(String.valueOf(i)));
-        }
-    }
-
-    public void update() {
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(bgColor);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("POLL SELECTION", x + padding, y + padding);
-        popStyle();
-    }
-
-    public void setClicked(boolean click) { this.clicked = click; }
-    public boolean wasClicked() { return this.clicked; }
-};
-
+//This class holds the "Start Session" button
 class InitBox {
-    int x, y, w, h, padding; //size and position
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 initBox_cp5;
+    public Button initSystemButton;
 
     InitBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -2757,7 +2687,12 @@ class InitBox {
         h = 50;
         padding = _padding;
 
-        initSystemButton = new Button_obci (padding, y + padding, w-padding*2, h - padding*2, "START SESSION", fontInfo.buttonLabel_size);
+        //Instantiate local cp5 for this box
+        initBox_cp5 = new ControlP5(ourApplet);
+        initBox_cp5.setGraphics(ourApplet, 0,0);
+        initBox_cp5.setAutoDraw(false);
+
+        createStartSessionButton("startSessionButton", "START SESSION", x + padding, y + padding, w-padding*2, h - padding*2);
     }
 
     public void update() {
@@ -2770,237 +2705,94 @@ class InitBox {
         strokeWeight(1);
         rect(x, y, w, h);
         popStyle();
-        initSystemButton.draw();
+        
+        initBox_cp5.draw();
+    }
+
+    private void createStartSessionButton(String name, String text, int _x, int _y, int _w, int _h) {
+        initSystemButton = createButton(initBox_cp5, name, text, _x, _y, _w, _h);
+        initSystemButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (controlPanel.rcBox.isShowing) {
+                    controlPanel.hideRadioPopoutBox();
+                }
+                //If session is not active, start session and flip button state
+                initButtonPressed();
+            }
+        });
+    }
+
+    //This is the primary method called when Start/Stop Session Button is pressed in Control Panel
+    public void initButtonPressed() {
+        if (getInitSessionButtonText().equals("START SESSION")) {
+            if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
+                output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+                output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
+                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
+                output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
+                return;
+            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
+                output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+                return;
+            } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
+                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                return;
+            } else if (eegDataSource == -1) {//if no data source selected
+                output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
+                return;
+            } else { //otherwise, initiate system!
+                //verbosePrint("ControlPanel: CPmouseReleased: init");
+                setInitSessionButtonText("STOP SESSION");
+                // Global steps to START SESSION
+                // Prepare the serial port
+                if (eegDataSource == DATASOURCE_CYTON) {
+                    // Store the current text field value of "Session Name" to be passed along to dataFiles
+                    dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_GANGLION) {
+                    dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
+                } else if (eegDataSource == DATASOURCE_GALEA) {
+                    dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
+                } else {
+                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
+                }
+
+                if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
+                    wifi_ipAddress = controlPanel.wifiBox.staticIPAddressTF.getText();
+                    println("Static IP address of " + wifi_ipAddress);
+                }
+
+                //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
+                midInit = true;
+                output("Attempting to Start Session..."); // Show this at the bottom of the GUI
+                println("initButtonPressed: Calling initSystem() after next draw()");
+            }
+        } else {
+            //if system is already active ... stop session and flip button state back
+            outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
+            setInitSessionButtonText("START SESSION");
+            topNav.setLockTopLeftSubNavCp5Objects(false); //Unlock top left subnav buttons
+            //creates new data file name so that you don't accidentally overwrite the old one
+            controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
+            controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
+            haltSystem();
+        }
+    }
+
+    public String getInitSessionButtonText() {
+        return initSystemButton.getCaptionLabel().getText();
+    }
+
+    public void setInitSessionButtonText(String text) {
+        initSystemButton.getCaptionLabel().setText(text);
     }
 };
 
-//===================== MENU LIST CLASS =============================//
-//================== EXTENSION OF CONTROLP5 =========================//
-//============== USED FOR SOURCEBOX & SERIALBOX =====================//
-//
-// Created: Conor Russomanno Oct. 2014
-// Based on ControlP5 Processing Library example, written by Andreas Schlegel
-//
-/////////////////////////////////////////////////////////////////////
 
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    return m;
-}
-
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline, int value) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    m.put("value", value);
-    return m;
-}
-
-//makeItem function used by MenuList class below
-Map<String, Object> makeItem(String theHeadline, String theSubline, String theCopy) {
-    Map m = new HashMap<String, Object>();
-    m.put("headline", theHeadline);
-    m.put("subline", theSubline);
-    m.put("copy", theCopy);
-    return m;
-}
-
-//=======================================================================================================================================
-//
-//                    MenuList Class
-//
-//The MenuList class is implemented by the Control Panel. It allows you to set up a list of selectable items within a fixed rectangle size
-//Currently used for Serial/COM select, SD settings, and System Mode
-//
-//=======================================================================================================================================
-
-public class MenuList extends controlP5.Controller {
-
-    float pos, npos;
-    int itemHeight = 24;
-    int scrollerLength = 40;
-    int scrollerWidth = 15;
-    List< Map<String, Object>> items = new ArrayList< Map<String, Object>>();
-    PGraphics menu;
-    boolean updateMenu;
-    int hoverItem = -1;
-    int activeItem = -1;
-    PFont menuFont;
-    int padding = 7;
-
-    MenuList(ControlP5 c, String theName, int theWidth, int theHeight, PFont theFont) {
-
-        super( c, theName, 0, 0, theWidth, theHeight );
-        c.register( this );
-        menu = createGraphics(getWidth(),getHeight());
-        final ControlP5 cc = c; //allows check for isLocked() below
-        final String _theName = theName;
-
-        menuFont = theFont;
-
-        setView(new ControllerView<MenuList>() {
-
-            public void display(PGraphics pg, MenuList t) {
-                if (updateMenu && !cc.get(MenuList.class, _theName).isLock()) {
-                    updateMenu();
-                }
-                if (isMouseOver()) {
-                    menu.beginDraw();
-                    int len = -(itemHeight * items.size()) + getHeight();
-                    int ty;
-                    if(len != 0){
-                        ty = int(map(pos, len, 0, getHeight() - scrollerLength - 2, 2 ) );
-                    } else {
-                        ty = 0;
-                    }
-                    menu.fill(bgColor, 100);
-                    if(ty > 0){
-                        menu.rect(getWidth()-scrollerWidth-2, ty, scrollerWidth, scrollerLength );
-                    }
-                    menu.endDraw();
-                }
-                pg.image(menu, 0, 0);
-            }
-        }
-        );
-        updateMenu();
-    }
-
-    /* only update the image buffer when necessary - to save some resources */
-    void updateMenu() {
-        int len = -(itemHeight * items.size()) + getHeight();
-        npos = constrain(npos, len, 0);
-        pos += (npos - pos) * 0.1;
-        //    pos += (npos - pos) * 0.1;
-        menu.beginDraw();
-        menu.noStroke();
-        menu.background(255, 64);
-        // menu.textFont(cp5.getFont().getFont());
-        menu.textFont(menuFont);
-        menu.pushMatrix();
-        menu.translate( 0, pos );
-        menu.pushMatrix();
-
-        int i0;
-        if((itemHeight * items.size()) != 0){
-            i0 = PApplet.max( 0, int(map(-pos, 0, itemHeight * items.size(), 0, items.size())));
-        } else{
-            i0 = 0;
-        }
-        int range = ceil((float(getHeight())/float(itemHeight))+1);
-        int i1 = PApplet.min( items.size(), i0 + range );
-
-        menu.translate(0, i0*itemHeight);
-
-        for (int i=i0; i<i1; i++) {
-            Map m = items.get(i);
-            menu.fill(255, 100);
-            if (i == hoverItem) {
-                menu.fill(127, 134, 143);
-            }
-            if (i == activeItem) {
-                menu.stroke(184, 220, 105, 255);
-                menu.strokeWeight(1);
-                menu.fill(184, 220, 105, 255);
-                menu.rect(0, 0, getWidth()-1, itemHeight-1 );
-                menu.noStroke();
-            } else {
-                menu.rect(0, 0, getWidth(), itemHeight-1 );
-            }
-            menu.fill(bgColor);
-            menu.textFont(menuFont);
-
-            //make sure there is something in the Ganglion serial list...
-            try {
-                menu.text(m.get("headline").toString(), 8, itemHeight - padding); // 5/17
-                menu.translate( 0, itemHeight );
-            } catch(Exception e){
-                println("Nothing in list...");
-            }
-        }
-        menu.popMatrix();
-        menu.popMatrix();
-        menu.endDraw();
-        updateMenu = abs(npos-pos)>0.01 ? true:false;
-    }
-
-    /* when detecting a click, check if the click happend to the far right, if yes, scroll to that position,
-      * otherwise do whatever this item of the list is supposed to do.
-      */
-    public void onClick() {
-        println(getName() + ": click! ");
-        if (items.size() > 0) { //Fixes #480
-            if (getPointer().x()>getWidth()-scrollerWidth) {
-                if(getHeight() != 0){
-                    npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
-                }
-                updateMenu = true;
-            } else {
-                int len = itemHeight * items.size();
-                int index = 0;
-                if(len != 0){
-                    index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-                }
-                setValue(index);
-                activeItem = index;
-            }
-            updateMenu = true;
-        }
-    }
-
-    public void onMove() {
-        if (getPointer().x()>getWidth() || getPointer().x()<0 || getPointer().y()<0  || getPointer().y()>getHeight() ) {
-            hoverItem = -1;
-        } else {
-            int len = itemHeight * items.size();
-            int index = 0;
-            if(len != 0){
-                index = int( map( getPointer().y() - pos, 0, len, 0, items.size() ) ) ;
-            }
-            hoverItem = index;
-        }
-        updateMenu = true;
-    }
-
-    public void onDrag() {
-        if (getPointer().x() > (getWidth()-scrollerWidth)) {
-            npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
-            updateMenu = true;
-        } else {
-            npos += getPointer().dy() * 2;
-            updateMenu = true;
-        }
-    }
-
-    public void onScroll(int n) {
-        npos += ( n * 4 );
-        updateMenu = true;
-    }
-
-    void addItem(Map<String, Object> m) {
-        items.add(m);
-        updateMenu = true;
-    }
-
-    void removeItem(Map<String, Object> m) {
-        items.remove(m);
-        updateMenu = true;
-    }
-
-    //Returns null if selecting an item that does not exist
-    Map<String, Object> getItem(int theIndex) {
-        Map<String, Object> m = new HashMap<String, Object>();
-        try {
-            m = items.get(theIndex);
-        } catch (Exception e) {
-            //println("Item " + theIndex + " does not exist.");
-        }
-        return m;
-    }
-
-    int getListSize() {
-       return items.size(); 
-    }
-};

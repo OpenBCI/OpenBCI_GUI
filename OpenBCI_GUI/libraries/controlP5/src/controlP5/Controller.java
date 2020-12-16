@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 04/14/2016
- * @version 2.2.6
+ * @modified ##date##
+ * @version ##version##
  * 
  */
 
@@ -94,6 +94,7 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 	protected float[] _myArrayValue;
 	protected Label _myCaptionLabel;
 	protected Label _myValueLabel;
+	protected String _myDescription;
 	protected boolean isLabelVisible = true;
 	protected boolean isMoveable = true;
 	protected boolean isBroadcast = true;
@@ -1447,6 +1448,30 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 		setValue( theValue );
 		this.isBroadcast = br;
 		return me;
+	}
+
+	/**
+	 * Set a description of this controller (e.g. "This button starts playing music.").
+	 * This can be used to work around the broken tooltip class.
+	 * 
+	 * @param theValue String
+	 * @return Controller
+	 */
+	public T setDescription( String theValue ) {
+		_myDescription = theValue;
+		return me;
+	}
+
+	/**
+	 * Get a description of this controller (e.g. "This button starts playing music.").
+	 * This can be used to work around the broken tooltip class.
+	 * Null by default
+	 * 
+	 * @see Controller#setDescription()
+	 * @return String
+	 */
+	public String getDescription() {
+		return _myDescription;
 	}
 
 	/**

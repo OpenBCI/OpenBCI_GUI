@@ -30,4 +30,6 @@ interface DataSource {
     public int getSampleIndexChannel();
 
     public int getTotalChannelCount();
+
+    public boolean isStreaming();
 };

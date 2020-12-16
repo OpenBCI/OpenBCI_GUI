@@ -49,6 +49,32 @@ float mean(float[] data) {
     return mean(data,data.length);
 }
 
+// cp5 textfields adds garbage chars to text field and they are invisible
+String dropNonPrintableChars(String myString)
+{
+    StringBuilder newString = new StringBuilder(myString.length());
+    for (int offset = 0; offset < myString.length();)
+    {
+        int codePoint = myString.codePointAt(offset);
+        offset += Character.charCount(codePoint);
+
+        // Replace invisible control characters and unused code points
+        switch (Character.getType(codePoint))
+        {
+            case Character.CONTROL:     // \p{Cc}
+            case Character.FORMAT:      // \p{Cf}
+            case Character.PRIVATE_USE: // \p{Co}
+            case Character.SURROGATE:   // \p{Cs}
+            case Character.UNASSIGNED:  // \p{Cn}
+                break;
+            default:
+                newString.append(Character.toChars(codePoint));
+                break;
+        }
+    }
+    return newString.toString();
+}
+
 //////////////////////////////////////////////////
 //
 // Some functions to implement some math and some filtering.  These functions
@@ -215,7 +241,7 @@ class DataStatus {
     private double threshold_railed_warn;
     private double percentage;
     public String notificationString;
-    private final color default_color = bgColor;
+    private final color default_color = OPENBCI_DARKBLUE;
     private final color yellow = color(254,211,0,255);
     private final color red = color(255,0,0,255);
     private color colorIndicator = default_color;
@@ -300,6 +326,7 @@ class PlotFontInfo {
 
 class TextBox {
     private int x, y;
+    private int w, h;
     private color textColor;
     private color backgroundColor;
     private PFont font;
@@ -343,7 +370,7 @@ class TextBox {
 
         //draw the box behind the text
         if (drawBackground == true) {
-            int w = int(round(textWidth(string)));
+            w = int(round(textWidth(string)));
             int xbox = x - backgroundEdge_pixels;
             switch (alignH) {
                 case LEFT:
@@ -358,7 +385,7 @@ class TextBox {
             }
             w = w + 2*backgroundEdge_pixels;
             
-            int h = int(textAscent()) + backgroundEdge_pixels*2;
+            h = int(textAscent()) + backgroundEdge_pixels*2;
             int ybox = y;
             if (alignV == CENTER) {
                 ybox -= textAscent() / 2 - backgroundEdge_pixels;
@@ -389,6 +416,14 @@ class TextBox {
 
     public void setTextColor(color c) {
         textColor = c;
+    }
+
+    public int getWidth() {
+        return w;
+    }
+
+    public int getHeight() {
+        return h;
     }
 };
 

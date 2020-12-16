@@ -69,7 +69,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
         consoleTextArea = cp5.addTextarea("ConsoleWindow")
             .setPosition(0, headerHeight)
             .setSize(width, height - headerHeight)
-            .setFont(createFont("arial", 14))
+            .setFont(p5)
             .setLineHeight(18)
             .setColor(color(242))
             .setColorBackground(color(42, 100))
@@ -98,13 +98,12 @@ static class ConsoleWindow extends PApplet implements Runnable {
                 .setPosition(x, y)
                 .setSize(buttonWidth, buttonHeight)
                 .setColorLabel(color(255))
-                .setColorForeground(color(31, 69, 110))
+                .setColorForeground(color(31, 69, 110)) //openbci blue
                 .setColorBackground(color(144, 100));
         cp5.getController(bName)
                 .getCaptionLabel()
-                .setFont(createFont("Arial",14,true))
+                .setFont(p4)
                 .toUpperCase(false)
-                .setSize(14)
                 .setText(bText);
     }
 
