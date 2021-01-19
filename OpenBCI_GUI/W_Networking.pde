@@ -2015,13 +2015,14 @@ class Stream extends Thread {
                 }
             // LSL
             } else if (this.protocol.equals("LSL")) { ///////////////////This needs to be checked
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
-                    dataToSend[0] = w_pulsesensor.BPM;  //Array output
-                    dataToSend[1] = w_pulsesensor.PulseWaveY[i];
-                    dataToSend[2] = w_pulsesensor.IBI;
-                }
+                float[] _dataToSend = new float[3];
+                //for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
+                    _dataToSend[0] = w_pulsesensor.BPM;  //Array output
+                    _dataToSend[1] = w_pulsesensor.PulseWaveY[w_pulsesensor.PulseWaveY.length-1];
+                    _dataToSend[2] = w_pulsesensor.IBI;
+                //}
                 // Add timestamp to LSL Stream
-                outlet_data.push_chunk(dataToSend);
+                outlet_data.push_sample(_dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")) {     // Send Pulse Data (BPM,Signal,IBI) over Serial
                 for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
