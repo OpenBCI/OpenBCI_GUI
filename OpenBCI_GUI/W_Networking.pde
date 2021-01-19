@@ -2015,14 +2015,36 @@ class Stream extends Thread {
                 }
             // LSL
             } else if (this.protocol.equals("LSL")) { ///////////////////This needs to be checked
-                float[] _dataToSend = new float[3];
+                /*
+                float[] _dataToSend = new float[[3];
                 //for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
                     _dataToSend[0] = w_pulsesensor.BPM;  //Array output
                     _dataToSend[1] = w_pulsesensor.PulseWaveY[w_pulsesensor.PulseWaveY.length-1];
                     _dataToSend[2] = w_pulsesensor.IBI;
                 //}
+                float[] _dataToSend = new float[numChan * 125];
+                for (int i = 0; i < numChan; i++) {
+                    for (int j = 0; j < 125; j++) {
+                        _dataToSend[j+125*i] = fftBuff[i].getBand(j);
+                    }
+                }
                 // Add timestamp to LSL Stream
-                outlet_data.push_sample(_dataToSend);
+                // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
+                outlet_data.push_chunk(_dataToSend);
+                */
+                int numDataPoints = 3;
+                double[][] frameData = currentBoard.getFrameData();
+                int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
+                float[] _dataToSend = new float[frameData[0].length * numDataPoints];
+                for (int i = 0; i < frameData[0].length; i++)
+                {
+                    int raw_signal = (int)(frameData[analogChannels[0]][i]);
+                    _dataToSend[numDataPoints*i] = w_pulsesensor.BPM;
+                    _dataToSend[numDataPoints*i+1] = raw_signal;
+                    _dataToSend[numDataPoints*i+2] = w_pulsesensor.IBI;
+                }
+                // Add timestamp to LSL Stream
+                outlet_data.push_chunk(_dataToSend);
             // Serial
             } else if (this.protocol.equals("Serial")) {     // Send Pulse Data (BPM,Signal,IBI) over Serial
                 for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {

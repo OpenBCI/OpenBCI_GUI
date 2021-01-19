@@ -24,10 +24,10 @@ def testLSLSamplingRate():
 
     while time.time() <= start + duration:
         # get chunks of samples
-        samples, timestamp = inlet.pull_sample()
+        samples, timestamp = inlet.pull_chunk()
         if timestamp:
             numChunks += 1
-            # print( len(samples) )
+            print( len(samples) )
             numSamples += len(samples)
             # print(samples)
 
@@ -44,10 +44,11 @@ def testLSLPulseData():
     raw_pulse_signal = []
 
     while time.time() <= start + duration:
-        sample, timestamp = inlet.pull_sample()
-        if sample:
-            print(sample[1])
-            raw_pulse_signal.append(sample[1])
+        chunk, timestamp = inlet.pull_chunk()
+        if chunk:
+            for sample in chunk:
+                print(sample)
+                raw_pulse_signal.append(sample[1])
 
     print(raw_pulse_signal)
     plt.plot(raw_pulse_signal)
