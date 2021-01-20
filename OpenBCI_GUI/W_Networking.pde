@@ -1357,9 +1357,10 @@ class Stream extends Thread {
                 }
             } else {
                 if (checkForData()) {
-                    sendData();
-                    setDataFalse();
+                    //sendData();
+                    //setDataFalse();
                 }
+                sendData();
             }
         }
     }

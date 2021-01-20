@@ -13,7 +13,7 @@ streams = resolve_stream('type', 'EEG')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])
-duration = 3
+duration = 10
 
 sleep(0)
 
@@ -25,7 +25,7 @@ def testLSLSamplingRate():
     while time.time() <= start + duration:
         # get chunks of samples
         chunk, timestamp = inlet.pull_chunk()
-        if chunk:
+        if timestamp:
             numChunks += 1
             for sample in chunk:
                 numSamples += 1
@@ -44,7 +44,7 @@ def testLSLPulseData():
 
     while time.time() <= start + duration:
         chunk, timestamp = inlet.pull_chunk()
-        if chunk:
+        if timestamp:
             for sample in chunk:
                 # print(sample)
                 raw_pulse_signal.append(sample[1])
