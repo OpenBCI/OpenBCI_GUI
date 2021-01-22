@@ -13,7 +13,8 @@
 //    Created by: Gabriel Ibagon (github.com/gabrielibagon), January 2017
 //
 ///////////////////////////////////////////////////////////////////////////////
-
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 
 class W_Networking extends Widget {
 
@@ -1201,6 +1202,8 @@ class Stream extends Thread {
     String streamName;
     int nChanLSL;
     int numChan = 0;
+    DecimalFormat threeDecimalPlaces;
+    DecimalFormat fourLeadingPlaces;
 
     Boolean isStreaming;
     Boolean newData = false;
@@ -1267,6 +1270,15 @@ class Stream extends Thread {
         this.filter = filter;
         this.isStreaming = false;
         updateNumChan(_nchan);
+        
+        //Force decimal formatting for all Locales
+        Locale currentLocale = Locale.getDefault();
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(currentLocale);
+        otherSymbols.setDecimalSeparator('.');
+        otherSymbols.setGroupingSeparator(','); 
+        threeDecimalPlaces = new DecimalFormat("0.000", otherSymbols);
+        fourLeadingPlaces = new DecimalFormat("####", otherSymbols);
+
         if (this.dataType.equals("TimeSeries")) {
             buffer = ByteBuffer.allocate(4*numChan);
         } else {
@@ -1803,7 +1815,8 @@ class Stream extends Thread {
                 String outputter = "{\"type\":\"accelerometer\",\"data\":[";
                 for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
                     float accelData = w_accelerometer.getLastAccelVal(i);
-                    String accelData_3dec = String.format("%.3f", accelData);
+                    String accelData_3dec = threeDecimalPlaces.format(accelData);
+                    //String accelData_3dec = String.format("%.3f", accelData); //This does not work in all international settings
                     outputter += accelData_3dec;
                     if (i != NUM_ACCEL_DIMS - 1) {
                         outputter += ",";
@@ -1875,7 +1888,7 @@ class Stream extends Thread {
                 String outputter = "{\"type\":\"auxiliary\",\"data\":[";
                 for (int i = 0; i < NUM_ANALOG_READS; i++) {
                     int auxData = (int)lastSample[analogChannels[i]];
-                    String auxData_formatted = String.format("%04d", auxData);
+                    String auxData_formatted = fourLeadingPlaces.format(auxData);
                     outputter += auxData_formatted;
                     if (i != NUM_ANALOG_READS - 1) {
                         outputter += ",";
