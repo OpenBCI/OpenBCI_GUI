@@ -1349,9 +1349,8 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 } else {
-                    sendData();
-                        if (checkForData()) {
-                            
+                        if (checkForData()) { //This needs to be removed in next version of the GUI
+                            sendData();
                             setDataFalse();
                         } else {
                             try {
@@ -1370,10 +1369,10 @@ class Stream extends Thread {
                     println(e.getMessage());
                 }
             } else {
-                if (checkForData()) {
+                //if (checkForData()) {
                     //sendData();
                     //setDataFalse();
-                }
+                //}
                 sendData();
             }
         }
