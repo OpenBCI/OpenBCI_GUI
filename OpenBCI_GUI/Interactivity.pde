@@ -44,10 +44,10 @@ void parseKey(char val) {
         case ' ':
             // space to start/stop the stream
             topNav.stopButtonWasPressed();
-            break;
+            return;
         case ',':
             drawContainers = !drawContainers;
-            break;
+            return;
         case '{':
             if(colorScheme == COLOR_SCHEME_DEFAULT){
                 colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
@@ -56,152 +56,166 @@ void parseKey(char val) {
             }
             //topNav.updateNavButtonsBasedOnColorScheme();
             output("New Dark color scheme coming soon!");
-            break;
+            return;
 
-        //deactivate channels 1-16
+        //deactivate channels 1-4
         case '1':
             currentBoard.setEXGChannelActive(1-1, false);
-            break;
+            return;
         case '2':
             currentBoard.setEXGChannelActive(2-1, false);
-            break;
+            return;
         case '3':
             currentBoard.setEXGChannelActive(3-1, false);
-            break;
+            return;
         case '4':
             currentBoard.setEXGChannelActive(4-1, false);
-            break;
-        case '5':
-            currentBoard.setEXGChannelActive(5-1, false);
-            break;
-        case '6':
-            currentBoard.setEXGChannelActive(6-1, false);
-            break;
-        case '7':
-            currentBoard.setEXGChannelActive(7-1, false);
-            break;
-        case '8':
-            currentBoard.setEXGChannelActive(8-1, false);
-            break;
-        case 'q':
-            currentBoard.setEXGChannelActive(9-1, false);
-            break;
-        case 'w':
-            currentBoard.setEXGChannelActive(10-1, false);
-            break;
-        case 'e':
-            currentBoard.setEXGChannelActive(11-1, false);
-            break;
-        case 'r':
-            currentBoard.setEXGChannelActive(12-1, false);
-            break;
-        case 't':
-            currentBoard.setEXGChannelActive(13-1, false);
-            break;
-        case 'y':
-            currentBoard.setEXGChannelActive(14-1, false);
-            break;
-        case 'u':
-            currentBoard.setEXGChannelActive(15-1, false);
-            break;
-        case 'i':
-            currentBoard.setEXGChannelActive(16-1, false);
-            break;
+            return;
 
-        //activate channels 1-16
+        //activate channels 1-4
         case '!':
             currentBoard.setEXGChannelActive(1-1, true);
-            break;
+            return;
         case '@':
             currentBoard.setEXGChannelActive(2-1, true);
-            break;
+            return;
         case '#':
             currentBoard.setEXGChannelActive(3-1, true);
-            break;
+            return;
         case '$':
             currentBoard.setEXGChannelActive(4-1, true);
-            break;
-        case '%':
-            currentBoard.setEXGChannelActive(5-1, true);
-            break;
-        case '^':
-            currentBoard.setEXGChannelActive(6-1, true);
-            break;
-        case '&':
-            currentBoard.setEXGChannelActive(7-1, true);
-            break;
-        case '*':
-            currentBoard.setEXGChannelActive(8-1, true);
-            break;
-        case 'Q':
-            currentBoard.setEXGChannelActive(9-1, true);
-            break;
-        case 'W':
-            currentBoard.setEXGChannelActive(10-1, true);
-            break;
-        case 'E':
-            currentBoard.setEXGChannelActive(11-1, true);
-            break;
-        case 'R':
-            currentBoard.setEXGChannelActive(12-1, true);
-            break;
-        case 'T':
-            currentBoard.setEXGChannelActive(13-1, true);
-            break;
-        case 'Y':
-            currentBoard.setEXGChannelActive(14-1, true);
-            break;
-        case 'U':
-            currentBoard.setEXGChannelActive(15-1, true);
-            break;
-        case 'I':
-            currentBoard.setEXGChannelActive(16-1, true);
-            break;
+            return;
 
         //other controls
         case 's':
             stopRunning();
-            break;
+            return;
 
         case 'b':
             startRunning();
-            break;
+            return;
 
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Save key pressed!");
             settings.save(settings.getPath("User", eegDataSource, nchan));
             outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings.");
-            break;
+            return;
 
         ///////////////////// Load User settings uppercase N
         case 'N':
             println("Load key pressed!");
             settings.loadKeyPressed();
-            break;
+            return;
 
         case '?':
             if(currentBoard instanceof BoardCyton) {
                 ((BoardCyton)currentBoard).printRegisters();
             }
-            break;
+            return;
 
         case 'd':   
-            break;
+            return;
 
         case 'm':
             String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
             //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
             saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
             output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
-            break;
-            
+            return;
         default:
-            if (currentBoard instanceof Board) {
-                println("Interactivity: '" + key + "' Pressed...sending to Board...");
-                ((Board)currentBoard).sendCommand(str(key));
-            }
             break;
+    }
+
+    if (nchan > 4) {
+        switch (val) {
+            case '5':
+                currentBoard.setEXGChannelActive(5-1, false);
+                return;
+            case '6':
+                currentBoard.setEXGChannelActive(6-1, false);
+                return;
+            case '7':
+                currentBoard.setEXGChannelActive(7-1, false);
+                return;
+            case '8':
+                currentBoard.setEXGChannelActive(8-1, false);
+                return;
+            case '%':
+                currentBoard.setEXGChannelActive(5-1, true);
+                return;
+            case '^':
+                currentBoard.setEXGChannelActive(6-1, true);
+                return;
+            case '&':
+                currentBoard.setEXGChannelActive(7-1, true);
+                return;
+            case '*':
+                currentBoard.setEXGChannelActive(8-1, true);
+                return;
+            default:
+                break;
+        }
+    }
+
+    if (nchan > 8) {
+        switch (val) {
+            case 'q':
+                currentBoard.setEXGChannelActive(9-1, false);
+                return;
+            case 'w':
+                currentBoard.setEXGChannelActive(10-1, false);
+                return;
+            case 'e':
+                currentBoard.setEXGChannelActive(11-1, false);
+                return;
+            case 'r':
+                currentBoard.setEXGChannelActive(12-1, false);
+                return;
+            case 't':
+                currentBoard.setEXGChannelActive(13-1, false);
+                return;
+            case 'y':
+                currentBoard.setEXGChannelActive(14-1, false);
+                return;
+            case 'u':
+                currentBoard.setEXGChannelActive(15-1, false);
+                return;
+            case 'i':
+                currentBoard.setEXGChannelActive(16-1, false);
+                return;
+            case 'Q':
+                currentBoard.setEXGChannelActive(9-1, true);
+                return;
+            case 'W':
+                currentBoard.setEXGChannelActive(10-1, true);
+                return;
+            case 'E':
+                currentBoard.setEXGChannelActive(11-1, true);
+                return;
+            case 'R':
+                currentBoard.setEXGChannelActive(12-1, true);
+                return;
+            case 'T':
+                currentBoard.setEXGChannelActive(13-1, true);
+                return;
+            case 'Y':
+                currentBoard.setEXGChannelActive(14-1, true);
+                return;
+            case 'U':
+                currentBoard.setEXGChannelActive(15-1, true);
+                return;
+            case 'I':
+                currentBoard.setEXGChannelActive(16-1, true);
+                return;
+            default:
+                break;
+        }
+    }
+
+    if (currentBoard instanceof Board) {
+        output("Expert Mode: '" + key + "' pressed. This is not assigned or applicable to current setup.");
+        //((Board)currentBoard).sendCommand(str(key));
     }
 }
 
