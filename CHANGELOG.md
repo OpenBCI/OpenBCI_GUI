@@ -1,6 +1,13 @@
 # v5.0.2
 
 ### Improvements
+
+### Bug Fixes
+* Fix Accel/Aux UDP output #944
+
+# v5.0.2
+
+### Improvements
 * Improved Cyton Auto-Connect button w/ Auto-Scan
 * Update Hardware Settings UI for ADS1299 boards
 * Highlight channels in Hardware Settings that are out of sync with board

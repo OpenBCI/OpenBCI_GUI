@@ -10,10 +10,11 @@ import json
 # Print received message to console
 def print_message(*args):
     try:
-        obj = json.loads(args[0])
-        print obj.get('data')
+        print(args[0]) #added to see raw data 
+        obj = json.loads(args[0].decode())
+        print(obj.get('data'))
     except BaseException as e:
-        print e
+        print(e)
  #  print("(%s) RECEIVED MESSAGE: " % time.time() +
  # ''.join(str(struct.unpack('>%df' % int(length), args[0]))))
 
