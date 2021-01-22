@@ -4,6 +4,7 @@
 
 ### Bug Fixes
 * Fix Accel/Aux UDP output #944
+* Fix Expert Mode unplanned keyboard shortcuts crash GUI #941
 
 # v5.0.2
 
