@@ -1207,6 +1207,7 @@ class Stream extends Thread {
     // Data buffers set dynamically in updateNumChan()
     int start;
     float[] dataToSend;
+    private double[][] previousFrameData;
 
     //OSC Objects
     OscP5 osc;
@@ -1336,8 +1337,9 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 } else {
+                    sendData();
                         if (checkForData()) {
-                            sendData();
+                            
                             setDataFalse();
                         } else {
                             try {
@@ -2003,17 +2005,25 @@ class Stream extends Thread {
                 }
             // UDP
             } else if (this.protocol.equals("UDP")) { //////////////////This needs to be checked
-                String outputter = "{\"type\":\"pulse\",\"data\":";
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
-                    outputter += str(w_pulsesensor.BPM) + ",";  //Comma separated string output (BPM,Raw Signal,IBI)
-                    outputter += str(w_pulsesensor.PulseWaveY[i]) + ",";
-                    outputter += str(w_pulsesensor.IBI);
-                    outputter += "]}\r\n";
-                    try {
-                        this.udp.send(outputter, this.ip, this.port);
-                    } catch (Exception e) {
-                        println(e.getMessage());
+                int numDataPoints = 3;
+                double[][] frameData = currentBoard.getFrameData();
+                int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
+                if (!frameData.equals(previousFrameData)) {
+                    for (int i = 0; i < frameData[0].length; i++)
+                    {
+                        String outputter = "{\"type\":\"pulse\",\"data\":[";
+                        int raw_signal = (int)(frameData[analogChannels[0]][i]);
+                        outputter += str(w_pulsesensor.BPM) + ",";  //Comma separated string output (BPM,Raw Signal,IBI)
+                        outputter += str(raw_signal) + ",";
+                        outputter += str(w_pulsesensor.IBI);
+                        outputter += "]}\r\n";
+                        try {
+                            this.udp.send(outputter, this.ip, this.port);
+                        } catch (Exception e) {
+                            println(e.getMessage());
+                        }
                     }
+                    previousFrameData = frameData;
                 }
             // LSL
             } else if (this.protocol.equals("LSL")) { ///////////////////This needs to be checked

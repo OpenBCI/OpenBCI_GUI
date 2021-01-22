@@ -6,11 +6,16 @@ import signal
 import struct
 import os
 import json
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import style
+
+raw_pulse_signal = []
 
 # Print received message to console
 def print_message(*args):
     try:
-        print(args[0]) #added to see raw data 
+        # print(args[0]) #added to see raw data 
         obj = json.loads(args[0].decode())
         print(obj.get('data'))
     except BaseException as e:
@@ -81,14 +86,21 @@ if __name__ == "__main__":
   print("Listening...")
   start = time.time()
   numSamples = 0
-  duration = 10
+  duration = 3
+  
   while time.time() <= start + duration:
     data, addr = sock.recvfrom(20000) # buffer size is 20000 bytes
     if args.option=="print":
       print_message(data)
+      sample = json.loads(data.decode()).get('data')[1]
+      raw_pulse_signal.append(sample)
       numSamples += 1
     elif args.option=="record":
       record_to_file(data)
+
 print( "Samples == {}".format(numSamples) )
 print( "Duration == {}".format(duration) )
 print( "Avg Sampling Rate == {}".format(numSamples / duration) )
+plt.plot(raw_pulse_signal)
+plt.ylabel('raw analog signal')
+plt.show()
