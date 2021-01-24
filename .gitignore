@@ -21,3 +21,7 @@ application.*
 *.autosave
 .vscode/*
 temp/*
+libBoardController.so
+libDataHandler.so
+libGanglionLib.so
+libGanglionScan.so

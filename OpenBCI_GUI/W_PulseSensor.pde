@@ -100,8 +100,15 @@ class W_PulseSensor extends Widget {
 
         for (int i=0; i < PulseBuffSize; i++ ) {
             int signal = (int)(allData.get(i)[analogChannels[0]]);
-            processSignal(signal);
+            //processSignal(signal);
             PulseWaveY[i] = signal;
+        }
+
+        double[][] frameData = currentBoard.getFrameData();
+        for (int i = 0; i < frameData[0].length; i++)
+        {
+            int signal = (int)(frameData[analogChannels[0]][i]);
+            processSignal(signal);
         }
 
         //ignore top left button interaction when widgetSelector dropdown is active

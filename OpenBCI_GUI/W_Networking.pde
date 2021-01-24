@@ -1210,6 +1210,7 @@ class Stream extends Thread {
     // Data buffers set dynamically in updateNumChan()
     int start;
     float[] dataToSend;
+    private double[][] previousFrameData;
 
     //OSC Objects
     OscP5 osc;
@@ -1348,7 +1349,7 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 } else {
-                        if (checkForData()) {
+                        if (checkForData()) { //This needs to be removed or modified in next version of the GUI
                             sendData();
                             setDataFalse();
                         } else {
@@ -1368,14 +1369,15 @@ class Stream extends Thread {
                     println(e.getMessage());
                 }
             } else {
-                if (checkForData()) {
+                if (checkForData()) { //This needs to be removed or modified in next version of the GUI
                     sendData();
+                    setDataFalse();
                 }
             }
         }
     }
 
-    Boolean checkForData() {
+    Boolean checkForData() { //Try to remove these methods in next version of GUI
         if (this.dataType.equals("TimeSeries")) {
             return w_networking.newDataToSend;
         } else if (this.dataType.equals("FFT")) {
@@ -1387,7 +1389,7 @@ class Stream extends Thread {
         } else if (this.dataType.equals("Accel/Aux")) {
             return w_networking.newDataToSend;
         } else if (this.dataType.equals("Pulse")) {
-            return w_networking.newDataToSend;
+            return true;
         }
         return false;
     }
@@ -1866,64 +1868,63 @@ class Stream extends Thread {
         final int NUM_ANALOG_READS = analogChannels.length;
 
         // UNFILTERED & FILTERED, Aux data is not affected by filters anyways
-        if (this.filter==false || this.filter==true) {
-            // OSC
-            if (this.protocol.equals("OSC")) {
-                for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    msg.clearArguments();
-                    msg.add(i+1);
-                    msg.add((int)lastSample[analogChannels[i]]);
-                    try {
-                        this.osc.send(msg,this.netaddress);
-                    } catch (Exception e) {
-                        println(e.getMessage());
-                    }
-                }
-            // UDP
-            } else if (this.protocol.equals("UDP")) {
-                String outputter = "{\"type\":\"auxiliary\",\"data\":[";
-                for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = (int)lastSample[analogChannels[i]];
-                    String auxData_formatted = fourLeadingPlaces.format(auxData);
-                    outputter += auxData_formatted;
-                    if (i != NUM_ANALOG_READS - 1) {
-                        outputter += ",";
-                    } else {
-                        outputter += "]}\r\n";
-                    }
-                }
+        //if (this.filter==false || this.filter==true) {
+        // OSC
+        if (this.protocol.equals("OSC")) {
+            for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                msg.clearArguments();
+                msg.add(i+1);
+                msg.add((int)lastSample[analogChannels[i]]);
                 try {
-                    this.udp.send(outputter, this.ip, this.port);
+                    this.osc.send(msg,this.netaddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
-                // LSL
-            } else if (this.protocol.equals("LSL")) {
-                for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    dataToSend[i] = (int)lastSample[analogChannels[i]];
+            }
+        // UDP
+        } else if (this.protocol.equals("UDP")) {
+            String outputter = "{\"type\":\"auxiliary\",\"data\":[";
+            for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                int auxData = (int)lastSample[analogChannels[i]];
+                String auxData_formatted = fourLeadingPlaces.format(auxData);
+                outputter += auxData_formatted;
+                if (i != NUM_ANALOG_READS - 1) {
+                    outputter += ",";
+                } else {
+                    outputter += "]}\r\n";
                 }
-                // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend);
-            } else if (this.protocol.equals("Serial")) {
-                // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
-                // 5 chars per pin, including \n char for Z
-                serialMessage = "";
-                for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                    int auxData = (int)lastSample[analogChannels[i]];
-                    String auxData_formatted = String.format("%04d", auxData);
-                    serialMessage += auxData_formatted;
-                    if (i != NUM_ANALOG_READS - 1) {
-                        serialMessage += ",";
-                    } else {
-                        serialMessage += "\n";
-                    }
+            }
+            try {
+                this.udp.send(outputter, this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+            // LSL
+        } else if (this.protocol.equals("LSL")) {
+            for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                dataToSend[i] = (int)lastSample[analogChannels[i]];
+            }
+            // Add timestamp to LSL Stream
+            outlet_data.push_sample(dataToSend);
+        } else if (this.protocol.equals("Serial")) {
+            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
+            // 5 chars per pin, including \n char for Z
+            serialMessage = "";
+            for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                int auxData = (int)lastSample[analogChannels[i]];
+                String auxData_formatted = String.format("%04d", auxData);
+                serialMessage += auxData_formatted;
+                if (i != NUM_ANALOG_READS - 1) {
+                    serialMessage += ",";
+                } else {
+                    serialMessage += "\n";
                 }
-                try {
-                    //println(serialMessage);
-                    this.serial_networking.write(serialMessage);
-                } catch (Exception e) {
-                    println(e.getMessage());
-                }
+            }
+            try {
+                //println(serialMessage);
+                this.serial_networking.write(serialMessage);
+            } catch (Exception e) {
+                println(e.getMessage());
             }
         }
     }
@@ -1994,15 +1995,29 @@ class Stream extends Thread {
     }
     
     ////////////////////////////////////// Stream pulse data from W_PulseSensor
+    //This data type is not affected by GUI filters
+    //JAN 2021 - Using this method to test refactoring Networking streaming
     void sendPulseData() {
-        if (this.filter==false || this.filter==true) {
+        //Get data from Board that 
+        int numDataPoints = 3;
+        double[][] frameData = currentBoard.getFrameData();
+        int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
+        
+        //Check for state change in the available frameData. This works, but maybe checkIfEnoughDataToSend could be used instead and be more accurate...
+        if (!frameData.equals(previousFrameData)) {
+
+            previousFrameData = frameData;
+
             // OSC
             if (this.protocol.equals("OSC")) {
-                //ADD BPM Data (BPM, Signal, IBI)
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {//This works
+
+                for (int i = 0; i < frameData[0].length; i++)
+                {
+                    int raw_signal = (int)(frameData[analogChannels[0]][i]);
+                    //ADD BPM Data (BPM, Signal, IBI)
                     msg.clearArguments(); //This belongs here
                     msg.add(w_pulsesensor.BPM); //Add BPM first
-                    msg.add(w_pulsesensor.PulseWaveY[i]); //Add Raw Signal second
+                    msg.add(raw_signal); //Add Raw Signal second
                     msg.add(w_pulsesensor.IBI); //Add IBI third
                     //Message received in Max via OSC is a list of three integers without commas: 75 512 600 : BPM Signal IBI
                     //println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +  w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI);
@@ -2012,12 +2027,16 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+
             // UDP
             } else if (this.protocol.equals("UDP")) { //////////////////This needs to be checked
-                String outputter = "{\"type\":\"pulse\",\"data\":";
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
+                
+                for (int i = 0; i < frameData[0].length; i++)
+                {
+                    String outputter = "{\"type\":\"pulse\",\"data\":[";
+                    int raw_signal = (int)(frameData[analogChannels[0]][i]);
                     outputter += str(w_pulsesensor.BPM) + ",";  //Comma separated string output (BPM,Raw Signal,IBI)
-                    outputter += str(w_pulsesensor.PulseWaveY[i]) + ",";
+                    outputter += str(raw_signal) + ",";
                     outputter += str(w_pulsesensor.IBI);
                     outputter += "]}\r\n";
                     try {
@@ -2026,25 +2045,31 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+
             // LSL
             } else if (this.protocol.equals("LSL")) { ///////////////////This needs to be checked
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
-                    dataToSend[0] = w_pulsesensor.BPM;  //Array output
-                    dataToSend[1] = w_pulsesensor.PulseWaveY[i];
-                    dataToSend[2] = w_pulsesensor.IBI;
+
+                float[] _dataToSend = new float[frameData[0].length * numDataPoints];
+                for (int i = 0; i < frameData[0].length; i++)
+                {
+                    int raw_signal = (int)(frameData[analogChannels[0]][i]);
+                    _dataToSend[numDataPoints*i] = w_pulsesensor.BPM;
+                    _dataToSend[numDataPoints*i+1] = raw_signal;
+                    _dataToSend[numDataPoints*i+2] = w_pulsesensor.IBI;
                 }
-                // Add timestamp to LSL Stream
-                outlet_data.push_chunk(dataToSend);
+                // From LSLLink Library: The time stamps of other samples are automatically derived based on the sampling rate of the stream.
+                outlet_data.push_chunk(_dataToSend); 
+
             // Serial
             } else if (this.protocol.equals("Serial")) {     // Send Pulse Data (BPM,Signal,IBI) over Serial
-                for (int i = 0; i < (w_pulsesensor.PulseWaveY.length); i++) {
+                
+                for (int i = 0; i < frameData[0].length; i++)
+                {
                     serialMessage = ""; //clear message
-                    int BPM = (w_pulsesensor.BPM);
-                    int Signal = (w_pulsesensor.PulseWaveY[i]);
-                    int IBI = (w_pulsesensor.IBI);
-                    serialMessage += BPM + ","; //Comma separated string output (BPM,Raw Signal,IBI)
-                    serialMessage += Signal + ",";
-                    serialMessage += IBI;
+                    int raw_signal = (int)(frameData[analogChannels[0]][i]);
+                    serialMessage += w_pulsesensor.BPM + ","; //Comma separated string output (BPM,Raw Signal,IBI)
+                    serialMessage += raw_signal + ",";
+                    serialMessage += w_pulsesensor.IBI;
                     try {
                         println(serialMessage);
                         this.serial_networking.write(serialMessage);
