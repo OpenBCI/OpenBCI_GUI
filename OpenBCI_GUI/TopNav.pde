@@ -398,6 +398,10 @@ class TopNav {
         return val;
     }
 
+    public void updateSmoothingButtonText() {
+        smoothingButton.getCaptionLabel().setText(getSmoothingString());
+    }
+
     private String getSmoothingString() {
         return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n       Off";
     }

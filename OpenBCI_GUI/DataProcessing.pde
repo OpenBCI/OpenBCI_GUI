@@ -93,8 +93,8 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    BandPassRanges bpRange = BandPassRanges.FiveToFifty;
-    BandStopRanges bsRange = BandStopRanges.Sixty;
+    public BandPassRanges bpRange = BandPassRanges.FiveToFifty;
+    public BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
