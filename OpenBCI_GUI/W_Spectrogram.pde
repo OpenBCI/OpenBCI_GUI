@@ -424,9 +424,6 @@ class W_Spectrogram extends Widget {
 //triggered when there is an event in the Spectrogram Widget MaxFreq. Dropdown
 void SpectrogramMaxFreq(int n) {
     settings.spectMaxFrqSave = n;
-    //Link the choices made in the FFT widget and the Spectrogram Widget for this parameter
-    MaxFreq(n);
-    w_fft.cp5_widget.getController("MaxFreq").getCaptionLabel().setText(settings.fftMaxFrqArray[n]);
     //reset the vertical axis labelss
     w_spectrogram.vertAxisLabel = w_spectrogram.vertAxisLabels[n];
     //Resize the height of the data image

@@ -1,3 +1,14 @@
+# v5.0.3
+
+### Improvements
+* Increase sampling rate for Pulse data output in Networking Widget
+
+### Bug Fixes
+* Fix Pulse LSL output error #943
+* Fix Accel/Aux UDP output #944
+* Fix Expert Mode unplanned keyboard shortcuts crash GUI #941
+* Fix bugs found when loading Session Settings #942
+
 # v5.0.2
 
 ### Improvements

@@ -61,9 +61,6 @@ class SessionSettings {
     CColor dropdownColors = new CColor();
     ///These `Save` vars are set to default when each widget instantiates
     ///and updated every time user selects from dropdown
-    //Notch and Bandpass filter variables for save
-    int dataProcessingNotchSave = 0;
-    int dataProcessingBandpassSave = 3;
     //Accelerometer settings
     int accVertScaleSave;
     int accHorizScaleSave;
@@ -170,11 +167,6 @@ class SessionSettings {
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
     String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz", "40 Hz"};
-
-    //Load global settings variables
-    int loadLayoutSetting;
-    int loadNotchSetting;
-    int loadBandpassSetting;
 
     //Load Accel. dropdown variables
     int loadAccelVertScale;
@@ -376,10 +368,13 @@ class SessionSettings {
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
         saveGlobalSettings.setInt("Current Layout", currentLayout);
-        saveGlobalSettings.setInt("Notch", dataProcessingNotchSave);
-        saveGlobalSettings.setInt("Bandpass Filter", dataProcessingBandpassSave);
+        saveGlobalSettings.setInt("Notch", dataProcessing.bsRange.getIndex());
+        saveGlobalSettings.setInt("Bandpass Filter", dataProcessing.bpRange.getIndex());
         saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
         saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
+        if (currentBoard instanceof SmoothingCapableBoard) {
+            saveGlobalSettings.setBoolean("Data Smoothing", ((SmoothingCapableBoard)currentBoard).getSmoothingActive());
+        }
         saveSettingsJSONData.setJSONObject(kJSONKeySettings, saveGlobalSettings);
 
         /////Setup JSON Object for gui version and settings Version
@@ -585,15 +580,15 @@ class SessionSettings {
 
         //get the global settings JSON object
         JSONObject loadGlobalSettings = loadSettingsJSONData.getJSONObject(kJSONKeySettings);
-        loadLayoutSetting = loadGlobalSettings.getInt("Current Layout");
-        loadNotchSetting = loadGlobalSettings.getInt("Notch");
-        loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
-        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        //Store loaded layout to current layout variable
+        currentLayout = loadGlobalSettings.getInt("Current Layout");
         loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
-        //Store loaded layout to current layout variable
-        currentLayout = loadLayoutSetting;
         //Load more global settings after this line, if needed
+        int loadNotchSetting = loadGlobalSettings.getInt("Notch");
+        int loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
+        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
+        Boolean loadDataSmoothingSetting = (currentBoard instanceof SmoothingCapableBoard) ? loadGlobalSettings.getBoolean("Data Smoothing") : null;
 
         //get the FFT settings
         JSONObject loadFFTSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFFT);
@@ -717,8 +712,8 @@ class SessionSettings {
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
         //Apply Layout directly before loading and applying widgets to containers
-        wm.setNewContainerLayout(loadLayoutSetting);
-        verbosePrint("LoadGUISettings: Layout " + loadLayoutSetting + " Loaded!");
+        wm.setNewContainerLayout(currentLayout);
+        verbosePrint("LoadGUISettings: Layout " + currentLayout + " Loaded!");
         numLoadedWidgets = loadWidgetSettings.size();
 
 
@@ -749,11 +744,28 @@ class SessionSettings {
 
         /////////////////////////////////////////////////////////////
         //    Load more widget settings above this line as above   //
+        /////////////////////////////////////////////////////////////
 
-        //}//end case for all objects in JSON
+        /////////////////////////////////////////////////////////////
+        //              Apply Settings below this line             //
+        /////////////////////////////////////////////////////////////
+
+        //Apply notch
+        dataProcessing.bsRange = BandStopRanges.getByIndex(loadNotchSetting);
+        topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
+        //Apply Bandpass filter
+        dataProcessing.bpRange = BandPassRanges.getByIndex(loadBandpassSetting);
+        topNav.filtBPButton.getCaptionLabel().setText("BP Filt\n" + dataProcessing.getShortFilterDescription());
+
+        //Apply Data Smoothing for capable boards
+        if (currentBoard instanceof SmoothingCapableBoard) {
+            ((SmoothingCapableBoard)currentBoard).setSmoothingActive(loadDataSmoothingSetting);
+            topNav.updateSmoothingButtonText();
+        }
 
         //Apply Expert Mode toggle
-        topNav.configSelector.toggleExpertMode(loadExpertModeToggle);
+        //This should not be loaded with other session settings - RW Jan 2021
+        //topNav.configSelector.toggleExpertMode(loadExpertModeToggle);
 
         //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
         loadApplyWidgetDropdownText();
@@ -987,7 +999,7 @@ class SessionSettings {
         w_timeSeries.cp5_widget.getController("VertScale_TS").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString()); //changes front-end
         
         w_timeSeries.setTSHorizScale(loadTimeSeriesSettings.getInt("Time Series Horiz Scale"));
-        w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSVertScale().getString());
+        w_timeSeries.cp5_widget.getController("Duration").getCaptionLabel().setText(w_timeSeries.getTSHorizScale().getString());
 
         JSONArray loadTSChan = loadTimeSeriesSettings.getJSONArray("activeChannels");
         w_timeSeries.tsChanSelect.deactivateAllButtons();
