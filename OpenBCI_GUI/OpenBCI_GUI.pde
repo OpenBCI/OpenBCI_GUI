@@ -395,19 +395,6 @@ void delayedSetup() {
     settings.heightOfLastScreen = height;
 
     setupContainers();
-    
-    //listen for window resize ... used to adjust elements in application
-    //Doesn't seem to work...
-    frame.addComponentListener(new ComponentAdapter() {
-        public void componentResized(ComponentEvent e) {
-            if (e.getSource().equals(frame)) {
-                settings.screenHasBeenResized = true;
-                settings.timeOfLastScreenResize = millis();
-                // initializeGUI();
-            }
-        }
-    }
-    );
 
     fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
