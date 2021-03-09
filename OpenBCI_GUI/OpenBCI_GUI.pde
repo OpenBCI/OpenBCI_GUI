@@ -64,8 +64,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.3";
-String localGUIVersionDate = "January 2021";
+String localGUIVersionString = "v5.0.4-alpha.0";
+String localGUIVersionDate = "March 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -395,19 +395,6 @@ void delayedSetup() {
     settings.heightOfLastScreen = height;
 
     setupContainers();
-    
-    //listen for window resize ... used to adjust elements in application
-    //Doesn't seem to work...
-    frame.addComponentListener(new ComponentAdapter() {
-        public void componentResized(ComponentEvent e) {
-            if (e.getSource().equals(frame)) {
-                settings.screenHasBeenResized = true;
-                settings.timeOfLastScreenResize = millis();
-                // initializeGUI();
-            }
-        }
-    }
-    );
 
     fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);

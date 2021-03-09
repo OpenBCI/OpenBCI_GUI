@@ -1,3 +1,8 @@
+# v5.0.4
+
+### Improvements
+* Update BrainFlow library to version that includes a marker channel
+
 # v5.0.3
 
 ### Improvements
