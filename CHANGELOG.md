@@ -3,6 +3,9 @@
 ### Improvements
 * Update BrainFlow library to version that includes a marker channel
 
+### Bug Fixes
+* Clean up GUI code to fix Processing/JVM memory issue causing crash #955
+
 # v5.0.3
 
 ### Improvements
