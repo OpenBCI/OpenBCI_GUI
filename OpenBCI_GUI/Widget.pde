@@ -31,7 +31,7 @@ class Widget{
     protected final int navH = 22;
     private int widgetSelectorWidth = 160;
     private int widgetSelectorHeight = 0;
-    private final int dropdownWidth = 64;
+    protected int dropdownWidth = 64;
     private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
     Widget(PApplet _parent){
@@ -64,6 +64,7 @@ class Widget{
         noStroke();
         fill(255);
         rect(x,y-1,w,h+1); //draw white widget background
+        popStyle();
 
         //draw nav bars and button bars
         pushStyle();
@@ -71,8 +72,8 @@ class Widget{
         rect(x0, y0, w0, navH); //top bar
         fill(200, 200, 200);
         rect(x0, y0+navH, w0, navH); //button bar
-
         popStyle();
+
     }
 
     public void addDropdown(String _id, String _title, List _items, int _defaultItem){
@@ -195,6 +196,7 @@ class Widget{
             // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
             text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));		
         }
+        popStyle();
     }
 
     public void mouseDragged(){
@@ -455,6 +457,7 @@ class ChannelSelect {
                 rect(x,y,w,navH);
             }
         }
+        popStyle();
 
         //Draw channel select buttons
         cp5_chanSelect.draw();

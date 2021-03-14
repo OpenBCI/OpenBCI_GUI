@@ -179,10 +179,6 @@ class ControlPanel {
 
     public void draw() {
 
-        pushStyle();
-
-        noStroke();
-
         initBox.draw();
 
         if (systemMode == 10) {
@@ -272,8 +268,6 @@ class ControlPanel {
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
         }
-
-        popStyle();
     }
 
     public void hideRadioPopoutBox() {
@@ -340,11 +334,11 @@ class DataSourceBox {
         sourceList.setPosition(_x, _y);
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
-        sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
-        sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
         if (galeaEnabled) {
             sourceList.addItem("GALEA (live)", DATASOURCE_GALEA);
         }
+        sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
+        sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
         sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
         sourceList.addItem("SYNTHETIC (algorithmic)", DATASOURCE_SYNTHETIC);
         sourceList.addItem("STREAMING (from external)", DATASOURCE_STREAMING);
@@ -1968,7 +1962,8 @@ class GaleaBox {
     private final String boxLabel = "GALEA CONFIG";
     private final String ipAddressLabel = "IP Address";
     private final String sampleRateLabel = "Sample Rate";
-    private String ipAddress = "192.168.4.1";
+    //private String ipAddress = "192.168.4.1";
+    private String ipAddress = "127.0.0.1"; //For use with testing emulator
     private ControlP5 localCP5;
     private Textfield ipAddressTF;
     private ScrollableList srList;

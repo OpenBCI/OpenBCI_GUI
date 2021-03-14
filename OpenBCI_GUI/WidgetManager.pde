@@ -23,7 +23,6 @@ W_AnalogRead w_analogRead;
 W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
-W_AuraAux w_galeaAux;
 W_PacketLoss w_packetLoss;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
@@ -54,13 +53,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_playback = new W_playback(_this);
         w_playback.setTitle("Playback History");
         addWidget(w_playback, w);
-    }
-
-    if (galeaEnabled && currentBoard instanceof PPGCapableBoard && currentBoard instanceof EDACapableBoard) {
-        //Galea_Widget_2
-        w_galeaAux = new W_AuraAux(_this);
-        w_galeaAux.setTitle("Galea Aux");
-        addWidget(w_galeaAux, w);
     }
 
     //only instantiate this widget if you are using a Ganglion board for live streaming
@@ -230,10 +222,8 @@ class WidgetManager{
         if(visible){
             for(int i = 0; i < widgets.size(); i++){
                 if(widgets.get(i).getIsActive()){
-                    pushStyle();
                     widgets.get(i).draw();
                     widgets.get(i).drawDropdowns();
-                    popStyle();
                 }else{
                     if(widgets.get(i).widgetTitle.equals("Networking")){
                         try{
