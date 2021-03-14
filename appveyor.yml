@@ -54,7 +54,7 @@ deploy_script:
   -  aws s3 cp %APPVEYOR_BUILD_FOLDER%\. s3://openbci-gui/%APPVEYOR_REPO_BRANCH%/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
   # copy index.html and list.js back to s3 to refresh it and avoid it being deleted by the eviction policy
   - aws s3 cp %APPVEYOR_BUILD_FOLDER%\release_script\index.html s3://openbci-gui/index.html
-  - aws s3 cp %APPVEYOR_BUILD_FOLDER%\release_script\index.html s3://openbci-gui/list.js
+  - aws s3 cp %APPVEYOR_BUILD_FOLDER%\release_script\list.js s3://openbci-gui/list.js
 
 notifications:
   - provider: Email
