@@ -75,6 +75,19 @@ String dropNonPrintableChars(String myString)
     return newString.toString();
 }
 
+float getFontStringHeight(PFont _font, String string) {
+    float minY = Float.MAX_VALUE;
+    float maxY = Float.NEGATIVE_INFINITY;
+    for (Character c : string.toCharArray()) {
+        PShape character = _font.getShape(c); // create character vector
+        for (int i = 0; i < character.getVertexCount(); i++) {
+            minY = min(character.getVertex(i).y, minY);
+            maxY = max(character.getVertex(i).y, maxY);
+        }
+    }
+    return maxY - minY;
+}
+
 //////////////////////////////////////////////////
 //
 // Some functions to implement some math and some filtering.  These functions
@@ -300,6 +313,9 @@ class DataStatus {
     public color getColor() {
         return colorIndicator;
     }
+    public double getPercentage() {
+        return percentage;
+    }
 };
 
 class FilterConstants {
@@ -395,6 +411,8 @@ class TextBox {
             fill(backgroundColor);
             rect(xbox,ybox,w,h);
         }
+        popStyle();
+        
         //draw the text itself
         pushStyle();
         noStroke();
