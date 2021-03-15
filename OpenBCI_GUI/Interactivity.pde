@@ -213,6 +213,14 @@ void parseKey(char val) {
         }
     }
 
+    if (currentBoard instanceof BoardGanglion) {
+        if (val == '[' ||  val == ']'){
+            output("Expert Mode: '" + val + "' pressed. Sending to Ganglion...");
+            ((Board)currentBoard).sendCommand(str(val));
+            return;
+        }
+    }
+
     if (currentBoard instanceof Board) {
         output("Expert Mode: '" + key + "' pressed. This is not assigned or applicable to current setup.");
         //((Board)currentBoard).sendCommand(str(key));
