@@ -5,6 +5,7 @@
 * Handle paths with spaces on Linux Standalone GUI #916
 * Allow Expert Ganglion Users to send square wave commands via keyboard #950
 * Show Send Custom Hardware Command UI for Cyton Expert Mode in Hardware Settings
+* Improve Hardware Setting UX/UI for ADS1299 boards #954
 
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955

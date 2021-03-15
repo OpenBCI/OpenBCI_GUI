@@ -810,10 +810,13 @@ class ChannelBar {
         onOffButton.setCircularButton(true);
         onOffButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                println("[" + channelString + "] onOff released");
-                currentBoard.setEXGChannelActive(channelIndex, !currentBoard.isEXGChannelActive(channelIndex));
+                boolean newState = !currentBoard.isEXGChannelActive(channelIndex);
+                println("[" + channelString + "] onOff released - " + (newState ? "On" : "Off"));
+                currentBoard.setEXGChannelActive(channelIndex, newState);
                 if (currentBoard instanceof ADS1299SettingsBoard) {
                     w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
+                    boolean hasUnappliedChanges = currentBoard.isEXGChannelActive(channelIndex) != newState;
+                    w_timeSeries.adsSettingsController.setHasUnappliedSettings(channelIndex, hasUnappliedChanges);
                 }
             }
         });
