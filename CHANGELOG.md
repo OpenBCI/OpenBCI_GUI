@@ -2,6 +2,7 @@
 
 ### Improvements
 * Update BrainFlow library to version that includes a marker channel
+* Handle paths with spaces on Linux Standalone GUI #916
 
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955
