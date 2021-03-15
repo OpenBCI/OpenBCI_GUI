@@ -142,7 +142,7 @@ class ADS1299SettingsController {
             rect(x, y + h, w + 1, commandBarH);
             
 
-            boolean showCustomCommandUI = settings.expertModeToggle && !(currentBoard instanceof BoardCyton);
+            boolean showCustomCommandUI = settings.expertModeToggle;
             customCommandTF.setVisible(showCustomCommandUI);
             sendCustomCmdButton.setVisible(showCustomCommandUI);
             if (showCustomCommandUI) {

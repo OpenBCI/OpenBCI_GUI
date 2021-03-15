@@ -3,7 +3,8 @@
 ### Improvements
 * Update BrainFlow library to version that includes a marker channel
 * Handle paths with spaces on Linux Standalone GUI #916
-* Allow Expert Ganglion users to send square wave commands via keyboard #950
+* Allow Expert Ganglion Users to send square wave commands via keyboard #950
+* Show Send Custom Hardware Command UI for Cyton Expert Mode in Hardware Settings
 
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955
