@@ -823,6 +823,7 @@ class WifiBox {
             textFont(h3, 16);
             textAlign(LEFT, TOP);
             text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
+            popStyle();
 
             if (wifiIsRefreshing){
                 //Display spinning cog gif
