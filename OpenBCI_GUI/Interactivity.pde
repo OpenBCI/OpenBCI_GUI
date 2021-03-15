@@ -214,9 +214,14 @@ void parseKey(char val) {
     }
 
     if (currentBoard instanceof BoardGanglion) {
-        if (val == '[' ||  val == ']'){
-            output("Expert Mode: '" + val + "' pressed. Sending to Ganglion...");
-            ((Board)currentBoard).sendCommand(str(val));
+        if (val == '[' ||  val == ']') {
+            println("Expert Mode: '" + val + "' pressed. Sending to Ganglion...");
+            Boolean success = ((Board)currentBoard).sendCommand(str(val)).getKey();
+            if (success) {
+                outputSuccess("Expert Mode: Success sending '" + val + "' to Ganglion!");
+            } else {
+                outputWarn("Expert Mode: Error sending '" + val + "' to Ganglion. Try again with data stream stopped.");
+            }
             return;
         }
     }
