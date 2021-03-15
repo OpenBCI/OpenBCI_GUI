@@ -136,20 +136,19 @@ class ADS1299SettingsController {
                 }
             }
 
+            boolean showCustomCommandUI = settings.expertModeToggle;
+            
             //Draw background behind command buttons
             pushStyle();
             fill(0, 0, 0, 100);
             rect(x, y + h, w + 1, commandBarH);
-            
-
-            boolean showCustomCommandUI = settings.expertModeToggle && !(currentBoard instanceof BoardCyton);
-            customCommandTF.setVisible(showCustomCommandUI);
-            sendCustomCmdButton.setVisible(showCustomCommandUI);
             if (showCustomCommandUI) {
                 rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons
             }
-
             popStyle();
+
+            customCommandTF.setVisible(showCustomCommandUI);
+            sendCustomCmdButton.setVisible(showCustomCommandUI);
             
             //Draw cp5 objects on top of everything
             hwsCp5.draw();
@@ -278,20 +277,26 @@ class ADS1299SettingsController {
         sendButton.setDescription("Send hardware settings to the board.");
         sendButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                
-                boolean[] sendCommandSuccess = ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commitAll();
-                boolean noErrors = true;
 
-                for (int i = 0; i < sendCommandSuccess.length; i++) {
-                    if (!sendCommandSuccess[i]) {
-                        noErrors = false;
-                    } else {
-                        hasUnappliedChanges[i] = false;
-                        boardSettings.saveLastValues(i);
+                boolean noErrors = true;
+                boolean atLeastOneChannelHasChanged = false;
+
+                for (int i = 0; i < channelCount; i++) {
+                    if (hasUnappliedChanges[i]) {
+                        boolean sendCommandSuccess = ((ADS1299SettingsBoard)currentBoard).getADS1299Settings().commit(i);
+                        if (!sendCommandSuccess) {
+                            noErrors = false;
+                        } else {
+                            hasUnappliedChanges[i] = false;
+                            atLeastOneChannelHasChanged = true;
+                            boardSettings.saveLastValues(i);
+                        }
                     }
                 }
 
-                if (noErrors) {
+                if (!atLeastOneChannelHasChanged) {
+                    output("No new settings to send to board.");
+                } else if (noErrors) {
                     output("Hardware Settings sent to board!");
                 } else {
                     PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
@@ -444,6 +449,20 @@ class ADS1299SettingsController {
         sendCustomCmdButton.setSize(but_w, tf_h - 1);
     }
 
+    private void updateHasUnappliedSettings(int _channel) {
+        hasUnappliedChanges[_channel] = !boardSettings.equalsLastValues(_channel);
+    }
+
+    public void updateHasUnappliedSettings() {
+        for (int i : activeChannels) {
+            updateHasUnappliedSettings(i);
+        }
+    }
+
+    public void setHasUnappliedSettings(int _channel, boolean b) {
+        hasUnappliedChanges[_channel] = b;
+    }
+
     public void updateChanSettingsDropdowns(int chan, boolean isActive) {
         color darkNotActive = color(57);
         color c = isActive ? color(255) : darkNotActive;
@@ -471,7 +490,7 @@ class ADS1299SettingsController {
         srb1Lists[chan].setColorBackground(c);
         srb1Lists[chan].setLock(!isActive);
 
-        hasUnappliedChanges[chan] = false;
+        
     }
 
     private class SLCallbackListener implements CallbackListener {
@@ -491,29 +510,24 @@ class ADS1299SettingsController {
 
                 if (myEnum instanceof Gain) {
                     //verbosePrint("HardwareSettings: previousVal == " + boardSettings.previousValues.gain[channel]);
-                    hasUnappliedChanges[channel] = (Gain)myEnum != boardSettings.values.gain[channel];
                     boardSettings.values.gain[channel] = (Gain)myEnum;
                 } else if (myEnum instanceof InputType) {
-                    hasUnappliedChanges[channel] = (InputType)myEnum != boardSettings.values.inputType[channel];
                     boardSettings.values.inputType[channel] = (InputType)myEnum;
                 } else if (myEnum instanceof Bias) {
-                    hasUnappliedChanges[channel] = (Bias)myEnum != boardSettings.values.bias[channel];
                     boardSettings.values.bias[channel] = (Bias)myEnum;
                     _bgColor = (Bias)myEnum == Bias.INCLUDE ? yesOnColor : noOffColor;
                     (theEvent.getController()).setColorBackground(_bgColor);
                 } else if (myEnum instanceof Srb2) {
-                    hasUnappliedChanges[channel] = (Srb2)myEnum != boardSettings.values.srb2[channel];
                     boardSettings.values.srb2[channel] = (Srb2)myEnum;
                     _bgColor = (Srb2)myEnum == Srb2.CONNECT ? yesOnColor : noOffColor;
                     (theEvent.getController()).setColorBackground(_bgColor);
                 } else if (myEnum instanceof Srb1) {
-                    hasUnappliedChanges[channel] = (Srb1)myEnum != boardSettings.values.srb1[channel];
                     boardSettings.values.srb1[channel] = (Srb1)myEnum;
                     _bgColor = (Srb1)myEnum == Srb1.CONNECT ? yesOnColor : noOffColor;
                     (theEvent.getController()).setColorBackground(_bgColor);
                 }
 
-                hasUnappliedChanges[channel] = !boardSettings.equalsLastValues(channel);
+                updateHasUnappliedSettings(channel);
             }
         }
     }
@@ -528,6 +542,7 @@ void loadHardwareSettings(File selection) {
                 outputSuccess("Hardware Settings Loaded!");
                 for (int i = 0; i < nchan; i++) {
                     w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i));
+                    w_timeSeries.adsSettingsController.updateHasUnappliedSettings(i);
                 }
             } else {
                 outputError("Failed to load Hardware Settings.");

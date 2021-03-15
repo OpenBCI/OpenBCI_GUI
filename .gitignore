@@ -25,3 +25,4 @@ libBoardController.so
 libDataHandler.so
 libGanglionLib.so
 libGanglionScan.so
+libunicorn.so
