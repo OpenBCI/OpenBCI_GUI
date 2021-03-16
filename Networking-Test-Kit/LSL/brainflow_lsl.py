@@ -42,7 +42,7 @@ def main():
 
     # brainflow params - use docs to check which parameters are required for specific board, e.g. for Cyton set serial port
     parser.add_argument('--timeout', type=int, help='timeout for device discovery or connection', required=False, default=0)
-    # parser.add_argument('--ip-address', type=str, help='ip address', required=False)
+    parser.add_argument('--ip-address', type=str, help='ip address', required=False, default='')
     parser.add_argument('--board-id', type=int, help='board id, check docs to get a list of supported boards', required=True)
     parser.add_argument('--serial-port', type=str, help='serial port', required=False, default='')
     parser.add_argument('--streamer-params', type=str, help='streamer params', required=False, default='')
@@ -58,7 +58,7 @@ def main():
     # brainflow initialization
     params = BrainFlowInputParams()
     params.serial_port = args.serial_port
-    # params.ip_address = args.ip_address
+    params.ip_address = args.ip_address
     board = BoardShim(args.board_id, params)
 
     # LSL initialization  
