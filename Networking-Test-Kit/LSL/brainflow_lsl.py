@@ -72,7 +72,7 @@ def main():
     # prepare session
     board.prepare_session()
 
-    # send commands to the board
+    # send commands to the board for every channel. Cyton has 8 Channels. Here, we turn off every channel except for 1 and 8.
     board.config_board("x1040000X")
     board.config_board("x2161000X")
     board.config_board("x3161000X")
