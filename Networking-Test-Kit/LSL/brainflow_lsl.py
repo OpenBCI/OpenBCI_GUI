@@ -24,7 +24,6 @@ import brainflow
 from brainflow.board_shim import BoardShim, BrainFlowInputParams
 from brainflow.data_filter import DataFilter, FilterTypes, AggOperations
 
-from random import random as rand
 from pylsl import StreamInfo, StreamOutlet, local_clock
 
 def channel_select(board, board_id, data_type): 
