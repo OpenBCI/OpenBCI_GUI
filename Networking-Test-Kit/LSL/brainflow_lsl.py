@@ -9,10 +9,10 @@
 # Here are example commands using Cyton and get_eeg_channels()from BrainFlow. This has only been tested with Cyton + Dongle, for now.
 
 # Mac:
-# python3 Networking-Test-Kit/LSL/brainflow_lsl.py --board-id 2 --serial-port /dev/cu.usbserial-DM00D7TW --name test --data-type EEG --channel-names 1,2,3,4,5,6,7,8 --uid brainflow
+# python3 Networking-Test-Kit/LSL/brainflow_lsl.py --board-id 2 --serial-port /dev/cu.usbserial-DM00D7TW --name test --data-type EXG --channel-names 1,2,3,4,5,6,7,8 --uid brainflow
 
 # Windows:
-# python3 Networking-Test-Kit/LSL/brainflow_lsl.py --board-id 2 --serial-port COM3 --name test --data-type EEG --channel-names 1,2,3,4,5,6,7,8 --uid brainflow
+# python3 Networking-Test-Kit/LSL/brainflow_lsl.py --board-id 2 --serial-port COM3 --name test --data-type EXG --channel-names 1,2,3,4,5,6,7,8 --uid brainflow
 
 import argparse
 import time
@@ -29,8 +29,7 @@ from pylsl import StreamInfo, StreamOutlet, local_clock
 
 def channel_select(board, board_id, data_type): 
     switcher = { 
-        'EEG': board.get_eeg_channels(board_id),
-        'EMG': board.get_emg_channels(board_id),
+        'EXG': board.get_exg_channels(board_id),
         # can add more
     } 
  
@@ -75,7 +74,13 @@ def main():
 
     # send commands to the board
     board.config_board("x1040000X")
-
+    board.config_board("x2161000X")
+    board.config_board("x3161000X")
+    board.config_board("x4161000X")
+    board.config_board("x5161000X")
+    board.config_board("x6161000X")
+    board.config_board("x7161000X")
+    board.config_board("x8060110X")
 
     # start stream
     board.start_stream(45000, args.streamer_params)
