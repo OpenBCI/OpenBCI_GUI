@@ -6,7 +6,7 @@
 # Install dependencies with:
 # pip install --upgrade numpy brainflow pylsl
 
-# Here are example commands using Cyton and get_eeg_channels()from BrainFlow. This has only been tested with Cyton + Dongle, for now.
+# Here are example commands using Cyton and get_exg_channels()from BrainFlow. This has only been tested with Cyton + Dongle, for now.
 
 # Mac:
 # python3 Networking-Test-Kit/LSL/brainflow_lsl.py --board-id 2 --serial-port /dev/cu.usbserial-DM00D7TW --name test --data-type EXG --channel-names 1,2,3,4,5,6,7,8 --uid brainflow
