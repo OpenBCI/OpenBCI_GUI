@@ -287,7 +287,7 @@ class ADS1299SettingsController {
                         if (!sendCommandSuccess) {
                             noErrors = false;
                         } else {
-                            hasUnappliedChanges[i] = false;
+                            setHasUnappliedSettings(i, false);
                             atLeastOneChannelHasChanged = true;
                             boardSettings.saveLastValues(i);
                         }
