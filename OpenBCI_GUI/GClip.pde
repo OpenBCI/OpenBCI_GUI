@@ -1,5 +1,5 @@
 /*
-//USAGE
+// EXAMPLE USAGE -- WORKS!!!!!
 
     String n1, n2;
     // String to copy to clipboard
