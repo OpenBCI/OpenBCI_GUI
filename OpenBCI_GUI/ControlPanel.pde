@@ -1179,7 +1179,7 @@ class SessionDataBox {
 
     public void update() {
         
-        copyPressedReleased.checkForPaste(sessionNameTextfield);
+        copyPressedReleased.checkForCopyPaste(sessionNameTextfield);
 
     }
 
@@ -1249,7 +1249,6 @@ class SessionDataBox {
                 sessionNameTextfield.clear();
             }
         });
-        /*
         //Autogenerate session name if user presses Enter key and textfield value is null
         sessionNameTextfield.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -1266,7 +1265,6 @@ class SessionDataBox {
                 }
             }
         });
-        */
     }
 
     private void createMaxDurationDropdown(String name, List<String> _items){

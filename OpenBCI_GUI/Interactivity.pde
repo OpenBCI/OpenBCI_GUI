@@ -320,43 +320,48 @@ void openURLInBrowser(String _url){
 
 class CopyPressedReleased {
 
+    private Integer commandControlKey = 157; //Temporary hard-coded for Mac Command Key
     private boolean commandControlPressed;
     private boolean copyPressed;
-    private boolean pastePressed;
     private String value;
 
     CopyPressedReleased () {
         //Nothing to instantiate
     }
 
+    //Instatiate using command/control key integer depending on OS
+    CopyPressedReleased (int cmd_cntl) {
+        commandControlKey = cmd_cntl;
+    }
+
     public void checkIfPressedAllOS() {
         //This logic mimics the behavior of copy/paste in Mac OS X, and applied to all.
-        if (isMac()) {
-            if (keyCode == 157) {
-                commandControlPressed = true;
-                //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
-            }
-    
-            if (commandControlPressed && key == 'v') {
-                copyPressed = true;
-                //println("KEYBOARD SHORTCUT: PASTE PRESSED");
-                // One of the above keys has been released
-                copyPressed = false;
-                // Get clipboard contents into another string
-                String s = GClip.paste();
-                // Display new string
-                //println("FROM CLIPBOARD ~~ " + s);
-                // Assign to stored value
-                value = s;
-            }
+        if (keyCode == commandControlKey) {
+            commandControlPressed = true;
+            //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
         }
+
+        if (commandControlPressed && key == 'v') {
+            //println("KEYBOARD SHORTCUT: PASTE PRESSED");
+            // Get clipboard contents into another string
+            String s = GClip.paste();
+            // Display new string
+            //println("FROM CLIPBOARD ~~ " + s);
+            // Assign to stored value
+            value = s;
+        }
+
+        if (commandControlPressed && key == 'c') {
+            println("KEYBOARD SHORTCUT: COPY PRESSED");
+            copyPressed = true;
+
+        }
+
     }
 
     public void checkIfReleasedAllOS() {
-        if (isMac()) {
-            if (keyCode == 157) {
-                commandControlPressed = false;
-            }
+        if (keyCode == commandControlKey) {
+            commandControlPressed = false;
         }
     }
     
@@ -370,17 +375,43 @@ class CopyPressedReleased {
         return s;
     }
 
-    public void checkForPaste(Textfield tf) {
-        if (tf != null) {
-            if (tf.isFocus()) {
-                String s = pullValue();
-                if (s != null) {
-                    StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
-                    status.append(tf.toString());
-                    println(status);
-                    tf.setText(s);
-                }
-            } 
+    private void checkForPaste(Textfield tf) {
+        if (value == null) {
+            return;
         }
+
+        if (tf.isFocus()) {
+            StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
+            status.append(tf.toString());
+            println(status);
+            tf.setText(pullValue());
+        } 
+    }
+
+    private void checkForCopy(Textfield tf) {
+        if (!copyPressed) {
+            return;
+        }
+
+        if (tf.isFocus()) {
+            tf.setFocus(false);
+            String s = tf.getText();
+            if (s.equals("")) {
+                return;
+            }
+            StringBuilder status = new StringBuilder("OpenBCI_GUI: User copied text from the clipboard into ");
+            status.append(tf.toString());
+            println(status);
+            //Remove the 'c' character that was just typed in the textfield
+            String removeChar = s.substring(0, s.length() - 1);
+            tf.setText(removeChar);
+            boolean b = GClip.copy(removeChar);
+            copyPressed = false;
+        } 
+    }
+
+    public void checkForCopyPaste(Textfield tf) {
+        checkForPaste(tf);
+        checkForCopy(tf);
     }
 }
