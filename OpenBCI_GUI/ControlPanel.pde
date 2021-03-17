@@ -1179,17 +1179,7 @@ class SessionDataBox {
 
     public void update() {
         
-        
-        if (sessionNameTextfield != null) {
-            if (sessionNameTextfield.isFocus()) {
-                String s = copyPressedReleased.pullValue();
-                if (s != null) {
-                    println("OpenBCI_GUI: User pasted text from the clipboard into Session Name Textfield");
-                    sessionNameTextfield.setText(s);
-                }
-            } 
-        }
-        
+        copyPressedReleased.checkForPaste(sessionNameTextfield);
 
     }
 

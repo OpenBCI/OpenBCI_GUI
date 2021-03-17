@@ -361,12 +361,26 @@ class CopyPressedReleased {
     }
     
     //Pull stored value from this class and set to null, otherwise return null.
-    public String pullValue() {
+    private String pullValue() {
         if (value == null) {
             return value;
         }
         String s = value;
         value = null;
         return s;
+    }
+
+    public void checkForPaste(Textfield tf) {
+        if (tf != null) {
+            if (tf.isFocus()) {
+                String s = pullValue();
+                if (s != null) {
+                    StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
+                    status.append(tf.toString());
+                    println(status);
+                    tf.setText(s);
+                }
+            } 
+        }
     }
 }
