@@ -1182,7 +1182,7 @@ class SessionDataBox {
         
         if (sessionNameTextfield != null) {
             if (sessionNameTextfield.isFocus()) {
-                String s = copyPressedReleased.getValue();
+                String s = copyPressedReleased.pullValue();
                 if (s != null) {
                     println("OpenBCI_GUI: User pasted text from the clipboard into Session Name Textfield");
                     sessionNameTextfield.setText(s);

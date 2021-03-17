@@ -361,7 +361,7 @@ class CopyPressedReleased {
     }
     
     //Pull stored value from this class and set to null, otherwise return null.
-    public String getValue() {
+    public String pullValue() {
         if (value == null) {
             return value;
         }
