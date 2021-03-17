@@ -71,6 +71,8 @@ String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releas
 
 PApplet ourApplet;
 
+CopyPressedReleased copyPressedReleased;
+
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
 final int SYSTEMMODE_PREINIT = 0;
@@ -314,6 +316,8 @@ void settings() {
 
 void setup() {
     frameRate(120);
+
+    copyPressedReleased = new CopyPressedReleased();
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);

@@ -1178,6 +1178,18 @@ class SessionDataBox {
     }
 
     public void update() {
+        
+        
+        if (sessionNameTextfield != null) {
+            if (sessionNameTextfield.isFocus()) {
+                String s = copyPressedReleased.getValue();
+                if (s != null) {
+                    println("OpenBCI_GUI: User pasted text from the clipboard into Session Name Textfield");
+                    sessionNameTextfield.setText(s);
+                }
+            } 
+        }
+        
 
     }
 
@@ -1247,6 +1259,7 @@ class SessionDataBox {
                 sessionNameTextfield.clear();
             }
         });
+        /*
         //Autogenerate session name if user presses Enter key and textfield value is null
         sessionNameTextfield.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -1263,6 +1276,7 @@ class SessionDataBox {
                 }
             }
         });
+        */
     }
 
     private void createMaxDurationDropdown(String name, List<String> _items){

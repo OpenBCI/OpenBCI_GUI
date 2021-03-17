@@ -19,6 +19,8 @@ synchronized void keyPressed() {
         return;
     }
 
+    copyPressedReleased.checkIfPressedAllOS();
+
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
@@ -36,6 +38,10 @@ synchronized void keyPressed() {
     if(key==27){
         key=0; //disable 'esc' quitting program
     }
+}
+
+synchronized void keyReleased() {
+    copyPressedReleased.checkIfReleasedAllOS();
 }
 
 void parseKey(char val) {
@@ -309,5 +315,58 @@ void openURLInBrowser(String _url){
     catch (java.io.IOException e) {
             //println(e.getMessage());
             println("Error launching url in browser: " + _url);
+    }
+}
+
+class CopyPressedReleased {
+
+    private boolean commandControlPressed;
+    private boolean copyPressed;
+    private boolean pastePressed;
+    private String value;
+
+    CopyPressedReleased () {
+        //Nothing to instantiate
+    }
+
+    public void checkIfPressedAllOS() {
+        //This logic mimics the behavior of copy/paste in Mac OS X, and applied to all.
+        if (isMac()) {
+            if (keyCode == 157) {
+                commandControlPressed = true;
+                //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
+            }
+    
+            if (commandControlPressed && key == 'v') {
+                copyPressed = true;
+                //println("KEYBOARD SHORTCUT: PASTE PRESSED");
+                // One of the above keys has been released
+                copyPressed = false;
+                // Get clipboard contents into another string
+                String s = GClip.paste();
+                // Display new string
+                //println("FROM CLIPBOARD ~~ " + s);
+                // Assign to stored value
+                value = s;
+            }
+        }
+    }
+
+    public void checkIfReleasedAllOS() {
+        if (isMac()) {
+            if (keyCode == 157) {
+                commandControlPressed = false;
+            }
+        }
+    }
+    
+    //Pull stored value from this class and set to null, otherwise return null.
+    public String getValue() {
+        if (value == null) {
+            return value;
+        }
+        String s = value;
+        value = null;
+        return s;
     }
 }
