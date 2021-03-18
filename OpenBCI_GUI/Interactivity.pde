@@ -21,7 +21,7 @@ synchronized void keyPressed() {
 
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
-    println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
+    //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
     if (copyPressedReleased.checkIfPressedAllOS()) {
         return;
@@ -385,8 +385,10 @@ class CopyPressedReleased {
             StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
             status.append(tf.toString());
             println(status);
-            StringBuilder sb = new StringBuilder(dropNonPrintableChars(tf.getText()));
-            String val = dropNonPrintableChars(pullValue());
+            StringBuilder sb = new StringBuilder();
+            String existingText = dropNonPrintableChars(tf.getText());
+            String val = pullValue();
+            sb.append(existingText);
             sb.append(val);
             //The 'v' character does make it to the textfield, but this is immediately overwritten here.
             tf.setText(sb.toString());
