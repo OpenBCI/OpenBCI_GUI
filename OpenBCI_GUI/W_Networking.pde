@@ -235,17 +235,17 @@ class W_Networking extends Widget {
         if (protocolMode.equals("OSC")) {
             cp5ElementsAreActive = textfieldsAreActive(oscTextFieldNames);
             for (int i = 0; i < oscTextFieldNames.length; i++) {
-                copyPressedReleased.checkForCopyPaste(cp5_networking.get(Textfield.class, oscTextFieldNames[i]));
+                copyPaste.checkForCopyPaste(cp5_networking.get(Textfield.class, oscTextFieldNames[i]));
             }
         } else if (protocolMode.equals("UDP")) {
             cp5ElementsAreActive = textfieldsAreActive(udpTextFieldNames);
             for (int i = 0; i < udpTextFieldNames.length; i++) {
-                copyPressedReleased.checkForCopyPaste(cp5_networking.get(Textfield.class, udpTextFieldNames[i]));
+                copyPaste.checkForCopyPaste(cp5_networking.get(Textfield.class, udpTextFieldNames[i]));
             }
         } else if (protocolMode.equals("LSL")) {
             cp5ElementsAreActive = textfieldsAreActive(lslTextFieldNames);
             for (int i = 0; i < lslTextFieldNames.length; i++) {
-                copyPressedReleased.checkForCopyPaste(cp5_networking.get(Textfield.class, lslTextFieldNames[i]));
+                copyPaste.checkForCopyPaste(cp5_networking.get(Textfield.class, lslTextFieldNames[i]));
             }
         } else {
             //For serial mode, disable fft output by switching to bandpower instead

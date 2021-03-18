@@ -596,8 +596,8 @@ class ChannelBar {
             textFieldIsActive = true;
         }
 
-        copyPressedReleased.checkForCopyPaste(yAxisMax);
-        copyPressedReleased.checkForCopyPaste(yAxisMin);
+        copyPaste.checkForCopyPaste(yAxisMax);
+        copyPaste.checkForCopyPaste(yAxisMin);
 
     }
 

@@ -23,7 +23,8 @@ synchronized void keyPressed() {
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
     //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
 
-    if (copyPressedReleased.checkIfPressedAllOS()) {
+    //Check for Copy/Paste text keyboard shortcuts before anything else.
+    if (copyPaste.checkIfPressedAllOS()) {
         return;
     }
 
@@ -43,7 +44,7 @@ synchronized void keyPressed() {
 }
 
 synchronized void keyReleased() {
-    copyPressedReleased.checkIfReleasedAllOS();
+    copyPaste.checkIfReleasedAllOS();
 }
 
 void parseKey(char val) {
@@ -320,7 +321,19 @@ void openURLInBrowser(String _url){
     }
 }
 
-class CopyPressedReleased {
+////////////////////////////////////////////////////////////////
+//                      GUI CopyPaste                         //
+// Custom class used by the GUI to handle both Copy and Paste //
+// Use standard copy and paste keyboard shortcuts for all OS  //
+//                                                            //
+// Copy ControlP5 Textfield Text                              //
+//      - Windows and Linux: Control + C                      //
+//      - Mac: Command + C                                    //
+// Paste Text into Textfield                                  //
+//      - Windows and Linux: Control + V                      //
+//      - Mac: Command + V                                    //
+////////////////////////////////////////////////////////////////
+class CopyPaste {
 
     private final int CMD_CNTL_KEYCODE = (isLinux() || isWindows()) ? 17 : 157;
     private final int C_KEYCODE = 67;
@@ -329,7 +342,7 @@ class CopyPressedReleased {
     private boolean copyPressed;
     private String value;
 
-    CopyPressedReleased () {
+    CopyPaste () {
 
     }
     
