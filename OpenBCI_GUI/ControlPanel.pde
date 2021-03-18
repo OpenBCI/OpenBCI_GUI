@@ -782,6 +782,7 @@ class WifiBox {
 
     public void update() {
         wifiList.updateMenu();
+        copyPressedReleased.checkForCopyPaste(staticIPAddressTF);
     }
 
     public void draw() {
@@ -1178,9 +1179,7 @@ class SessionDataBox {
     }
 
     public void update() {
-        
         copyPressedReleased.checkForCopyPaste(sessionNameTextfield);
-
     }
 
     public void draw() {
@@ -1989,7 +1988,7 @@ class GaleaBox {
     }
 
     public void update() {
-        // nothing
+        copyPressedReleased.checkForCopyPaste(ipAddressTF);
     }
 
     public void draw() {
@@ -2202,7 +2201,8 @@ class StreamingBoardBox {
     }
 
     public void update() {
-        // nothing
+        copyPressedReleased.checkForCopyPaste(ipAddress);
+        copyPressedReleased.checkForCopyPaste(port);
     }
 
     public void draw() {

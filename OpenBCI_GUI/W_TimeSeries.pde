@@ -595,6 +595,10 @@ class ChannelBar {
         if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
             textFieldIsActive = true;
         }
+
+        copyPressedReleased.checkForCopyPaste(yAxisMax);
+        copyPressedReleased.checkForCopyPaste(yAxisMin);
+
     }
 
     private String getFmt(float val) {
