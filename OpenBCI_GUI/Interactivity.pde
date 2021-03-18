@@ -400,10 +400,12 @@ class CopyPaste {
             println(status);
             StringBuilder sb = new StringBuilder();
             String existingText = dropNonPrintableChars(tf.getText());
-            //Remove 'v'(Mac) or 'Control'(Windows/Linux) character from the end of the existing text
-            existingText = existingText.substring(0, existingText.length() - 1);
             String val = pullValue();
-            //println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
+            println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
+
+            //Remove 'v'(Mac) or 'Control'(Windows/Linux) character from the end of the existing text
+            existingText = existingText.length() > 0 && isMac() ? existingText.substring(0, existingText.length() - 1) : existingText;
+
             sb.append(existingText);
             sb.append(val);
             //The 'v' character does make it to the textfield, but this is immediately overwritten here.
@@ -417,17 +419,22 @@ class CopyPaste {
         }
 
         if (tf.isFocus()) {
-            String s = tf.getText();
-            if (s.equals("")) {
+            String s = dropNonPrintableChars(tf.getText());
+            if (s.length() == 0) {
                 return;
             }
-            StringBuilder status = new StringBuilder("OpenBCI_GUI: User copied text from the clipboard into ");
+            println(s, s.length());
+            StringBuilder status = new StringBuilder("OpenBCI_GUI: User copied text from ");
             status.append(tf.toString());
+            status.append(" to the clipboard");
             println(status);
-            //Remove the 'c' character that was just typed in the textfield
-            String removeChar = s.substring(0, s.length() - 1);
-            tf.setText(removeChar);
-            boolean b = GClip.copy(removeChar);
+            println("FOUND TEXT =="+ s+"__end.");
+            if (isWindows()) {
+                //Remove the 'c' character that was just typed in the textfield
+                //String removeChar = s.substring(0, s.length() - 1);
+                //tf.setText(removeChar);
+            }
+            boolean b = GClip.copy(s);
             copyPressed = false;
         } 
     }
