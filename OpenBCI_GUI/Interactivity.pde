@@ -19,11 +19,13 @@ synchronized void keyPressed() {
         return;
     }
 
-    copyPressedReleased.checkIfPressedAllOS();
-
     //note that the Processing variable "key" is the keypress as an ASCII character
     //note that the Processing variable "keyCode" is the keypress as a JAVA keycode.  This differs from ASCII
-    //println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
+    println("OpenBCI_GUI: keyPressed: key = " + key + ", int(key) = " + int(key) + ", keyCode = " + keyCode);
+
+    if (copyPressedReleased.checkIfPressedAllOS()) {
+        return;
+    }
 
     boolean anyActiveTextfields = isNetworkingTextActive() || textFieldIsActive;
 
@@ -320,47 +322,46 @@ void openURLInBrowser(String _url){
 
 class CopyPressedReleased {
 
-    private Integer commandControlKey = 157; //Temporary hard-coded for Mac Command Key
+    private final int CMD_CNTL_KEYCODE = (isLinux() || isWindows()) ? 17 : 157;
+    private final int C_KEYCODE = 67;
+    private final int V_KEYCODE = 86;
     private boolean commandControlPressed;
     private boolean copyPressed;
     private String value;
 
     CopyPressedReleased () {
-        //Nothing to instantiate
-    }
 
-    //Instatiate using command/control key integer depending on OS
-    CopyPressedReleased (int cmd_cntl) {
-        commandControlKey = cmd_cntl;
     }
-
-    public void checkIfPressedAllOS() {
+    
+    public boolean checkIfPressedAllOS() {
         //This logic mimics the behavior of copy/paste in Mac OS X, and applied to all.
-        if (keyCode == commandControlKey) {
+        if (keyCode == CMD_CNTL_KEYCODE) {
             commandControlPressed = true;
-            //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
+            println("KEYBOARD SHORTCUT: COMMAND PRESSED");
+            return true;
         }
 
-        if (commandControlPressed && key == 'v') {
+        if (commandControlPressed && keyCode == V_KEYCODE) {
             //println("KEYBOARD SHORTCUT: PASTE PRESSED");
-            // Get clipboard contents into another string
+            // Get clipboard contents
             String s = GClip.paste();
-            // Display new string
             //println("FROM CLIPBOARD ~~ " + s);
             // Assign to stored value
             value = s;
+            return true;
         }
 
-        if (commandControlPressed && key == 'c') {
-            println("KEYBOARD SHORTCUT: COPY PRESSED");
+        if (commandControlPressed && keyCode == C_KEYCODE) {
+            //println("KEYBOARD SHORTCUT: COPY PRESSED");
             copyPressed = true;
-
+            return true;
         }
 
+        return false;
     }
 
     public void checkIfReleasedAllOS() {
-        if (keyCode == commandControlKey) {
+        if (keyCode == CMD_CNTL_KEYCODE) {
             commandControlPressed = false;
         }
     }
@@ -384,7 +385,11 @@ class CopyPressedReleased {
             StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
             status.append(tf.toString());
             println(status);
-            tf.setText(pullValue());
+            StringBuilder sb = new StringBuilder(dropNonPrintableChars(tf.getText()));
+            String val = dropNonPrintableChars(pullValue());
+            sb.append(val);
+            //The 'v' character does make it to the textfield, but this is immediately overwritten here.
+            tf.setText(sb.toString());
         } 
     }
 
@@ -394,7 +399,6 @@ class CopyPressedReleased {
         }
 
         if (tf.isFocus()) {
-            tf.setFocus(false);
             String s = tf.getText();
             if (s.equals("")) {
                 return;
