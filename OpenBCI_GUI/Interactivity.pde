@@ -400,7 +400,10 @@ class CopyPaste {
             println(status);
             StringBuilder sb = new StringBuilder();
             String existingText = dropNonPrintableChars(tf.getText());
+            //Remove 'v'(Mac) or 'Control'(Windows/Linux) character from the end of the existing text
+            existingText = existingText.substring(0, existingText.length() - 1);
             String val = pullValue();
+            //println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
             sb.append(existingText);
             sb.append(val);
             //The 'v' character does make it to the textfield, but this is immediately overwritten here.
