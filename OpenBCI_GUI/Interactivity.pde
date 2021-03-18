@@ -403,7 +403,7 @@ class CopyPaste {
             String val = pullValue();
             println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
 
-            //Remove 'v'(Mac) or 'Control'(Windows/Linux) character from the end of the existing text
+            // On Mac, Remove 'v' character from the end of the existing text
             existingText = existingText.length() > 0 && isMac() ? existingText.substring(0, existingText.length() - 1) : existingText;
 
             sb.append(existingText);
@@ -429,10 +429,11 @@ class CopyPaste {
             status.append(" to the clipboard");
             println(status);
             println("FOUND TEXT =="+ s+"__end.");
-            if (isWindows()) {
+            if (isMac()) {
                 //Remove the 'c' character that was just typed in the textfield
-                //String removeChar = s.substring(0, s.length() - 1);
-                //tf.setText(removeChar);
+                s = s.substring(0, s.length() - 1);
+                tf.setText(s);
+                println("MAC FIXED TEXT =="+ s+"__end.");
             }
             boolean b = GClip.copy(s);
             copyPressed = false;
