@@ -350,7 +350,7 @@ class CopyPaste {
         //This logic mimics the behavior of copy/paste in Mac OS X, and applied to all.
         if (keyCode == CMD_CNTL_KEYCODE) {
             commandControlPressed = true;
-            println("KEYBOARD SHORTCUT: COMMAND PRESSED");
+            //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
             return true;
         }
 
@@ -401,7 +401,7 @@ class CopyPaste {
             StringBuilder sb = new StringBuilder();
             String existingText = dropNonPrintableChars(tf.getText());
             String val = pullValue();
-            println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
+            //println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
 
             // On Mac, Remove 'v' character from the end of the existing text
             existingText = existingText.length() > 0 && isMac() ? existingText.substring(0, existingText.length() - 1) : existingText;
@@ -423,17 +423,16 @@ class CopyPaste {
             if (s.length() == 0) {
                 return;
             }
-            println(s, s.length());
             StringBuilder status = new StringBuilder("OpenBCI_GUI: User copied text from ");
             status.append(tf.toString());
             status.append(" to the clipboard");
             println(status);
-            println("FOUND TEXT =="+ s+"__end.");
+            //println("FOUND TEXT =="+ s+"__end.");
             if (isMac()) {
                 //Remove the 'c' character that was just typed in the textfield
                 s = s.substring(0, s.length() - 1);
                 tf.setText(s);
-                println("MAC FIXED TEXT =="+ s+"__end.");
+                //println("MAC FIXED TEXT =="+ s+"__end.");
             }
             boolean b = GClip.copy(s);
             copyPressed = false;
