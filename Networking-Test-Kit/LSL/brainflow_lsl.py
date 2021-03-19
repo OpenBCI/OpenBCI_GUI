@@ -72,14 +72,15 @@ def main():
     board.prepare_session()
 
     # send commands to the board for every channel. Cyton has 8 Channels. Here, we turn off every channel except for 1 and 8.
-    board.config_board("x1061000X")
-    board.config_board("x2161000X")
-    board.config_board("x3161000X")
-    board.config_board("x4161000X")
-    board.config_board("x5161000X")
-    board.config_board("x6161000X")
-    board.config_board("x7161000X")
-    board.config_board("x8060110X")
+    #board.config_board("x1000110X") #Lower the gain to 1x on channel 1
+    #board.config_board("x1061000X")
+    #board.config_board("x2161000X")
+    #board.config_board("x3161000X")
+    #board.config_board("x4161000X")
+    #board.config_board("x5161000X")
+    #board.config_board("x6161000X")
+    #board.config_board("x7161000X")
+    #board.config_board("x8060110X")
 
     # start stream
     board.start_stream(45000, args.streamer_params)
@@ -95,7 +96,7 @@ def main():
     bandStopFrequency = 60.0
     bp_lowerBound = 5.0
     bp_upperBound = 50.0
-    bp_centerFreq = (bp_upperBound + bp_lowerBound) / 2;
+    bp_centerFreq = (bp_upperBound + bp_lowerBound) / 2.0;
     bp_bandWidth = bp_upperBound - bp_lowerBound
 
 
@@ -135,7 +136,7 @@ def main():
             stamp = local_clock() - fw_delay 
             outlet.push_chunk(mychunk, stamp)
             sent_samples += required_samples
-        #time.sleep(1)
+        time.sleep(1)
 
 
 if __name__ == "__main__":
