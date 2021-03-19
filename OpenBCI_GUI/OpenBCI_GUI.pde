@@ -64,12 +64,14 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.4-alpha.2";
+String localGUIVersionString = "v5.0.4-alpha.3";
 String localGUIVersionDate = "March 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
 PApplet ourApplet;
+
+CopyPaste copyPaste;
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -314,6 +316,8 @@ void settings() {
 
 void setup() {
     frameRate(120);
+
+    copyPaste = new CopyPaste();
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);

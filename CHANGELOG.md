@@ -1,6 +1,7 @@
 # v5.0.4
 
 ### Improvements
+* Add Copy/Paste for all textfields on all OS #940
 * Update BrainFlow library to version that includes a marker channel
 * Handle paths with spaces on Linux Standalone GUI #916
 * Allow Expert Ganglion Users to send square wave commands via keyboard #950
@@ -9,6 +10,7 @@
 
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955
+* Avoid playback history file not found exception #959
 
 # v5.0.3
 
