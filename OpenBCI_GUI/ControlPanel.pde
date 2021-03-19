@@ -1875,6 +1875,15 @@ class RecentPlaybackBox {
 
     private void getRecentPlaybackFiles() {
         int numFilesToShow = 10;
+
+        File f = new File(userPlaybackHistoryFile);
+        if (!f.exists()) {
+            println("OpenBCI_GUI::Control Panel: Playback history file not found.");
+            recentPlaybackFilesHaveUpdated = true;
+            playbackHistoryFileExists = false;
+            return;
+        }
+
         try {
             JSONObject playbackHistory = loadJSONObject(userPlaybackHistoryFile);
             JSONArray recentFilesArray = playbackHistory.getJSONArray("playbackFileHistory");
@@ -1898,7 +1907,7 @@ class RecentPlaybackBox {
 
             playbackHistoryFileExists = true;
         } catch (Exception e) {
-            println("OpenBCI_GUI::Control Panel: Playback history file not found or other error.");
+            println("OpenBCI_GUI::Control Panel: Other error! Please submit an issue on Github and share this console log.");
             println(e.getMessage());
             playbackHistoryFileExists = false;
         }

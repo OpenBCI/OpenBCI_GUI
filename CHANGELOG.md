@@ -10,6 +10,7 @@
 
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955
+* Avoid playback history file not found exception #959
 
 # v5.0.3
 
