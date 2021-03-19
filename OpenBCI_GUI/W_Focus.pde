@@ -1,78 +1,182 @@
 
 ////////////////////////////////////////////////////
-//
-//    W_template.pde (ie "Widget Template")
-//
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
-//
-//    Created by: Conor Russomanno, November 2016
-//
-///////////////////////////////////////////////////,
+//                                                //
+//    W_focus.pde (ie "Focus Widget")             //
+//                                                //
+//                                                //
+//    Created by: Richard Waltman, March 2021     //
+//                                                //
+////////////////////////////////////////////////////
+
+// color enums
+public enum FocusColors {
+    GREEN, CYAN, ORANGE
+}
+
+public enum FocusXLim implements TimeSeriesAxisEnum
+{
+    TEN (0, 10, "10 sec"),
+    TWENTY (1, 20, "20 sec"),
+    THIRTY (2, 30, "30 sec"),
+    SIXTY (3, 60, "60 sec"),
+    ONE_HUNDRED_TWENTY (4, 120, "120 sec");
+
+    private int index;
+    private int value;
+    private String label;
+
+    FocusXLim(int _index, int _value, String _label) {
+        this.index = _index;
+        this.value = _value;
+        this.label = _label;
+    }
+
+    @Override
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String getString() {
+        return label;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+}
 
 class W_Focus extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-    ControlP5 localCP5;
-    Button widgetTemplateButton;
+    private ControlP5 focus_cp5;
+    private Button widgetTemplateButton;
 
-    W_Focus(PApplet _parent){
+    private FocusBar focusBar;
+    private float focusBarHardYAxisLimit = 1f;
+    FocusXLim xLimit = FocusXLim.TEN;
+
+    private FocusColors focusColors = FocusColors.GREEN;
+
+    private double metricPrediction = 0d;
+    private float xc, yc, wc, hc; // crystal ball center xy, width and height
+    private int graph_x, graph_y, graph_w, graph_h;
+    private int graph_pad = 30;
+    private color cBack, cDark, cMark, cFocus, cWave, cPanel;
+
+    W_Focus(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+        // initialize graphics parameters
+        onColorChange();
         
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("Dropdown1", "Drop 1", Arrays.asList("A", "B"), 0);
-        addDropdown("Dropdown2", "Drop 2", Arrays.asList("C", "D", "E"), 1);
-        addDropdown("Dropdown3", "Drop 3", Arrays.asList("F", "G", "H", "I"), 3);
-
+        addDropdown("FocusWindow", "Window", Arrays.asList("10 sec", "20 sec", "30 sec", "1 min" ), 0);
+        addDropdown("FocusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
+        addDropdown("FocusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
-        localCP5 = new ControlP5(ourApplet);
-        localCP5.setGraphics(ourApplet, 0,0);
-        localCP5.setAutoDraw(false);
+        focus_cp5 = new ControlP5(ourApplet);
+        focus_cp5.setGraphics(ourApplet, 0,0);
+        focus_cp5.setAutoDraw(false);
 
-        createWidgetTemplateButton();
+        //createWidgetTemplateButton();
+
+        //create our focus graph
+        update_graph_dims();
+        focusBar = new FocusBar(_parent, focusBarHardYAxisLimit, graph_x, graph_y, graph_w, graph_h);
+        focusBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
        
     }
 
-    public void update(){
+    public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+
+        metricPrediction = updateFocusState();
+
+        focusBar.update();
 
         //put your code here...
     }
 
-    public void draw(){
+    public void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
-
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
+        pushStyle();
+        noStroke();
+        if (metricPrediction > .5d) {
+            fill(cFocus);
+            stroke(cFocus);
+            ellipseMode(CENTER);
+            ellipse(xc, yc, wc, hc);
+            noStroke();
+            textAlign(CENTER);
+            text("focused!", xc, yc + hc/2 + 16);
+        } else {
+            fill(cDark);
+            ellipseMode(CENTER);
+            ellipse(xc, yc, wc, hc);
+            noStroke();
+            fill(cMark);
+            textAlign(CENTER);
+            text("not focused", xc, yc + hc/2 + 16);
+        }
+        popStyle();
+
+
+        //Draw some guides to help develop this widget faster
+        pushStyle();
+        stroke(0);
+        //Main guides
+        line(x, y+(h/2), x+w, y+(h/2));
+        line(x+(w/2), y, x+(w/2), y+(h/2));
+        //Top left container center
+        line(x+(w/4), y, x+(w/4), y+(h/2));
+        line(x, y+(h/4), x+(w/2), y+(h/4));
+        popStyle();
+
         //This draws all cp5 objects in the local instance
-        localCP5.draw();
+        //focus_cp5.draw();
+
+        focusBar.draw();
     }
 
-    public void screenResized(){
+    public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         //Very important to allow users to interact with objects after app resize        
-        localCP5.setGraphics(ourApplet, 0, 0);
+        focus_cp5.setGraphics(ourApplet, 0, 0);
 
         //We need to set the position of our Cp5 object after the screen is resized
-        widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
+        //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
+        update_crystalball_dims();
+
+        update_graph_dims();
+        focusBar.screenResized(graph_x, graph_y, graph_w, graph_h);
     }
 
-    public void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-        //Since GUI v5, these methods should not really be used.
-        //Instead, use ControlP5 objects and callbacks. 
-        //Example: createWidgetTemplateButton() found below
+    private void update_crystalball_dims() {
+        //Update "crystal ball" dimensions
+        float upperLeftContainerW = w/2;
+        float upperLeftContainerH = h/2;
+        float min = min(upperLeftContainerW, upperLeftContainerH);
+        xc = x + w/4;
+        yc = y + h/4;
+        wc = min * (3f/5);
+        hc = wc;
     }
 
-    public void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-        //Since GUI v5, these methods should not really be used.
+    private void update_graph_dims() {
+        graph_w = int(w - graph_pad*2);
+        graph_h = int(h/2 - navH*2);
+        graph_x = x + navH;
+        graph_y = int(y + h/2);
     }
 
     //When creating new UI objects, follow this rough pattern.
@@ -80,7 +184,7 @@ class W_Focus extends Widget {
     //You can find more detailed examples in the Control Panel, where there are many UI objects with varying functionality.
     private void createWidgetTemplateButton() {
         //This is a generalized createButton method that allows us to save code by using a few patterns and method overloading
-        widgetTemplateButton = createButton(localCP5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
+        widgetTemplateButton = createButton(focus_cp5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
         //Set the border color explicitely
         widgetTemplateButton.setBorderColor(OBJECT_BORDER_GREY);
         //For this button, only call the callback listener on mouse release
@@ -95,11 +199,237 @@ class W_Focus extends Widget {
         widgetTemplateButton.setDescription("Here is the description for this UI object. It will fade in as help text when hovering over the object.");
     }
 
+    private double updateFocusState() {
+        return 1d;
+    }
+
+    private void onColorChange() {
+        switch(focusColors) {
+            case GREEN:
+                cBack = #ffffff;   //white
+                cDark = #3068a6;   //medium/dark blue
+                cMark = #4d91d9;    //lighter blue
+                cFocus = #b8dc69;   //theme green
+                cWave = #ffdd3a;    //yellow
+                cPanel = #f5f5f5;   //little grey
+                break;
+            case ORANGE:
+                cBack = #ffffff;   //white
+                cDark = #377bc4;   //medium/dark blue
+                cMark = #5e9ee2;    //lighter blue
+                cFocus = #fcce51;   //orange
+                cWave = #ffdd3a;    //yellow
+                cPanel = #f5f5f5;   //little grey
+                break;
+            case CYAN:
+                cBack = #ffffff;   //white
+                cDark = #377bc4;   //medium/dark blue
+                cMark = #5e9ee2;    //lighter blue
+                cFocus = #91f4fc;   //cyan
+                cWave = #ffdd3a;    //yellow
+                cPanel = #f5f5f5;   //little grey
+                break;
+        }
+    }
+
+    public void setFocusHorizScale(int n) {
+        xLimit = xLimit.values()[n];
+        focusBar.adjustTimeAxis(xLimit.getValue());
+    }
+
     //add custom functions here
-    private void customFunction(){
+    private void customFunction() {
         //this is a fake function... replace it with something relevant to this widget
 
     }
 
 };
 
+class FocusBar {
+    //this class contains the plot for the 2d graph of accelerometer data
+    int x, y, w, h;
+    int focusBarPadding = 30;
+    int xOffset;
+
+    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    GPointsArray accelPointsX;
+    GPointsArray accelPointsY;
+    GPointsArray accelPointsZ;
+
+    int nPoints;
+    int numSeconds = 20; //default to 20 seconds
+    float timeBetweenPoints;
+    float[] accelTimeArray;
+    int numSamplesToProcess;
+    float minX, minY, minZ;
+    float maxX, maxY, maxZ;
+    float minVal;
+    float maxVal;
+    final float autoScaleSpacing = 0.1;
+
+    color channelColor; //color of plot trace
+
+    boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
+    int lastProcessedDataPacketInd = 0;
+    
+    private AccelerometerCapableBoard accelBoard;
+
+    FocusBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+        
+        // This widget is only instantiated when the board is accel capable, so we don't need to check
+        accelBoard = (AccelerometerCapableBoard)currentBoard;
+
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
+        if (eegDataSource == DATASOURCE_CYTON) {
+            xOffset = 22;
+        } else {
+            xOffset = 0;
+        }
+
+        plot = new GPlot(_parent);
+        plot.setPos(x + 36 + 4 + xOffset, y); //match Accelerometer plot position with Time Series
+        plot.setDim(w - 36 - 4 - xOffset, h);
+        plot.setMar(0f, 0f, 0f, 0f);
+        plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
+        plot.setXLim(-numSeconds,0); //set the horizontal scale
+        plot.setYLim(0, accelXyzLimit); //change this to adjust vertical scale
+        //plot.setPointSize(2);
+        plot.setPointColor(0);
+        plot.getXAxis().setAxisLabelText("Time (s)");
+        plot.getYAxis().setAxisLabelText("Metric Value");
+        plot.setAllFontProperties("Arial", 0, 14);
+        plot.getXAxis().getAxisLabel().setOffset(float(22));
+        plot.getYAxis().getAxisLabel().setOffset(float(focusBarPadding));
+
+        initArrays();
+
+        //set the plot points for X, Y, and Z axes
+        plot.addLayer("layer 1", accelPointsX);
+        plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
+        plot.addLayer("layer 2", accelPointsY);
+        plot.getLayer("layer 2").setLineColor(ACCEL_Y_COLOR);
+        plot.addLayer("layer 3", accelPointsZ);
+        plot.getLayer("layer 3").setLineColor(ACCEL_Z_COLOR);
+    }
+
+    void initArrays() {
+        nPoints = nPointsBasedOnDataSource();
+        timeBetweenPoints = (float)numSeconds / (float)nPoints;
+
+        accelTimeArray = new float[nPoints];
+        for (int i = 0; i < accelTimeArray.length; i++) {
+            accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+        }
+
+        float[] accelArrayX = new float[nPoints];
+        float[] accelArrayY = new float[nPoints];
+        float[] accelArrayZ = new float[nPoints];
+
+        //make a GPoint array using float arrays x[] and y[] instead of plain index points
+        accelPointsX = new GPointsArray(accelTimeArray, accelArrayX);
+        accelPointsY = new GPointsArray(accelTimeArray, accelArrayY);
+        accelPointsZ = new GPointsArray(accelTimeArray, accelArrayZ);
+    }
+
+    //Used to update the accelerometerBar class
+    void update() {
+        updateGPlotPoints();
+
+        if (isAutoscale) {
+            autoScale();
+        }
+    }
+
+    void draw() {
+        plot.beginDraw();
+        plot.drawBox(); //we won't draw this eventually ...
+        plot.drawGridLines(2);
+        plot.drawLines(); //Draw a Line graph!
+        //plot.drawPoints(); //Used to draw Points instead of Lines
+        plot.drawYAxis();
+        plot.drawXAxis();
+        plot.getXAxis().draw();
+        plot.endDraw();
+    }
+
+    int nPointsBasedOnDataSource() {
+        return numSeconds * currentBoard.getSampleRate();
+    }
+
+    void adjustTimeAxis(int _newTimeSize) {
+        numSeconds = _newTimeSize;
+        plot.setXLim(-_newTimeSize,0);
+
+        initArrays();
+
+        //Set the number of axis divisions...
+        if (_newTimeSize > 1) {
+            plot.getXAxis().setNTicks(_newTimeSize);
+        }else{
+            plot.getXAxis().setNTicks(10);
+        }
+    }
+
+    //Used to update the Points within the graph
+    void updateGPlotPoints() {
+        List<double[]> allData = currentBoard.getData(nPoints);
+        int[] accelChannels = accelBoard.getAccelerometerChannels();
+
+        for (int i=0; i < nPoints; i++) {
+            accelPointsX.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[0]], "");
+            accelPointsY.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[1]], "");
+            accelPointsZ.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[2]], "");
+        }
+
+        plot.setPoints(accelPointsX, "layer 1");
+        plot.setPoints(accelPointsY, "layer 2");
+        plot.setPoints(accelPointsZ, "layer 3");
+    }
+
+    float[] getLastAccelVals() {
+        float[] result = new float[NUM_ACCEL_DIMS];
+        result[0] = accelPointsX.getY(nPoints-1);   
+        result[1] = accelPointsY.getY(nPoints-1);   
+        result[2] = accelPointsZ.getY(nPoints-1);   
+
+        return result;
+    }
+
+    void adjustVertScale(int _vertScaleValue) {
+        if (_vertScaleValue == 0) {
+            isAutoscale = true;
+        } else {
+            isAutoscale = false;
+            plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        }
+    }
+
+    void autoScale() {
+        float[] minMaxVals = minMax(accelPointsX, accelPointsY, accelPointsZ);
+        plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
+    }
+
+    float[] minMax(GPointsArray arrX, GPointsArray arrY, GPointsArray arrZ) {
+        float[] minMaxVals = {0.f, 0.f};
+        for (int i = 0; i < arrX.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
+            float[] vals = {arrX.getY(i), arrY.getY(i), arrZ.getY(i)};
+            minMaxVals[0] = min(minMaxVals[0], min(vals)); //make room to see
+            minMaxVals[1] = max(minMaxVals[1], max(vals));
+        }
+        return minMaxVals;
+    }
+
+    void screenResized(int _x, int _y, int _w, int _h) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
+        //reposition & resize the plot
+        plot.setPos(x + 36 + 4 + xOffset, y);
+        plot.setDim(w - 36 - 4 - xOffset, h);
+
+    }
+}; //end of class

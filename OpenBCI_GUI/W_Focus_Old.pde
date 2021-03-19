@@ -8,11 +8,12 @@
 //
 ///////////////////////////////////////////////////,
 
-
+/*
 // color enums
 public enum FocusColors {
     GREEN, CYAN, ORANGE
 }
+*/
 
 class W_Focus_Old extends Widget {
     //to see all core variables/methods of the Widget class, refer to Widget.pde

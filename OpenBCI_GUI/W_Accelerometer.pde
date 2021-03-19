@@ -140,10 +140,13 @@ class W_Accelerometer extends Widget {
         if (accelBoard.isAccelerometerActive()) {
             drawAccValues();
             draw3DGraph();
-            accelerometerBar.draw();
         }
 
         popStyle();
+
+        if (accelBoard.isAccelerometerActive()) {
+            accelerometerBar.draw();
+        }
     }
 
     void setGraphDimensions() {
