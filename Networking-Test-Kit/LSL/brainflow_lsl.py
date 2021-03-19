@@ -72,6 +72,7 @@ def main():
     board.prepare_session()
 
     # send commands to the board for every channel. Cyton has 8 Channels. Here, we turn off every channel except for 1 and 8.
+    # This is here for testing purposes.
     #board.config_board("x1000110X") #Lower the gain to 1x on channel 1
     #board.config_board("x1061000X")
     #board.config_board("x2161000X")
@@ -105,6 +106,8 @@ def main():
     while True:
         data = board.get_board_data()[chans]
 
+        # It's best to apply filters on the receiving end, but this is here just for testing purposes.
+        """
         for chan in range(len(chans)):
             if applyBandStop:
                 DataFilter.perform_bandstop(data[chan],
@@ -123,6 +126,7 @@ def main():
                     2, 
                     FilterTypes.BUTTERWORTH.value, 
                     0);
+        """
 
         for i in range(len(data[0])):
             queue.put(data[:,i].tolist())
