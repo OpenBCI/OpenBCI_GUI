@@ -24,6 +24,7 @@ W_DigitalRead w_digitalRead;
 W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_PacketLoss w_packetLoss;
+W_Focus w_focus;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -126,13 +127,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_template1.setTitle("Widget Template 1");
     addWidget(w_template1, w);
 
-    /*
+    
     //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
     w_focus = new W_Focus(_this);
     w_focus.setTitle("Focus Widget");
     addWidget(w_focus, w);
     // println("  setupWidgets focus widget -- " + millis());
-    */
 
 }
 
