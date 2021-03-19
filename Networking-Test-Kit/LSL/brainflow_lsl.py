@@ -72,7 +72,7 @@ def main():
     board.prepare_session()
 
     # send commands to the board for every channel. Cyton has 8 Channels. Here, we turn off every channel except for 1 and 8.
-    board.config_board("x1040000X")
+    board.config_board("x1061000X")
     board.config_board("x2161000X")
     board.config_board("x3161000X")
     board.config_board("x4161000X")
@@ -89,10 +89,40 @@ def main():
     queue = Queue(maxsize = 5*srate)
     chans = channel_select(board, args.board_id, args.data_type)
 
+    # Vars for filters
+    applyBandStop = True
+    applyBandPass = True
+    bandStopFrequency = 60.0
+    bp_lowerBound = 5.0
+    bp_upperBound = 50.0
+    bp_centerFreq = (bp_upperBound + bp_lowerBound) / 2;
+    bp_bandWidth = bp_upperBound - bp_lowerBound
+
+
     # read data with brainflow and send it via LSL
     print("Now sending data...")
     while True:
         data = board.get_board_data()[chans]
+
+        for chan in range(len(chans)):
+            if applyBandStop:
+                DataFilter.perform_bandstop(data[chan],
+                    BoardShim.get_sampling_rate(args.board_id), 
+                    bandStopFrequency,
+                    4.0,
+                    2,
+                    FilterTypes.BUTTERWORTH.value, 
+                    0);
+            if applyBandPass:
+                DataFilter.perform_bandpass(
+                    data[chan], 
+                    BoardShim.get_sampling_rate(args.board_id), 
+                    bp_centerFreq, 
+                    bp_bandWidth, 
+                    2, 
+                    FilterTypes.BUTTERWORTH.value, 
+                    0);
+
         for i in range(len(data[0])):
             queue.put(data[:,i].tolist())
         elapsed_time = local_clock() - start_time
