@@ -128,17 +128,18 @@ class W_Focus extends Widget {
         }
         popStyle();
 
-
-        //Draw some guides to help develop this widget faster
-        pushStyle();
-        stroke(0);
-        //Main guides
-        line(x, y+(h/2), x+w, y+(h/2));
-        line(x+(w/2), y, x+(w/2), y+(h/2));
-        //Top left container center
-        line(x+(w/4), y, x+(w/4), y+(h/2));
-        line(x, y+(h/4), x+(w/2), y+(h/4));
-        popStyle();
+        if (false) {
+            //Draw some guides to help develop this widget faster
+            pushStyle();
+            stroke(0);
+            //Main guides
+            line(x, y+(h/2), x+w, y+(h/2));
+            line(x+(w/2), y, x+(w/2), y+(h/2));
+            //Top left container center
+            line(x+(w/4), y, x+(w/4), y+(h/2));
+            line(x, y+(h/4), x+(w/2), y+(h/4));
+            popStyle();
+        }
 
         //This draws all cp5 objects in the local instance
         //focus_cp5.draw();
