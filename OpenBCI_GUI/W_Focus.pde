@@ -13,7 +13,13 @@ public enum FocusColors {
     GREEN, CYAN, ORANGE
 }
 
-public enum FocusXLim implements TimeSeriesAxisEnum
+interface FocusEnum {
+    public int getIndex();
+    public int getValue();
+    public String getString();
+}
+
+public enum FocusXLim implements FocusEnum
 {
     TEN (0, 10, "10 sec"),
     TWENTY (1, 20, "20 sec"),
@@ -24,6 +30,8 @@ public enum FocusXLim implements TimeSeriesAxisEnum
     private int index;
     private int value;
     private String label;
+
+    private static FocusXLim[] vals = values();
 
     FocusXLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -44,6 +52,14 @@ public enum FocusXLim implements TimeSeriesAxisEnum
     @Override
     public int getIndex() {
         return index;
+    }
+
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (FocusEnum val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
     }
 }
 
@@ -84,7 +100,7 @@ class W_Focus extends Widget {
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("FocusWindow", "Window", Arrays.asList("10 sec", "20 sec", "30 sec", "1 min" ), 0);
+        addDropdown("FocusWindow", "Window", FocusXLim.getEnumStringsAsList(), 0);
         addDropdown("FocusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
         addDropdown("FocusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
         addDropdown("FocusThreshold", "Threshold", Arrays.asList("0.5", "0.6","0.7", "0.8", "0.9"), 0);
@@ -206,9 +222,9 @@ class W_Focus extends Widget {
     }
 
     private void update_graph_dims() {
-        graph_w = int(w - graph_pad*2);
-        graph_h = int(h/2 - padding_5);
-        graph_x = x + padding_5;
+        graph_w = int(w - padding_5*4);
+        graph_h = int(h/2 - graph_pad - padding_5);
+        graph_x = x + padding_5*2;
         graph_y = int(y + h/2);
     }
 
