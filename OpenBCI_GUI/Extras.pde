@@ -418,6 +418,7 @@ class TextBox {
         noStroke();
         fill(textColor);
         textAlign(alignH,alignV);
+        textFont(font);
         text(string,x,y);
         strokeWeight(1);
         popStyle();
