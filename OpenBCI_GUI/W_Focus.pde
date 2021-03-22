@@ -54,6 +54,15 @@ class W_Focus extends Widget {
     private ControlP5 focus_cp5;
     private Button widgetTemplateButton;
 
+    private Grid dataGrid;
+    private final int numTableRows = 6;
+    private final int numTableColumns = 2;
+    private final int tableWidth = 142;
+    private int tableHeight = 0;
+    private int cellHeight = 10;
+
+    private final int padding_5 = 5;
+
     private FocusBar focusBar;
     private float focusBarHardYAxisLimit = 1f;
     FocusXLim xLimit = FocusXLim.TEN;
@@ -78,6 +87,13 @@ class W_Focus extends Widget {
         addDropdown("FocusWindow", "Window", Arrays.asList("10 sec", "20 sec", "30 sec", "1 min" ), 0);
         addDropdown("FocusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
         addDropdown("FocusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
+        addDropdown("FocusThreshold", "Threshold", Arrays.asList("0.5", "0.6","0.7", "0.8", "0.9"), 0);
+
+        //Create data table
+        dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
+        dataGrid.setTableFontAndSize(p6, 10);
+        dataGrid.setDrawTableBorder(true);
+        dataGrid.setString("Band Power", 0, 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         focus_cp5 = new ControlP5(ourApplet);
@@ -100,6 +116,11 @@ class W_Focus extends Widget {
 
         focusBar.update();
 
+
+        if (metricPrediction > .5d) {
+
+        }
+
         //put your code here...
     }
 
@@ -107,25 +128,19 @@ class W_Focus extends Widget {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
+        //Draw data table
+        dataGrid.draw();
+
+        //Draw status graphic
         pushStyle();
         noStroke();
-        if (metricPrediction > .5d) {
-            fill(cFocus);
-            stroke(cFocus);
-            ellipseMode(CENTER);
-            ellipse(xc, yc, wc, hc);
-            noStroke();
-            textAlign(CENTER);
-            text("focused!", xc, yc + hc/2 + 16);
-        } else {
-            fill(cDark);
-            ellipseMode(CENTER);
-            ellipse(xc, yc, wc, hc);
-            noStroke();
-            fill(cMark);
-            textAlign(CENTER);
-            text("not focused", xc, yc + hc/2 + 16);
-        }
+        fill(cFocus);
+        stroke(cFocus);
+        ellipseMode(CENTER);
+        ellipse(xc, yc, wc, hc);
+        noStroke();
+        textAlign(CENTER);
+        text("focused!", xc, yc + hc/2 + 16);
         popStyle();
 
         if (false) {
@@ -143,7 +158,8 @@ class W_Focus extends Widget {
 
         //This draws all cp5 objects in the local instance
         //focus_cp5.draw();
-
+        
+        //Draw the graph
         focusBar.draw();
     }
 
@@ -153,6 +169,8 @@ class W_Focus extends Widget {
         //Very important to allow users to interact with objects after app resize        
         focus_cp5.setGraphics(ourApplet, 0, 0);
 
+        resizeTable();
+
         //We need to set the position of our Cp5 object after the screen is resized
         //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
@@ -160,6 +178,20 @@ class W_Focus extends Widget {
 
         update_graph_dims();
         focusBar.screenResized(graph_x, graph_y, graph_w, graph_h);
+    }
+
+    private void resizeTable() {
+        float upperLeftContainerW = w/2;
+        float upperLeftContainerH = h/2;
+        //float min = min(upperLeftContainerW, upperLeftContainerH);
+        int tx = x + int(upperLeftContainerW) + padding_5;
+        int ty = y + padding_5;
+        int tw = int(upperLeftContainerW) - padding_5*2;
+        //tableHeight = tw;
+        dataGrid.setDim(tx, ty, tw);
+        dataGrid.setTableHeight(int(upperLeftContainerH - padding_5*2));
+        dataGrid.dynamicallySetTextVerticalPadding(0, 0);
+        dataGrid.setHorizontalCenterTextInCells(true);
     }
 
     private void update_crystalball_dims() {
@@ -175,8 +207,8 @@ class W_Focus extends Widget {
 
     private void update_graph_dims() {
         graph_w = int(w - graph_pad*2);
-        graph_h = int(h/2 - navH*2);
-        graph_x = x + navH;
+        graph_h = int(h/2 - padding_5);
+        graph_x = x + padding_5;
         graph_y = int(y + h/2);
     }
 

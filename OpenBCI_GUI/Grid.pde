@@ -7,6 +7,7 @@ class Grid {
     private int[] rowOffset;
     private int rowHeight;
     private boolean horizontallyCenterTextInCells = false;
+    private boolean drawTableBorder = false;
 
     private int x, y, w;
     private int pad_horiz = 5;
@@ -61,6 +62,12 @@ class Grid {
                     text(strings[row][col], x + colOffset[col] + pad_horiz, y + rowOffset[row] - pad_vert);
                 }
             }
+        }
+
+        if (drawTableBorder) {
+            noFill();
+            stroke(0);
+            rect(x, y, w, rowOffset[numRows - 1]);
         }
         
         popStyle();
@@ -126,5 +133,9 @@ class Grid {
     public void setHorizontalCenterTextInCells(boolean b) {
         horizontallyCenterTextInCells = b;
         pad_horiz = b ? getCellDims(0,0).w/2 : 5;
+    }
+
+    public void setDrawTableBorder(boolean b) {
+        drawTableBorder = b;
     }
 }
