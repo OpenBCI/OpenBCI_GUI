@@ -8,6 +8,19 @@
 //                                                //
 ////////////////////////////////////////////////////
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import brainflow.BoardIds;
+import brainflow.BoardShim;
+import brainflow.BrainFlowClassifiers;
+import brainflow.BrainFlowInputParams;
+import brainflow.BrainFlowMetrics;
+import brainflow.BrainFlowModelParams;
+import brainflow.DataFilter;
+import brainflow.LogLevels;
+import brainflow.MLModel;
+
 // color enums
 public enum FocusColors {
     GREEN, CYAN, ORANGE
@@ -128,13 +141,10 @@ class W_Focus extends Widget {
     public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        metricPrediction = updateFocusState();
+        if (currentBoard.isStreaming()) {
+            metricPrediction = updateFocusState();
 
-        focusBar.update();
-
-
-        if (metricPrediction > .5d) {
-
+            focusBar.update();
         }
 
         //put your code here...
@@ -200,7 +210,7 @@ class W_Focus extends Widget {
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         //float min = min(upperLeftContainerW, upperLeftContainerH);
-        int tx = x + int(upperLeftContainerW) + padding_5;
+        int tx = x + int(upperLeftContainerW);
         int ty = y + padding_5;
         int tw = int(upperLeftContainerW) - padding_5*2;
         //tableHeight = tw;
@@ -223,7 +233,7 @@ class W_Focus extends Widget {
 
     private void update_graph_dims() {
         graph_w = int(w - padding_5*4);
-        graph_h = int(h/2 - graph_pad - padding_5);
+        graph_h = int(h/2 - graph_pad - padding_5*2);
         graph_x = x + padding_5*2;
         graph_y = int(y + h/2);
     }
@@ -248,8 +258,34 @@ class W_Focus extends Widget {
         widgetTemplateButton.setDescription("Here is the description for this UI object. It will fade in as help text when hovering over the object.");
     }
 
+    //Returns a metric value from 0. to 1. When there is an error, returns -1.
     private double updateFocusState() {
-        return 1d;
+        try {
+            int window_size = currentBoard.getSampleRate() * xLimit.getValue();
+            List<double[]> currentData = currentBoard.getData(window_size);
+            double[][] data = new double[currentData.size()][];
+            if (currentData.size() == 0) {
+                println("OOPS!!!!");
+                return -1d;
+            }
+            data = currentData.toArray(data);
+            println(data.length);
+            Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (data, currentBoard.getEXGChannels(), currentBoard.getSampleRate(), false);
+            double[] feature_vector = ArrayUtils.addAll (bands.getLeft (), bands.getRight ());
+            BrainFlowModelParams model_params = new BrainFlowModelParams (BrainFlowMetrics.CONCENTRATION.get_code (),
+            BrainFlowClassifiers.REGRESSION.get_code ());
+            MLModel concentration = new MLModel (model_params);
+            concentration.prepare ();
+            double prediction = concentration.predict (feature_vector);
+            println("Concentration: " + prediction);
+            concentration.release ();
+            return prediction;
+
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+            println("ERROR UPDATING FOCUS STATE!");
+            return -1d;
+        }
     }
 
     private void onColorChange() {
@@ -385,10 +421,10 @@ class FocusBar {
 
     //Used to update the accelerometerBar class
     void update() {
-        updateGPlotPoints();
+        //updateGPlotPoints();
 
         if (isAutoscale) {
-            autoScale();
+            //autoScale();
         }
     }
 
