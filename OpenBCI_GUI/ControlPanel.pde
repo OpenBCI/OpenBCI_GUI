@@ -1213,9 +1213,7 @@ class SessionDataBox {
             fill(OPENBCI_DARKBLUE);
             maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
             //Carefully draw some text to the left of above dropdown, otherwise this text moves when changing WiFi mode
-            int extraPadding = (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) || selectedProtocol != BoardProtocol.WIFI
-                ? 20 
-                : 5;
+            int extraPadding = 20;
             fill(OPENBCI_DARKBLUE);
             textFont(p4, 14);
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
