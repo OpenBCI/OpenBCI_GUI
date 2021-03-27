@@ -1,3 +1,20 @@
+# v5.0.4
+
+### Improvements
+* Add Copy/Paste for all textfields on all OS #940
+* Update BrainFlow library to version that includes a marker channel
+* Handle paths with spaces on Linux Standalone GUI #916
+* Allow Expert Ganglion Users to send square wave commands via keyboard #950
+* Show Send Custom Hardware Command UI for Cyton Expert Mode in Hardware Settings
+* Improve Hardware Setting UX/UI for ADS1299 boards #954
+
+### Bug Fixes
+* Clean up GUI code to fix Processing/JVM memory issue causing crash #955
+* Avoid playback history file not found exception #959
+* Fix issue with Spectrogram Widget data image default height
+* Fix issue with Accelerometer Widget graph default vertical scale
+* Fix text drawing in wrong spot in Session Data box in Control Panel
+
 # v5.0.3
 
 ### Improvements

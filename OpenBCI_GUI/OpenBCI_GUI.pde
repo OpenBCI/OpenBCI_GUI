@@ -8,6 +8,7 @@
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //   Modified (v4.0) AJ Keller (Richard Waltman), September 2018
+//   Modified (v5.0) Richard Waltman, August 2020
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -64,12 +65,14 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.3";
-String localGUIVersionDate = "January 2021";
+String localGUIVersionString = "v5.0.4";
+String localGUIVersionDate = "March 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
 PApplet ourApplet;
+
+CopyPaste copyPaste;
 
 //used to switch between application states
 final int SYSTEMMODE_INTROANIMATION = -10;
@@ -315,6 +318,8 @@ void settings() {
 void setup() {
     frameRate(120);
 
+    copyPaste = new CopyPaste();
+
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
     f2 = createFont("fonts/Raleway-Regular.otf", 15);
@@ -395,19 +400,6 @@ void delayedSetup() {
     settings.heightOfLastScreen = height;
 
     setupContainers();
-    
-    //listen for window resize ... used to adjust elements in application
-    //Doesn't seem to work...
-    frame.addComponentListener(new ComponentAdapter() {
-        public void componentResized(ComponentEvent e) {
-            if (e.getSource().equals(frame)) {
-                settings.screenHasBeenResized = true;
-                settings.timeOfLastScreenResize = millis();
-                // initializeGUI();
-            }
-        }
-    }
-    );
 
     fontInfo = new PlotFontInfo();
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);

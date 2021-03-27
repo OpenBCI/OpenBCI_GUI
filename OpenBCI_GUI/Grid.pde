@@ -6,9 +6,17 @@ class Grid {
     private int[] colOffset;
     private int[] rowOffset;
     private int rowHeight;
+    private boolean horizontallyCenterTextInCells = false;
+    private boolean drawTableBorder = false;
 
     private int x, y, w;
-    private final int pad = 5;
+    private int pad_horiz = 5;
+    private int pad_vert = 5;
+
+    private PFont tableFont = p5;
+    private int tableFontSize = 12;
+
+    private color[][] textColors;
 
     private String[][] strings;
 
@@ -21,13 +29,18 @@ class Grid {
         rowOffset = new int[numRows];
 
         strings = new String[numRows][numCols];
+        textColors = new color[numRows][numCols];
+
+        color defaultTextColor = OPENBCI_DARKBLUE;
+        for (color[] row: textColors) {
+            Arrays.fill(row, defaultTextColor);
+        }
     }
 
     public void draw() {
         pushStyle();
         textAlign(LEFT);        
         stroke(0);
-        fill(0, 0, 0, 255);
         textFont(p5, 12);
 
         // draw row lines
@@ -44,9 +57,17 @@ class Grid {
         for (int row = 0; row < numRows; row++) {
             for (int col = 0; col < numCols; col++) {
                 if (strings[row][col] != null) {
-                    text(strings[row][col], x + colOffset[col] + pad, y + rowOffset[row] - pad);
+                    fill(textColors[row][col]);
+                    textAlign(horizontallyCenterTextInCells ? CENTER : LEFT);
+                    text(strings[row][col], x + colOffset[col] + pad_horiz, y + rowOffset[row] - pad_vert);
                 }
             }
+        }
+
+        if (drawTableBorder) {
+            noFill();
+            stroke(0);
+            rect(x, y, w, rowOffset[numRows - 1]);
         }
         
         popStyle();
@@ -80,5 +101,41 @@ class Grid {
 
     public void setString(String s, int row, int col) {
         strings[row][col] = s;
+    }
+
+    public void setTableFontAndSize(PFont _font, int _fontSize) {
+        tableFont = _font;
+        tableFontSize = _fontSize;
+    }
+
+    public void setRowHeight(int _height) {
+        rowHeight = _height;
+    }
+    
+    //This overrides the rowHeight and rowOffset when setting the total height of the Grid.
+    public void setTableHeight(int _height) {
+        rowHeight = _height / numRows;
+        for (int i = 0; i < numRows; i++) {
+            rowOffset[i] = rowHeight * (i + 1);
+        }
+    }
+
+    public void setTextColor(color c, int row, int col) {
+        textColors[row][col] = c;
+    }
+
+    //Change vertical padding for all cells based on the string/text height from a given cell
+    public void dynamicallySetTextVerticalPadding(int row, int col) {
+        float _textH = getFontStringHeight(tableFont, strings[row][col]);
+        pad_vert =  int( (rowHeight - _textH) / 2); //Force round down here
+    }
+
+    public void setHorizontalCenterTextInCells(boolean b) {
+        horizontallyCenterTextInCells = b;
+        pad_horiz = b ? getCellDims(0,0).w/2 : 5;
+    }
+
+    public void setDrawTableBorder(boolean b) {
+        drawTableBorder = b;
     }
 }

@@ -19,6 +19,7 @@ import platform
 import subprocess
 import argparse
 import requests
+import fileinput
 from bs4 import  BeautifulSoup
 
 ### Define platform-specific strings
@@ -193,6 +194,21 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     new_build_dir = os.path.join(os.getcwd(), release_dir_name)
     os.rename(build_dir, new_build_dir)
     build_dir = new_build_dir
+
+    # Allow GUI to launch from directory with spaces #916
+    if LOCAL_OS == LINUX:
+        # Read in the file
+        with open(build_dir + '/OpenBCI_GUI', 'r') as file :
+            filedata = file.read()
+
+        # Replace the target string
+        filedata = filedata.replace('$APPDIR/java/bin/java', '\"$APPDIR/java/bin/java\"')
+
+        # Write the file out again
+        with open(build_dir + '/OpenBCI_GUI', 'w') as file:
+            file.write(filedata)
+
+        print ( "Fixed issue on Linux when launching from directory with spaces.")
 
     # delete source directory
     source_dir = os.path.join(build_dir, "source")

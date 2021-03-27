@@ -15,20 +15,25 @@ sleep(1)
 
 def testLSLSamplingRate():
     start = time.time()
-    numSamples = 0
+    totalNumSamples = 0
+    validSamples = 0
     numChunks = 0
 
     while time.time() <= start + duration:
         # get chunks of samples
         samples, timestamp = inlet.pull_chunk()
-        if timestamp:
+        if samples:
             numChunks += 1
             print( len(samples) )
-            numSamples += len(samples)
+            totalNumSamples += len(samples)
             # print(samples);
+            for sample in samples:
+                print(sample)
+                validSamples += 1
 
-    print( "Number of Chunks == {}".format(numChunks) )
-    print( "Avg Sampling Rate == {}".format(numSamples / duration) )
+    print( "Number of Chunks and Samples == {} , {}".format(numChunks, totalNumSamples) )
+    print( "Valid Samples and Duration == {} / {}".format(validSamples, duration) )
+    print( "Avg Sampling Rate == {}".format(validSamples / duration) )
 
 
 testLSLSamplingRate()
