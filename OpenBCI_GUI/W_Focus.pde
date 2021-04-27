@@ -260,24 +260,43 @@ class W_Focus extends Widget {
 
     //Returns a metric value from 0. to 1. When there is an error, returns -1.
     private double updateFocusState() {
+        // todo move concentration.prepare() and variable initialization outside from this method, it should be called only once!
         try {
             int window_size = currentBoard.getSampleRate() * xLimit.getValue();
+            // getData in GUI returns data in shape nchannels x ndatapoints, in BrainFlow its transposed
             List<double[]> currentData = currentBoard.getData(window_size);
-            double[][] data = new double[currentData.size()][];
-            if (currentData.size() == 0) {
-                println("OOPS!!!!");
-                return -1d;
+            if (currentData.size() != window_size) {
+                return -1.0;
             }
-            data = currentData.toArray(data);
-            println(data.length);
-            Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (data, currentBoard.getEXGChannels(), currentBoard.getSampleRate(), false);
+            int[] exgChannels = currentBoard.getEXGChannels();
+            int channelCount = currentBoard.getNumEXGChannels();
+            int[] channelsInDataArray = new int[channelCount];
+            //for (int i = 0; i < channelCount; i++) // use this line to use all channels
+            for (int i = 0; i < 3; i++) // temp to test - use first 3 channels
+            {
+                channelsInDataArray[i] = i;
+            }
+            double[][] data = new double[channelCount][];
+            // todo preallocate this array outside from this method
+            for (int i = 0; i < channelCount; i++) {
+                data[i] = new double[window_size];
+                for (int j = 0; j < currentData.size(); j++) {
+                    data[i][j] = currentData.get(j)[exgChannels[i]];
+                }
+            }
+
+            Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (data, channelsInDataArray, currentBoard.getSampleRate(), true);
             double[] feature_vector = ArrayUtils.addAll (bands.getLeft (), bands.getRight ());
+
+            // todo move it away from here
             BrainFlowModelParams model_params = new BrainFlowModelParams (BrainFlowMetrics.CONCENTRATION.get_code (),
-            BrainFlowClassifiers.REGRESSION.get_code ());
+                                                                        BrainFlowClassifiers.REGRESSION.get_code ());
             MLModel concentration = new MLModel (model_params);
             concentration.prepare ();
+            
             double prediction = concentration.predict (feature_vector);
             println("Concentration: " + prediction);
+            // todo move it to smth like widget_close method
             concentration.release ();
             return prediction;
 

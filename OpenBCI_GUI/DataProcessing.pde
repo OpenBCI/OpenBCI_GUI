@@ -33,7 +33,6 @@ void processNewData() {
 
     //update the data buffers
     for (int Ichan=0; Ichan < channelCount; Ichan++) {
-        
         for(int i = 0; i < getCurrentBoardBufferSize(); i++) {
             dataProcessingRawBuffer[Ichan][i] = (float)currentData.get(i)[exgChannels[Ichan]];
         }
