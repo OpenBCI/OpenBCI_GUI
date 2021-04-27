@@ -263,7 +263,7 @@ class W_Focus extends Widget {
         // todo move concentration.prepare() and variable initialization outside from this method, it should be called only once!
         try {
             int window_size = currentBoard.getSampleRate() * xLimit.getValue();
-            // getData in GUI returns data in shape nchannels x ndatapoints, in BrainFlow its transposed
+            // getData in GUI returns data in shape ndatapoints x nchannels, in BrainFlow its transposed
             List<double[]> currentData = currentBoard.getData(window_size);
             if (currentData.size() != window_size) {
                 return -1.0;
