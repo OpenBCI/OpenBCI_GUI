@@ -89,14 +89,17 @@ class W_Focus extends Widget {
     private final int tableWidth = 142;
     private int tableHeight = 0;
     private int cellHeight = 10;
+    private DecimalFormat df = new DecimalFormat("#.0000");
 
     private final int padding_5 = 5;
 
     private FocusBar focusBar;
     private float focusBarHardYAxisLimit = 1f;
-    FocusXLim xLimit = FocusXLim.TEN;
+    FocusXLim xLimit = FocusXLim.TWENTY;
 
     private FocusColors focusColors = FocusColors.GREEN;
+
+    MLModel mlModel;
 
     private double metricPrediction = 0d;
     private float xc, yc, wc, hc; // crystal ball center xy, width and height
@@ -113,16 +116,16 @@ class W_Focus extends Widget {
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("FocusWindow", "Window", FocusXLim.getEnumStringsAsList(), 0);
-        addDropdown("FocusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
-        addDropdown("FocusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
-        addDropdown("FocusThreshold", "Threshold", Arrays.asList("0.5", "0.6","0.7", "0.8", "0.9"), 0);
+        addDropdown("focusWindow", "Window", FocusXLim.getEnumStringsAsList(), 0);
+        addDropdown("focusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
+        addDropdown("focusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
+        addDropdown("focusThreshold", "Threshold", Arrays.asList("0.5", "0.6","0.7", "0.8", "0.9"), 0);
 
         //Create data table
         dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
         dataGrid.setTableFontAndSize(p6, 10);
         dataGrid.setDrawTableBorder(true);
-        dataGrid.setString("Band Power", 0, 0);
+        dataGrid.setString("Metric Value", 0, 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         focus_cp5 = new ControlP5(ourApplet);
@@ -134,8 +137,8 @@ class W_Focus extends Widget {
         //create our focus graph
         update_graph_dims();
         focusBar = new FocusBar(_parent, focusBarHardYAxisLimit, graph_x, graph_y, graph_w, graph_h);
-        focusBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue()); //sync horiz axis to Time Series by default
-       
+
+        initBrainFlowMetric(BrainFlowMetrics.RELAXATION, BrainFlowClassifiers.LDA);
     }
 
     public void update() {
@@ -144,7 +147,7 @@ class W_Focus extends Widget {
         if (currentBoard.isStreaming()) {
             metricPrediction = updateFocusState();
 
-            focusBar.update();
+            focusBar.update(metricPrediction);
         }
 
         //put your code here...
@@ -238,26 +241,6 @@ class W_Focus extends Widget {
         graph_y = int(y + h/2);
     }
 
-    //When creating new UI objects, follow this rough pattern.
-    //Using custom methods like this allows us to condense the code required to create new objects.
-    //You can find more detailed examples in the Control Panel, where there are many UI objects with varying functionality.
-    private void createWidgetTemplateButton() {
-        //This is a generalized createButton method that allows us to save code by using a few patterns and method overloading
-        widgetTemplateButton = createButton(focus_cp5, "widgetTemplateButton", "Design Your Own Widget!", x + w/2, y + h/2, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
-        //Set the border color explicitely
-        widgetTemplateButton.setBorderColor(OBJECT_BORDER_GREY);
-        //For this button, only call the callback listener on mouse release
-        widgetTemplateButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
-                if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
-                    openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
-                }
-            }
-        });
-        widgetTemplateButton.setDescription("Here is the description for this UI object. It will fade in as help text when hovering over the object.");
-    }
-
     //Returns a metric value from 0. to 1. When there is an error, returns -1.
     private double updateFocusState() {
         // todo move concentration.prepare() and variable initialization outside from this method, it should be called only once!
@@ -288,23 +271,42 @@ class W_Focus extends Widget {
             Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (data, channelsInDataArray, currentBoard.getSampleRate(), true);
             double[] feature_vector = ArrayUtils.addAll (bands.getLeft (), bands.getRight ());
 
-            // todo move it away from here
-            BrainFlowModelParams model_params = new BrainFlowModelParams (BrainFlowMetrics.CONCENTRATION.get_code (),
-                                                                        BrainFlowClassifiers.REGRESSION.get_code ());
-            MLModel concentration = new MLModel (model_params);
-            concentration.prepare ();
+            //Keep this here
+            double prediction = mlModel.predict(feature_vector);
+            //println("Concentration: " + prediction);
+            dataGrid.setString(df.format(prediction), 0, 1);
             
-            double prediction = concentration.predict (feature_vector);
-            println("Concentration: " + prediction);
-            // todo move it to smth like widget_close method
-            concentration.release ();
             return prediction;
 
         } catch (BrainFlowError e) {
             e.printStackTrace();
-            println("ERROR UPDATING FOCUS STATE!");
+            println("Error updating focus state!");
             return -1d;
         }
+    }
+
+    private void initBrainFlowMetric(BrainFlowMetrics metric, BrainFlowClassifiers classifier) {
+        BrainFlowModelParams model_params = new BrainFlowModelParams(metric.get_code(), classifier.get_code());
+        mlModel = new MLModel (model_params);
+        try {
+            mlModel.prepare();
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Called on haltSystem() when GUI exits or session stops
+    public void endSession() {
+        try {
+            mlModel.release();
+        } catch (BrainFlowError e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setFocusHorizScale(int n) {
+        xLimit = xLimit.values()[n];
+        focusBar.adjustTimeAxis(xLimit.getValue());
     }
 
     private void onColorChange() {
@@ -335,35 +337,23 @@ class W_Focus extends Widget {
                 break;
         }
     }
-
-    public void setFocusHorizScale(int n) {
-        xLimit = xLimit.values()[n];
-        focusBar.adjustTimeAxis(xLimit.getValue());
-    }
-
-    //add custom functions here
-    private void customFunction() {
-        //this is a fake function... replace it with something relevant to this widget
-
-    }
-
 };
 
+//This class contains the time series plot for the focus metric over time
 class FocusBar {
-    //this class contains the plot for the 2d graph of accelerometer data
     int x, y, w, h;
     int focusBarPadding = 30;
     int xOffset;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
-    GPointsArray accelPointsX;
-    GPointsArray accelPointsY;
-    GPointsArray accelPointsZ;
+    LinkedList<Float> fifo_list;
+    GPointsArray focusPoints;
 
     int nPoints;
-    int numSeconds = 20; //default to 20 seconds
+    int numSeconds = FocusXLim.TWENTY.getValue(); //default to 20 seconds
     float timeBetweenPoints;
-    float[] accelTimeArray;
+    float graph_timer;
+    float[] focusTimeArray;
     int numSamplesToProcess;
     float minX, minY, minZ;
     float maxX, maxY, maxZ;
@@ -375,14 +365,8 @@ class FocusBar {
 
     boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
     int lastProcessedDataPacketInd = 0;
-    
-    private AccelerometerCapableBoard accelBoard;
 
     FocusBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
-        
-        // This widget is only instantiated when the board is accel capable, so we don't need to check
-        accelBoard = (AccelerometerCapableBoard)currentBoard;
-
         x = _x;
         y = _y;
         w = _w;
@@ -408,40 +392,31 @@ class FocusBar {
         plot.getXAxis().getAxisLabel().setOffset(float(22));
         plot.getYAxis().getAxisLabel().setOffset(float(focusBarPadding));
 
+        adjustTimeAxis(numSeconds);
+
         initArrays();
 
         //set the plot points for X, Y, and Z axes
-        plot.addLayer("layer 1", accelPointsX);
+        plot.addLayer("layer 1", focusPoints);
         plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
-        plot.addLayer("layer 2", accelPointsY);
-        plot.getLayer("layer 2").setLineColor(ACCEL_Y_COLOR);
-        plot.addLayer("layer 3", accelPointsZ);
-        plot.getLayer("layer 3").setLineColor(ACCEL_Z_COLOR);
     }
 
     void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
-
-        accelTimeArray = new float[nPoints];
-        for (int i = 0; i < accelTimeArray.length; i++) {
-            accelTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+        focusTimeArray = new float[nPoints];
+        fifo_list = new LinkedList<Float>();
+        for (int i = 0; i < focusTimeArray.length; i++) {
+            focusTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+            fifo_list.add(0f);
         }
-
-        float[] accelArrayX = new float[nPoints];
-        float[] accelArrayY = new float[nPoints];
-        float[] accelArrayZ = new float[nPoints];
-
-        //make a GPoint array using float arrays x[] and y[] instead of plain index points
-        accelPointsX = new GPointsArray(accelTimeArray, accelArrayX);
-        accelPointsY = new GPointsArray(accelTimeArray, accelArrayY);
-        accelPointsZ = new GPointsArray(accelTimeArray, accelArrayZ);
+        float[] floatArray = ArrayUtils.toPrimitive(fifo_list.toArray(new Float[0]), 0.0F);
+        focusPoints = new GPointsArray(focusTimeArray, floatArray);
     }
 
     //Used to update the accelerometerBar class
-    void update() {
-        //updateGPlotPoints();
-
+    void update(double val) {
+        updateGPlotPoints(val);
         if (isAutoscale) {
             //autoScale();
         }
@@ -460,7 +435,7 @@ class FocusBar {
     }
 
     int nPointsBasedOnDataSource() {
-        return numSeconds * currentBoard.getSampleRate();
+        return numSeconds * 30;
     }
 
     void adjustTimeAxis(int _newTimeSize) {
@@ -478,30 +453,22 @@ class FocusBar {
     }
 
     //Used to update the Points within the graph
-    void updateGPlotPoints() {
-        List<double[]> allData = currentBoard.getData(nPoints);
-        int[] accelChannels = accelBoard.getAccelerometerChannels();
+    void updateGPlotPoints(double val) {
+        
+        //if (graph_timer + timeBetweenPoints < millis()) {
+            graph_timer = millis();
+            fifo_list.removeFirst();
+            fifo_list.add((float)val);
 
-        for (int i=0; i < nPoints; i++) {
-            accelPointsX.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[0]], "");
-            accelPointsY.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[1]], "");
-            accelPointsZ.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[2]], "");
-        }
+            for (int i=0; i < nPoints; i++) {
+                focusPoints.set(i, focusTimeArray[i], fifo_list.get(i), "");
+            }
 
-        plot.setPoints(accelPointsX, "layer 1");
-        plot.setPoints(accelPointsY, "layer 2");
-        plot.setPoints(accelPointsZ, "layer 3");
+            plot.setPoints(focusPoints, "layer 1");
+        //}
     }
 
-    float[] getLastAccelVals() {
-        float[] result = new float[NUM_ACCEL_DIMS];
-        result[0] = accelPointsX.getY(nPoints-1);   
-        result[1] = accelPointsY.getY(nPoints-1);   
-        result[2] = accelPointsZ.getY(nPoints-1);   
-
-        return result;
-    }
-
+    /*
     void adjustVertScale(int _vertScaleValue) {
         if (_vertScaleValue == 0) {
             isAutoscale = true;
@@ -510,18 +477,19 @@ class FocusBar {
             plot.setYLim(-_vertScaleValue, _vertScaleValue);
         }
     }
+    */
 
     void autoScale() {
-        float[] minMaxVals = minMax(accelPointsX, accelPointsY, accelPointsZ);
+        float[] minMaxVals = minMax(focusPoints);
         plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
     }
 
-    float[] minMax(GPointsArray arrX, GPointsArray arrY, GPointsArray arrZ) {
+    float[] minMax(GPointsArray arr) {
         float[] minMaxVals = {0.f, 0.f};
-        for (int i = 0; i < arrX.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
-            float[] vals = {arrX.getY(i), arrY.getY(i), arrZ.getY(i)};
-            minMaxVals[0] = min(minMaxVals[0], min(vals)); //make room to see
-            minMaxVals[1] = max(minMaxVals[1], max(vals));
+        for (int i = 0; i < arr.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
+            float val = arr.getY(i);
+            minMaxVals[0] = min(minMaxVals[0], val); //make room to see
+            minMaxVals[1] = max(minMaxVals[1], val);
         }
         return minMaxVals;
     }
@@ -537,3 +505,7 @@ class FocusBar {
 
     }
 }; //end of class
+
+public void focusWindow(int n) {
+    w_focus.setFocusHorizScale(n);
+}

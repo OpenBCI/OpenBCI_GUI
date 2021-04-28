@@ -723,7 +723,7 @@ void stopRunning() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once\
+    if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         
         //Reset the text for the Start Session buttonscreen. Skip when reiniting board while already in playback mode session.
@@ -734,6 +734,10 @@ void haltSystem() {
         if (w_networking != null && w_networking.getNetworkActive()) {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
+        }
+
+        if (w_focus != null) {
+            w_focus.endSession();
         }
         
         stopRunning();  //stop data transfer
