@@ -2,6 +2,7 @@
 ////////////////////////////////////////////////////
 //                                                //
 //    W_focus.pde (ie "Focus Widget")             //
+//    Enums can be found in FocusEnums.pde        //
 //                                                //
 //                                                //
 //    Created by: Richard Waltman, March 2021     //
@@ -20,61 +21,6 @@ import brainflow.BrainFlowModelParams;
 import brainflow.DataFilter;
 import brainflow.LogLevels;
 import brainflow.MLModel;
-
-// color enums
-public enum FocusColors {
-    GREEN, CYAN, ORANGE
-}
-
-interface FocusEnum {
-    public int getIndex();
-    public int getValue();
-    public String getString();
-}
-
-public enum FocusXLim implements FocusEnum
-{
-    TEN (0, 10, "10 sec"),
-    TWENTY (1, 20, "20 sec"),
-    THIRTY (2, 30, "30 sec"),
-    SIXTY (3, 60, "60 sec"),
-    ONE_HUNDRED_TWENTY (4, 120, "120 sec");
-
-    private int index;
-    private int value;
-    private String label;
-
-    private static FocusXLim[] vals = values();
-
-    FocusXLim(int _index, int _value, String _label) {
-        this.index = _index;
-        this.value = _value;
-        this.label = _label;
-    }
-
-    @Override
-    public int getValue() {
-        return value;
-    }
-
-    @Override
-    public String getString() {
-        return label;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (FocusEnum val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-}
 
 class W_Focus extends Widget {
 
@@ -96,12 +42,15 @@ class W_Focus extends Widget {
     private FocusBar focusBar;
     private float focusBarHardYAxisLimit = 1f;
     FocusXLim xLimit = FocusXLim.TWENTY;
-
+    FocusMetric focusMetric = FocusMetric.RELAXATION;
+    FocusClassifier focusClassifier = FocusClassifier.REGRESSION;
+    FocusThreshold focusThreshold = FocusThreshold.EIGHT_TENTHS;
     private FocusColors focusColors = FocusColors.GREEN;
 
     MLModel mlModel;
-
     private double metricPrediction = 0d;
+    private boolean predictionExceedsThreshold = false;
+
     private float xc, yc, wc, hc; // crystal ball center xy, width and height
     private int graph_x, graph_y, graph_w, graph_h;
     private int graph_pad = 30;
@@ -116,10 +65,10 @@ class W_Focus extends Widget {
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("focusWindow", "Window", FocusXLim.getEnumStringsAsList(), 0);
-        addDropdown("focusMetric", "Metric", Arrays.asList("Concentration", "Relaxation"), 0);
-        addDropdown("focusClassifier", "Classifier", Arrays.asList("Regression", "KNN", "SVM", "LDA"), 0);
-        addDropdown("focusThreshold", "Threshold", Arrays.asList("0.5", "0.6","0.7", "0.8", "0.9"), 0);
+        addDropdown("focusWindowDropdown", "Window", FocusXLim.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("focusMetricDropdown", "Metric", FocusMetric.getEnumStringsAsList(), focusMetric.getIndex());
+        addDropdown("focusClassifierDropdown", "Classifier", FocusClassifier.getEnumStringsAsList(), focusClassifier.getIndex());
+        addDropdown("focusThresholdDropdown", "Threshold", FocusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
 
         //Create data table
         dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
@@ -138,7 +87,7 @@ class W_Focus extends Widget {
         update_graph_dims();
         focusBar = new FocusBar(_parent, focusBarHardYAxisLimit, graph_x, graph_y, graph_w, graph_h);
 
-        initBrainFlowMetric(BrainFlowMetrics.RELAXATION, BrainFlowClassifiers.LDA);
+        initBrainFlowMetric();
     }
 
     public void update() {
@@ -146,7 +95,7 @@ class W_Focus extends Widget {
 
         if (currentBoard.isStreaming()) {
             metricPrediction = updateFocusState();
-
+            predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
             focusBar.update(metricPrediction);
         }
 
@@ -160,17 +109,7 @@ class W_Focus extends Widget {
         //Draw data table
         dataGrid.draw();
 
-        //Draw status graphic
-        pushStyle();
-        noStroke();
-        fill(cFocus);
-        stroke(cFocus);
-        ellipseMode(CENTER);
-        ellipse(xc, yc, wc, hc);
-        noStroke();
-        textAlign(CENTER);
-        text("focused!", xc, yc + hc/2 + 16);
-        popStyle();
+        drawStatusCircle();
 
         if (false) {
             //Draw some guides to help develop this widget faster
@@ -285,8 +224,37 @@ class W_Focus extends Widget {
         }
     }
 
-    private void initBrainFlowMetric(BrainFlowMetrics metric, BrainFlowClassifiers classifier) {
-        BrainFlowModelParams model_params = new BrainFlowModelParams(metric.get_code(), classifier.get_code());
+    private void drawStatusCircle() {
+        color _fill;
+        color _stroke;
+        StringBuilder sb = new StringBuilder("");
+        if (predictionExceedsThreshold) {
+            _fill = cFocus;
+            _stroke = cFocus;
+        } else {
+            _fill = cDark;
+            _stroke = cDark;
+            sb.append("Not ");
+        }
+        sb.append(focusMetric.getIdealStateString());
+        //Draw status graphic
+        pushStyle();
+        noStroke();
+        fill(_fill);
+        stroke(_stroke);
+        ellipseMode(CENTER);
+        ellipse(xc, yc, wc, hc);
+        noStroke();
+        textAlign(CENTER);
+        text(sb.toString(), xc, yc + hc/2 + 16);
+        popStyle();
+    }
+
+    private void initBrainFlowMetric() {
+        BrainFlowModelParams model_params = new BrainFlowModelParams(
+                focusMetric.getMetric().get_code(),
+                focusClassifier.getClassifier().get_code()
+                );
         mlModel = new MLModel (model_params);
         try {
             mlModel.prepare();
@@ -302,11 +270,6 @@ class W_Focus extends Widget {
         } catch (BrainFlowError e) {
             e.printStackTrace();
         }
-    }
-
-    public void setFocusHorizScale(int n) {
-        xLimit = xLimit.values()[n];
-        focusBar.adjustTimeAxis(xLimit.getValue());
     }
 
     private void onColorChange() {
@@ -337,7 +300,45 @@ class W_Focus extends Widget {
                 break;
         }
     }
-};
+
+    public void setFocusHorizScale(int n) {
+        xLimit = xLimit.values()[n];
+        focusBar.adjustTimeAxis(xLimit.getValue());
+    }
+
+    public void setMetric(int n) {
+        focusMetric = focusMetric.values()[n];
+        endSession();
+        initBrainFlowMetric();
+    }
+
+    public void setClassifier(int n) {
+        focusClassifier = focusClassifier.values()[n];
+        endSession();
+        initBrainFlowMetric();
+    }
+
+    public void setThreshold(int n) {
+        focusThreshold = focusThreshold.values()[n];
+    }
+}; //end of class
+
+//The following global functions are used by the Focus widget dropdowns. This method is the least amount of code.
+public void focusWindowDropdown(int n) {
+    w_focus.setFocusHorizScale(n);
+}
+
+public void focusMetricDropdown(int n) {
+    w_focus.setMetric(n);
+}
+
+public void focusClassifierDropdown(int n) {
+    w_focus.setClassifier(n);
+}
+
+public void focusThresholdDropdown(int n) {
+    w_focus.setThreshold(n);
+}
 
 //This class contains the time series plot for the focus metric over time
 class FocusBar {
@@ -505,7 +506,3 @@ class FocusBar {
 
     }
 }; //end of class
-
-public void focusWindow(int n) {
-    w_focus.setFocusHorizScale(n);
-}
