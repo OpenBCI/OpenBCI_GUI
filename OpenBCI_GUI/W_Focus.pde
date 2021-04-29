@@ -28,6 +28,7 @@ class W_Focus extends Widget {
     //put your custom variables here...
     private ControlP5 focus_cp5;
     private Button widgetTemplateButton;
+    private ChannelSelect focusChanSelect;
 
     private Grid dataGrid;
     private final int numTableRows = 6;
@@ -58,6 +59,10 @@ class W_Focus extends Widget {
 
     W_Focus(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+
+         //Add channel select dropdown to this widget
+        focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "Focus_Channels");
+        focusChanSelect.activateAllButtons();
 
         // initialize graphics parameters
         onColorChange();

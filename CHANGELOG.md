@@ -1,3 +1,8 @@
+# v5.0.5
+
+### Improvements
+* Implement Focus Widget using BrainFlow Metrics
+
 # v5.0.4
 
 ### Improvements
