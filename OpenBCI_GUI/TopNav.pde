@@ -740,10 +740,12 @@ class LayoutSelector {
             tempLayoutButton.setForceDrawBackground(true);
             tempLayoutButton.onRelease(new CallbackListener() {
                 public void controlEvent(CallbackEvent theEvent) {
-                    output("Layout [" + (layoutNumber+1) + "] selected.");
+                    // remove the +1 to be like other parameters on real index for settinds
+                    output("Layout [" + (layoutNumber) + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
                     wm.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
-                    settings.currentLayout = layoutNumber+1; //copy this value to be used when saving Layout setting
+                    // removed +1 below : settings use a direct  wm.setNewContainerLayout(layoutNumber); 
+                    settings.currentLayout = layoutNumber; //copy this value to be used when saving Layout setting
                 }
             });
             layoutOptions.add(tempLayoutButton);

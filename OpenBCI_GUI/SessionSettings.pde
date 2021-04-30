@@ -523,7 +523,10 @@ class SessionSettings {
                 //println("Widget" + i + " is active");
                 // activeWidgets.add(i); //keep track of the active widget
                 int containerCountsave = wm.widgets.get(i).currentContainer;
-                //println("Widget " + i + " is in Container " + containerCountsave);
+
+                String PLA = wm.widgets.get(i).widgetTitle;
+                verbosePrint("Widget " + i +" "+ PLA+" is in Container " + containerCountsave);
+                
                 saveWidgetSettings.setInt("Widget_"+i, containerCountsave);
             } else if (!wm.widgets.get(i).getIsActive()) { //If a widget is not active...
                 saveWidgetSettings.remove("Widget_"+i); //remove non-active widget from JSON
@@ -1156,6 +1159,21 @@ class SessionSettings {
             }
         }
     }
+    
+/*
+ load  parameters from default settings to keep track of saved UI options 
+*/
+void tryToloadEarlySettings()  {
+    String loadGUISettingsFileLocation = this.getPath("Default", eegDataSource, nchan);
+    try {
+        this.load(loadGUISettingsFileLocation);
+    }catch (Exception e) {
+         verbosePrint("** Unable to load initial settings of "+loadGUISettingsFileLocation+'\n'+e);
+    }
+}
+
+
+
 
 } //end of Software Settings class
 

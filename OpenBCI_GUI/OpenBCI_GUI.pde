@@ -608,6 +608,8 @@ void initSystem() {
 
      //don't save default session settings for Galea or StreamingBoard
     if (eegDataSource != DATASOURCE_GALEA && eegDataSource != DATASOURCE_STREAMING) {
+        // if exists, take care of saved parameters 
+        settings.tryToloadEarlySettings();
         //Init software settings: create default settings file that is datasource unique
         settings.init();
         settings.initCheckPointFive();
