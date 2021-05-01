@@ -29,6 +29,7 @@ class W_Focus extends Widget {
     private ControlP5 focus_cp5;
     private Button widgetTemplateButton;
     private ChannelSelect focusChanSelect;
+    private boolean prevChanSelectIsVisible = false;
 
     private Grid dataGrid;
     private final int numTableRows = 6;
@@ -98,6 +99,15 @@ class W_Focus extends Widget {
     public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        //Update channel checkboxes and active channels
+        focusChanSelect.update(x, y, w);
+
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (focusChanSelect.isVisible() != prevChanSelectIsVisible) {
+            channelSelectFlexWidgetUI();
+            prevChanSelectIsVisible = focusChanSelect.isVisible();
+        }
+
         if (currentBoard.isStreaming()) {
             metricPrediction = updateFocusState();
             predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
@@ -134,6 +144,8 @@ class W_Focus extends Widget {
         
         //Draw the graph
         focusBar.draw();
+
+        focusChanSelect.draw();
     }
 
     public void screenResized() {
@@ -151,14 +163,21 @@ class W_Focus extends Widget {
 
         update_graph_dims();
         focusBar.screenResized(graph_x, graph_y, graph_w, graph_h);
+        focusChanSelect.screenResized(pApplet);
+    }
+
+    void mousePressed() {
+        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        focusChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     private void resizeTable() {
+        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         //float min = min(upperLeftContainerW, upperLeftContainerH);
         int tx = x + int(upperLeftContainerW);
-        int ty = y + padding_5;
+        int ty = y + padding_5 + extraPadding;
         int tw = int(upperLeftContainerW) - padding_5*2;
         //tableHeight = tw;
         dataGrid.setDim(tx, ty, tw);
@@ -192,16 +211,25 @@ class W_Focus extends Widget {
             int window_size = currentBoard.getSampleRate() * xLimit.getValue();
             // getData in GUI returns data in shape ndatapoints x nchannels, in BrainFlow its transposed
             List<double[]> currentData = currentBoard.getData(window_size);
-            if (currentData.size() != window_size) {
+            if (currentData.size() != window_size || focusChanSelect.activeChan.size() <= 0) {
                 return -1.0;
             }
             int[] exgChannels = currentBoard.getEXGChannels();
             int channelCount = currentBoard.getNumEXGChannels();
             int[] channelsInDataArray = new int[channelCount];
-            //for (int i = 0; i < channelCount; i++) // use this line to use all channels
-            for (int i = 0; i < 3; i++) // temp to test - use first 3 channels
+            /*
+            for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
+                int chan = bpChanSelect.activeChan.get(j);
+                */
+
+            int activeChanCounter = 0;
+            for (int i = 0; (i < channelCount) && (activeChanCounter < focusChanSelect.activeChan.size()); i++) // use this line to use all channels
             {
-                channelsInDataArray[i] = i;
+                int chan = focusChanSelect.activeChan.get(activeChanCounter);
+                if (i == chan) {
+                    channelsInDataArray[i] = i;
+                    activeChanCounter++;
+                }
             }
             double[][] data = new double[channelCount][];
             // todo preallocate this array outside from this method
@@ -306,6 +334,13 @@ class W_Focus extends Widget {
         }
     }
 
+    void channelSelectFlexWidgetUI() {
+        focusBar.setPlotPosAndOuterDim(focusChanSelect.isVisible());
+        int factor = focusChanSelect.isVisible() ? 1 : -1;
+        yc += navHeight * factor;
+        resizeTable();
+    }
+
     public void setFocusHorizScale(int n) {
         xLimit = xLimit.values()[n];
         focusBar.adjustTimeAxis(xLimit.getValue());
@@ -407,7 +442,7 @@ class FocusBar {
         plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
     }
 
-    void initArrays() {
+    private void initArrays() {
         nPoints = nPointsBasedOnDataSource();
         timeBetweenPoints = (float)numSeconds / (float)nPoints;
         focusTimeArray = new float[nPoints];
@@ -421,14 +456,14 @@ class FocusBar {
     }
 
     //Used to update the accelerometerBar class
-    void update(double val) {
+    public void update(double val) {
         updateGPlotPoints(val);
         if (isAutoscale) {
             //autoScale();
         }
     }
 
-    void draw() {
+    public void draw() {
         plot.beginDraw();
         plot.drawBox(); //we won't draw this eventually ...
         plot.drawGridLines(2);
@@ -440,11 +475,11 @@ class FocusBar {
         plot.endDraw();
     }
 
-    int nPointsBasedOnDataSource() {
+    private int nPointsBasedOnDataSource() {
         return numSeconds * 30;
     }
 
-    void adjustTimeAxis(int _newTimeSize) {
+    public void adjustTimeAxis(int _newTimeSize) {
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
 
@@ -459,7 +494,7 @@ class FocusBar {
     }
 
     //Used to update the Points within the graph
-    void updateGPlotPoints(double val) {
+    private void updateGPlotPoints(double val) {
         
         //if (graph_timer + timeBetweenPoints < millis()) {
             graph_timer = millis();
@@ -485,12 +520,12 @@ class FocusBar {
     }
     */
 
-    void autoScale() {
+    private void autoScale() {
         float[] minMaxVals = minMax(focusPoints);
         plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
     }
 
-    float[] minMax(GPointsArray arr) {
+    private float[] minMax(GPointsArray arr) {
         float[] minMaxVals = {0.f, 0.f};
         for (int i = 0; i < arr.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
             float val = arr.getY(i);
@@ -500,7 +535,7 @@ class FocusBar {
         return minMaxVals;
     }
 
-    void screenResized(int _x, int _y, int _w, int _h) {
+    public void screenResized(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
         w = _w;
@@ -510,4 +545,13 @@ class FocusBar {
         plot.setDim(w - 36 - 4 - xOffset, h);
 
     }
+
+    public void setPlotPosAndOuterDim(boolean chanSelectIsVisible) {
+        int _y = chanSelectIsVisible ? y + 22 : y;
+        int _h = chanSelectIsVisible ? h - 22 : h;
+        //reposition & resize the plot
+        plot.setPos(x + 36 + 4 + xOffset, _y);
+        plot.setDim(w - 36 - 4 - xOffset, _h);
+    }
+
 }; //end of class
