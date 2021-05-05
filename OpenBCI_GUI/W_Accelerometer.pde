@@ -55,7 +55,7 @@ class W_Accelerometer extends Widget {
 
         //Default dropdown settings
         settings.accVertScaleSave = 0;
-        settings.accHorizScaleSave = 0;
+        settings.accHorizScaleSave = 3;
 
         //Make dropdowns
         addDropdown("accelVertScale", "Vert Scale", Arrays.asList(settings.accVertScaleArray), settings.accVertScaleSave);
@@ -69,7 +69,8 @@ class W_Accelerometer extends Widget {
 
         //create our channel bar and populate our accelerometerBar array!
         accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
-        accelerometerBar.adjustVertScale(yLimOptions[0]);
+        accelerometerBar.adjustTimeAxis(xLimOptions[settings.accHorizScaleSave]);
+        accelerometerBar.adjustVertScale(yLimOptions[settings.accVertScaleSave]);
 
         createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
