@@ -368,6 +368,10 @@ class W_Focus extends Widget {
     public void setThreshold(int n) {
         focusThreshold = focusThreshold.values()[n];
     }
+
+    public int getMetricExceedsThreshold() {
+        return predictionExceedsThreshold ? 1 : 0;
+    }
 }; //end of class
 
 //The following global functions are used by the Focus widget dropdowns. This method is the least amount of code.

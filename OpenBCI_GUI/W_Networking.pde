@@ -1422,6 +1422,8 @@ class Stream extends Thread {
     void sendData() {
         if (this.dataType.equals("TimeSeries")) {
             sendTimeSeriesData();
+        } else if (this.dataType.equals("Focus")) {
+            sendFocusData();
         } else if (this.dataType.equals("FFT")) {
             sendFFTData();
         } else if (this.dataType.equals("EMG")) {
@@ -1579,6 +1581,50 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+            }
+        }
+    }
+
+    //Send out 1 or 0 as an integer over all networking data types for "Focus" data
+    //Filters do not apply to this data type
+    void sendFocusData() {
+        final int IS_METRIC = w_focus.getMetricExceedsThreshold();
+        // OSC
+        if (this.protocol.equals("OSC")) {
+            msg.clearArguments();
+            //ADD Focus Data
+            msg.add(IS_METRIC);
+            try {
+                this.osc.send(msg,this.netaddress);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        // UDP
+        } else if (this.protocol.equals("UDP")) {
+            StringBuilder sb = new StringBuilder("{\"type\":\"focus\",\"data\":");
+            sb.append(str(IS_METRIC));
+            sb.append("]}\r\n");
+            try {
+                this.udp.send(sb.toString(), this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        // LSL
+        } else if (this.protocol.equals("LSL")) {
+            dataToSend[0] = IS_METRIC;
+            // Add timestamp to LSL Stream
+            outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+        // Serial
+        } else if (this.protocol.equals("Serial")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+            StringBuilder sb = new StringBuilder();
+            sb.append(IS_METRIC);
+            sb.append("\n");
+            try {
+                //println("SerialMessage: " + serialMessage);
+                this.serial_networking.write(sb.toString());
+            } catch (Exception e) {
+                println("Networking Serial: Focus Error");
+                println(e.getMessage());
             }
         }
     }
