@@ -16,6 +16,9 @@
 ### Bug Fixes
 * Clean up GUI code to fix Processing/JVM memory issue causing crash #955
 * Avoid playback history file not found exception #959
+* Fix issue with Spectrogram Widget data image default height
+* Fix issue with Accelerometer Widget graph default vertical scale
+* Fix text drawing in wrong spot in Session Data box in Control Panel
 
 # v5.0.3
 

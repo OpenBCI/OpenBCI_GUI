@@ -8,6 +8,7 @@
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //   Modified (v4.0) AJ Keller (Richard Waltman), September 2018
+//   Modified (v5.0) Richard Waltman, August 2020
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
