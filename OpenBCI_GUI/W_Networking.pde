@@ -1046,6 +1046,8 @@ class W_Networking extends Widget {
     private int getDataTypeNumChanLSL(String dataType) {
         if (dataType.equals("TimeSeries")) {
             return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("Focus")) {
+            return 1;
         } else if (dataType.equals("FFT")) {
             return 125;
         } else if (dataType.equals("EMG")) {
@@ -1389,6 +1391,8 @@ class Stream extends Thread {
     Boolean checkForData() { //Try to remove these methods in next version of GUI
         if (this.dataType.equals("TimeSeries")) {
             return w_networking.newDataToSend;
+        } else if (this.dataType.equals("Focus")) {
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("FFT")) {
             return w_networking.newDataToSend;
         } else if (this.dataType.equals("EMG")) {
@@ -1405,6 +1409,8 @@ class Stream extends Thread {
 
     void setDataFalse() {
         if (this.dataType.equals("TimeSeries")) {
+            w_networking.newDataToSend = false;
+        } else if (this.dataType.equals("Focus")) {
             w_networking.newDataToSend = false;
         } else if (this.dataType.equals("FFT")) {
             w_networking.newDataToSend = false;
@@ -1603,7 +1609,7 @@ class Stream extends Thread {
         } else if (this.protocol.equals("UDP")) {
             StringBuilder sb = new StringBuilder("{\"type\":\"focus\",\"data\":");
             sb.append(str(IS_METRIC));
-            sb.append("]}\r\n");
+            sb.append("}\r\n");
             try {
                 this.udp.send(sb.toString(), this.ip, this.port);
             } catch (Exception e) {
@@ -1611,7 +1617,7 @@ class Stream extends Thread {
             }
         // LSL
         } else if (this.protocol.equals("LSL")) {
-            dataToSend[0] = IS_METRIC;
+            dataToSend[0] = (float)IS_METRIC;
             // Add timestamp to LSL Stream
             outlet_data.push_sample(dataToSend, System.currentTimeMillis());
         // Serial
