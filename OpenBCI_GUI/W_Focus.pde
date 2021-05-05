@@ -99,7 +99,7 @@ class W_Focus extends Widget {
 
         //create our focus graph
         updateGraphDims();
-        focusBar = new FocusBar(_parent, focusBarHardYAxisLimit, graphX, graphY, graphW, graphH);
+        focusBar = new FocusBar(_parent, xLimit.getValue(), focusBarHardYAxisLimit, graphX, graphY, graphW, graphH);
 
         initBrainFlowMetric();
     }
@@ -402,7 +402,7 @@ class FocusBar {
     GPointsArray focusPoints;
 
     int nPoints;
-    int numSeconds = FocusXLim.TWENTY.getValue(); //default to 20 seconds
+    int numSeconds;
     float timeBetweenPoints;
     float graphTimer;
     float[] focusTimeArray;
@@ -418,7 +418,7 @@ class FocusBar {
     boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
     int lastProcessedDataPacketInd = 0;
 
-    FocusBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    FocusBar(PApplet _parent, int xLimit, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         x = _x;
         y = _y;
         w = _w;
@@ -428,6 +428,7 @@ class FocusBar {
         } else {
             xOffset = 0;
         }
+        numSeconds = xLimit;
 
         plot = new GPlot(_parent);
         plot.setPos(x + 36 + 4 + xOffset, y); //match Accelerometer plot position with Time Series
@@ -435,7 +436,7 @@ class FocusBar {
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
         plot.setXLim(-numSeconds,0); //set the horizontal scale
-        plot.setYLim(0, accelXyzLimit); //change this to adjust vertical scale
+        plot.setYLim(0, yLimit); //change this to adjust vertical scale
         //plot.setPointSize(2);
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
