@@ -55,7 +55,7 @@ public enum FocusXLim implements FocusEnum
 public enum FocusMetric implements FocusEnum
 {
     CONCENTRATION (0, "Concentration", BrainFlowMetrics.CONCENTRATION, "Concentrating"),
-    RELAXATION (1, "Relaxation", BrainFlowMetrics.RELAXATION, "Relaxed");
+    RELAXATION (1, "Relaxation", BrainFlowMetrics.RELAXATION, "Relaxing");
 
     private int index;
     private String label;
