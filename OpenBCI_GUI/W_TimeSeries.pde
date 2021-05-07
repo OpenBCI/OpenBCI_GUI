@@ -614,8 +614,8 @@ class ChannelBar {
     }
 
     private void updatePlotPoints() {
-        autoscaleMax = 0;
-        autoscaleMin = 0;
+        autoscaleMax = -Float.MAX_VALUE;
+        autoscaleMin = Float.MAX_VALUE;
         // update data in plot
         if (dataProcessingFilteredBuffer[channelIndex].length >= nPoints) {
             for (int i = dataProcessingFilteredBuffer[channelIndex].length - nPoints; i < dataProcessingFilteredBuffer[channelIndex].length; i++) {
@@ -747,11 +747,9 @@ class ChannelBar {
         boolean doAutoscale = millis() > previousMillis + 1000;
         if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
             previousMillis = millis();
-            float limit = Math.max(abs(autoscaleMin), autoscaleMax);
-            limit = Math.max(limit, 5);
-            plot.setYLim(-limit, limit); //<---- This is a very expensive method. Here is the bottleneck.
-            customYLim(yAxisMin, (int)-limit);
-            customYLim(yAxisMax, (int)limit);
+            plot.setYLim(autoscaleMin, autoscaleMax); //<---- This is a very expensive method. Here is the bottleneck.
+            customYLim(yAxisMin, (int)autoscaleMin);
+            customYLim(yAxisMax, (int)autoscaleMax);
         }
     }
 

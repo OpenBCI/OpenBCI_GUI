@@ -3,6 +3,9 @@
 ### Improvements
 * Implement Focus Widget using BrainFlow Metrics
 
+### Bug Fixes
+* Fix Y axis Autoscale in TimeSeries when all values are less than zero. Example: Cyton with filters off
+
 # v5.0.4
 
 ### Improvements
