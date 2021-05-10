@@ -396,27 +396,14 @@ class FocusBar {
     int x, y, w, h;
     int focusBarPadding = 30;
     int xOffset;
+    final int nPoints = 30 * 1000;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     LinkedList<Float> fifoList;
-    GPointsArray focusPoints;
+    LinkedList<Float> fifoTimeList;
 
-    int nPoints;
     int numSeconds;
-    float timeBetweenPoints;
-    float graphTimer;
-    float[] focusTimeArray;
-    int numSamplesToProcess;
-    float minX, minY, minZ;
-    float maxX, maxY, maxZ;
-    float minVal;
-    float maxVal;
-    final float autoScaleSpacing = 0.1;
-
     color channelColor; //color of plot trace
-
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
-    int lastProcessedDataPacketInd = 0;
 
     FocusBar(PApplet _parent, int xLimit, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         x = _x;
@@ -450,21 +437,17 @@ class FocusBar {
         initArrays();
 
         //set the plot points for X, Y, and Z axes
-        plot.addLayer("layer 1", focusPoints);
+        plot.addLayer("layer 1", new GPointsArray(30));
         plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
     }
 
     private void initArrays() {
-        nPoints = nPointsBasedOnDataSource();
-        timeBetweenPoints = (float)numSeconds / (float)nPoints;
-        focusTimeArray = new float[nPoints];
         fifoList = new LinkedList<Float>();
-        for (int i = 0; i < focusTimeArray.length; i++) {
-            focusTimeArray[i] = -(float)numSeconds + (float)i * timeBetweenPoints;
+        fifoTimeList = new LinkedList<Float>();
+        for (int i = 0; i < nPoints; i++) {
             fifoList.add(0f);
+            fifoTimeList.add(0f);
         }
-        float[] floatArray = ArrayUtils.toPrimitive(fifoList.toArray(new Float[0]), 0.0F);
-        focusPoints = new GPointsArray(focusTimeArray, floatArray);
     }
 
     public void update(double val) {
@@ -483,10 +466,6 @@ class FocusBar {
         plot.endDraw();
     }
 
-    private int nPointsBasedOnDataSource() {
-        return numSeconds * 30;
-    }
-
     public void adjustTimeAxis(int _newTimeSize) {
         numSeconds = _newTimeSize;
         plot.setXLim(-_newTimeSize,0);
@@ -501,18 +480,24 @@ class FocusBar {
 
     //Used to update the Points within the graph
     private void updateGPlotPoints(double val) {
-        //todo : important to align time with actual elapsed time!
-        //if (graphTimer + timeBetweenPoints < millis()) {
-            graphTimer = millis();
-            fifoList.removeFirst();
-            fifoList.addLast((float)val);
+        float timerVal = (float)millis() / 1000.0;
+        fifoTimeList.removeFirst();
+        fifoTimeList.addLast(timerVal);
+        fifoList.removeFirst();
+        fifoList.addLast((float)val);
 
-            for (int i=0; i < nPoints; i++) {
-                focusPoints.set(i, focusTimeArray[i], fifoList.get(i), "");
+        int stopId = 0;
+        for (stopId = nPoints - 1; stopId > 0; stopId--) {
+            if (timerVal - fifoTimeList.get(stopId) > numSeconds) {
+                break;
             }
-
-            plot.setPoints(focusPoints, "layer 1");
-        //}
+        }
+        int size = nPoints - 1 - stopId;
+        GPointsArray focusPoints = new GPointsArray(size);
+        for (int i = 0; i < size; i++) {
+            focusPoints.set(i, fifoTimeList.get(i + stopId) - timerVal, fifoList.get(i + stopId), "");
+        }
+        plot.setPoints(focusPoints, "layer 1");
     }
 
     public void screenResized(int _x, int _y, int _w, int _h) {
