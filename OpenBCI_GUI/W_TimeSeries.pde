@@ -744,9 +744,12 @@ class ChannelBar {
 
     public void applyAutoscale() {
         //Do this once a second for all TimeSeries ChannelBars to save on resources
-        boolean doAutoscale = millis() > previousMillis + 1000;
+        int newMillis = millis();
+        boolean doAutoscale = newMillis > previousMillis + 1000;
         if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
-            previousMillis = millis();
+            autoscaleMin = (int) Math.floor(autoscaleMin);
+            autoscaleMax = (int) Math.ceil(autoscaleMax);
+            previousMillis = newMillis;
             plot.setYLim(autoscaleMin, autoscaleMax); //<---- This is a very expensive method. Here is the bottleneck.
             customYLim(yAxisMin, (int)autoscaleMin);
             customYLim(yAxisMax, (int)autoscaleMax);
