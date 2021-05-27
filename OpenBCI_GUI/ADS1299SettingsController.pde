@@ -218,6 +218,7 @@ class ADS1299SettingsController {
         resizeDropdowns(chanBar_h);
 
         resizeCustomCommandUI();
+        
     }
 
     //Returns true if board and UI are in sync
@@ -382,10 +383,10 @@ class ADS1299SettingsController {
     }
 
     private void createCustomCommandUI() {
-        final Textfield _tf = hwsCp5.addTextfield("customCommand")
+        customCommandTF = hwsCp5.addTextfield("customCommand")
             .setPosition(0, 0)
             .setCaptionLabel("")
-            .setSize(10, 10)
+            .setSize(120, 20)
             .setFont(f2)
             .setFocus(false)
             .setColor(color(26, 26, 26))
@@ -398,22 +399,21 @@ class ADS1299SettingsController {
             .align(5, 10, 20, 40)
             .setAutoClear(false) //Don't clear textfield when pressing Enter key
             ;
-        _tf.setDescription("Type a custom command and Send to board.");
+        customCommandTF.setDescription("Type a custom command and Send to board.");
         //Clear textfield on double click
-        _tf.onDoublePress(new CallbackListener() {
+        customCommandTF.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("[ExpertMode] Enter the custom command you would like to send to the board.");
-                _tf.clear();
+                customCommandTF.clear();
             }
         });
-        _tf.addCallback(new CallbackListener() {
+        customCommandTF.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
-                    _tf.setFocus(false);
+                    customCommandTF.setFocus(false);
                 }
             }
         });
-        customCommandTF = _tf;
 
         sendCustomCmdButton = createButton(hwsCp5, "sendCustomCommand", "Send Custom Command", 0, 0, 10, 10);
         sendCustomCmdButton.setBorderColor(OBJECT_BORDER_GREY);
@@ -434,7 +434,7 @@ class ADS1299SettingsController {
         resizeCustomCommandUI();
     }
 
-    private void resizeCustomCommandUI() {
+    public void resizeCustomCommandUI() {
         customCmdUI_x = x;
         customCmdUI_w = w + 1;
         int tf_w = Math.round(button_w * 1.8);
@@ -445,7 +445,8 @@ class ADS1299SettingsController {
         //int tf_w = Math.round((customCmdUI_w - padding_3*2) * .75);
         int tf_h = commandBarH - padding_3*2;
         customCommandTF.setPosition(tf_x, tf_y);
-        customCommandTF.setSize(tf_w, tf_h);
+        customCommandTF.setWidth(tf_w);
+        customCommandTF.setHeight(tf_h);
         int but_x = tf_x + customCommandTF.getWidth() + padding_3;
         sendCustomCmdButton.setPosition(but_x, tf_y);
         sendCustomCmdButton.setSize(but_w, tf_h - 1);

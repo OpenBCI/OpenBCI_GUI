@@ -65,8 +65,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.4";
-String localGUIVersionDate = "March 2021";
+String localGUIVersionString = "v5.0.5-alpha.3";
+String localGUIVersionDate = "May 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -724,7 +724,7 @@ void stopRunning() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once\
+    if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         
         //Reset the text for the Start Session buttonscreen. Skip when reiniting board while already in playback mode session.
@@ -735,6 +735,10 @@ void haltSystem() {
         if (w_networking != null && w_networking.getNetworkActive()) {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
+        }
+
+        if (w_focus != null) {
+            w_focus.endSession();
         }
         
         stopRunning();  //stop data transfer
