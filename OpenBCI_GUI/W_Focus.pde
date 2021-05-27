@@ -91,6 +91,11 @@ class W_Focus extends Widget {
         dataGrid.setTableFontAndSize(p6, 10);
         dataGrid.setDrawTableBorder(true);
         dataGrid.setString("Metric Value", 0, 0);
+        dataGrid.setString("Delta (1.5-4Hz)", 1, 0);
+        dataGrid.setString("Theta (4-8Hz)", 2, 0);
+        dataGrid.setString("Alpha (7.5-13Hz)", 3, 0);
+        dataGrid.setString("Beta (13-30Hz)", 4, 0);
+        dataGrid.setString("Gamma (30-45Hz)", 5, 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         focus_cp5 = new ControlP5(ourApplet);
@@ -248,8 +253,12 @@ class W_Focus extends Widget {
                         new Integer[focusChanSelect.activeChan.size()]
                     ));
 
+            //Full Source Code for this method: https://github.com/brainflow-dev/brainflow/blob/c5f0ad86683e6eab556e30965befb7c93e389a3b/src/data_handler/data_handler.cpp#L1115
             Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (dataArray, channelsInDataArray, currentBoard.getSampleRate(), true);
             double[] featureVector = ArrayUtils.addAll (bands.getLeft (), bands.getRight ());
+
+            //Left array is Averages, right array is Standard Deviations. Update values using Averages.
+            updateBandPowerTableValues(bands.getLeft());
 
             //Keep this here
             double prediction = mlModel.predict(featureVector);
@@ -261,6 +270,12 @@ class W_Focus extends Widget {
             e.printStackTrace();
             println("Error updating focus state!");
             return -1d;
+        }
+    }
+
+    private void updateBandPowerTableValues(double[] bandPowers) {
+        for (int i = 0; i < bandPowers.length; i++) {
+            dataGrid.setString(df.format(bandPowers[i]), 1 + i, 1);
         }
     }
 
