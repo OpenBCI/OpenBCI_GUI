@@ -65,7 +65,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.5-alpha.3";
+String localGUIVersionString = "v5.0.5-alpha.4";
 String localGUIVersionDate = "May 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -370,6 +370,8 @@ void setup() {
         osName.append("Windows");
         //Throw a popup if we detect an incompatible version of Windows. Fixes #964. Found in Extras.pde.
         checkIsOldVersionOfWindowsOS();
+        //This is an edge case when using 32-bit Processing Java on Windows. Throw a popup if detected.
+        checkIs64BitJava();
     } else if (isMac()) {
         osName.append("Mac");
     }
