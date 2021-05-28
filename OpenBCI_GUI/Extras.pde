@@ -26,6 +26,14 @@ private boolean isMac() {
     return !isWindows() && !isLinux();
 }
 
+//BrainFlow only supports Windows 8 and 10. This will help with OpenBCI support tickets.
+private void checkIsOldVersionOfWindowsOS() {
+    boolean isOld = SystemUtils.IS_OS_WINDOWS_7 || SystemUtils.IS_OS_WINDOWS_VISTA || SystemUtils.IS_OS_WINDOWS_XP;
+    if (isOld) {
+        PopupMessage msg = new PopupMessage("Old Windows OS Detected", "OpenBCI GUI v5 and BrainFlow are made for 64-bit Windows 8, 8.1, and 10. Please update your OS, computer, or revert to GUI v4.2.0.");
+    }
+}
+
 
 //compute the standard deviation
 float std(float[] data) {

@@ -363,18 +363,20 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    String osName = "Operating System: ";
+    StringBuilder osName = new StringBuilder("Operating System: ");
     if (isLinux()) {
-        osName += "Linux";
+        osName.append("Linux");
     } else if (isWindows()) {
-        osName += "Windows";
+        osName.append("Windows");
+        //Throw a popup if we detect an incompatible version of Windows. Fixes #964. Found in Extras.pde.
+        checkIsOldVersionOfWindowsOS();
     } else if (isMac()) {
-        osName += "Mac";
+        osName.append("Mac");
     }
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
-    println(osName);
+    println(osName.toString());
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
     
