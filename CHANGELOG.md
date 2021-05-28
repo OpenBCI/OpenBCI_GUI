@@ -8,6 +8,7 @@
 ### Bug Fixes
 * Fix Y axis Autoscale in TimeSeries when all values are less than zero. Example: Cyton with filters off
 * Gracefully handle cases when Cyton or Cyton+Daisy users want to use 8 or 16 channels #954
+* Update Save Session Settings success message. Session settings are no longer auto-loaded on Session start. #969
 
 # v5.0.4
 
