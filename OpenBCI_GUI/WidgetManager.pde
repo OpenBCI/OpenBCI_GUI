@@ -36,12 +36,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_timeSeries, w);
     // println("  setupWidgets time series -- " + millis());
 
-    //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
-    w_focus = new W_Focus(_this);
-    w_focus.setTitle("Focus Widget");
-    addWidget(w_focus, w);
-    // println("  setupWidgets focus widget -- " + millis());
-
     //Widget_1
     w_fft = new W_fft(_this);
     w_fft.setTitle("FFT Plot");
@@ -69,6 +63,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_ganglionImpedance.setTitle("Ganglion Signal");
         addWidget(w_ganglionImpedance, w);
     }
+
+    //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
+    w_focus = new W_Focus(_this);
+    w_focus.setTitle("Focus Widget");
+    addWidget(w_focus, w);
+    // println("  setupWidgets focus widget -- " + millis());
 
     //Cyton/Synthetic Widget_3, Ganglion/Playback Widget_4
     w_networking = new W_Networking(_this);

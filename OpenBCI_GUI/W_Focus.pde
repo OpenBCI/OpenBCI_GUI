@@ -44,7 +44,7 @@ class W_Focus extends Widget {
     private final int CLASSIFIER_DROPDOWN_W = 80;
 
     private FocusBar focusBar;
-    private float focusBarHardYAxisLimit = 1f;
+    private float focusBarHardYAxisLimit = 1.05f; //Provide slight "breathing room" to avoid GPlot error when metric value == 1.0
     FocusXLim xLimit = FocusXLim.TEN;
     FocusMetric focusMetric = FocusMetric.RELAXATION;
     FocusClassifier focusClassifier = FocusClassifier.REGRESSION;
