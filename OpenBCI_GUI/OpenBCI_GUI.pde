@@ -51,11 +51,6 @@ import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
 import edu.ucsd.sccn.LSL; //for LSL
-//These are used by LSL
-//import com.sun.jna.Library;
-//import com.sun.jna.Native;
-//import com.sun.jna.Platform;
-//import com.sun.jna.Pointer;
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
 import http.requests.*;
