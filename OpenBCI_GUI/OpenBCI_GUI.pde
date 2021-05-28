@@ -65,7 +65,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.5-alpha.4";
+String localGUIVersionString = "v5.0.5-alpha.5";
 String localGUIVersionDate = "May 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -575,6 +575,27 @@ void initSystem() {
     // initialize the chosen board
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
+    
+    //Handle edge cases for Cyton and Cyton+Daisy users immediately after board is initialized. Fixes #954
+    if (eegDataSource == DATASOURCE_CYTON) {
+        println("OpenBCI_GUI: Configuring Cyton Channel Count...");
+        if (currentBoard instanceof BoardCytonSerial) {
+            Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand("c");
+            //println(res.getKey().booleanValue(), res.getValue());
+            if (res.getValue().startsWith("daisy removed")) {
+                println("OpenBCI_GUI: Daisy is physically attached, using Cyton 8 Channels instead.");
+            }
+        } else if (currentBoard instanceof BoardCytonSerialDaisy) {
+            Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand("C");
+            //println(res.getKey().booleanValue(), res.getValue());
+            if (res.getValue().startsWith("no daisy to attach")) {
+                haltSystem();
+                outputError("User selected Cyton+Daisy, but no Daisy is attached. Please change Channel Count to 8 Channels.");
+                controlPanel.open();
+                return;
+            }
+        }
+    }
 
     updateToNChan(currentBoard.getNumEXGChannels());
 
@@ -895,7 +916,7 @@ void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    println("Channel count set to " + str(nchan));
+    println("OpenBCI_GUI: Channel count set to " + str(nchan));
 }
 
 void introAnimation() {

@@ -7,6 +7,7 @@
 
 ### Bug Fixes
 * Fix Y axis Autoscale in TimeSeries when all values are less than zero. Example: Cyton with filters off
+* Gracefully handle cases when Cyton or Cyton+Daisy users want to use 8 or 16 channels #954
 
 # v5.0.4
 
