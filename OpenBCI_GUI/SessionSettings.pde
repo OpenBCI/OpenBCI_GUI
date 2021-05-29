@@ -145,7 +145,7 @@ class SessionSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "FFT", "EMG", "BandPower", "Accel/Aux", "Pulse"};
+    String[] nwDataTypesArray = {"None", "TimeSeries", "Focus", "EMG", "BandPower", "Accel/Aux", "FFT", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -1171,7 +1171,7 @@ void saveConfigFile(File selection) {
         println("SessionSettings: saveConfigFile: User selected " + selection.getAbsolutePath());
         settings.saveDialogName = selection.getAbsolutePath();
         settings.save(settings.saveDialogName); //save current settings to JSON file in SavedData
-        outputSuccess("Settings Saved! The GUI will now load with these settings. Click \"Default\" to revert to factory settings."); //print success message to screen
+        outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory settings."); //print success message to screen
         settings.saveDialogName = null; //reset this variable for future use
     }
 }

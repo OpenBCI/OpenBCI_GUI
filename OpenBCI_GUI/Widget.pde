@@ -73,7 +73,6 @@ class Widget{
         fill(200, 200, 200);
         rect(x0, y0+navH, w0, navH); //button bar
         popStyle();
-
     }
 
     public void addDropdown(String _id, String _title, List _items, int _defaultItem){
@@ -192,23 +191,21 @@ class Widget{
         textAlign(CENTER, BOTTOM);		
         fill(OPENBCI_DARKBLUE);		
         for(int i = 0; i < dropdowns.size(); i++){		
-            int dropdownPos = dropdowns.size() - i;		
-            // text(dropdowns.get(i).title, x+w-(dropdownWidth*(dropdownPos+1))-(2*(dropdownPos+1))+dropdownWidth/2, y+(navH-2));		
-            text(dropdowns.get(i).title, x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos+1))+dropdownWidth/2, y0+(navH-2));		
+            int dropdownPos = dropdowns.size() - i;
+            int _width = cp5_widget.getController(dropdowns.get(i).id).getWidth();
+            int _x = int(cp5_widget.getController(dropdowns.get(i).id).getPosition()[0]);	
+            text(dropdowns.get(i).title, _x+_width/2, y0+(navH-2));	
         }
         popStyle();
     }
 
     public void mouseDragged(){
-
     }
 
     public void mousePressed(){
-
     }
 
     public void mouseReleased(){
-
     }
 
     public void screenResized(){
@@ -292,7 +289,7 @@ class Widget{
             previousDropdownIsActive = dropdownIsActive;
         }
     }
-};
+}; //end of base Widget class
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -319,23 +316,18 @@ class NavBarDropdown{
     }
 
     void update(){
-
     }
 
     void draw(){
-
     }
 
     void screenResized(){
-
     }
 
     void mousePressed(){
-
     }
 
     void mouseReleased(){
-
     }
 
     String returnDefaultAsString(){
@@ -365,7 +357,6 @@ void WidgetSelector(int n){
 
     wm.widgets.get(n).setIsActive(true);//activate the new widget
     wm.widgets.get(n).setContainer(theContainer);//map it to the current container
-    //set the text of the widgetSelector to the newly selected widget
 }
 
 // This is a helpful class that will add a channel select feature to a Widget

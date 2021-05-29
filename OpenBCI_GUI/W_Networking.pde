@@ -148,7 +148,7 @@ class W_Networking extends Widget {
         if (eegDataSource != DATASOURCE_CYTON) {
             dataTypes.remove("Pulse");
         }
-        defaultBaud = "115200";
+        defaultBaud = "57600";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
@@ -1046,6 +1046,8 @@ class W_Networking extends Widget {
     private int getDataTypeNumChanLSL(String dataType) {
         if (dataType.equals("TimeSeries")) {
             return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("Focus")) {
+            return 1;
         } else if (dataType.equals("FFT")) {
             return 125;
         } else if (dataType.equals("EMG")) {
@@ -1389,6 +1391,8 @@ class Stream extends Thread {
     Boolean checkForData() { //Try to remove these methods in next version of GUI
         if (this.dataType.equals("TimeSeries")) {
             return w_networking.newDataToSend;
+        } else if (this.dataType.equals("Focus")) {
+            return w_networking.newDataToSend;
         } else if (this.dataType.equals("FFT")) {
             return w_networking.newDataToSend;
         } else if (this.dataType.equals("EMG")) {
@@ -1406,6 +1410,8 @@ class Stream extends Thread {
     void setDataFalse() {
         if (this.dataType.equals("TimeSeries")) {
             w_networking.newDataToSend = false;
+        } else if (this.dataType.equals("Focus")) {
+            w_networking.newDataToSend = false;
         } else if (this.dataType.equals("FFT")) {
             w_networking.newDataToSend = false;
         } else if (this.dataType.equals("EMG")) {
@@ -1422,6 +1428,8 @@ class Stream extends Thread {
     void sendData() {
         if (this.dataType.equals("TimeSeries")) {
             sendTimeSeriesData();
+        } else if (this.dataType.equals("Focus")) {
+            sendFocusData();
         } else if (this.dataType.equals("FFT")) {
             sendFFTData();
         } else if (this.dataType.equals("EMG")) {
@@ -1579,6 +1587,50 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 }
+            }
+        }
+    }
+
+    //Send out 1 or 0 as an integer over all networking data types for "Focus" data
+    //Filters do not apply to this data type
+    void sendFocusData() {
+        final int IS_METRIC = w_focus.getMetricExceedsThreshold();
+        // OSC
+        if (this.protocol.equals("OSC")) {
+            msg.clearArguments();
+            //ADD Focus Data
+            msg.add(IS_METRIC);
+            try {
+                this.osc.send(msg,this.netaddress);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        // UDP
+        } else if (this.protocol.equals("UDP")) {
+            StringBuilder sb = new StringBuilder("{\"type\":\"focus\",\"data\":");
+            sb.append(str(IS_METRIC));
+            sb.append("}\r\n");
+            try {
+                this.udp.send(sb.toString(), this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        // LSL
+        } else if (this.protocol.equals("LSL")) {
+            dataToSend[0] = (float)IS_METRIC;
+            // Add timestamp to LSL Stream
+            outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+        // Serial
+        } else if (this.protocol.equals("Serial")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+            StringBuilder sb = new StringBuilder();
+            sb.append(IS_METRIC);
+            sb.append("\n");
+            try {
+                //println("SerialMessage: " + serialMessage);
+                this.serial_networking.write(sb.toString());
+            } catch (Exception e) {
+                println("Networking Serial: Focus Error");
+                println(e.getMessage());
             }
         }
     }

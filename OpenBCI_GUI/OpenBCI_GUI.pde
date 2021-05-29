@@ -51,11 +51,6 @@ import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
 import java.nio.ByteBuffer; //for UDP
 import edu.ucsd.sccn.LSL; //for LSL
-//These are used by LSL
-//import com.sun.jna.Library;
-//import com.sun.jna.Native;
-//import com.sun.jna.Platform;
-//import com.sun.jna.Pointer;
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
 import http.requests.*;
@@ -65,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.4";
-String localGUIVersionDate = "March 2021";
+String localGUIVersionString = "v5.0.5";
+String localGUIVersionDate = "May 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -363,18 +358,22 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    String osName = "Operating System: ";
+    StringBuilder osName = new StringBuilder("Operating System: ");
     if (isLinux()) {
-        osName += "Linux";
+        osName.append("Linux");
     } else if (isWindows()) {
-        osName += "Windows";
+        osName.append("Windows");
+        //Throw a popup if we detect an incompatible version of Windows. Fixes #964. Found in Extras.pde.
+        checkIsOldVersionOfWindowsOS();
+        //This is an edge case when using 32-bit Processing Java on Windows. Throw a popup if detected.
+        checkIs64BitJava();
     } else if (isMac()) {
-        osName += "Mac";
+        osName.append("Mac");
     }
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println("Screen Resolution: " + displayWidth + " X " + displayHeight);
-    println(osName);
+    println(osName.toString());
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
     
@@ -571,6 +570,27 @@ void initSystem() {
     // initialize the chosen board
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
+    
+    //Handle edge cases for Cyton and Cyton+Daisy users immediately after board is initialized. Fixes #954
+    if (eegDataSource == DATASOURCE_CYTON) {
+        println("OpenBCI_GUI: Configuring Cyton Channel Count...");
+        if (currentBoard instanceof BoardCytonSerial) {
+            Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand("c");
+            //println(res.getKey().booleanValue(), res.getValue());
+            if (res.getValue().startsWith("daisy removed")) {
+                println("OpenBCI_GUI: Daisy is physically attached, using Cyton 8 Channels instead.");
+            }
+        } else if (currentBoard instanceof BoardCytonSerialDaisy) {
+            Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand("C");
+            //println(res.getKey().booleanValue(), res.getValue());
+            if (res.getValue().startsWith("no daisy to attach")) {
+                haltSystem();
+                outputError("User selected Cyton+Daisy, but no Daisy is attached. Please change Channel Count to 8 Channels.");
+                controlPanel.open();
+                return;
+            }
+        }
+    }
 
     updateToNChan(currentBoard.getNumEXGChannels());
 
@@ -724,7 +744,7 @@ void stopRunning() {
 
 //halt the data collection
 void haltSystem() {
-    if (!systemHasHalted) { //prevents system from halting more than once\
+    if (!systemHasHalted) { //prevents system from halting more than once
         println("openBCI_GUI: haltSystem: Halting system for reconfiguration of settings...");
         
         //Reset the text for the Start Session buttonscreen. Skip when reiniting board while already in playback mode session.
@@ -736,19 +756,15 @@ void haltSystem() {
             w_networking.stopNetwork();
             println("openBCI_GUI: haltSystem: Network streams stopped");
         }
+
+        if (w_focus != null) {
+            w_focus.endSession();
+        }
         
         stopRunning();  //stop data transfer
 
         topNav.resetStartStopButton();
         topNav.destroySmoothingButton(); //Destroy this button if exists and make null, will be re-init if needed next time session starts
-
-        //Save a snapshot of User's GUI settings if the system is stopped, or halted. This will be loaded on next Start System.
-        //This method establishes default and user settings for all data modes
-        if (systemMode == SYSTEMMODE_POSTINIT && 
-            eegDataSource != DATASOURCE_GALEA && 
-            eegDataSource != DATASOURCE_STREAMING) {
-                settings.save(settings.getPath("User", eegDataSource, nchan));
-        }
 
         //reset connect loadStrings
         openBCI_portName = "N/A";  // Fixes inability to reconnect after halding  JAM 1/2017
@@ -887,7 +903,7 @@ void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
     fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
-    println("Channel count set to " + str(nchan));
+    println("OpenBCI_GUI: Channel count set to " + str(nchan));
 }
 
 void introAnimation() {
