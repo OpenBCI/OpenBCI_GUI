@@ -1,10 +1,16 @@
 # v5.0.5
 
 ### Improvements
-* Implement Focus Widget using BrainFlow Metrics
+* Implement Focus Widget using BrainFlow Metrics! #924
+* Throw a popup if users are are running an old version of Windows operating system. GUI v5 supports 64-bit Windows 8, 8.1, and 10. #964
+* Throw a popup if Windows users are using 32-bit Java and Processing. #964
+* Set Networking Widget default baud rate for Serial output to 57600
 
 ### Bug Fixes
 * Fix Y axis Autoscale in TimeSeries when all values are less than zero. Example: Cyton with filters off
+* Gracefully handle cases when Cyton or Cyton+Daisy users want to use 8 or 16 channels #954
+* Update Save Session Settings success message. Session settings are no longer auto-loaded on Session start. #969
+* Session settings are no longer auto-saved when system is halted #969
 
 # v5.0.4
 

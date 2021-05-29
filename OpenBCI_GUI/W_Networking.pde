@@ -148,7 +148,7 @@ class W_Networking extends Widget {
         if (eegDataSource != DATASOURCE_CYTON) {
             dataTypes.remove("Pulse");
         }
-        defaultBaud = "115200";
+        defaultBaud = "57600";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
