@@ -31,9 +31,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets start -- " + millis());
 
     //Widget_0 -- The Widget number helps when debugging GUI front-end
-    w_timeSeries = new W_timeSeries(_this);
-    w_timeSeries.setTitle("Time Series");
-    addWidget(w_timeSeries, w);
+     w_headPlot = new W_HeadPlot(_this);
+    w_headPlot.setTitle("Head Plot");
+    addWidget(w_headPlot, w);
+   
     // println("  setupWidgets time series -- " + millis());
 
     //Widget_1
@@ -82,9 +83,9 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     // println("  setupWidgets band power -- " + millis());
 
     //Cyton/Synthetic Widget_5, Ganglion/Playback Widget_6
-    w_headPlot = new W_HeadPlot(_this);
-    w_headPlot.setTitle("Head Plot");
-    addWidget(w_headPlot, w);
+    w_timeSeries = new W_timeSeries(_this);
+    w_timeSeries.setTitle("Time Series");
+    addWidget(w_timeSeries, w);
     // println("  setupWidgets head plot -- " + millis());
 
     //Cyton/Synthetic Widget_6, Ganglion/Playback Widget_7
@@ -174,8 +175,8 @@ class WidgetManager{
             settings.currentLayout = 1; // used for save/load settings
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         } else {
-            currentContainerLayout = 4; //default layout ... tall container left and 2 shorter containers stacked on the right
-            settings.currentLayout = 4; // used for save/load settings
+            currentContainerLayout = 0; //default layout ... tall container left and 2 shorter containers stacked on the right
+            settings.currentLayout = 0; // used for save/load settings
             setNewContainerLayout(currentContainerLayout); //sets and fills layout with widgets in order of widget index, to reorganize widget index, reorder the creation in setupWidgets()
         }
 
