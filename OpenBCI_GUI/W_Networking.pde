@@ -60,6 +60,7 @@ class W_Networking extends Widget {
     Boolean udp_visible;
     Boolean lsl_visible;
     Boolean serial_visible;
+    Boolean tcp_visible;
     List<String> dataTypes;
 
     Boolean cp5ElementsAreActive = false;
@@ -80,6 +81,7 @@ class W_Networking extends Widget {
     Stream stream2;
     Stream stream3;
     Stream stream4;
+    ServerThread stream5;
 
     List<String> baudRates;
     List<String> comPorts;
@@ -134,7 +136,7 @@ class W_Networking extends Widget {
         stream2 = null;
         stream3 = null;
         stream4 = null;
-
+        stream5 = null;
         //default data types for streams 1-4 in Networking widget
         settings.nwDataType1 = 0;
         settings.nwDataType2 = 0;
@@ -205,6 +207,9 @@ class W_Networking extends Widget {
 
     void update() {
         super.update();
+        if(stream5 != null){
+            stream5.update();
+        }
         if (protocolMode.equals("LSL")) {
             if (stream1!=null) {
                 stream1.run();
@@ -219,6 +224,7 @@ class W_Networking extends Widget {
             newDataToSend = false;
         }
 
+        
         checkTopNovEvents();
 
         //ignore top left button interaction when widgetSelector dropdown is active
@@ -368,6 +374,13 @@ class W_Networking extends Widget {
             text("Baud/Port", column0,row2);
             // text("Port Name", column0,row3);
             text("Filters",column0,row3);
+        }else if (protocolMode.equals("TCP")) {
+            textFont(f4,40);
+            text("TCP", x+20,y+h/8+15);
+            textFont(h1,headerFontSize);
+            text("IP", column0,row2);
+            text("Port", column0,row3);
+            text("Filters",column0,row4);
         }
         popStyle();
 
@@ -423,6 +436,8 @@ class W_Networking extends Widget {
         } else if (protocolMode.equals("LSL")) {
             lsl_visible = true;
         } else if (protocolMode.equals("Serial")) {
+            serial_visible = true;
+        }else{
             serial_visible = true;
         }
 
@@ -1001,6 +1016,20 @@ class W_Networking extends Widget {
             } else {
                 stream1 = null;
             }
+        }else if (protocolMode.equals("TCP")) {
+            if (!dt1.equals("None")) {
+              //  name = comPorts.get((int)(cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
+                //println("ComPort: " + name);
+               // println("Baudrate: " + Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
+                //baudRate = Integer.parseInt(baudRates.get((int)(cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
+              //  filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
+                //stream5 = new Stream(dt1, "8887", filt_pos, nchan);  //String dataType, String portName, int baudRate, int filter, PApplet _this
+                stream5 = new ServerThread();
+             
+              //System.out.println( "DeviceServer started on port: " + s.getPort() );
+            } else {
+                stream5 = null;
+            }
         }
     }
 
@@ -1017,6 +1046,9 @@ class W_Networking extends Widget {
         }
         if (stream4!=null) {
             stream4.start();
+        }
+        if (stream5!=null) {
+            stream5.start();
         }
     }
 
@@ -1039,6 +1071,10 @@ class W_Networking extends Widget {
         if (stream4!=null) {
             stream4.quit();
             stream4=null;
+        }
+        if (stream5!=null) {
+            stream5.quit();
+            stream5=null;
         }
     }
 
@@ -1168,9 +1204,9 @@ class W_Networking extends Widget {
                 //println("##LOCKED NETWORKING CP5 CONTROLLERS##");
             } else {
                 cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
-                cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
+              //  cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").unlock();
+               // cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").unlock();
+              //  cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").unlock();
                 cp5_networking_portName.getController("port_name").unlock();
                 lockTextFields(oscTextFieldNames, false);
                 lockTextFields(udpTextFieldNames, false);
@@ -1243,7 +1279,6 @@ class Stream extends Thread {
     String serialMessage = "";
 
     PApplet pApplet;
-
     private void updateNumChan(int _numChan) {
         numChan = _numChan;
         println("Stream update numChan to " + numChan);
@@ -1326,6 +1361,27 @@ class Stream extends Thread {
         this.filter = filter;
         this.isStreaming = false;
         this.pApplet = _this;
+        updateNumChan(_nchan);
+        if (this.dataType.equals("TimeSeries")) {
+            buffer = ByteBuffer.allocate(4*numChan);
+        } else {
+            buffer = ByteBuffer.allocate(4*126);
+        }
+
+        try {
+            closeNetwork();
+        } catch (Exception e) {
+            //nothing
+        }
+    }
+
+    // WS Stream 
+    Stream(String dataType, String ip, boolean filter, int _nchan) {
+        this.protocol = "TCP";
+        this.dataType = dataType;
+        this.filter = filter;
+        this.isStreaming = false;
+ 
         updateNumChan(_nchan);
         if (this.dataType.equals("TimeSeries")) {
             buffer = ByteBuffer.allocate(4*numChan);
@@ -1632,6 +1688,18 @@ class Stream extends Thread {
                 println("Networking Serial: Focus Error");
                 println(e.getMessage());
             }
+        }
+        else if (this.protocol.equals("TCP")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
+            StringBuilder sb = new StringBuilder();
+            sb.append(IS_METRIC);
+            sb.append("\n");
+           /*  try {
+                //println("SerialMessage: " + serialMessage);
+               // this.s.sendData(sb.toString());
+            } catch (Exception e) {
+                println("Networking WS: Focus Error");
+                println(e.getMessage());
+            } */
         }
     }
 
@@ -2212,7 +2280,19 @@ class Stream extends Thread {
                 println("Error: " + e);
             }
         }
-    }
+        else if (this.protocol.equals("TCP")) {
+              try{
+         // WebSocketImpl.DEBUG = true;
+          int port = 8887; // 843 flash policy port
+
+          System.out.println( "DeviceServer started on port: " + port); 
+ } catch (Exception e) {
+                verbosePrint("W_Networking.pde: could not open TCP PORT: " + this.portName);
+                println("Error: " + e);
+            }
+  }
+        }
+    
 
     //used only to print attributes to the screen
     StringList getAttributes() {
@@ -2239,6 +2319,11 @@ class Stream extends Thread {
             attributes.append(this.portName);
             attributes.append(str(this.baudRate));
             attributes.append(str(this.filter));
+        }else if(this.protocol.equals("TCP")){
+            attributes.append(this.dataType);
+            attributes.append(this.ip);
+            attributes.append(str(this.port));
+            attributes.append(str(this.filter));
         }
         return attributes;
     }
@@ -2251,7 +2336,9 @@ class Stream extends Thread {
   */
 void Protocol(int protocolIndex) {
     settings.nwProtocolSave = protocolIndex;
-    if (protocolIndex==3) {
+    if (protocolIndex==4) {
+        w_networking.protocolMode = "TCP";
+    }  else if (protocolIndex==3) {
         w_networking.protocolMode = "OSC";
     } else if (protocolIndex==2) {
         w_networking.protocolMode = "UDP";
@@ -2323,3 +2410,4 @@ boolean isNetworkingTextActive(){
     //println("Networking Text Field Active? " + isAFieldActive);
     return isAFieldActive; //if not, return false
 }
+
