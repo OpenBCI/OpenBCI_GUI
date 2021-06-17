@@ -25,6 +25,7 @@ W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_PacketLoss w_packetLoss;
 W_Focus w_focus;
+W_headPlotImp w_headPlotImp;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -98,6 +99,11 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_spectrogram.setTitle("Spectrogram");
     addWidget(w_spectrogram, w);
 
+    //Neuro-Tech custom head plot for impedance
+    w_headPlotImp = new W_headPlotImp(_this);
+    w_headPlotImp.setTitle("Head Plot Impedance");
+    addWidget(w_headPlotImp, w);
+    
     //only instantiate these widgets if you are using a Cyton board for live streaming
     if(currentBoard instanceof AnalogCapableBoard){
         //Cyton Widget_8
