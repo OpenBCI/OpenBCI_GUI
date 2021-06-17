@@ -7,7 +7,7 @@
 //   Modified: Conor Russomanno & Joel Murphy, August 2014 - Dec 2014
 //   Modified (v2.0): Conor Russomanno & Joel Murphy (AJ Keller helped too), June 2016
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
-//   Modified (v4.0) AJ Keller (Richard Waltman), September 2018
+//   Modified (v4.0) AJ Keller (Richard Waltman), September 201
 //   Modified (v5.0) Richard Waltman, August 2020
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
@@ -287,7 +287,6 @@ TopNav topNav;
 
 FFT[] fftBuff = new FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
-
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -307,7 +306,7 @@ void settings() {
         win_w = 980;
         win_h = 580;
     }
-    size(win_w, win_h, P2D);
+    size(win_w, win_h, P3D);
 }
 
 void setup() {

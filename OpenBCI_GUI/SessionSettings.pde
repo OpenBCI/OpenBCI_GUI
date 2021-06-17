@@ -144,7 +144,7 @@ class SessionSettings {
     String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
     //Used to set text in dropdown menus when loading Networking settings
-    String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
+    String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC", "TCP"};
     String[] nwDataTypesArray = {"None", "TimeSeries", "Focus", "EMG", "BandPower", "Accel/Aux", "FFT", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 

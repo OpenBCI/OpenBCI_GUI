@@ -24,7 +24,7 @@ class W_HeadPlot extends Widget {
         //Headplot settings
         settings.hpIntensitySave = 2;
         settings.hpPolaritySave = 0;
-        settings.hpContoursSave = 0;
+        settings.hpContoursSave = 1;
         settings.hpSmoothingSave = 3;
         //This is the protocol for setting up dropdowns.
         //Note that these 3 dropdowns correspond to the 3 global functions below
@@ -32,9 +32,9 @@ class W_HeadPlot extends Widget {
         // addDropdown("Ten20", "Layout", Arrays.asList("10-20", "5-10"), 0);
         // addDropdown("Headset", "Headset", Arrays.asList("None", "Mark II", "Mark III", "Mark IV "), 0);
         addDropdown("Intensity", "Intensity", Arrays.asList("4x", "2x", "1x", "0.5x", "0.2x", "0.02x"), vertScaleFactor_ind);
-        addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), settings.hpPolaritySave);
+        //addDropdown("Polarity", "Polarity", Arrays.asList("+/-", " + "), settings.hpPolaritySave);
         addDropdown("ShowContours", "Contours", Arrays.asList("ON", "OFF"), settings.hpContoursSave);
-        addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
+        //addDropdown("SmoothingHeadPlot", "Smooth", Arrays.asList("0.0", "0.5", "0.75", "0.9", "0.95", "0.98"), smoothFac_ind);
         //Initialize the headplot
         updateHeadPlot(nchan);
     }
@@ -42,6 +42,8 @@ class W_HeadPlot extends Widget {
     void updateHeadPlot(int _nchan) {
         headPlot = new HeadPlot(x, y, w, h, win_w, win_h);
         //FROM old Gui_Manager
+        // data_elec_imp_ohm  for impedence values, TODO: trigger by button/ui flow
+        //dataProcessing.data_std_uV
         headPlot.setIntensityData_byRef(dataProcessing.data_std_uV, is_railed);
         headPlot.setPolarityData_byRef(dataProcessing.polarity);
         setSmoothFac(smoothFac[smoothFac_ind]);
@@ -212,7 +214,7 @@ class HeadPlot {
         ref_electrode_xy = new float[2];  //x-y position of reference electrode
         electrode_rgb = new int[3][n_elec];  //rgb color for each electrode
         font = p5;
-        drawHeadAsContours = true; //set this to be false for slower computers
+        drawHeadAsContours = false; //set this to be false for slower computers
 
         hp_x = _x;
         hp_y = _y;
@@ -354,8 +356,10 @@ class HeadPlot {
         //String default_fname = "electrode_positions_12elec_scalp9.txt";
         try {
             elec_relXY = loadTable(default_fname, "header,csv"); //try loading the default file
+            println(" LOADed");
         }
         catch (NullPointerException e) {
+            println("FAILED TO LOAD");
         };
 
         //get the default locations if the file didn't exist
@@ -385,7 +389,7 @@ class HeadPlot {
         elec_relXY[1][0] = -elec_relXY[0][0];
         elec_relXY[1][1] = elec_relXY[0][1]; //FP2
 
-        elec_relXY[2][0] = -0.2f;
+        elec_relXY[2][0] = -0.5f;
         elec_relXY[2][1] = 0f; //C3
         elec_relXY[3][0] = -elec_relXY[2][0];
         elec_relXY[3][1] = elec_relXY[2][1]; //C4
@@ -1241,39 +1245,51 @@ class HeadPlot {
         ellipse(earR_x, earR_y, ear_width, ear_height); //little circle for the ear
 
         //draw head itself
+
+      
+        pushMatrix();     
         fill(255, 255, 255, 255);  //fill in a white head
-        strokeWeight(1);
-        ellipse(circ_x, circ_y, circ_diam, circ_diam); //big circle for the head
+        noStroke();
+        translate(circ_x, circ_y, -200);
+        lights();
+        sphere(circ_diam/1.5); //big circle for the head
+        popMatrix();
         if (drawHeadAsContours) {
             //add the contnours
             image(headImage, image_x, image_y);
+            //texture(headImage);
             noFill(); //overlay a circle as an outline, but no fill
             strokeWeight(1);
             ellipse(circ_x, circ_y, circ_diam, circ_diam); //big circle for the head
         }
-
+      
         //draw electrodes on the head
         if (!isDragging) {
             mouse_over_elec_index = -1;
         }
         for (int Ielec=0; Ielec < electrode_xy.length; Ielec++) {
+            pushMatrix(); 
             if (drawHeadAsContours) {
-                noFill(); //make transparent to allow color to come through from below
+              //  noFill(); //make transparent to allow color to come through from below
             } else {
                 fill(electrode_rgb[0][Ielec], electrode_rgb[1][Ielec], electrode_rgb[2][Ielec]);
             }
             if (!isDragging && isMouseOverElectrode(Ielec)) {
                 //electrode with a bigger index gets priority in dragging
                 mouse_over_elec_index = Ielec;
-                strokeWeight(2);
+                //strokeWeight(2);
             } else if (mouse_over_elec_index == Ielec) {
-                strokeWeight(2);
+                //strokeWeight(2);
             } else{
-                strokeWeight(1);
+               // strokeWeight(1);
             }
-            ellipse(electrode_xy[Ielec][0], electrode_xy[Ielec][1], elec_diam, elec_diam); //electrode circle
-        }
-
+            
+            noStroke();
+            translate(electrode_xy[Ielec][0], electrode_xy[Ielec][1], 100);
+            lights();
+            sphere(elec_diam/2.2); //electrode circle
+            popMatrix();
+  }
         //add labels to electrodes
         fill(0, 0, 0);
         textFont(font);
