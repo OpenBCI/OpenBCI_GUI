@@ -2245,12 +2245,9 @@ class Stream extends Thread {
         println("Networking: " + getAttributes());
         if (this.protocol.equals("OSC")) {
             //Possibly enter a nice custom exception here
-            //try {
                 this.osc = new OscP5(this,this.port + 1000);
                 this.netaddress = new NetAddress(this.ip,this.port);
                 this.msg = new OscMessage(this.address);
-            //} catch (Exception e) {
-            //}
         } else if (this.protocol.equals("UDP")) {
             this.udp = new UDP(this);
             this.udp.setBuffer(20000);
@@ -2281,18 +2278,17 @@ class Stream extends Thread {
             }
         }
         else if (this.protocol.equals("TCP")) {
-              try{
+            try{
          // WebSocketImpl.DEBUG = true;
           int port = 8887; // 843 flash policy port
 
           System.out.println( "DeviceServer started on port: " + port); 
- } catch (Exception e) {
+			}catch (Exception e) {
                 verbosePrint("W_Networking.pde: could not open TCP PORT: " + this.portName);
                 println("Error: " + e);
             }
-  }
-        }
-    
+		}
+	}    
 
     //used only to print attributes to the screen
     StringList getAttributes() {
