@@ -143,7 +143,7 @@ class W_Networking extends Widget {
         settings.nwDataType3 = 0;
         settings.nwDataType4 = 0;
         settings.nwSerialPort = "None";
-        settings.nwProtocolSave = protocolIndex; //save default protocol index, or 0, updates in the Protocol() function
+        settings.nwProtocolSave = 4; //save default protocol index, or 0, updates in the Protocol() function
         
         dataTypes = new LinkedList<String>(Arrays.asList(settings.nwDataTypesArray)); //Add any new widgets capable of streaming here
         //Only show pulse data type when using Cyton in Live
@@ -152,7 +152,7 @@ class W_Networking extends Widget {
         }
         defaultBaud = "57600";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
-        protocolMode = "Serial"; //default to Serial
+        protocolMode = "TCP"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
         verbosePrint("comPorts = " + comPorts);

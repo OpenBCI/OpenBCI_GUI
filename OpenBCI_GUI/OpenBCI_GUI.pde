@@ -569,7 +569,6 @@ void initSystem() {
     // initialize the chosen board
     boolean success = currentBoard.initialize();
     abandonInit = !success; // abandon if init fails
-    
     //Handle edge cases for Cyton and Cyton+Daisy users immediately after board is initialized. Fixes #954
     if (eegDataSource == DATASOURCE_CYTON) {
         println("OpenBCI_GUI: Configuring Cyton Channel Count...");
@@ -873,7 +872,7 @@ void systemDraw() { //for drawing to the screen
     }
 
     //Display GUI version and FPS in the title bar of the app
-    surface.setTitle("OpenBCI GUI " + localGUIVersionString + " - " + localGUIVersionDate + " - " + int(frameRate) + " fps");
+    surface.setTitle("Neuro-Tech GUI "  + int(frameRate) + " fps");
 }
 
 void requestReinit() {

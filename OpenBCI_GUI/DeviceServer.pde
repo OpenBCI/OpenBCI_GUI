@@ -20,11 +20,14 @@ public class ServerThread extends Thread{
   Boolean newDataToSend = false;
   private LinkedList<double[]> dataAccumulationQueue;
   public float[][] dataBufferToSend;
+  private double testFocus;
 
+  
   ServerThread(){
     dataAccumulationQueue = new LinkedList<double[]>();
     dataBufferToSend = new float[currentBoard.getNumEXGChannels()][nPointsPerUpdate];
-      }
+    testFocus = 0;
+  }
 
   @Override
   public void run(){
@@ -63,7 +66,13 @@ public class ServerThread extends Thread{
         }
       if(newDataToSend){
              sendFocusData();
-           }
+         /*  try {
+             Thread.sleep(250);
+           } catch (InterruptedException e) {
+            println(e.getMessage());
+        } */
+      }
+      
    }
     
    private void accumulateNewData() {
@@ -99,13 +108,22 @@ public class ServerThread extends Thread{
         }
     }
       void sendFocusData() {
-        final int IS_METRIC = w_focus.getMetricExceedsThreshold();
+        final double IS_METRIC = w_focus.updateFocusState();
            // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
             StringBuilder sb = new StringBuilder();
-            sb.append(IS_METRIC);
-            sb.append("\n");
+            //sb.append(IS_METRIC);
+          //  sb.append("\n");
+            //System.out.println(sb.toString());
             try {
-               s.broadcast(sb.toString());
+               //s.broadcast(sb.toString());
+              sb.append(testFocus);
+             
+                s.broadcast(sb.toString());
+               if(testFocus >= 1){
+                 testFocus = 0;
+               }else{
+                 testFocus+=0.01;
+               }
             } catch (Exception e) {
                 println("Networking WS: Focus Error");
                 println(e.getMessage());

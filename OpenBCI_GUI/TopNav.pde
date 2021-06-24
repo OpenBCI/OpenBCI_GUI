@@ -52,6 +52,9 @@ class TopNav {
     private final int SUBNAV_BUT_W = 70;
     private final int SUBNAV_BUT_H = 26;
     private final int TOPNAV_BUT_H = SUBNAV_BUT_H;
+    
+    // hack to start stream after session and components are initialized
+    private Boolean startDefault = true;
 
     TopNav() {
         int controlPanel_W = 256;
@@ -101,7 +104,12 @@ class TopNav {
             createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
         }
         
-        
+            /* startRunning();
+            if (currentBoard.isStreaming()) {
+                toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStop_txt);
+                toggleDataStreamingButton.setColorBackground(TURN_OFF_RED);
+                nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
+            } */
         //updateSecondaryNavButtonsColor();
     }
 
@@ -200,6 +208,10 @@ class TopNav {
         //Make sure these buttons don't get accidentally locked
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             setLockTopLeftSubNavCp5Objects(controlPanel.isOpen);
+            if(startDefault){
+             stopButtonWasPressed();
+             startDefault = false;;
+            }
         }
 
         if (previousSystemMode != systemMode) {
@@ -219,6 +231,7 @@ class TopNav {
             configSelector.update();
             previousSystemMode = systemMode;
         }
+        
     }
 
     void draw() {
