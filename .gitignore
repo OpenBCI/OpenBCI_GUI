@@ -26,3 +26,5 @@ libDataHandler.so
 libGanglionLib.so
 libGanglionScan.so
 libunicorn.so
+out/
+W_MyRefCode.pde.txt
