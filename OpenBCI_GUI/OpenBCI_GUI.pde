@@ -60,7 +60,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.6-alpha.1";
+String localGUIVersionString = "v5.0.6-alpha.2";
 String localGUIVersionDate = "June 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -311,6 +311,15 @@ void settings() {
 }
 
 void setup() {
+    StringBuilder sb_res = new StringBuilder("Screen Resolution: ");
+    sb_res.append(displayWidth);
+    sb_res.append(" X ");
+    sb_res.append(displayHeight);
+    //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
+    pixelDensity(displayDensity());
+    StringBuilder sb_dpi = new StringBuilder("High-DPI Screen Detected: ");
+    sb_dpi.append(displayDensity() == 2);
+
     frameRate(120);
 
     copyPaste = new CopyPaste();
@@ -372,7 +381,8 @@ void setup() {
     }
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
-    println("Screen Resolution: " + displayWidth + " X " + displayHeight);
+    println(sb_res.toString());
+    println(sb_dpi.toString());
     println(osName.toString());
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
