@@ -1,3 +1,10 @@
+# v5.0.6
+
+### Improvements
+
+### Bug Fixes
+* Fix drawing error in Control Panel WiFi Shield static IP Textfield
+
 # v5.0.5
 
 ### Improvements

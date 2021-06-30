@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.5";
-String localGUIVersionDate = "May 2021";
+String localGUIVersionString = "v5.0.6-alpha.1";
+String localGUIVersionDate = "June 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
