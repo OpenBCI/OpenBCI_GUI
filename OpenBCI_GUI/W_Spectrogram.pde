@@ -8,9 +8,6 @@
 //                                                  //
 //////////////////////////////////////////////////////
 
-import java.util.concurrent.TimeUnit;
-import java.util.LongSummaryStatistics;
-
 class W_Spectrogram extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
@@ -22,7 +19,7 @@ class W_Spectrogram extends Widget {
     int hueLimit = 160;
 
     PImage dataImg;
-    final int dataImageW = 1800;
+    int dataImageW = 1800;
     int dataImageH = 200;
     int prevW = 0;
     int prevH = 0;
@@ -34,13 +31,8 @@ class W_Spectrogram extends Widget {
     int graphH = 0;
     int midLineY = 0;
 
-    private long lastShift = 0;
-    private long scrollSpeed = TimeUnit.MILLISECONDS.toNanos(40); // == 20Hz
-    private long minDif = Long.MAX_VALUE;
-    private long maxDif = 0;
-    private LongSummaryStatistics dataShiftStats = new LongSummaryStatistics();
-    private final boolean RUN_STATS = true;
-    private boolean timeToShiftData = false;
+    private int lastShift = 0;
+    private int scrollSpeed = 100; // == 10Hz
     private boolean wasRunning = false;
 
     int paddingLeft = 54;
@@ -63,6 +55,7 @@ class W_Spectrogram extends Widget {
         {6, 5, 4, 3, 2, 1, 0},
         {3, 2, 1, 0},
         {1.5, 1, .5, 0},
+        {1, .5, 0}
     };
     float[] horizAxisLabel;
     StringList horizAxisLabelStrings;
@@ -88,14 +81,12 @@ class W_Spectrogram extends Widget {
         graphH = h - paddingBottom - paddingTop;
 
         settings.spectMaxFrqSave = 1;
-        settings.spectSampleRateSave = 3;
-        
+        settings.spectSampleRateSave = 2;
         settings.spectLogLinSave = 0;
         vertAxisLabel = vertAxisLabels[settings.spectMaxFrqSave];
         horizAxisLabel = horizAxisLabels[settings.spectSampleRateSave];
         horizAxisLabelStrings = new StringList();
         //Fetch/calculate the time strings for the horizontal axis ticks
-        numHorizAxisDivs = horizAxisLabel.length - 1;
         fetchTimeStrings(numHorizAxisDivs);
 
         //This is the protocol for setting up dropdowns.
@@ -132,22 +123,6 @@ class W_Spectrogram extends Widget {
             xPos = dataImg.width - 1;
             //Fetch/calculate the time strings for the horizontal axis ticks
             fetchTimeStrings(numHorizAxisDivs);
-
-            //Calculate timeToShiftData using nanoseconds
-            long dif = System.nanoTime() - lastShift;
-            timeToShiftData = dif >= scrollSpeed;
-
-            if (timeToShiftData && RUN_STATS) {
-                final long difInMillis = TimeUnit.NANOSECONDS.toMillis(dif);
-                StringBuilder millis_sb = new StringBuilder("DIFFERENCE_MILLIS== ");
-                millis_sb.append(difInMillis);
-                println(millis_sb.toString());
-                if (dif > TimeUnit.MILLISECONDS.toNanos(1) && dif < TimeUnit.MILLISECONDS.toNanos(1000)) {
-                    dataShiftStats.accept(difInMillis);
-                }
-                println(dataShiftStats);
-            }
-            
         }
         
         //State change check
@@ -160,7 +135,7 @@ class W_Spectrogram extends Widget {
 
     private void onStartRunning() {
         wasRunning = true;
-        lastShift = System.nanoTime();
+        lastShift = millis();
     }
 
     private void onStopRunning() {
@@ -186,33 +161,19 @@ class W_Spectrogram extends Widget {
             pushStyle();
             dataImg.loadPixels();
 
-            //Shift all pixels to the left, very carefully...
-            /*
-            boolean timeToUpdate = false;
-            float timerVal = millis();
-            fifoTimeList.removeFirst();
-            fifoTimeList.addLast(timerVal);
-            float numSeconds = horizAxisLabel[0] * 60f;
-            int stopId = spectrogramNPoints - 1;
-            */
-            /*
-            println("NUM_SECONDS=="+numSeconds);
-            println("FIRST=="+fifoTimeList.getFirst());
-            println("LAST=="+fifoTimeList.getLast());
-            println("DIFFERENCE==",timerVal - fifoTimeList.get(stopId));
-            
-            if (timerVal - fifoTimeList.get(stopId) > numSeconds) {
-                shiftSpectrogramData();
-            }
-            */
-            //int size = spectrogramNPoints - 1 - stopId;
+            //Shift all pixels to the left! (every scrollspeed ms)
+            if(millis() - lastShift > scrollSpeed) {
+                for (int r = 0; r < dataImg.height; r++) {
+                    if (r != 0) {
+                        arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
+                    } else {
+                        //When there would be an ArrayOutOfBoundsException, account for it!
+                        arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
+                    }
+                }
 
-            
-            if (timeToShiftData) {
-                shiftSpectrogramData();
+                lastShift += scrollSpeed;
             }
-            
-
             //for (int i = 0; i < fftLin_L.specSize() - 80; i++) {
             for (int i = 0; i <= dataImg.height/2; i++) {
                 //LEFT SPECTROGRAM ON TOP
@@ -268,19 +229,6 @@ class W_Spectrogram extends Widget {
         //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
         drawAxes(scaleW, scaleH);
         drawCenterLine();
-    }
-
-    //Called inside of above draw() method
-    private void shiftSpectrogramData() {
-        for (int r = 0; r < dataImg.height; r++) {
-            if (r != 0) {
-                arrayCopy(dataImg.pixels, dataImg.width * r, dataImg.pixels, dataImg.width * r - 1, dataImg.width);
-            } else {
-                //When there would be an ArrayOutOfBoundsException, account for it!
-                arrayCopy(dataImg.pixels, dataImg.width * (r + 1), dataImg.pixels, r * dataImg.width, dataImg.width);
-            }
-        }
-        lastShift = System.nanoTime();
     }
 
     public void screenResized(){
@@ -439,8 +387,7 @@ class W_Spectrogram extends Widget {
     }
 
     void setScrollSpeed(int i) {
-        scrollSpeed = TimeUnit.MILLISECONDS.toNanos(i - 10);
-        dataShiftStats = new LongSummaryStatistics();
+        scrollSpeed = i;
     }
 
     float fftAvgs(List<Integer> _activeChan, int freqBand) {
@@ -510,6 +457,9 @@ void SpectrogramSampleRate(int n) {
     } else if (n == 3) {
         w_spectrogram.numHorizAxisDivs = 3;
         w_spectrogram.setScrollSpeed(50);
+    } else if (n == 4) {
+        w_spectrogram.numHorizAxisDivs = 2;
+        w_spectrogram.setScrollSpeed(25);
     }
     w_spectrogram.horizAxisLabelStrings.clear();
     w_spectrogram.fetchTimeStrings(w_spectrogram.numHorizAxisDivs);
