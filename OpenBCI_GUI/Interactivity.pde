@@ -221,8 +221,9 @@ void parseKey(char val) {
                 break;
         }
     }
-
-    if (currentBoard instanceof BoardGanglion) {
+    
+    // Fixes #976. These keyboard shortcuts enable synthetic square waves on Ganglion and Cyton
+    if (currentBoard instanceof BoardGanglion || currentBoard instanceof BoardCyton) {
         if (val == '[' ||  val == ']') {
             println("Expert Mode: '" + val + "' pressed. Sending to Ganglion...");
             Boolean success = ((Board)currentBoard).sendCommand(str(val)).getKey();
