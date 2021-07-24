@@ -3,6 +3,20 @@
 
 import processing.sound.*;
 
+Minim minim;
+AudioPlayer[] soundPlayers;
+
+void asyncLoadAudioFiles() {
+    final int _numSoundFiles = 5;
+    minim = new Minim(this);
+    soundPlayers = new AudioPlayer[_numSoundFiles];
+    println("OpenBCI_GUI: AuditoryFeedback: Loading Audio...");
+    for (int i = 0; i < _numSoundFiles; i++) {
+        soundPlayers[i] = minim.loadFile("bp" + (i+1) + ".mp3");
+    }
+    println("OpenBCI_GUI: AuditoryFeedback: Done Loading Audio!");
+}
+
 class AuditoryNeurofeedback {
 
     private int x, y, w, h;

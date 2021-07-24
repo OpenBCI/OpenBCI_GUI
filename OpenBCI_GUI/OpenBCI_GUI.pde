@@ -432,6 +432,8 @@ void delayedSetup() {
     sessionTimeElapsed = new StopWatch();
     streamTimeElapsed = new StopWatch();
 
+    asyncLoadAudioFiles();
+
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
         // It's important to avoid instantiating a ControlP5 during a draw() call
