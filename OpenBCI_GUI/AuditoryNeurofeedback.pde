@@ -51,7 +51,7 @@ class AuditoryNeurofeedback {
     public void update(double[] bandPowers, float predictionVal) {
         if (usingBandPowers) {
             for (int i = 0; i < NUM_SOUND_FILES; i++) {
-                float gain = map((float)bandPowers[i], 0.1, .8, MIN_GAIN, MAX_GAIN);
+                float gain = map((float)bandPowers[i], 0.1, .7, MIN_GAIN + 20f, MAX_GAIN);
                 auditoryNfbGains[i].setValue(gain);
             }
         } else {
