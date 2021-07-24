@@ -33,9 +33,9 @@ class W_Focus extends Widget {
 
 
     private Grid dataGrid;
-    private final int numTableRows = 6;
-    private final int numTableColumns = 2;
-    private final int tableWidth = 142;
+    private final int NUM_TABLE_ROWS = 6;
+    private final int NUM_TABLE_COLUMNS = 2;
+    //private final int TABLE_WIDTH = 142;
     private int tableHeight = 0;
     private int cellHeight = 10;
     private DecimalFormat df = new DecimalFormat("#.0000");
@@ -73,7 +73,7 @@ class W_Focus extends Widget {
         focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "FocusChannelSelect");
         focusChanSelect.activateAllButtons();
 
-        auditoryNeurofeedback = new AuditoryNeurofeedback(x, y, 120, navBarHeight);
+        auditoryNeurofeedback = new AuditoryNeurofeedback(x + PAD_FIVE, y + PAD_FIVE, w/2 - PAD_FIVE*2, navBarHeight/2);
 
         exgChannels = currentBoard.getEXGChannels();
         channelCount = currentBoard.getNumEXGChannels();
@@ -91,7 +91,7 @@ class W_Focus extends Widget {
         
 
         //Create data table
-        dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
+        dataGrid = new Grid(NUM_TABLE_ROWS, NUM_TABLE_COLUMNS, cellHeight);
         dataGrid.setTableFontAndSize(p6, 10);
         dataGrid.setDrawTableBorder(true);
         dataGrid.setString("Metric Value", 0, 0);
@@ -131,6 +131,9 @@ class W_Focus extends Widget {
             focusBar.update(metricPrediction);
             predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
         }
+
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(auditoryNeurofeedback.startStopButton);
 
         //put your code here...
     }
@@ -179,7 +182,7 @@ class W_Focus extends Widget {
         //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
         updateStatusCircle();
-        auditoryNeurofeedback.screenResized((int)xc, (int)yc);
+        updateAuditoryNeurofeedbackPosition();
 
         updateGraphDims();
         focusBar.screenResized(graphX, graphY, graphW, graphH);
@@ -218,12 +221,18 @@ class W_Focus extends Widget {
         dataGrid.setHorizontalCenterTextInCells(true);
     }
 
+    private void updateAuditoryNeurofeedbackPosition() {
+        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int subContainerMiddleX = x + w/4;
+        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - navHeight + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
+    }
+
     private void updateStatusCircle() {
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         float min = min(upperLeftContainerW, upperLeftContainerH);
         xc = x + w/4;
-        yc = y + h/4;
+        yc = y + h/4 - navHeight;
         wc = min * (3f/5);
         hc = wc;
     }
@@ -266,14 +275,12 @@ class W_Focus extends Widget {
             //Left array is Averages, right array is Standard Deviations. Update values using Averages.
             updateBandPowerTableValues(bands.getLeft());
 
-            //Send band power data to AuditoryNeurofeedback class
-            //auditoryNeurofeedback.update(bands.getLeft());
-
             //Keep this here
             double prediction = mlModel.predict(featureVector);
             //println("Concentration: " + prediction);
 
-            auditoryNeurofeedback.update((float)prediction);
+            //Send band power and prediction data to AuditoryNeurofeedback class
+            auditoryNeurofeedback.update(bands.getLeft(), (float)prediction);
             
             return prediction;
 
@@ -372,6 +379,7 @@ class W_Focus extends Widget {
         int factor = focusChanSelect.isVisible() ? 1 : -1;
         yc += navHeight * factor;
         resizeTable();
+        updateAuditoryNeurofeedbackPosition();
     }
 
     public void setFocusHorizScale(int n) {
