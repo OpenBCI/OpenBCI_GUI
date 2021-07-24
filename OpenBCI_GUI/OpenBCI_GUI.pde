@@ -285,7 +285,7 @@ DirectoryManager directoryManager;
 final int navBarHeight = 32;
 TopNav topNav;
 
-FFT[] fftBuff = new FFT[nchan];    //from the minim library
+ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 //------------------------------------------------------------------------
@@ -695,7 +695,7 @@ void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new FFT(getNfftSafe(), currentBoard.getSampleRate());
+        fftBuff[Ichan] = new ddf.minim.analysis.FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
 
     //Attempt initialization. If error, print to console and exit function.
@@ -912,7 +912,7 @@ void systemInitSession() {
 void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    fftBuff = new ddf.minim.analysis.FFT[nchan];  //reinitialize the FFT buffer
     println("OpenBCI_GUI: Channel count set to " + str(nchan));
 }
 

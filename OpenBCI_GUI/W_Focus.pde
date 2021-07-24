@@ -25,10 +25,12 @@ class W_Focus extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-    private ControlP5 focus_cp5;
-    private Button widgetTemplateButton;
+    //private ControlP5 focus_cp5;
+    //private Button widgetTemplateButton;
     private ChannelSelect focusChanSelect;
     private boolean prevChanSelectIsVisible = false;
+    private AuditoryNeurofeedback auditoryNeurofeedback;
+
 
     private Grid dataGrid;
     private final int numTableRows = 6;
@@ -71,6 +73,8 @@ class W_Focus extends Widget {
         focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "FocusChannelSelect");
         focusChanSelect.activateAllButtons();
 
+        auditoryNeurofeedback = new AuditoryNeurofeedback(x, y, 120, navBarHeight);
+
         exgChannels = currentBoard.getEXGChannels();
         channelCount = currentBoard.getNumEXGChannels();
         dataArray = new double[channelCount][];
@@ -98,9 +102,9 @@ class W_Focus extends Widget {
         dataGrid.setString("Gamma (30-45Hz)", 5, 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
-        focus_cp5 = new ControlP5(ourApplet);
-        focus_cp5.setGraphics(ourApplet, 0,0);
-        focus_cp5.setAutoDraw(false);
+        //focus_cp5 = new ControlP5(ourApplet);
+        //focus_cp5.setGraphics(ourApplet, 0,0);
+        //focus_cp5.setAutoDraw(false);
 
         //create our focus graph
         updateGraphDims();
@@ -154,7 +158,8 @@ class W_Focus extends Widget {
         }
 
         //This draws all cp5 objects in the local instance
-        focus_cp5.draw();
+        //focus_cp5.draw();
+        auditoryNeurofeedback.draw();
         
         //Draw the graph
         focusBar.draw();
@@ -166,7 +171,7 @@ class W_Focus extends Widget {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         //Very important to allow users to interact with objects after app resize        
-        focus_cp5.setGraphics(ourApplet, 0, 0);
+        //focus_cp5.setGraphics(ourApplet, 0, 0);
 
         resizeTable();
 
@@ -174,6 +179,7 @@ class W_Focus extends Widget {
         //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
         updateStatusCircle();
+        auditoryNeurofeedback.screenResized((int)xc, (int)yc);
 
         updateGraphDims();
         focusBar.screenResized(graphX, graphY, graphW, graphH);
@@ -260,9 +266,14 @@ class W_Focus extends Widget {
             //Left array is Averages, right array is Standard Deviations. Update values using Averages.
             updateBandPowerTableValues(bands.getLeft());
 
+            //Send band power data to AuditoryNeurofeedback class
+            //auditoryNeurofeedback.update(bands.getLeft());
+
             //Keep this here
             double prediction = mlModel.predict(featureVector);
             //println("Concentration: " + prediction);
+
+            auditoryNeurofeedback.update((float)prediction);
             
             return prediction;
 
@@ -386,6 +397,10 @@ class W_Focus extends Widget {
 
     public int getMetricExceedsThreshold() {
         return predictionExceedsThreshold ? 1 : 0;
+    }
+
+    public void killAuditoryFeedback() {
+        auditoryNeurofeedback.killAudio();
     }
 }; //end of class
 

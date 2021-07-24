@@ -268,7 +268,7 @@ class W_emg extends Widget {
 
     public void process(
         float[][] data_forDisplay_uV, //this data has been filtered and is ready for plotting on the screen
-        FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+        ddf.minim.analysis.FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
         //for example, you could loop over each EEG channel to do some sort of time-domain processing
         //using the sample values that have already been filtered, as will be plotted on the display
