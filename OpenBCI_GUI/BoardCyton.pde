@@ -416,9 +416,71 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         isCheckingImpedance[channel] = active;
     }
 
+    //Use this method instead of the one above!
+    public boolean setCheckingImpedanceCyton(int channel, boolean active) {
+
+        char p = '0';
+        char n = '0';
+        String command;
+
+        if (active) {
+
+            Srb2 srb2sSetting = currentADS1299Settings.values.srb2[channel];
+            if (srb2sSetting == Srb2.CONNECT) {
+                n = '1';
+            }
+            else {
+                p = '1';
+            }
+
+            currentADS1299Settings.saveLastValues(channel);
+            
+            currentADS1299Settings.values.gain[channel] = Gain.X1;
+            currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
+            currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
+            currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
+            currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
+
+            boolean response = currentADS1299Settings.commit(channel);
+            if (!response) {
+                currentADS1299Settings.revertToLastValues(channel);
+                outputWarn("Cyton Impedance Check - Error sending channel settings to board.");
+                return response;
+            }
+
+        } else {
+            //Revert ADS channel settings to what user had before checking impedance on this channel
+            currentADS1299Settings.revertToLastValues(channel);
+            println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
+        }
+        
+        // for example: z 4 1 0 Z
+        command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        boolean response = sendCommand(command).getKey().booleanValue();
+        if (!response) {
+            outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
+            return response;
+        }
+
+        isCheckingImpedance[channel] = active;
+
+        return response;
+    }
+
     @Override
     public boolean isCheckingImpedance(int channel) {
         return isCheckingImpedance[channel];
+    }
+
+    //Returns the channel number where impedance check is currently active, otherwise return null
+    public Integer isCheckingImpedanceOnChannel() {
+        printArray(isCheckingImpedance);
+        for (int i = 0; i < isCheckingImpedance.length; i++) {
+            if (isCheckingImpedance[i]) {
+                return i;
+            }
+        }
+        return null;
     }
 
     @Override

@@ -407,6 +407,23 @@ class W_timeSeries extends Widget {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
+
+    public void toggleImpedanceCheckOnChannel(Integer _chan, boolean toggle) {
+        if (_chan == null) {
+            return;
+        }
+        BoardCyton cytonBoard = (BoardCyton)currentBoard;
+        boolean response = cytonBoard.setCheckingImpedanceCyton(_chan, toggle);
+        if (!response) {
+            println("Time Series Impedance Check: Error sending a command to the board.");
+        } else {
+            //If successful, update the front end components to reflect the new state
+            adsSettingsController.updateChanSettingsDropdowns(_chan, currentBoard.isEXGChannelActive(_chan));
+            adsSettingsController.setHasUnappliedSettings(_chan, false);
+        }
+        boolean shouldBeOn = toggle && response;
+        channelBars[_chan].overrideImpButtonToggle(shouldBeOn);
+    }
 };
 
 //These functions are activated when an item from the corresponding dropdown is selected
@@ -827,7 +844,8 @@ class ChannelBar {
         });
         onOffButton.setDescription("Click to toggle channel " + channelString + ".");
     }
-
+    
+    //This method is only called for appropriate boards - aka Cyton et al
     private void createImpButton(String name, String text, int _x, int _y, int _w, int _h) {
         impCheckButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, WHITE, BLACK, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         impCheckButton.setCircularButton(true);
@@ -836,17 +854,28 @@ class ChannelBar {
                 println("[" + channelString + "] imp released");
                 // flip impedance check
                 ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
-                impBoard.setCheckingImpedance(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
-                if(impBoard.isCheckingImpedance(channelIndex)) {
-                    impCheckButton.setColorBackground(BUTTON_PRESSED_DARKGREY);
-                    impCheckButton.setColorCaptionLabel(WHITE);
-                } else {
-                    impCheckButton.setColorBackground(WHITE);
-                    impCheckButton.setColorCaptionLabel(BLACK);
+
+                //Turn off impedance check on previous channel
+                Integer checkingImpOnChannelNum = impBoard.isCheckingImpedanceOnChannel();
+                if (checkingImpOnChannelNum != null) {
+                    println("CYTON FOUND CHECKING IMPEDANCE ON CHANNEL == ", checkingImpOnChannelNum);
+                    w_timeSeries.toggleImpedanceCheckOnChannel(checkingImpOnChannelNum, false);
+                    if (checkingImpOnChannelNum == channelIndex) {
+                        return;
+                    }
                 }
+
+                w_timeSeries.toggleImpedanceCheckOnChannel(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
             }
         });
         impCheckButton.setDescription("Click to toggle impedance check for channel " + channelString + ".");
+    }
+
+    public void overrideImpButtonToggle(boolean b) {
+        color bgColor = b ? BUTTON_PRESSED_DARKGREY : WHITE;
+        color textColor = b ? WHITE : BLACK;
+        impCheckButton.setColorBackground(bgColor);
+        impCheckButton.setColorCaptionLabel(textColor);
     }
 
     private Button createYScaleButton(int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {

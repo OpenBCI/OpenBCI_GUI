@@ -1,6 +1,7 @@
 # v5.0.6
 
 ### Improvements
+* For Cyton, only allow checking impedance on one channel at a time
 
 ### Bug Fixes
 * Fix drawing error in Control Panel WiFi Shield static IP Textfield
