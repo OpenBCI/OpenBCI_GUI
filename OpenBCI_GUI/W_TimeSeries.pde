@@ -413,10 +413,10 @@ class W_timeSeries extends Widget {
             return;
         }
         BoardCyton cytonBoard = (BoardCyton)currentBoard;
-        boolean response = cytonBoard.setCheckingImpedanceCyton(_chan, toggle);
-        if (!response) {
-            println("Time Series Impedance Check: Error sending a command to the board.");
-        } else {
+        final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(_chan, toggle);
+        boolean response = fullResponse.getKey().booleanValue();
+        println("CytonImpedanceResponse==", fullResponse.getValue(),"!!!END_OF_RESPONSE");
+        if (response) {
             //If successful, update the front end components to reflect the new state
             adsSettingsController.updateChanSettingsDropdowns(_chan, currentBoard.isEXGChannelActive(_chan));
             adsSettingsController.setHasUnappliedSettings(_chan, false);
@@ -858,7 +858,7 @@ class ChannelBar {
                 //Turn off impedance check on previous channel
                 Integer checkingImpOnChannelNum = impBoard.isCheckingImpedanceOnChannel();
                 if (checkingImpOnChannelNum != null) {
-                    println("CYTON FOUND CHECKING IMPEDANCE ON CHANNEL == ", checkingImpOnChannelNum);
+                    //println("CYTON FOUND CHECKING IMPEDANCE ON CHANNEL == ", checkingImpOnChannelNum);
                     w_timeSeries.toggleImpedanceCheckOnChannel(checkingImpOnChannelNum, false);
                     if (checkingImpOnChannelNum == channelIndex) {
                         return;

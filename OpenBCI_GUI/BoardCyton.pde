@@ -417,7 +417,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     //Use this method instead of the one above!
-    public boolean setCheckingImpedanceCyton(int channel, boolean active) {
+    public Pair<Boolean, String> setCheckingImpedanceCyton(int channel, boolean active) {
 
         char p = '0';
         char n = '0';
@@ -445,7 +445,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             if (!response) {
                 currentADS1299Settings.revertToLastValues(channel);
                 outputWarn("Cyton Impedance Check - Error sending channel settings to board.");
-                return response;
+                return new ImmutablePair<Boolean, String>(Boolean.valueOf(false), "Error sending channel settings to board.");
             }
 
         } else {
@@ -456,15 +456,16 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         
         // for example: z 4 1 0 Z
         command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
-        boolean response = sendCommand(command).getKey().booleanValue();
+        final Pair<Boolean, String> fullResponse = sendCommand(command);
+        boolean response = fullResponse.getKey().booleanValue();
         if (!response) {
             outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
-            return response;
+            return fullResponse;
         }
 
         isCheckingImpedance[channel] = active;
 
-        return response;
+        return fullResponse;
     }
 
     @Override
@@ -474,7 +475,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     //Returns the channel number where impedance check is currently active, otherwise return null
     public Integer isCheckingImpedanceOnChannel() {
-        printArray(isCheckingImpedance);
+        //printArray(isCheckingImpedance);
         for (int i = 0; i < isCheckingImpedance.length; i++) {
             if (isCheckingImpedance[i]) {
                 return i;
