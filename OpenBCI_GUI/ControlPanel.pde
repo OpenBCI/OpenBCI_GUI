@@ -941,9 +941,15 @@ class WifiBox {
             .setColorCursor(color(26, 26, 26))
             .setText(wifi_ipAddress)
             .align(5, 10, 20, 40)
-            .onDoublePress(cb)
             .setAutoClear(true)
             .setVisible(false);
+        //Clear textfield on double click
+        staticIPAddressTF.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("WiFi Static IP: Enter your custom IP address for WiFi shield.");
+                staticIPAddressTF.clear();
+            }
+        });
     }
 
     public void setDefaultToDynamicIP() {
@@ -956,15 +962,8 @@ class WifiBox {
     }
 
     private void setStaticIPTextfield(String text) {
-        staticIPAddressTF.getCaptionLabel().setText(text);
+        staticIPAddressTF.setText(text);
     }
-
-    //Clear text field on double-click
-    CallbackListener cb = new CallbackListener() { 
-        public void controlEvent(CallbackEvent theEvent) {
-            staticIPAddressTF.clear();
-        }
-    };
 };
 
 class InterfaceBoxCyton {
@@ -2787,6 +2786,7 @@ class InitBox {
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
+            w_focus.killAuditoryFeedback();
             haltSystem();
         }
     }

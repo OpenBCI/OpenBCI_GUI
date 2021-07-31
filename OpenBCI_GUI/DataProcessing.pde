@@ -64,12 +64,12 @@ void processNewData() {
     }
 }
 
-void initializeFFTObjects(FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
+void initializeFFTObjects(ddf.minim.analysis.FFT[] fftBuff, float[][] dataProcessingRawBuffer, int Nfft, float fs_Hz) {
 
     float[] fooData;
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         //make the FFT objects...Following "SoundSpectrum" example that came with the Minim library
-        fftBuff[Ichan].window(FFT.HAMMING);
+        fftBuff[Ichan].window(ddf.minim.analysis.FFT.HAMMING);
 
         //do the FFT on the initial data
         if (isFFTFiltered == true) {
@@ -237,7 +237,7 @@ class DataProcessing {
         }
     }
 
-    public void process(float[][] data_forDisplay_uV, FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
+    public void process(float[][] data_forDisplay_uV, ddf.minim.analysis.FFT[] fftData) {              //holds the FFT (frequency spectrum) of the latest data
 
         float prevFFTdata[] = new float[fftBuff[0].specSize()];
 
