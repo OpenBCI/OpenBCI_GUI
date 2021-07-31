@@ -2786,6 +2786,7 @@ class InitBox {
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
+            w_focus.killAuditoryFeedback();
             haltSystem();
         }
     }

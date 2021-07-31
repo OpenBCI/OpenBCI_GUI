@@ -1,9 +1,13 @@
 # v5.0.6
 
 ### Improvements
+* Add Auditory Feedback to the Focus Widget Fixes #709
 
 ### Bug Fixes
 * Fix drawing error in Control Panel WiFi Shield static IP Textfield
+* Accomodate high-dpi screens Fixes #968
+* Add Arduino Focus Fan example to networking test kit on GitHub repo
+* Allow synthetic square wave expert mode keyboard shortcut for Cyton and Ganglion Fixes #976
 
 # v5.0.5
 

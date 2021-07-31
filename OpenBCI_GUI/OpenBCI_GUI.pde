@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.6-alpha.2";
-String localGUIVersionDate = "June 2021";
+String localGUIVersionString = "v5.0.6";
+String localGUIVersionDate = "July 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 
@@ -285,7 +285,7 @@ DirectoryManager directoryManager;
 final int navBarHeight = 32;
 TopNav topNav;
 
-FFT[] fftBuff = new FFT[nchan];    //from the minim library
+ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
 
 //------------------------------------------------------------------------
@@ -431,6 +431,8 @@ void delayedSetup() {
 
     sessionTimeElapsed = new StopWatch();
     streamTimeElapsed = new StopWatch();
+
+    asyncLoadAudioFiles();
 
     synchronized(this) {
         // Instantiate ControlPanel in the synchronized block.
@@ -695,7 +697,7 @@ void initFFTObjectsAndBuffer() {
     //initialize the FFT objects
     for (int Ichan=0; Ichan < nchan; Ichan++) {
         // verbosePrint("Init FFT Buff – " + Ichan);
-        fftBuff[Ichan] = new FFT(getNfftSafe(), currentBoard.getSampleRate());
+        fftBuff[Ichan] = new ddf.minim.analysis.FFT(getNfftSafe(), currentBoard.getSampleRate());
     }  //make the FFT objects
 
     //Attempt initialization. If error, print to console and exit function.
@@ -912,7 +914,7 @@ void systemInitSession() {
 void updateToNChan(int _nchan) {
     nchan = _nchan;
     settings.slnchan = _nchan; //used in SoftwareSettings.pde only
-    fftBuff = new FFT[nchan];  //reinitialize the FFT buffer
+    fftBuff = new ddf.minim.analysis.FFT[nchan];  //reinitialize the FFT buffer
     println("OpenBCI_GUI: Channel count set to " + str(nchan));
 }
 
