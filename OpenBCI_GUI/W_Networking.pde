@@ -121,7 +121,7 @@ class W_Networking extends Widget {
     private LinkedList<double[]> dataAccumulationQueue;
     // accessed by individual streams. yes, i hate it too
     public float[][] dataBufferToSend;
-    public boolean newDataToSend = false; 
+    public boolean newTimeSeriesDataToSend = false; 
 
     HashMap<String, Object> cp5Map = new HashMap<String, Object>();
 
@@ -215,8 +215,6 @@ class W_Networking extends Widget {
             if (stream3!=null) {
                 stream3.run();
             }
-            //Setting this var here fixes #592 to allow multiple LSL streams
-            newDataToSend = false;
         }
 
         checkTopNovEvents();
@@ -287,7 +285,8 @@ class W_Networking extends Widget {
     }
 
     private void checkIfEnoughDataToSend() {
-        if (dataAccumulationQueue.size() >= nPointsPerUpdate) {
+        newTimeSeriesDataToSend = dataAccumulationQueue.size() >= nPointsPerUpdate;
+        if (newTimeSeriesDataToSend) {
             for (int iSample=0; iSample<nPointsPerUpdate; iSample++) {
                 double[] sample = dataAccumulationQueue.pop();
 
@@ -295,8 +294,6 @@ class W_Networking extends Widget {
                     dataBufferToSend[iChan][iSample] = (float)sample[iChan];
                 }
             }
-
-            newDataToSend = true;
         }
     }
 
@@ -1360,18 +1357,17 @@ class Stream extends Thread {
                         println(e.getMessage());
                     }
                 } else {
-                        if (checkForData()) { //This needs to be removed or modified in next version of the GUI
-                            sendData();
-                            setDataFalse();
-                        } else {
-                            try {
-                                Thread.sleep(1);
-                            } catch (InterruptedException e) {
-                                println(e.getMessage());
-                            }
+                    if (checkForData()) { //This needs to be removed or modified in next version of the GUI
+                        sendData();
+                    } else {
+                        try {
+                            Thread.sleep(1);
+                        } catch (InterruptedException e) {
+                            println(e.getMessage());
                         }
                     }
                 }
+            }
         } else if (this.protocol.equals("LSL")) {
             if (!currentBoard.isStreaming()) {
                 try {
@@ -1380,48 +1376,19 @@ class Stream extends Thread {
                     println(e.getMessage());
                 }
             } else {
-                if (checkForData()) { //This needs to be removed or modified in next version of the GUI
+                 //This needs to be removed or modified in next version of the GUI
+                if (checkForData()) {
                     sendData();
-                    setDataFalse();
                 }
             }
         }
     }
 
-    Boolean checkForData() { //Try to remove these methods in next version of GUI
-        if (this.dataType.equals("TimeSeries")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("Focus")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("FFT")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("EMG")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("BandPower")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("Accel/Aux")) {
-            return w_networking.newDataToSend;
-        } else if (this.dataType.equals("Pulse")) {
+    Boolean checkForData() {
+        if (this.dataType.equals("TimeSeries") || this.dataType.equals("Accel/Aux")) {
+            return w_networking.newTimeSeriesDataToSend;
+        } else {
             return true;
-        }
-        return false;
-    }
-
-    void setDataFalse() {
-        if (this.dataType.equals("TimeSeries")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("Focus")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("FFT")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("EMG")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("BandPower")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("Accel/Aux")) {
-            w_networking.newDataToSend = false;
-        } else if (this.dataType.equals("Pulse")) {
-            w_networking.newDataToSend = false;
         }
     }
 

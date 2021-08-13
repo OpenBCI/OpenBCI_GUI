@@ -14,7 +14,7 @@ fps_counter = deque(maxlen=150)
 
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-streams = resolve_stream('type', 'EEG')
+streams = resolve_stream('type', 'FFT')
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])
 
