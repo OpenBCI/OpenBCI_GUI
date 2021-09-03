@@ -1,3 +1,11 @@
+# v5.0.7
+
+### Improvements
+
+
+### Bug Fixes
+* Fix GUI not running on some Macs due to high-dpi screen code #987 #990
+
 # v5.0.6
 
 ### Improvements
