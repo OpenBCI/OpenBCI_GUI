@@ -113,7 +113,7 @@ class W_Networking extends Widget {
         "obci_eeg1","EEG",
         "obci_eeg2","EEG",
         "obci_eeg3","EEG"};
-    String networkingGuideURL = "https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#networking";
+    String networkingGuideURL = "https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#networking";
     String dataOutputsURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
     boolean configIsVisible = false;
     boolean layoutIsVisible = false;

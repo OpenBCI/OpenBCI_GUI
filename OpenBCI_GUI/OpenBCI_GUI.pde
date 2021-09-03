@@ -388,7 +388,7 @@ void setup() {
     println(globalScreenDPI.toString());
     println(osName.toString());
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
+    println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
     // Copy sample data to the Users' Documents folder +  create Recordings folder
     directoryManager.init();
