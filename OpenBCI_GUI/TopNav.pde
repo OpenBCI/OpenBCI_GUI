@@ -1160,7 +1160,7 @@ class TutorialSelector {
         gettingStarted = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         gettingStarted.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                openURLInBrowser("https://docs.openbci.com/GettingStarted/GettingStartedLanding/");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1171,7 +1171,7 @@ class TutorialSelector {
         testingImpedance = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         testingImpedance.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
+                openURLInBrowser("https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#impedance-testing");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1182,7 +1182,7 @@ class TutorialSelector {
         troubleshootingGuide = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         troubleshootingGuide.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
+                openURLInBrowser("https://docs.openbci.com/Troubleshooting/GUI_Troubleshooting/");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1193,7 +1193,7 @@ class TutorialSelector {
         customWidgets = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         customWidgets.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+                openURLInBrowser("https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
