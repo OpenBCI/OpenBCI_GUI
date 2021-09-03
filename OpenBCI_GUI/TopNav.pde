@@ -534,6 +534,11 @@ class TopNav {
         //Attempt to compare local and remote GUI versions when TopNav is instantiated
         //This will also set the description/help-text for this cp5 button
         final Boolean upToDate = guiVersionIsUpToDate();
+
+        if (!upToDate) {
+            outputWarn("Update Available! Press the \"Update\" button at the top of the GUI to download the latest version.");
+        }
+
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (upToDate == null) {
@@ -542,7 +547,7 @@ class TopNav {
 
                 if (!upToDate) {
                     openURLInBrowser(guiLatestReleaseLocation);
-                    outputInfo("Update GUI: Opening latest Github release page using default browser");
+                    outputInfo("Update GUI: Opening latest GUI release page using default browser");
                 } else {
                     outputSuccess("Update GUI: Local OpenBCI GUI is up-to-date!");
                 }
