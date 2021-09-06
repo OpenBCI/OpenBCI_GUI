@@ -54,7 +54,7 @@ class HelpWidget {
     int padding;
 
     //current text shown in help widget, based on most recent command
-    String currentOutput = "Learn how to use this application and more at openbci.github.io/Documentation/";
+    String currentOutput = "Learn how to use this application and more at docs.openbci.com";
     OutputLevel curOutputLevel = OutputLevel.INFO;
 
     HelpWidget(float _xPos, float _yPos, float _width, float _height) {

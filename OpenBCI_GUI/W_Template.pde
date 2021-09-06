@@ -88,7 +88,7 @@ class W_template extends Widget {
             public void controlEvent(CallbackEvent theEvent) {
                 //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
                 if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
-                    openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+                    openURLInBrowser("https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget");
                 }
             }
         });
