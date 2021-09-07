@@ -2,6 +2,7 @@
 
 ### Improvements
 * Show warning in footer when a new version of the GUI is available #992
+* For Cyton, only allow checking impedance on one channel at a time #983
 
 ### Bug Fixes
 * Fix GUI not running on some Macs due to high-dpi screen code #987 #990
