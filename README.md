@@ -127,5 +127,5 @@ MIT
 [link_shop_cyton_daisy]: https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel
 [link_ptw]: https://www.pushtheworldllc.com
 [link_openbci]: http://www.openbci.com
-[link_gui_widget_tutorial]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget
-[link_gui_run_from_processing]: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#running-the-openbci-gui-from-the-processing-ide
+[link_gui_widget_tutorial]: https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget
+[link_gui_run_from_processing]: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide

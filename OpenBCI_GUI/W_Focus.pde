@@ -25,15 +25,17 @@ class W_Focus extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-    private ControlP5 focus_cp5;
-    private Button widgetTemplateButton;
+    //private ControlP5 focus_cp5;
+    //private Button widgetTemplateButton;
     private ChannelSelect focusChanSelect;
     private boolean prevChanSelectIsVisible = false;
+    private AuditoryNeurofeedback auditoryNeurofeedback;
+
 
     private Grid dataGrid;
-    private final int numTableRows = 6;
-    private final int numTableColumns = 2;
-    private final int tableWidth = 142;
+    private final int NUM_TABLE_ROWS = 6;
+    private final int NUM_TABLE_COLUMNS = 2;
+    //private final int TABLE_WIDTH = 142;
     private int tableHeight = 0;
     private int cellHeight = 10;
     private DecimalFormat df = new DecimalFormat("#.0000");
@@ -71,6 +73,8 @@ class W_Focus extends Widget {
         focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "FocusChannelSelect");
         focusChanSelect.activateAllButtons();
 
+        auditoryNeurofeedback = new AuditoryNeurofeedback(x + PAD_FIVE, y + PAD_FIVE, w/2 - PAD_FIVE*2, navBarHeight/2);
+
         exgChannels = currentBoard.getEXGChannels();
         channelCount = currentBoard.getNumEXGChannels();
         dataArray = new double[channelCount][];
@@ -87,7 +91,7 @@ class W_Focus extends Widget {
         
 
         //Create data table
-        dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
+        dataGrid = new Grid(NUM_TABLE_ROWS, NUM_TABLE_COLUMNS, cellHeight);
         dataGrid.setTableFontAndSize(p6, 10);
         dataGrid.setDrawTableBorder(true);
         dataGrid.setString("Metric Value", 0, 0);
@@ -98,9 +102,9 @@ class W_Focus extends Widget {
         dataGrid.setString("Gamma (30-45Hz)", 5, 0);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
-        focus_cp5 = new ControlP5(ourApplet);
-        focus_cp5.setGraphics(ourApplet, 0,0);
-        focus_cp5.setAutoDraw(false);
+        //focus_cp5 = new ControlP5(ourApplet);
+        //focus_cp5.setGraphics(ourApplet, 0,0);
+        //focus_cp5.setAutoDraw(false);
 
         //create our focus graph
         updateGraphDims();
@@ -128,6 +132,9 @@ class W_Focus extends Widget {
             predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
         }
 
+        //ignore top left button interaction when widgetSelector dropdown is active
+        lockElementOnOverlapCheck(auditoryNeurofeedback.startStopButton);
+
         //put your code here...
     }
 
@@ -154,7 +161,8 @@ class W_Focus extends Widget {
         }
 
         //This draws all cp5 objects in the local instance
-        focus_cp5.draw();
+        //focus_cp5.draw();
+        auditoryNeurofeedback.draw();
         
         //Draw the graph
         focusBar.draw();
@@ -166,7 +174,7 @@ class W_Focus extends Widget {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         //Very important to allow users to interact with objects after app resize        
-        focus_cp5.setGraphics(ourApplet, 0, 0);
+        //focus_cp5.setGraphics(ourApplet, 0, 0);
 
         resizeTable();
 
@@ -174,6 +182,7 @@ class W_Focus extends Widget {
         //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
         updateStatusCircle();
+        updateAuditoryNeurofeedbackPosition();
 
         updateGraphDims();
         focusBar.screenResized(graphX, graphY, graphW, graphH);
@@ -212,12 +221,18 @@ class W_Focus extends Widget {
         dataGrid.setHorizontalCenterTextInCells(true);
     }
 
+    private void updateAuditoryNeurofeedbackPosition() {
+        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int subContainerMiddleX = x + w/4;
+        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - navHeight + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
+    }
+
     private void updateStatusCircle() {
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         float min = min(upperLeftContainerW, upperLeftContainerH);
         xc = x + w/4;
-        yc = y + h/4;
+        yc = y + h/4 - navHeight;
         wc = min * (3f/5);
         hc = wc;
     }
@@ -263,6 +278,9 @@ class W_Focus extends Widget {
             //Keep this here
             double prediction = mlModel.predict(featureVector);
             //println("Concentration: " + prediction);
+
+            //Send band power and prediction data to AuditoryNeurofeedback class
+            auditoryNeurofeedback.update(bands.getLeft(), (float)prediction);
             
             return prediction;
 
@@ -361,6 +379,7 @@ class W_Focus extends Widget {
         int factor = focusChanSelect.isVisible() ? 1 : -1;
         yc += navHeight * factor;
         resizeTable();
+        updateAuditoryNeurofeedbackPosition();
     }
 
     public void setFocusHorizScale(int n) {
@@ -386,6 +405,10 @@ class W_Focus extends Widget {
 
     public int getMetricExceedsThreshold() {
         return predictionExceedsThreshold ? 1 : 0;
+    }
+
+    public void killAuditoryFeedback() {
+        auditoryNeurofeedback.killAudio();
     }
 }; //end of class
 

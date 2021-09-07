@@ -2778,7 +2778,6 @@ class InitBox {
             }
         } else {
             //if system is already active ... stop session and flip button state back
-            outputInfo("Learn how to use this application and more at openbci.github.io/Documentation/");
             setInitSessionButtonText("START SESSION");
             topNav.setLockTopLeftSubNavCp5Objects(false); //Unlock top left subnav buttons
             //creates new data file name so that you don't accidentally overwrite the old one
@@ -2786,6 +2785,7 @@ class InitBox {
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
+            w_focus.killAuditoryFeedback();
             haltSystem();
         }
     }
