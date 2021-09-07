@@ -1385,7 +1385,7 @@ class Stream extends Thread {
     }
 
     Boolean checkForData() {
-        if (this.dataType.equals("TimeSeries") || this.dataType.equals("Accel/Aux")) {
+        if (this.dataType.equals("TimeSeries")) {
             return w_networking.newTimeSeriesDataToSend;
         } else {
             return true;

@@ -11,6 +11,7 @@ from collections import deque
 
 last_print = time.time()
 fps_counter = deque(maxlen=150)
+duration = 5
 
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
@@ -20,7 +21,7 @@ inlet = StreamInlet(streams[0])
 
 channel_data = {}
 
-for i in range(5):  # how many iterations. Eventually this would be a while True
+for i in range(duration):  # how many iterations. Eventually this would be a while True
 
     for i in range(16): # each of the 16 channels here
         sample, timestamp = inlet.pull_sample()

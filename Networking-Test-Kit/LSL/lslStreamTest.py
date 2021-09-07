@@ -5,11 +5,11 @@ from time import sleep
 
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-streams = resolve_stream('type', 'FOCUS')
+streams = resolve_stream('type', 'EEG')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])
-duration = 2
+duration = 5
 
 sleep(1)
 
@@ -18,17 +18,18 @@ def testLSLSamplingRate():
     totalNumSamples = 0
     validSamples = 0
     numChunks = 0
+    print( "Testing Sampling Rates..." )
 
     while time.time() <= start + duration:
         # get chunks of samples
-        samples, timestamp = inlet.pull_chunk()
-        if samples:
+        chunk, timestamp = inlet.pull_chunk()
+        if chunk:
             numChunks += 1
-            print( len(samples) )
-            totalNumSamples += len(samples)
-            # print(samples);
-            for sample in samples:
-                print(sample)
+            # print( len(chunk) )
+            totalNumSamples += len(chunk)
+            # print(chunk);
+            for sample in chunk:
+                # print(sample)
                 validSamples += 1
 
     print( "Number of Chunks and Samples == {} , {}".format(numChunks, totalNumSamples) )
