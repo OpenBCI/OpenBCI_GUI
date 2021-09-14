@@ -421,18 +421,22 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         char p = '0';
         char n = '0';
-        String command;
+        //Build a command string so we can send 1 command to Cyton instead of 2!
+        //Hopefully, this lowers the chance of confusing the board with multiple commands sent quickly
+        StringBuilder fullCommand = new StringBuilder();
+
+        println("CYTON_IMP_CHECK -- Attempting to change channel== " + channel + " || isActive == " + active);
 
         if (active) {
 
             Srb2 srb2sSetting = currentADS1299Settings.values.srb2[channel];
             if (srb2sSetting == Srb2.CONNECT) {
                 n = '1';
-            }
-            else {
+            } else {
                 p = '1';
             }
-
+            
+            /*
             currentADS1299Settings.saveLastValues(channel);
             
             currentADS1299Settings.values.gain[channel] = Gain.X1;
@@ -440,29 +444,38 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
             currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
             currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
+            */
 
+            //fullCommand.append(currentADS1299Settings.getCurrentValuesString(channel));
+            /*
             boolean response = currentADS1299Settings.commit(channel);
             if (!response) {
                 currentADS1299Settings.revertToLastValues(channel);
                 outputWarn("Cyton Impedance Check - Error sending channel settings to board.");
                 return new ImmutablePair<Boolean, String>(Boolean.valueOf(false), "Error sending channel settings to board.");
             }
+            */
 
         } else {
             //Revert ADS channel settings to what user had before checking impedance on this channel
-            currentADS1299Settings.revertToLastValues(channel);
+            
+            //fullCommand.append(currentADS1299Settings.getLastValuesString(channel));
+            //currentADS1299Settings.revertToLastValues(channel);
             println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
         }
         
-        // for example: z 4 1 0 Z
-        command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
-        final Pair<Boolean, String> fullResponse = sendCommand(command);
+        // Format the impedance command string. Example: z 4 1 0 Z
+        String impedanceCommandString = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        
+        fullCommand.append(impedanceCommandString);
+        final Pair<Boolean, String> fullResponse = sendCommand(fullCommand.toString());
         boolean response = fullResponse.getKey().booleanValue();
         if (!response) {
             outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
             return fullResponse;
         }
 
+        //Change state for this channel if sending command was successful
         isCheckingImpedance[channel] = active;
 
         return fullResponse;
