@@ -279,8 +279,9 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-SessionSettings settings;
 DirectoryManager directoryManager;
+SessionSettings settings;
+GuiSettings guiSettings;
 
 final int navBarHeight = 32;
 TopNav topNav;
@@ -393,6 +394,7 @@ void setup() {
     // Copy sample data to the Users' Documents folder +  create Recordings folder
     directoryManager.init();
     settings = new SessionSettings();
+    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
@@ -446,6 +448,9 @@ void delayedSetup() {
         setupComplete = true; // signal that the setup thread has finished
         println("OpenBCI_GUI::Setup: Setup is complete!");
     }
+
+    //Apply GUI-wide settings to front end at the end of setup
+    guiSettings.applySettingsToFrontEnd();
 }
 
 //====================== END-OF-SETUP ==========================//
@@ -647,8 +652,9 @@ void initSystem() {
         settings.init();
         settings.initCheckPointFive();
     } else if (eegDataSource == DATASOURCE_GALEA) {
-        //After TopNav has been instantiated, default to Expert mode for Galea
-        topNav.configSelector.toggleExpertMode(true);
+        //After TopNav has been instantiated, force Expert mode for Galea by default
+        topNav.configSelector.toggleExpertModeFrontEnd(true);
+        guiSettings.setExpertMode(ExpertModeEnum.ON);
     }
     
     //Make sure topNav buttons draw in the correct spot

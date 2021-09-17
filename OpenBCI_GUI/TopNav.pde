@@ -933,11 +933,13 @@ class ConfigSelector {
         expertMode.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
-                toggleExpertMode(!settings.expertModeToggle);
-                String outputMsg = settings.expertModeToggle ?
+                boolean isActive = !guiSettings.getExpertModeBoolean();
+                toggleExpertModeFrontEnd(isActive);
+                String outputMsg = isActive ?
                     "Expert Mode ON: All keyboard shortcuts and features are enabled!" : 
                     "Expert Mode OFF: Use spacebar to start/stop the data stream.";
                 output(outputMsg);
+                guiSettings.setExpertMode(isActive ? ExpertModeEnum.ON : ExpertModeEnum.OFF);
             }
         });
         expertMode.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
@@ -1022,17 +1024,13 @@ class ConfigSelector {
         clearAllSettingsYes.setDescription("Clicking 'Yes' will delete all user settings and stop the session if running.");
     }
 
-    public void toggleExpertMode(boolean b) {
+    public void toggleExpertModeFrontEnd(boolean b) {
         if (b) {
             expertMode.getCaptionLabel().setText("Turn Expert Mode Off");
             expertMode.setColorBackground(BUTTON_EXPERTPURPLE);
-            println("GUI Settings: Expert Mode On");
-            settings.expertModeToggle = true;
         } else {
             expertMode.getCaptionLabel().setText("Turn Expert Mode On");
             expertMode.setColorBackground(BUTTON_NOOBGREEN);
-            println("GUI Settings: Expert Mode Off");
-            settings.expertModeToggle = false;
         }
     } 
 }

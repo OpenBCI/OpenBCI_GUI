@@ -31,7 +31,7 @@ synchronized void keyPressed() {
     boolean anyActiveTextfields = isNetworkingTextActive() || textFieldIsActive;
 
     if(!controlPanel.isOpen && !anyActiveTextfields){ //don't parse the key if the control panel is open
-        if (settings.expertModeToggle || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
+        if (guiSettings.getExpertModeBoolean() || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed
             if ((int(key) >=32) && (int(key) <= 126)) {  //32 through 126 represent all the usual printable ASCII characters
                 parseKey(key);
             }
