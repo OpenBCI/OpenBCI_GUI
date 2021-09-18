@@ -967,7 +967,7 @@ class ConfigSelector {
         loadSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
     }
 
-     private void createDefaultSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createDefaultSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
         defaultSessionSettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         defaultSessionSettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -978,7 +978,7 @@ class ConfigSelector {
         defaultSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
     }
 
-     private void createClearAllSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearAllSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllGUISettings = createButton(settings_cp5, name, text, _x, _y, _w, _h, p5, 12, BUTTON_CAUTIONRED, WHITE);
         clearAllGUISettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -992,7 +992,7 @@ class ConfigSelector {
         clearAllGUISettings.setDescription("This will clear all user settings and playback history. You will be asked to confirm.");
     }
 
-     private void createClearSettingsNoButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearSettingsNoButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllSettingsNo = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         clearAllSettingsNo.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -1005,7 +1005,7 @@ class ConfigSelector {
         });
     }
 
-     private void createClearSettingsYesButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearSettingsYesButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllSettingsYes = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         clearAllSettingsYes.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
