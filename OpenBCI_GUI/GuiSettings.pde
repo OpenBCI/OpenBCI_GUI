@@ -47,15 +47,15 @@ class GuiSettings {
         values.expertMode = ExpertModeEnum.OFF;
         
         StringBuilder settingsFilename = new StringBuilder(settingsDirectory);
-        settingsFilename.append("GuiWideSettings.txt");
+        settingsFilename.append("GuiWideSettings.json");
         filename = settingsFilename.toString();
         File fileToCheck = new File(filename);
         boolean fileExists = fileToCheck.exists();
         if (fileExists) {
             loadSettingsValues();
-            println("OpenBCI_GUI::Settings: Found and loaded existing GUI settings from.");
+            println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from.");
         } else {
-            println("OpenBCI_GUI::Settings: Creating new GUI default settings file.");
+            println("OpenBCI_GUI::Settings: Creating new GUI-wide Settings file.");
             saveToFile();
         }
     }
@@ -74,6 +74,8 @@ class GuiSettings {
         } catch (IOException e) {
             e.printStackTrace();
             outputWarn("OpenBCI_GUI::Settings: Error loading GUI-wide settings from file. Attempting to create a new one.");
+            //If there is an error, attempt to overwrite the file or create a new one
+            saveToFile();
             return false;
         }
     }
