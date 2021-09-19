@@ -450,7 +450,7 @@ void delayedSetup() {
     }
 
     //Apply GUI-wide settings to front end at the end of setup
-    guiSettings.applySettingsToFrontEnd();
+    guiSettings.applySettings();
 }
 
 //====================== END-OF-SETUP ==========================//

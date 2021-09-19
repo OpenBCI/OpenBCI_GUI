@@ -535,10 +535,6 @@ class TopNav {
         //This will also set the description/help-text for this cp5 button
         final Boolean upToDate = guiVersionIsUpToDate();
 
-        if (!upToDate) {
-            outputWarn("Update Available! Press the \"Update\" button at the top of the GUI to download the latest version.");
-        }
-
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (upToDate == null) {
@@ -553,6 +549,14 @@ class TopNav {
                 }
             }
         });
+
+        if (upToDate == null) {
+            return;
+        }
+
+        if (!upToDate) {
+            outputWarn("Update Available! Press the \"Update\" button at the top of the GUI to download the latest version.");
+        }
     }
 
     private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {

@@ -30,7 +30,7 @@ enum ExpertModeEnum implements GuiSettingsEnum {
 }
 
 public class GuiSettingsValues {
-    public ExpertModeEnum expertMode;
+    private ExpertModeEnum expertMode = ExpertModeEnum.OFF;
 
     public GuiSettingsValues() {
     }
@@ -44,7 +44,6 @@ class GuiSettings {
     GuiSettings(String settingsDirectory) {
 
         values = new GuiSettingsValues();
-        values.expertMode = ExpertModeEnum.OFF;
         
         StringBuilder settingsFilename = new StringBuilder(settingsDirectory);
         settingsFilename.append("GuiWideSettings.json");
@@ -53,7 +52,7 @@ class GuiSettings {
         boolean fileExists = fileToCheck.exists();
         if (fileExists) {
             loadSettingsValues();
-            println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from.");
+            println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from file.");
         } else {
             println("OpenBCI_GUI::Settings: Creating new GUI-wide Settings file.");
             saveToFile();
@@ -101,18 +100,17 @@ class GuiSettings {
     }
 
     //Call this method at the end of GUI main Setup in OpenBCI_GUI.pde to make sure everything exists
-    public void applySettingsToFrontEnd() {
-        topNav.configSelector.toggleExpertModeFrontEnd(values.expertMode.getBooleanValue());
+    //Has to be in this class to make sure other classes exist
+    public void applySettings() {
+        topNav.configSelector.toggleExpertModeFrontEnd(getExpertModeBoolean());
     }
 
     public void setExpertMode(ExpertModeEnum val) {
         values.expertMode = val;
         saveToFile();
     }
-
     
     public boolean getExpertModeBoolean() {
         return values.expertMode.getBooleanValue();
     }
-
 }
