@@ -14,8 +14,7 @@ public enum FocusXLim implements FocusEnum
 {
     FIVE (0, 5, "5 sec"),
     TEN (1, 10, "10 sec"),
-    TWENTY (2, 20, "20 sec"),
-    THIRTY (3, 30, "30 sec");
+    TWENTY (2, 20, "20 sec");
 
     private int index;
     private int value;
