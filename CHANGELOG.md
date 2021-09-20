@@ -3,6 +3,7 @@
 ### Improvements
 * Show info in footer when a new version of the GUI is available #992
 * Add GUI-wide settings class to keep certain settings across sessions and app starts #997
+* Remove 30 second window option from Focus widget
 
 ### Bug Fixes
 * Fix GUI not running on some Macs due to high-dpi screen code #987 #990
