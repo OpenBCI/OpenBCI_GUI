@@ -25,9 +25,6 @@
 //      -- read the comments
 //      -- once you find the right place to add your setting, you can copy the surrounding style
 //      -- uses JSON keys
-//      -- Example: Expert Mode is a global boolean, so we include it under kJSONKeySettings
-//      -- We use one variable to load from JSON: loadExpertModeToggle
-//      -- And another variable to use in the GUI and with saving to JSON: expertModeToggle
 //      -- Example2: GUI version and settings version
 //      -- Requires new JSON key 'version` and settingsVersion
 //
@@ -252,8 +249,6 @@ class SessionSettings {
     int loadFramerate;
     int loadDatasource;
     boolean dataSourceError = false;
-    //used globally to track and determine if expertMode is on or off
-    public boolean expertModeToggle = false;
 
     String saveDialogName; //Used when Save button is pressed
     String loadDialogName; //Used when Load button is pressed
@@ -366,7 +361,6 @@ class SessionSettings {
 
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
-        saveGlobalSettings.setBoolean("Expert Mode", expertModeToggle);
         saveGlobalSettings.setInt("Current Layout", currentLayout);
         saveGlobalSettings.setInt("Notch", dataProcessing.bsRange.getIndex());
         saveGlobalSettings.setInt("Bandpass Filter", dataProcessing.bpRange.getIndex());
@@ -587,7 +581,6 @@ class SessionSettings {
         //Load more global settings after this line, if needed
         int loadNotchSetting = loadGlobalSettings.getInt("Notch");
         int loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
-        Boolean loadExpertModeToggle = loadGlobalSettings.getBoolean("Expert Mode");
         Boolean loadDataSmoothingSetting = (currentBoard instanceof SmoothingCapableBoard) ? loadGlobalSettings.getBoolean("Data Smoothing") : null;
 
         //get the FFT settings
@@ -762,10 +755,6 @@ class SessionSettings {
             ((SmoothingCapableBoard)currentBoard).setSmoothingActive(loadDataSmoothingSetting);
             topNav.updateSmoothingButtonText();
         }
-
-        //Apply Expert Mode toggle
-        //This should not be loaded with other session settings - RW Jan 2021
-        //topNav.configSelector.toggleExpertMode(loadExpertModeToggle);
 
         //Load and apply all of the settings that are in dropdown menus. It's a bit much, so it has it's own function below.
         loadApplyWidgetDropdownText();
