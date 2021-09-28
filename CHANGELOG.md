@@ -6,7 +6,7 @@
 * Remove 30 second window option from Focus widget
 
 ### Bug Fixes
-* Fix GUI not running on some Macs due to high-dpi screen code #987 #990
+* Fix GUI not running on some Macs due to high-dpi screen code #987 #990 #1001
 * Fix streaming multiple data types over LSL #971
 
 # v5.0.6
