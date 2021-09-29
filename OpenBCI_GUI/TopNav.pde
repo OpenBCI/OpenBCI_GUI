@@ -533,15 +533,20 @@ class TopNav {
         updateGuiVersionButton = createTNButton("updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         //Attempt to compare local and remote GUI versions when TopNav is instantiated
         //This will also set the description/help-text for this cp5 button
-        final Boolean upToDate = guiVersionIsUpToDate();
+        //Do this check on app start and store as a global variable
+        guiIsUpToDate = guiVersionIsUpToDate();
 
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (upToDate == null) {
+                //Perform check again when button is pressed. User may have connected to internet by now!
+                guiIsUpToDate = guiVersionIsUpToDate();
+
+                if (guiIsUpToDate == null) {
+                    outputError("Update GUI: Unable to check for new version of GUI. Try again when connected to the internet.");
                     return;
                 }
 
-                if (!upToDate) {
+                if (!guiIsUpToDate) {
                     openURLInBrowser(guiLatestReleaseLocation);
                     outputInfo("Update GUI: Opening latest GUI release page using default browser");
                 } else {
@@ -550,11 +555,11 @@ class TopNav {
             }
         });
 
-        if (upToDate == null) {
+        if (guiIsUpToDate == null) {
             return;
         }
 
-        if (!upToDate) {
+        if (!guiIsUpToDate) {
             outputWarn("Update Available! Press the \"Update\" button at the top of the GUI to download the latest version.");
         }
     }

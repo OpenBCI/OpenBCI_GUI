@@ -64,6 +64,7 @@ String localGUIVersionString = "v5.0.7";
 String localGUIVersionDate = "September 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiIsUpToDate;
 
 PApplet ourApplet;
 

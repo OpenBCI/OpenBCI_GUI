@@ -2,6 +2,7 @@
 
 ### Improvements
 * Show info in footer when a new version of the GUI is available #992
+* Further improvements to GUI Update Button logic
 * Add GUI-wide settings class to keep certain settings across sessions and app starts #997
 * Remove 30 second window option from Focus widget
 
