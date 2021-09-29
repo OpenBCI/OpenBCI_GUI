@@ -533,21 +533,35 @@ class TopNav {
         updateGuiVersionButton = createTNButton("updateGuiVersionButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         //Attempt to compare local and remote GUI versions when TopNav is instantiated
         //This will also set the description/help-text for this cp5 button
-        final Boolean upToDate = guiVersionIsUpToDate();
+        //Do this check on app start and store as a global variable
+        guiIsUpToDate = guiVersionIsUpToDate();
+
         updateGuiVersionButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (upToDate == null) {
+                //Perform check again when button is pressed. User may have connected to internet by now!
+                guiIsUpToDate = guiVersionIsUpToDate();
+
+                if (guiIsUpToDate == null) {
+                    outputError("Update GUI: Unable to check for new version of GUI. Try again when connected to the internet.");
                     return;
                 }
 
-                if (!upToDate) {
+                if (!guiIsUpToDate) {
                     openURLInBrowser(guiLatestReleaseLocation);
-                    outputInfo("Update GUI: Opening latest Github release page using default browser");
+                    outputInfo("Update GUI: Opening latest GUI release page using default browser");
                 } else {
                     outputSuccess("Update GUI: Local OpenBCI GUI is up-to-date!");
                 }
             }
         });
+
+        if (guiIsUpToDate == null) {
+            return;
+        }
+
+        if (!guiIsUpToDate) {
+            outputWarn("Update Available! Press the \"Update\" button at the top of the GUI to download the latest version.");
+        }
     }
 
     private void createTopNavSettingsButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -928,11 +942,13 @@ class ConfigSelector {
         expertMode.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 toggleVisibility();
-                toggleExpertMode(!settings.expertModeToggle);
-                String outputMsg = settings.expertModeToggle ?
+                boolean isActive = !guiSettings.getExpertModeBoolean();
+                toggleExpertModeFrontEnd(isActive);
+                String outputMsg = isActive ?
                     "Expert Mode ON: All keyboard shortcuts and features are enabled!" : 
                     "Expert Mode OFF: Use spacebar to start/stop the data stream.";
                 output(outputMsg);
+                guiSettings.setExpertMode(isActive ? ExpertModeEnum.ON : ExpertModeEnum.OFF);
             }
         });
         expertMode.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
@@ -960,7 +976,7 @@ class ConfigSelector {
         loadSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
     }
 
-     private void createDefaultSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createDefaultSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
         defaultSessionSettings = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         defaultSessionSettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -971,7 +987,7 @@ class ConfigSelector {
         defaultSessionSettings.setDescription("Expert Mode enables advanced keyboard shortcuts and access to all GUI features.");
     }
 
-     private void createClearAllSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearAllSettingsButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllGUISettings = createButton(settings_cp5, name, text, _x, _y, _w, _h, p5, 12, BUTTON_CAUTIONRED, WHITE);
         clearAllGUISettings.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -985,7 +1001,7 @@ class ConfigSelector {
         clearAllGUISettings.setDescription("This will clear all user settings and playback history. You will be asked to confirm.");
     }
 
-     private void createClearSettingsNoButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearSettingsNoButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllSettingsNo = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         clearAllSettingsNo.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -998,7 +1014,7 @@ class ConfigSelector {
         });
     }
 
-     private void createClearSettingsYesButton(String name, String text, int _x, int _y, int _w, int _h) {
+    private void createClearSettingsYesButton(String name, String text, int _x, int _y, int _w, int _h) {
         clearAllSettingsYes = createButton(settings_cp5, name, text, _x, _y, _w, _h);
         clearAllSettingsYes.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -1017,17 +1033,13 @@ class ConfigSelector {
         clearAllSettingsYes.setDescription("Clicking 'Yes' will delete all user settings and stop the session if running.");
     }
 
-    public void toggleExpertMode(boolean b) {
+    public void toggleExpertModeFrontEnd(boolean b) {
         if (b) {
             expertMode.getCaptionLabel().setText("Turn Expert Mode Off");
             expertMode.setColorBackground(BUTTON_EXPERTPURPLE);
-            println("GUI Settings: Expert Mode On");
-            settings.expertModeToggle = true;
         } else {
             expertMode.getCaptionLabel().setText("Turn Expert Mode On");
             expertMode.setColorBackground(BUTTON_NOOBGREEN);
-            println("GUI Settings: Expert Mode Off");
-            settings.expertModeToggle = false;
         }
     } 
 }
@@ -1160,7 +1172,7 @@ class TutorialSelector {
         gettingStarted = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         gettingStarted.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/01GettingStarted/GettingStartedLanding");
+                openURLInBrowser("https://docs.openbci.com/GettingStarted/GettingStartedLanding/");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1171,7 +1183,7 @@ class TutorialSelector {
         testingImpedance = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         testingImpedance.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs#impedance-testing");
+                openURLInBrowser("https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#impedance-testing");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1182,7 +1194,7 @@ class TutorialSelector {
         troubleshootingGuide = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         troubleshootingGuide.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting");
+                openURLInBrowser("https://docs.openbci.com/Troubleshooting/GUI_Troubleshooting/");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
@@ -1193,7 +1205,7 @@ class TutorialSelector {
         customWidgets = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
         customWidgets.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser("https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIWidgets#custom-widget");
+                openURLInBrowser("https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget");
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });

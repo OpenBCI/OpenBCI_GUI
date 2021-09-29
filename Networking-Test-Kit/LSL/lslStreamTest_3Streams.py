@@ -10,43 +10,51 @@ from pylsl import StreamInlet, resolve_stream
 import time
 
 numStreams = 3
+duration_seconds = 20
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-stream1 = resolve_stream('type', 'EEG')
-stream2 = resolve_stream('type', 'AUX')
-stream3 = resolve_stream('type', 'FFT')
+stream_1 = resolve_stream('type', 'EEG')
+stream_2 = resolve_stream('type', 'AUX')
+stream_3 = resolve_stream('type', 'FOCUS')
 
 # create a new inlet to read from the stream
-inlet = StreamInlet(stream1[0])
-inlet2 = StreamInlet(stream2[0])
-inlet3 = StreamInlet(stream3[0])
+inlet = StreamInlet(stream_1[0])
+intlet_2 = StreamInlet(stream_2[0])
+intlet_3 = StreamInlet(stream_3[0])
 
 def testLSLSamplingRates():
-    print( "Testing Sampling Rates..." )
+    print( "Testing Sampling Rates for {} seconds".format(duration_seconds) )
     start = time.time()
-    numSamples1 = 0
-    numSamples2 = 0
-    numSamples3 = 0
-    while time.time() < start + 5:
+    num_samples_1 = 0
+    num_samples_2 = 0
+    num_samples_3 = 0
+    while time.time() < start + duration_seconds:
     # get a new sample (you can also omit the timestamp part if you're not
     # interested in it)
         for i in range(numStreams):
             if i == 0:
                 chunk, timestamps = inlet.pull_chunk()
                 if timestamps:
-                    numSamples1 += 1
+                    for sample in chunk:
+                        if sample:
+                            num_samples_1 += 1
+                            #print(sample)
             elif i == 1:
-                chunk, timestamps2 = inlet2.pull_chunk()
-                if timestamps2:
-                    numSamples2 += 1
+                chunk, timestamps_2 = intlet_2.pull_chunk()
+                if timestamps_2:
+                    for sample in chunk:
+                        num_samples_2 += 1
+                        #print(sample)
             elif i == 2:
-                chunk, timestamps3 = inlet3.pull_chunk()
-                if timestamps3:
-                    numSamples3 += 1
+                chunk, timestamps_3 = intlet_3.pull_chunk()
+                if timestamps_3:
+                    for sample in chunk:
+                        num_samples_3 += 1
+                        #print(sample)
             #print("Stream", i + 1, " == ", chunk)
-    print( "Stream 1 Sampling Rate == ", numSamples1, " | Type : EEG")
-    print( "Stream 2 Sampling Rate == ", numSamples2, " | Type : AUX")
-    print( "Stream 3 Sampling Rate == ", numSamples3, " | Type : FFT")
+    print( "Stream 1 Sampling Rate == ", num_samples_1 / duration_seconds, " | Type : EEG")
+    print( "Stream 2 Sampling Rate == ", num_samples_2 / duration_seconds, " | Type : AUX")
+    print( "Stream 3 Sampling Rate == ", num_samples_3 / duration_seconds, " | Type : FOCUS")
 
 
 testLSLSamplingRates()

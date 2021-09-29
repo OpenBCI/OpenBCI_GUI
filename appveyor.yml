@@ -34,7 +34,7 @@ install:
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
-  - appveyor DownloadFile https://download.processing.org/processing-3.5.3-windows64.zip
+  - appveyor DownloadFile https://github.com/processing/processing/releases/download/processing-0269-3.5.3/processing-3.5.3-windows64.zip
   - 7z x processing-3.5.3-windows64.zip -y -aoa
   # cp libraries
   - mkdir %userprofile%\documents\processing\libraries

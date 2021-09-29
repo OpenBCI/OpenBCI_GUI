@@ -60,10 +60,11 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.6";
-String localGUIVersionDate = "July 2021";
+String localGUIVersionString = "v5.0.7";
+String localGUIVersionDate = "September 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
+Boolean guiIsUpToDate;
 
 PApplet ourApplet;
 
@@ -279,14 +280,18 @@ static CustomOutputStream outputStream;
 public final static String stopButton_pressToStop_txt = "Stop Data Stream";
 public final static String stopButton_pressToStart_txt = "Start Data Stream";
 
-SessionSettings settings;
 DirectoryManager directoryManager;
+SessionSettings settings;
+GuiSettings guiSettings;
 
 final int navBarHeight = 32;
 TopNav topNav;
 
 ddf.minim.analysis.FFT[] fftBuff = new ddf.minim.analysis.FFT[nchan];    //from the minim library
 boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessing.pde to determine which uV array feeds the FFT calculation
+
+StringBuilder globalScreenResolution;
+StringBuilder globalScreenDPI;
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -308,18 +313,18 @@ void settings() {
         win_h = 580;
     }
     size(win_w, win_h, P2D);
+
+    globalScreenResolution = new StringBuilder("Screen Resolution: ");
+    globalScreenResolution.append(displayWidth);
+    globalScreenResolution.append(" X ");
+    globalScreenResolution.append(displayHeight);
+    //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
+    pixelDensity(displayDensity());
+    globalScreenDPI = new StringBuilder("High-DPI Screen Detected: ");
+    globalScreenDPI.append(displayDensity() == 2);
 }
 
 void setup() {
-    StringBuilder sb_res = new StringBuilder("Screen Resolution: ");
-    sb_res.append(displayWidth);
-    sb_res.append(" X ");
-    sb_res.append(displayHeight);
-    //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
-    pixelDensity(displayDensity());
-    StringBuilder sb_dpi = new StringBuilder("High-DPI Screen Detected: ");
-    sb_dpi.append(displayDensity() == 2);
-
     frameRate(120);
 
     copyPaste = new CopyPaste();
@@ -381,15 +386,16 @@ void setup() {
     }
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
-    println(sb_res.toString());
-    println(sb_dpi.toString());
+    println(globalScreenResolution.toString());
+    println(globalScreenDPI.toString());
     println(osName.toString());
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
-    println("For more information, please visit: https://openbci.github.io/Documentation/docs/06Software/01-OpenBCISoftware/GUIDocs");
+    println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
     // Copy sample data to the Users' Documents folder +  create Recordings folder
     directoryManager.init();
     settings = new SessionSettings();
+    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
@@ -443,6 +449,9 @@ void delayedSetup() {
         setupComplete = true; // signal that the setup thread has finished
         println("OpenBCI_GUI::Setup: Setup is complete!");
     }
+
+    //Apply GUI-wide settings to front end at the end of setup
+    guiSettings.applySettings();
 }
 
 //====================== END-OF-SETUP ==========================//
@@ -644,8 +653,9 @@ void initSystem() {
         settings.init();
         settings.initCheckPointFive();
     } else if (eegDataSource == DATASOURCE_GALEA) {
-        //After TopNav has been instantiated, default to Expert mode for Galea
-        topNav.configSelector.toggleExpertMode(true);
+        //After TopNav has been instantiated, force Expert mode for Galea by default
+        topNav.configSelector.toggleExpertModeFrontEnd(true);
+        guiSettings.setExpertMode(ExpertModeEnum.ON);
     }
     
     //Make sure topNav buttons draw in the correct spot

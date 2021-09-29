@@ -90,7 +90,8 @@ class ButtonHelpText{
     }
 
     public void draw(){
-        if (!isVisible || settings.expertModeToggle) {
+        //When using expert mode, disable help text over UI objects
+        if (!isVisible || guiSettings.getExpertModeBoolean()) {
             return;
         }
 
