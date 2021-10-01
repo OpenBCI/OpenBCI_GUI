@@ -86,6 +86,21 @@ class GuiSettings {
 
     public boolean saveToFile() {
         String json = getJson();
+
+        try {
+            final File file = new File(filename);
+            final File parent_directory = file.getParentFile();
+
+            if (null != parent_directory)
+            {
+                parent_directory.mkdirs();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            outputWarn("OpenBCI_GUI::Settings: Error creating /Documents/OpenBCI_GUI/Settings/ folder. Please make an issue on GitHub.");
+            return false;
+        }
+ 
         try {
             FileWriter writer = new FileWriter(filename);
             writer.write(json);
