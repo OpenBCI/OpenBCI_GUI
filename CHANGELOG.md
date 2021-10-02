@@ -1,3 +1,8 @@
+# v5.0.8
+
+### Bug Fixes
+* Hot Fix NullPointer error related to missing folder and GUI-wide settings file #1003 #1004
+
 # v5.0.7
 
 ### Improvements
