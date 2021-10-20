@@ -138,7 +138,7 @@ class ADS1299SettingsController {
                 }
             }
 
-            boolean showCustomCommandUI = settings.expertModeToggle;
+            boolean showCustomCommandUI = guiSettings.getExpertModeBoolean();
             
             //Draw background behind command buttons
             pushStyle();
