@@ -289,6 +289,20 @@ class Widget{
             previousDropdownIsActive = dropdownIsActive;
         }
     }
+
+    //For use with multiple Cp5 controllers per class/widget
+    protected void lockElementsOnOverlapCheck(List<controlP5.Controller> listOfControllers) {
+        if (dropdownIsActive != previousDropdownIsActive) {
+            for (controlP5.Controller c : listOfControllers) {
+                if (c == null) {
+                    continue; //Gracefully skip over a controller if it is null
+                }
+                //println(c.getName(), " lock == ", dropdownIsActive);
+                c.setLock(dropdownIsActive);
+            } 
+            previousDropdownIsActive = dropdownIsActive;
+        }
+    }
 }; //end of base Widget class
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

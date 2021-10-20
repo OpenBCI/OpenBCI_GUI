@@ -332,6 +332,14 @@ class DataStatus {
     public double getPercentage() {
         return percentage;
     }
+
+    public void setRailedWarnThreshold(double d) {
+        threshold_railed_warn = d;
+    }
+
+    public void setRailedThreshold(double d) {
+        threshold_railed = d;
+    }
 };
 
 class FilterConstants {

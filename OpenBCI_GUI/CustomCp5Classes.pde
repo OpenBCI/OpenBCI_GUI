@@ -127,7 +127,6 @@ class ButtonHelpText{
     }
 };
 
-
 ////////////////////////////////////////////////////////////////////////////////////
 //                              MENULIST CLASS                                    //
 //   Based on ControlP5 Processing Library example, written by Andreas Schlegel   //
@@ -416,6 +415,161 @@ class CustomScrollableList extends ScrollableList {
             // draw rect behind the dropdown 
             fill(theList.getBackgroundColor());
             rect(-1, -1, theList.getWidth()+2, theList.getHeight()+2);
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////
+//                      GUI CopyPaste                         //
+// Custom class used by the GUI to handle both Copy and Paste //
+// Use standard copy and paste keyboard shortcuts for all OS  //
+//                                                            //
+// Copy ControlP5 Textfield Text                              //
+//      - Windows and Linux: Control + C                      //
+//      - Mac: Command + C                                    //
+// Paste Text into Textfield                                  //
+//      - Windows and Linux: Control + V                      //
+//      - Mac: Command + V                                    //
+////////////////////////////////////////////////////////////////
+class CopyPaste {
+
+    private final int CMD_CNTL_KEYCODE = (isLinux() || isWindows()) ? 17 : 157;
+    private final int C_KEYCODE = 67;
+    private final int V_KEYCODE = 86;
+    private boolean commandControlPressed;
+    private boolean copyPressed;
+    private String value;
+
+    CopyPaste () {
+
+    }
+    
+    public boolean checkIfPressedAllOS() {
+        //This logic mimics the behavior of copy/paste in Mac OS X, and applied to all.
+        if (keyCode == CMD_CNTL_KEYCODE) {
+            commandControlPressed = true;
+            //println("KEYBOARD SHORTCUT: COMMAND PRESSED");
+            return true;
+        }
+
+        if (commandControlPressed && keyCode == V_KEYCODE) {
+            //println("KEYBOARD SHORTCUT: PASTE PRESSED");
+            // Get clipboard contents
+            String s = GClip.paste();
+            //println("FROM CLIPBOARD ~~ " + s);
+            // Assign to stored value
+            value = s;
+            return true;
+        }
+
+        if (commandControlPressed && keyCode == C_KEYCODE) {
+            //println("KEYBOARD SHORTCUT: COPY PRESSED");
+            copyPressed = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    public void checkIfReleasedAllOS() {
+        if (keyCode == CMD_CNTL_KEYCODE) {
+            commandControlPressed = false;
+        }
+    }
+    
+    //Pull stored value from this class and set to null, otherwise return null.
+    private String pullValue() {
+        if (value == null) {
+            return value;
+        }
+        String s = value;
+        value = null;
+        return s;
+    }
+
+    private void checkForPaste(Textfield tf) {
+        if (value == null) {
+            return;
+        }
+
+        if (tf.isFocus()) {
+            StringBuilder status = new StringBuilder("OpenBCI_GUI: User pasted text from the clipboard into ");
+            status.append(tf.toString());
+            println(status);
+            StringBuilder sb = new StringBuilder();
+            String existingText = dropNonPrintableChars(tf.getText());
+            String val = pullValue();
+            //println("EXISTING TEXT =="+ existingText+ "__end. VALUE ==" + val + "__end.");
+
+            // On Mac, Remove 'v' character from the end of the existing text
+            existingText = existingText.length() > 0 && isMac() ? existingText.substring(0, existingText.length() - 1) : existingText;
+
+            sb.append(existingText);
+            sb.append(val);
+            //The 'v' character does make it to the textfield, but this is immediately overwritten here.
+            tf.setText(sb.toString());
+        } 
+    }
+
+    private void checkForCopy(Textfield tf) {
+        if (!copyPressed) {
+            return;
+        }
+
+        if (tf.isFocus()) {
+            String s = dropNonPrintableChars(tf.getText());
+            if (s.length() == 0) {
+                return;
+            }
+            StringBuilder status = new StringBuilder("OpenBCI_GUI: User copied text from ");
+            status.append(tf.toString());
+            status.append(" to the clipboard");
+            println(status);
+            //println("FOUND TEXT =="+ s+"__end.");
+            if (isMac()) {
+                //Remove the 'c' character that was just typed in the textfield
+                s = s.substring(0, s.length() - 1);
+                tf.setText(s);
+                //println("MAC FIXED TEXT =="+ s+"__end.");
+            }
+            boolean b = GClip.copy(s);
+            copyPressed = false;
+        } 
+    }
+
+    public void checkForCopyPaste(Textfield tf) {
+        checkForPaste(tf);
+        checkForCopy(tf);
+    }
+}
+
+//Cp5 Textfield helper class
+public class TextFieldUpdateHelper {
+
+    // textFieldIsActive is used to ignore hotkeys when a textfield is active. Resets to false on every draw loop.
+    private boolean textFieldIsActive = false;
+
+    TextFieldUpdateHelper() {
+
+    }
+    
+    public void resetTextFieldIsActive() {
+        textFieldIsActive = false;
+    }
+
+    public boolean getAnyTextfieldsActive() {
+        return textFieldIsActive;
+    }
+
+    public void checkTextfield(Textfield tf) {
+        if (tf.isVisible()) {
+            tf.setUpdate(true);
+            if (tf.isFocus()) {
+                textFieldIsActive = true;
+                copyPaste.checkForCopyPaste(tf);
+            }
+        } else {
+            tf.setUpdate(false);
         }
     }
 }

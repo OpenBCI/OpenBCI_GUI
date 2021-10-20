@@ -14,6 +14,7 @@ W_fft w_fft;
 W_Networking w_networking;
 W_BandPower w_bandPower;
 W_Accelerometer w_accelerometer;
+W_CytonImpedance w_cytonImpedance;
 W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
 W_template w_template1;

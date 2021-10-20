@@ -413,7 +413,8 @@ class W_timeSeries extends Widget {
             return;
         }
         BoardCyton cytonBoard = (BoardCyton)currentBoard;
-        final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(_chan, toggle);
+        boolean CHECK_N_PIN = true;
+        final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(_chan, toggle, CHECK_N_PIN);
         boolean response = fullResponse.getKey().booleanValue();
         println("CytonImpedanceResponse==", fullResponse.getValue(),"!!!END_OF_RESPONSE");
         if (response) {

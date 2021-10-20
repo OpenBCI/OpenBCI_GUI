@@ -249,6 +249,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     private ADS1299Settings currentADS1299Settings;
     private boolean[] isCheckingImpedance;
+    protected boolean[] isCheckingImpedanceN;
+    protected boolean[] isCheckingImpedanceP;
 
     // same for all channels
     private final double brainflowGain = 24.0;
@@ -266,6 +268,11 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
+
+        isCheckingImpedanceN= new boolean[getNumEXGChannels()];
+        isCheckingImpedanceP= new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedanceN, false);
+        Arrays.fill(isCheckingImpedanceP, false);
 
         // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
@@ -417,7 +424,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     //Use this method instead of the one above!
-    public Pair<Boolean, String> setCheckingImpedanceCyton(int channel, boolean active) {
+    public Pair<Boolean, String> setCheckingImpedanceCyton(int channel, boolean active, boolean _isN) {
 
         char p = '0';
         char n = '0';
@@ -428,33 +435,31 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         println("CYTON_IMP_CHECK -- Attempting to change channel== " + channel + " || isActive == " + active);
 
         if (active) {
-
-            Srb2 srb2sSetting = currentADS1299Settings.values.srb2[channel];
-            if (srb2sSetting == Srb2.CONNECT) {
-                n = '1';
-            } else {
-                p = '1';
-            }
+            
+            
             
             /*
             currentADS1299Settings.saveLastValues(channel);
-            
+
             currentADS1299Settings.values.gain[channel] = Gain.X1;
             currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
             currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
             currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
             currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
-            */
 
-            //fullCommand.append(currentADS1299Settings.getCurrentValuesString(channel));
-            /*
             boolean response = currentADS1299Settings.commit(channel);
             if (!response) {
                 currentADS1299Settings.revertToLastValues(channel);
-                outputWarn("Cyton Impedance Check - Error sending channel settings to board.");
-                return new ImmutablePair<Boolean, String>(Boolean.valueOf(false), "Error sending channel settings to board.");
+                outputWarn("Galea Impedance Check - Error sending channel settings to board.");
+                return response;
             }
             */
+            
+            if (_isN) {
+                n = '1';
+            } else {
+                p = '1';
+            }
 
         } else {
             //Revert ADS channel settings to what user had before checking impedance on this channel
@@ -475,15 +480,43 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             return fullResponse;
         }
 
-        //Change state for this channel if sending command was successful
-        isCheckingImpedance[channel] = active;
+        if (_isN) {
+            isCheckingImpedanceN[channel] = active;
+        } else {
+            isCheckingImpedanceP[channel] = active;
+        }
 
         return fullResponse;
     }
 
     @Override
+    //General check that is a method for all impedance boards
     public boolean isCheckingImpedance(int channel) {
-        return isCheckingImpedance[channel];
+        return isCheckingImpedanceN[channel] || isCheckingImpedanceP[channel];
+    }
+
+    //Specifically check the status of N or P pins
+    public boolean isCheckingImpedanceNorP(int channel, boolean _isN) {
+        if (_isN) {
+            return isCheckingImpedanceN[channel];
+        }
+        return isCheckingImpedanceP[channel];
+    }
+
+    //Returns <pin, channel> if found
+    //Return <null,null> if not checking on any channels
+    public Pair<Boolean, Integer> isCheckingImpedanceOnAnyChannelsNorP() {
+        Boolean is_n_pin = true;
+        for (int i = 0; i < isCheckingImpedanceN.length; i++) {
+            if (isCheckingImpedanceN[i]) {
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+            if (isCheckingImpedanceP[i]) {
+                is_n_pin = false;
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+        }
+        return new ImmutablePair<Boolean, Integer>(null, null);
     }
 
     //Returns the channel number where impedance check is currently active, otherwise return null
