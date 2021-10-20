@@ -192,6 +192,7 @@ class W_CytonImpedance extends Widget {
         cytonElectrodeStatus = new CytonElectrodeStatus[nchan];
         for (int i = 0; i < cytonElectrodeStatus.length; i++) {
             cytonElectrodeStatus[i] = new CytonElectrodeStatus(imp_buttons_cp5, CytonElectrodeLocations.getByIndex(i), cytonBoard, checkingImpedanceOnElectrodeGif);
+            println("CYTON ELECTRODE STATUS making electrode #", i);
         }
     }
 

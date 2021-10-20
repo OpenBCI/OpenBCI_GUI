@@ -65,6 +65,12 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         addWidget(w_ganglionImpedance, w);
     }
 
+    if (currentBoard instanceof BoardCyton) {
+        w_cytonImpedance = new W_CytonImpedance(_this);
+        w_cytonImpedance.setTitle("Cyton Signal");
+        addWidget(w_cytonImpedance, w);
+    }
+
     //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10
     w_focus = new W_Focus(_this);
     w_focus.setTitle("Focus Widget");

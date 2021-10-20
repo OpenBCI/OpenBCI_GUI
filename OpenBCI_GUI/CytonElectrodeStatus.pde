@@ -35,14 +35,14 @@ interface CytonElectrodeEnum {
 
 public enum CytonElectrodeLocations implements CytonElectrodeEnum
 {
-    FCZ(0, 9, "9N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
-    CPZ(1, 10, "10N", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
-    POZ(2, 11, "11N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
-    OZ(3, 12, "12N", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
-    PO3(4, 13, "13N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
-    PO4(5, 14, "14N", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
-    O1(6, 15, "15N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
-    O2(7, 16, "16N", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514);
+    FCZ(0, 1, "9N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
+    CPZ(1, 2, "10N", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
+    POZ(2, 3, "11N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
+    OZ(3, 4, "12N", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
+    PO3(4, 5, "13N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
+    PO4(5, 6, "14N", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
+    O1(6, 7, "15N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
+    O2(7, 8, "16N", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514);
 
     private int index;
     private Integer guiChan;
@@ -192,6 +192,9 @@ class CytonElectrodeStatus {
         railedNF.setMaximumFractionDigits(2);
         dataTableColumnOffset = is_N_Pin ? 1 : 2;
         checkingElectrodeGif = statusGif;
+
+        state_imp = ElectrodeState.GREYED_OUT;
+        state_live = ElectrodeState.GREYED_OUT;
 
         //This will be resized and positioned during session starts when widget is assigned a container
         createCytonElectrodeTestingButton("electrode_"+electrodeLocation, "Test", 0, 0, 20, 10);
