@@ -12,7 +12,7 @@ class W_CytonImpedance extends Widget {
 
     private CytonSignalCheckMode signalCheckMode = CytonSignalCheckMode.LIVE;
     private CytonImpedanceLabels labelMode = CytonImpedanceLabels.ADS_CHANNEL;
-    private CytonImpedanceInterval masterCheckInterval = CytonImpedanceInterval.TWO;
+    private CytonImpedanceInterval masterCheckInterval = CytonImpedanceInterval.SEVEN;
     
     private final int padding = 5;
     private final int padding_3 = 3;

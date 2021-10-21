@@ -436,9 +436,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         if (active) {
             
-            
-            
-            /*
             currentADS1299Settings.saveLastValues(channel);
 
             currentADS1299Settings.values.gain[channel] = Gain.X1;
@@ -451,9 +448,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             if (!response) {
                 currentADS1299Settings.revertToLastValues(channel);
                 outputWarn("Galea Impedance Check - Error sending channel settings to board.");
-                return response;
+                return new ImmutablePair<Boolean, String>(false, "Error");
             }
-            */
             
             if (_isN) {
                 n = '1';
@@ -463,9 +459,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         } else {
             //Revert ADS channel settings to what user had before checking impedance on this channel
-            
-            //fullCommand.append(currentADS1299Settings.getLastValuesString(channel));
-            //currentADS1299Settings.revertToLastValues(channel);
+            fullCommand.append(currentADS1299Settings.getLastValuesString(channel));
+            currentADS1299Settings.revertToLastValues(channel);
             println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
         }
         
