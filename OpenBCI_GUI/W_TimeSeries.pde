@@ -407,24 +407,6 @@ class W_timeSeries extends Widget {
             channelBars[i].adjustTimeAxis(xLimit.getValue());
         }
     }
-
-    public void toggleImpedanceCheckOnChannel(Integer _chan, boolean toggle) {
-        if (_chan == null) {
-            return;
-        }
-        BoardCyton cytonBoard = (BoardCyton)currentBoard;
-        boolean CHECK_N_PIN = true;
-        final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(_chan, toggle, CHECK_N_PIN);
-        boolean response = fullResponse.getKey().booleanValue();
-        println("CytonImpedanceResponse==", fullResponse.getValue(),"!!!END_OF_RESPONSE");
-        if (response) {
-            //If successful, update the front end components to reflect the new state
-            adsSettingsController.updateChanSettingsDropdowns(_chan, currentBoard.isEXGChannelActive(_chan));
-            adsSettingsController.setHasUnappliedSettings(_chan, false);
-        }
-        boolean shouldBeOn = toggle && response;
-        channelBars[_chan].overrideImpButtonToggle(shouldBeOn);
-    }
 };
 
 //These functions are activated when an item from the corresponding dropdown is selected
@@ -467,8 +449,7 @@ class ChannelBar {
     int defaultH;
     ControlP5 cbCp5;
     Button onOffButton;
-    Button impCheckButton;
-    int onOff_diameter, impButton_diameter;
+    int onOff_diameter;
     int yScaleButton_h;
     int yScaleButton_w;
     Button yScaleButton_pos;
@@ -520,15 +501,8 @@ class ChannelBar {
         onOff_diameter = h > 26 ? 26 : h - 2;
         createOnOffButton("onOffButton"+channelIndex, channelString, x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter);
 
-        if(currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impButton_diameter = 22;
-            createImpButton("impButton"+channelIndex, "\u2126", x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter);
-        } else {
-            impButton_diameter = 0;
-        }
-
         //Create GPlot for this Channel
-        uiSpaceWidth = 36 + padding_4 + impButton_diameter;
+        uiSpaceWidth = 36 + padding_4;
         yAxisUpperLim = 200;
         yAxisLowerLim = -200;
         numSeconds = 5;
@@ -679,19 +653,13 @@ class ChannelBar {
             popStyle();
         }
 
-        //draw impedance check Button and values
+        //draw impedance values in time series also for each channel
         drawVoltageValue = true;
-        if (currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impCheckButton.setVisible(true);
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
             if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
                 impValue.draw();
                 drawVoltageValue = false;
             }
-        }
-
-        if (currentBoard instanceof BoardGalea && ((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
-            impValue.draw();
-            drawVoltageValue = false;
         }
         
         if (drawVoltageValue) {
@@ -797,10 +765,6 @@ class ChannelBar {
         onOff_diameter = h > 26 ? 26 : h - 2;
         onOffButton.setSize(onOff_diameter, onOff_diameter);
         onOffButton.setPosition(x + 6, y + int(h/2) - int(onOff_diameter/2));
-
-        if(currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impCheckButton.setPosition(x + 36, y + int(h/2) - int(impButton_diameter/2));
-        }
     }
 
     public void updateCP5(PApplet _parent) {
@@ -833,39 +797,6 @@ class ChannelBar {
             }
         });
         onOffButton.setDescription("Click to toggle channel " + channelString + ".");
-    }
-    
-    //This method is only called for appropriate boards - aka Cyton et al
-    private void createImpButton(String name, String text, int _x, int _y, int _w, int _h) {
-        impCheckButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, WHITE, BLACK, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
-        impCheckButton.setCircularButton(true);
-        impCheckButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                println("[" + channelString + "] imp released");
-                // flip impedance check
-                ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
-
-                //Turn off impedance check on previous channel
-                Integer checkingImpOnChannelNum = impBoard.isCheckingImpedanceOnChannel();
-                if (checkingImpOnChannelNum != null) {
-                    //println("CYTON FOUND CHECKING IMPEDANCE ON CHANNEL == ", checkingImpOnChannelNum);
-                    w_timeSeries.toggleImpedanceCheckOnChannel(checkingImpOnChannelNum, false);
-                    if (checkingImpOnChannelNum == channelIndex) {
-                        return;
-                    }
-                }
-
-                w_timeSeries.toggleImpedanceCheckOnChannel(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
-            }
-        });
-        impCheckButton.setDescription("Click to toggle impedance check for channel " + channelString + ".");
-    }
-
-    public void overrideImpButtonToggle(boolean b) {
-        color bgColor = b ? BUTTON_PRESSED_DARKGREY : WHITE;
-        color textColor = b ? WHITE : BLACK;
-        impCheckButton.setColorBackground(bgColor);
-        impCheckButton.setColorCaptionLabel(textColor);
     }
 
     private Button createYScaleButton(int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {

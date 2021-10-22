@@ -359,6 +359,7 @@ class CytonElectrodeStatus {
                 }
             }
         });
+        testing_button.setDescription("Click to toggle impedance check for this ADS pin.");
     }
 
     public void resizeButton(Grid _dataTable) {
