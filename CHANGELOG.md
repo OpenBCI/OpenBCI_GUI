@@ -1,5 +1,8 @@
 # v5.0.9
 
+### Bug Fixes
+* Change TimeSeries y-axis textfields to labels to increase performance and fix font on some Macs
+
 ### Improvements
 * For Cyton, only allow checking impedance on one channel at a time #983
 

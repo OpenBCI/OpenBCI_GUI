@@ -474,8 +474,8 @@ class ChannelBar {
     Button yScaleButton_pos;
     Button yScaleButton_neg;
     int yAxisLabel_h;
-    private Textfield yAxisMax;
-    private Textfield yAxisMin;
+    private TextBox yAxisMax;
+    private TextBox yAxisMin;
     
     int yAxisUpperLim;
     int yAxisLowerLim;
@@ -565,8 +565,10 @@ class ChannelBar {
         yScaleButton_h = 18;
         yAxisLabel_h = 12;
         int padding = 2;
-        yAxisMax = createTextfield(yAxisMax, yAxisUpperLim, "yAxisMax", "+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + int(padding*1.5), yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
-        yAxisMin = createTextfield(yAxisMin, yAxisLowerLim, "yAxisMin", yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
+        yAxisMax = new TextBox("+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + int(padding*1.5), OPENBCI_DARKBLUE, color(255,255,255,175), LEFT, TOP);
+        yAxisMin = new TextBox(yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, OPENBCI_DARKBLUE, color(255,255,255,175), LEFT, TOP);
+        customYLim(yAxisMax, yAxisUpperLim);
+        customYLim(yAxisMin, yAxisLowerLim);
         yScaleButton_neg = createYScaleButton(channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
         yScaleButton_pos = createYScaleButton(channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding*2 + yScaleButton_w, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
         
@@ -580,7 +582,6 @@ class ChannelBar {
     }
 
     void update() {
-
         //Reusable variables
         String fmt; float val;
 
@@ -609,14 +610,6 @@ class ChannelBar {
         else {
             onOffButton.setColorBackground(50); // power down == true, set to grey
         }
-
-        if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
-            textFieldIsActive = true;
-        }
-
-        copyPaste.checkForCopyPaste(yAxisMax);
-        copyPaste.checkForCopyPaste(yAxisMin);
-
     }
 
     private String getFmt(float val) {
@@ -712,6 +705,8 @@ class ChannelBar {
         b = !hardwareSettingsAreOpen && h > minimumChannelHeight;
         yAxisMin.setVisible(b);
         yAxisMax.setVisible(b);
+        yAxisMin.draw();
+        yAxisMax.draw();
 
         try {
             cbCp5.draw();
@@ -745,12 +740,8 @@ class ChannelBar {
         //Early out if autoscale
         if (_vertScaleValue == 0) {
             isAutoscale = true;
-            yAxisMin.lock();
-            yAxisMax.lock();
             return;
         }
-        yAxisMin.unlock();
-        yAxisMax.unlock();
         isAutoscale = false;
         yAxisLowerLim = -_vertScaleValue;
         yAxisUpperLim = _vertScaleValue;
@@ -775,13 +766,11 @@ class ChannelBar {
     }
 
     //Update yAxis text and responsively size Textfield
-    private void customYLim(Textfield tf, int limit) {
-        String s = limit > 0 ? "+" : "";
-        s += limit+"uV";
-        tf.setText(s);
-        //Responsively scale button size based on number of digits
-        int _width =  s.length() * 6;
-        tf.setSize(_width, yAxisLabel_h);
+    private void customYLim(TextBox tb, int limit) {
+        StringBuilder s = new StringBuilder(limit > 0 ? "+" : "");
+        s.append(limit);
+        s.append("uV");
+        tb.setText(s.toString());
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
@@ -802,8 +791,8 @@ class ChannelBar {
         yScaleButton_neg.setPosition(x + uiSpaceWidth + padding, y + h/2 - yScaleButton_h/2);
         yScaleButton_pos.setPosition(x + uiSpaceWidth + padding*2 + yScaleButton_w, y + h/2 - yScaleButton_h/2);
 
-        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5));
-        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding);
+        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5) - 2);
+        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding - 1);
 
         onOff_diameter = h > 26 ? 26 : h - 2;
         onOffButton.setSize(onOff_diameter, onOff_diameter);
@@ -895,29 +884,6 @@ class ChannelBar {
         return myButton;
     }
 
-    private Textfield createTextfield(Textfield myTextfield, int intValue, String name, String text, int _x, int _y, int _w, int _h) {
-        myTextfield = cbCp5.addTextfield(name)
-            .setPosition(_x, _y)
-            .setCaptionLabel("")
-            .setSize(_w, _h)
-            .setFont(createFont("Arial",10,true))
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(color(210))  // border color when not selected - grey
-            .setColorActive(isSelected_color)  // border color when selected - green
-            .setColorCursor(color(26, 26, 26))
-            .setText(text) //set the text
-            .align(5, 10, 20, 40)
-            //.onDoublePress(new TFCallbackListener (channelIndex, text, multiplier))
-            .setAutoClear(false)
-            ;
-        myTextfield.addCallback(new TFCallbackListener(channelIndex, myTextfield));
-        customYLim(myTextfield, intValue);
-        return myTextfield;
-    }
-
     private class yScaleButtonCallbackListener implements CallbackListener {
         private int channel;
         private boolean increase;
@@ -944,47 +910,6 @@ class ChannelBar {
             //Update button text
             customYLim(yAxisMin, yAxisLowerLim);
             customYLim(yAxisMax, yAxisUpperLim);
-        }
-    }
-
-    private class TFCallbackListener implements CallbackListener {
-        private int channel;
-        private Textfield tf;
-        private String rcvString;
-        private int rcvAsInt;
-    
-        TFCallbackListener(int i, Textfield _tf)  {
-            channel = i;
-            tf = _tf;
-        }
-        public void controlEvent(CallbackEvent theEvent) {
-            
-            //Pressing ENTER in the Textfield triggers a "Broadcast"
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                
-                //Try to clean up typing accidents from user input in Textfield
-                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                rcvAsInt = NumberUtils.toInt(rcvString);
-                if (rcvAsInt == 0) {
-                    rcvAsInt = Math.round(NumberUtils.toFloat(rcvString));
-                }
-                verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
-                
-                if (tf == yAxisMin) {
-                    yAxisLowerLim = rcvAsInt;
-                } else {
-                    yAxisUpperLim = rcvAsInt;
-                }
-                
-                customYLim(tf, rcvAsInt);
-                plot.setYLim(yAxisLowerLim, yAxisUpperLim);
-            }
-
-            //Clicking in the Textfield, which you must do before typing, reformats the text to be an integer
-            if (theEvent.getAction() == ControlP5.ACTION_RELEASED) {
-                int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
-                tf.setText(Integer.toString(i));
-            }
         }
     }
 };
