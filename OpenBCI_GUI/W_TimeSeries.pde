@@ -465,7 +465,7 @@ class ChannelBar {
     int minimumChannelHeight;
     int plotBottomWellH = 45;
 
-    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Se ries trace
     GPointsArray channelPoints;
     int nPoints;
     int numSeconds;
