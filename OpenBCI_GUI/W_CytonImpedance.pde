@@ -65,10 +65,10 @@ class W_CytonImpedance extends Widget {
         checkingImpedanceOnElectrodeGif = new Gif(ourApplet, "Rolling-1s-200px.gif");
         checkingImpedanceOnElectrodeGif.loop();
 
-        addDropdown("CytonImpedance_MasterCheckInterval", "Interval", getEnumStrings(masterCheckInterval.values()), masterCheckInterval.getIndex());
+        addDropdown("CytonImpedance_MasterCheckInterval", "Interval", masterCheckInterval.getEnumStringsAsList(), masterCheckInterval.getIndex());
         dropdownWidth = 85; //Override the widget header dropdown width to fit "impedance" mode
-        addDropdown("CytonImpedance_LabelMode", "Labels", getEnumStrings(labelMode.values()), labelMode.getIndex());
-        addDropdown("CytonImpedance_Mode", "Mode", getEnumStrings(signalCheckMode.values()), signalCheckMode.getIndex());
+        addDropdown("CytonImpedance_LabelMode", "Labels", labelMode.getEnumStringsAsList(), labelMode.getIndex());
+        addDropdown("CytonImpedance_Mode", "Mode", signalCheckMode.getEnumStringsAsList(), signalCheckMode.getIndex());
 
         footerHeight = navH/2;
         
@@ -242,14 +242,6 @@ class W_CytonImpedance extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     }
 
-    private List<String> getEnumStrings(CytonImpedanceEnum[] enumValues) {
-        List<String> enumStrings = new ArrayList<String>();
-        for (CytonImpedanceEnum val : enumValues) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-
     private void initCytonImpedanceMap() {
         if (nchan == 8) {
             cytonHeadplotStatic = loadImage("Cyton_8Ch_Static_Headplot_Image.png");
@@ -335,6 +327,7 @@ class W_CytonImpedance extends Widget {
 
     public void setMasterCheckInterval(int n) {
         masterCheckInterval = masterCheckInterval.values()[n];
+        println(masterCheckInterval.getValue());
     }
     
     public void drawUserLeftRightLabels() {
@@ -571,6 +564,6 @@ void CytonImpedance_LabelMode(int n) {
     w_cytonImpedance.setShowAnatomicalName(n);
 }
 
-void cytonImpedance_MasterCheckInterval(int n) {
+void CytonImpedance_MasterCheckInterval(int n) {
     w_cytonImpedance.setMasterCheckInterval(n);
 }

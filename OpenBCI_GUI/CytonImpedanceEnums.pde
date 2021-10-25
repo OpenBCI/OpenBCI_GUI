@@ -1,15 +1,12 @@
-interface CytonImpedanceEnum {
-    public int getIndex();
-    public String getString();
-}
 
-public enum CytonSignalCheckMode implements CytonImpedanceEnum
+public enum CytonSignalCheckMode implements IndexingInterface
 {
     LIVE (0, "Live"),
     IMPEDANCE (1, "Impedance");
 
     private int index;
     private String label;
+    private static CytonSignalCheckMode[] vals = values();
 
     CytonSignalCheckMode(int _index, String _label) {
         this.index = _index;
@@ -29,9 +26,17 @@ public enum CytonSignalCheckMode implements CytonImpedanceEnum
     public boolean getIsImpedanceMode() {
         return label.equals("Impedance");
     }
+
+    private static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
 }
 
-public enum CytonImpedanceLabels implements CytonImpedanceEnum
+public enum CytonImpedanceLabels implements IndexingInterface
 {
     ADS_CHANNEL (0, "Channel"),
     ANATOMICAL (1, "Anatomical")
@@ -40,6 +45,7 @@ public enum CytonImpedanceLabels implements CytonImpedanceEnum
     private int index;
     private String label;
     private boolean boolean_value;
+    private static CytonImpedanceLabels[] vals = values();
 
     CytonImpedanceLabels(int _index, String _label) {
         this.index = _index;
@@ -59,9 +65,17 @@ public enum CytonImpedanceLabels implements CytonImpedanceEnum
     public boolean getIsAnatomicalName() {
         return label.equals("Anatomical");
     }
+
+    private static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
 }
 
-public enum CytonImpedanceInterval implements CytonImpedanceEnum
+public enum CytonImpedanceInterval implements IndexingInterface
 {
     MONKEY_MODE (0, 500, "0.5 sec"),
     TWO (1, 2000, "2 sec"),
@@ -76,6 +90,7 @@ public enum CytonImpedanceInterval implements CytonImpedanceEnum
     private int value;
     private String label;
     private boolean boolean_value;
+    private static CytonImpedanceInterval[] vals = values();
 
     CytonImpedanceInterval(int _index, int _val, String _label) {
         this.index = _index;
@@ -95,5 +110,13 @@ public enum CytonImpedanceInterval implements CytonImpedanceEnum
 
     public int getValue() {
         return value;
+    }
+
+    private static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
     }
 }
