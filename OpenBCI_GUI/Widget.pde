@@ -7,6 +7,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//Used for Widget Dropdown Enums
+interface IndexingInterface {
+    public int getIndex();
+    public String getString();
+}
+
 class Widget{
 
     protected PApplet pApplet;

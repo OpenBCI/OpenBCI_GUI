@@ -87,7 +87,7 @@ public enum CytonElectrodeLocations implements CytonElectrodeEnum
         return vals[i];
     }
 
-    public static CytonElectrodeLocations getByADSCahn(String value) {  
+    public static CytonElectrodeLocations getByADSChan(String value) {  
         if (value != null) {  
             for (CytonElectrodeLocations location : values()) {  
                 if (location.adsChan.equals(value)) {  
@@ -95,7 +95,7 @@ public enum CytonElectrodeLocations implements CytonElectrodeEnum
                 }  
             }  
         }
-
+        println("getByADSChan - ERROR | Value == " + value);
         throw new IllegalArgumentException("Invalid electrode location: " + value);
     }
 

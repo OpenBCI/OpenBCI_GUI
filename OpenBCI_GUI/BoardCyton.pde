@@ -459,7 +459,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         } else {
             //Revert ADS channel settings to what user had before checking impedance on this channel
-            fullCommand.append(currentADS1299Settings.getLastValuesString(channel));
+            fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.previousValues));
             currentADS1299Settings.revertToLastValues(channel);
             println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
         }

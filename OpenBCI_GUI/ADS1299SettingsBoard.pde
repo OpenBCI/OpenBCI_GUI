@@ -304,19 +304,12 @@ class ADS1299Settings {
         return equal;
     }
 
-    public String getLastValuesString(int chan) {
+    //Get previous or current values as a string
+    public String getValuesString(int chan, ADS1299SettingsValues vals) {
         String commandString = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
-                                        previousValues.powerDown[chan].ordinal(), previousValues.gain[chan].ordinal(),
-                                        previousValues.inputType[chan].ordinal(), previousValues.bias[chan].ordinal(),
-                                        previousValues.srb2[chan].ordinal(), previousValues.srb1[chan].ordinal());
-        return commandString;
-    }
-
-    public String getCurrentValuesString(int chan) {
-        String commandString = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
-                                        values.powerDown[chan].ordinal(), values.gain[chan].ordinal(),
-                                        values.inputType[chan].ordinal(), values.bias[chan].ordinal(),
-                                        values.srb2[chan].ordinal(), values.srb1[chan].ordinal());
+                                        vals.powerDown[chan].ordinal(), vals.gain[chan].ordinal(),
+                                        vals.inputType[chan].ordinal(), vals.bias[chan].ordinal(),
+                                        vals.srb2[chan].ordinal(), vals.srb1[chan].ordinal());
         return commandString;
     }
 }

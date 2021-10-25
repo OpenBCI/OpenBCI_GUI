@@ -11,13 +11,7 @@
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-interface TimeSeriesAxisEnum {
-    public int getIndex();
-    public int getValue();
-    public String getString();
-}
-
-public enum TimeSeriesXLim implements TimeSeriesAxisEnum
+public enum TimeSeriesXLim implements IndexingInterface
 {
     ONE (0, 1, "1 sec"),
     THREE (1, 3, "3 sec"),
@@ -28,6 +22,7 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
     private int index;
     private int value;
     private String label;
+    private static TimeSeriesXLim[] vals = values();
 
     TimeSeriesXLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -35,7 +30,6 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
         this.label = _label;
     }
 
-    @Override
     public int getValue() {
         return value;
     }
@@ -49,9 +43,17 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
     public int getIndex() {
         return index;
     }
+    
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
 }
 
-public enum TimeSeriesYLim implements TimeSeriesAxisEnum
+public enum TimeSeriesYLim implements IndexingInterface
 {
     AUTO (0, 0, "Auto"),
     UV_50 (1, 50, "50 uV"),
@@ -64,6 +66,7 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
     private int index;
     private int value;
     private String label;
+    private static TimeSeriesYLim[] vals = values();
 
     TimeSeriesYLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -71,7 +74,6 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
         this.label = _label;
     }
 
-    @Override
     public int getValue() {
         return value;
     }
@@ -84,6 +86,14 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
     @Override
     public int getIndex() {
         return index;
+    }
+
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
     }
 }
 
@@ -148,8 +158,8 @@ class W_timeSeries extends Widget {
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
         //This is a newer protocol for setting up dropdowns.
-        addDropdown("VertScale_TS", "Vert Scale", getEnumStrings(yLimit.values()), yLimit.getIndex());
-        addDropdown("Duration", "Window", getEnumStrings(xLimit.values()), xLimit.getIndex());
+        addDropdown("VertScale_TS", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
+        addDropdown("Duration", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -376,14 +386,6 @@ class W_timeSeries extends Widget {
             }
         });
         return myButton;
-    }
-
-    public List<String> getEnumStrings(TimeSeriesAxisEnum[] enumValues) {
-        List<String> enumStrings = new ArrayList<String>();
-        for (TimeSeriesAxisEnum val : enumValues) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 
     public TimeSeriesYLim getTSVertScale() {
