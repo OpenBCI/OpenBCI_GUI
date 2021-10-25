@@ -285,13 +285,12 @@ class ADS1299Settings {
         previousValues.srb1[chan] = values.srb1[chan];
     }
 
-    public boolean revertToLastValues(int chan) {
+    public void revertToLastValues(int chan) {
         values.gain[chan] = previousValues.gain[chan];
         values.inputType[chan] = previousValues.inputType[chan];
         values.bias[chan] = previousValues.bias[chan];
         values.srb2[chan] = previousValues.srb2[chan];
         values.srb1[chan] = previousValues.srb1[chan];
-        return commit(chan);
     }
 
     public boolean equalsLastValues(int chan) {        

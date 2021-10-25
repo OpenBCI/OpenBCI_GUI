@@ -424,7 +424,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     //Use this method instead of the one above!
-    public Pair<Boolean, String> setCheckingImpedanceCyton(int channel, boolean active, boolean _isN) {
+    public Pair<Boolean, String> setCheckingImpedanceCyton(final int channel, final boolean active, final boolean _isN) {
 
         char p = '0';
         char n = '0';
@@ -444,12 +444,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
             currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
 
-            boolean response = currentADS1299Settings.commit(channel);
-            if (!response) {
-                currentADS1299Settings.revertToLastValues(channel);
-                outputWarn("Galea Impedance Check - Error sending channel settings to board.");
-                return new ImmutablePair<Boolean, String>(false, "Error");
-            }
+            fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.values));
             
             if (_isN) {
                 n = '1';
@@ -459,29 +454,25 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         } else {
             //Revert ADS channel settings to what user had before checking impedance on this channel
-            fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.previousValues));
             currentADS1299Settings.revertToLastValues(channel);
+            fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.values));
             println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
         }
         
         // Format the impedance command string. Example: z 4 1 0 Z
         String impedanceCommandString = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
-        
         fullCommand.append(impedanceCommandString);
-        final Pair<Boolean, String> fullResponse = sendCommand(fullCommand.toString());
-        boolean response = fullResponse.getKey().booleanValue();
-        if (!response) {
-            outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
-            return fullResponse;
-        }
+        final String commandToSend = fullCommand.toString();
+        
+        Thread t1 = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                asyncSendImpedanceCommand(commandToSend, channel, active, _isN);
+            }
+        });  
+        t1.start();
 
-        if (_isN) {
-            isCheckingImpedanceN[channel] = active;
-        } else {
-            isCheckingImpedanceP[channel] = active;
-        }
-
-        return fullResponse;
+        return new ImmutablePair<Boolean, String>(true, "END OF METHOD TESTING");
     }
 
     @Override
@@ -523,6 +514,27 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             }
         }
         return null;
+    }
+
+    private void asyncSendImpedanceCommand(String commandToSend, int channel, boolean active, boolean _isN) {
+        final Pair<Boolean, String> fullResponse = sendCommand(commandToSend);
+        boolean response = fullResponse.getKey().booleanValue();
+        if (!response) {
+            outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
+            if (active) {
+                currentADS1299Settings.revertToLastValues(channel);
+                //return new ImmutablePair<Boolean, String>(false, "Error");
+            }
+            //return fullResponse;
+        }
+
+        if (_isN) {
+            isCheckingImpedanceN[channel] = active;
+        } else {
+            isCheckingImpedanceP[channel] = active;
+        }
+
+        //return fullResponse;
     }
 
     @Override

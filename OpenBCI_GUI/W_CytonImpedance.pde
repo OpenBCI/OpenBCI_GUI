@@ -327,7 +327,6 @@ class W_CytonImpedance extends Widget {
 
     public void setMasterCheckInterval(int n) {
         masterCheckInterval = masterCheckInterval.values()[n];
-        println(masterCheckInterval.getValue());
     }
     
     public void drawUserLeftRightLabels() {
@@ -494,11 +493,13 @@ class W_CytonImpedance extends Widget {
             if (masterCheckCounter == numElectrodesToMasterCheck) {
                 masterCheckCounter = 0;
             }
+            /*
             if (guiChanNum == null) {
                 prevMasterCheckMillis = curMillis - masterCheckInterval.getValue();
                 //println("SKIP!!!!!!");
                 return;
             }
+            */
             guiChanNum -= 1; //Subtract 1 here since the following methods count starting from 0
 
             boolean response = toggleImpedanceOnElectrode(true, guiChanNum, isNPin);
@@ -518,6 +519,7 @@ class W_CytonImpedance extends Widget {
         final Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
         final Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
         if (checkingChanX != null) {
+            println("TURN OFF IMPEDANCE CHECK ON ELECTRODE="+checkingChanX+" | IS_N_PIN="+checkingChanX_isNpin);
             boolean response = toggleImpedanceOnElectrode(false, checkingChanX, checkingChanX_isNpin);
 
         }
