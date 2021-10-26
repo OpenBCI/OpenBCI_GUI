@@ -496,7 +496,9 @@ class W_CytonImpedance extends Widget {
 
                 Boolean isCheckingImpedance = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getLeft();
                 if (isCheckingImpedance != null) {
-                    cytonBoard.startStreaming();
+                    if (!currentBoard.isStreaming()) {
+                        cytonBoard.startStreaming();
+                    }
                 } else {
                     cytonBoard.stopStreaming();
                 }
