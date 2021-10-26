@@ -462,21 +462,23 @@ class CytonElectrodeStatus {
         testing_button.onPress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 final int _chan = channelNumber - 1;
+                final int curMillis = millis();
+                
+                w_cytonImpedance.setLockAllImpedanceTestingButtons(true);
+                println("Toggling Impedance on ~~ " + electrodeLocation);
+                w_cytonImpedance.toggleImpedanceOnElectrode(!cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), _chan, is_N_Pin, curMillis);
 
-                currentBoard.stopStreaming();
-
-                //Turn off impedance check on another electrode if checking there
-                final Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
-                final Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
+                /*
+                Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
+                Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
                 if (checkingChanX != null) {
                     if (_chan != checkingChanX || (_chan == checkingChanX && is_N_Pin != checkingChanX_isNpin)) {
-                        println("-----SEND COMMAND TO TOGGLE OFF PREVIOUS ELECTRODE");
-                        w_cytonImpedance.toggleImpedanceOnElectrode(false, checkingChanX, checkingChanX_isNpin);
+                        testing_button.setOff();
                     }
                 }
+                */
 
-                println("Toggled Impedance on ~~ " + electrodeLocation);
-                final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(_chan, !cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), is_N_Pin);
+                /*
                 boolean response = fullResponse.getKey().booleanValue();
                 if (response) {
                     w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(_chan, cytonBoard.isEXGChannelActive(_chan));
@@ -487,6 +489,7 @@ class CytonElectrodeStatus {
                     println("Board Communication Error: Error sending impedance test commands. See additional info in Console Log. You may need to reset the hardware.");
                     testing_button.setOff();
                 }
+                */
             }
         });
         testing_button.setDescription("Click to toggle impedance check for this ADS pin.");

@@ -463,16 +463,24 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         String impedanceCommandString = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
         fullCommand.append(impedanceCommandString);
         final String commandToSend = fullCommand.toString();
-        
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncSendImpedanceCommand(commandToSend, channel, active, _isN);
-            }
-        });  
-        t1.start();
 
-        return new ImmutablePair<Boolean, String>(true, "END OF METHOD TESTING");
+        final Pair<Boolean, String> fullResponse = sendCommand(commandToSend);
+        boolean response = fullResponse.getKey().booleanValue();
+        if (!response) {
+            outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
+            if (active) {
+                currentADS1299Settings.revertToLastValues(channel);
+                return new ImmutablePair<Boolean, String>(false, "Error");
+            }
+        }
+
+        if (_isN) {
+            isCheckingImpedanceN[channel] = active;
+        } else {
+            isCheckingImpedanceP[channel] = active;
+        }
+
+        return fullResponse;
     }
 
     @Override
@@ -514,27 +522,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             }
         }
         return null;
-    }
-
-    private void asyncSendImpedanceCommand(String commandToSend, int channel, boolean active, boolean _isN) {
-        final Pair<Boolean, String> fullResponse = sendCommand(commandToSend);
-        boolean response = fullResponse.getKey().booleanValue();
-        if (!response) {
-            outputWarn("Cyton Impedance Check - Error sending impedance command to board.");
-            if (active) {
-                currentADS1299Settings.revertToLastValues(channel);
-                //return new ImmutablePair<Boolean, String>(false, "Error");
-            }
-            //return fullResponse;
-        }
-
-        if (_isN) {
-            isCheckingImpedanceN[channel] = active;
-        } else {
-            isCheckingImpedanceP[channel] = active;
-        }
-
-        //return fullResponse;
     }
 
     @Override
