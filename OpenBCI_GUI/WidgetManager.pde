@@ -37,18 +37,22 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_timeSeries, w);
     // println("  setupWidgets time series -- " + millis());
 
-    //Widget_1
-    w_fft = new W_fft(_this);
-    w_fft.setTitle("FFT Plot");
-    addWidget(w_fft, w);
-    // println("  setupWidgets fft -- " + millis());
-
     if (currentBoard instanceof AccelerometerCapableBoard) {
-        //Widget_2
         w_accelerometer = new W_Accelerometer(_this);
         w_accelerometer.setTitle("Accelerometer");
         addWidget(w_accelerometer, w);
     }
+
+    if (currentBoard instanceof BoardCyton) {
+        w_cytonImpedance = new W_CytonImpedance(_this);
+        w_cytonImpedance.setTitle("Cyton Signal");
+        addWidget(w_cytonImpedance, w);
+    }
+
+    w_fft = new W_fft(_this);
+    w_fft.setTitle("FFT Plot");
+    addWidget(w_fft, w);
+    // println("  setupWidgets fft -- " + millis());
 
     if(currentBoard instanceof DataSourcePlayback){
         //Playback Widget_3
@@ -63,12 +67,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_ganglionImpedance = new W_GanglionImpedance(_this);
         w_ganglionImpedance.setTitle("Ganglion Signal");
         addWidget(w_ganglionImpedance, w);
-    }
-
-    if (currentBoard instanceof BoardCyton) {
-        w_cytonImpedance = new W_CytonImpedance(_this);
-        w_cytonImpedance.setTitle("Cyton Signal");
-        addWidget(w_cytonImpedance, w);
     }
 
     //Cyton Widget_12, Synthetic Widget_9, Ganglion/Playback Widget_10

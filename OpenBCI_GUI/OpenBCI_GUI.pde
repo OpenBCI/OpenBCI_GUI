@@ -757,22 +757,29 @@ void startRunning() {
 
 void stopRunning() {
     //Check again if board is streaming to avoid IllegalStateException
-    if (currentBoard.isStreaming()) {
+    if (currentBoard.isStreaming() && topNav.dataStreamingButtonIsActive()) {
         //If streaming, attempt to stop stream
         currentBoard.stopStreaming();
-        if (!currentBoard.isStreaming()) {
-            output("Data stream stopped.");
-            try {
-                streamTimeElapsed.stop();
-                sessionTimeElapsed.suspend();
-                dataLogger.onStopStreaming();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
-            }
+        output("Data stream stopped.");
+        try {
+            streamTimeElapsed.stop();
+            sessionTimeElapsed.suspend();
+            dataLogger.onStopStreaming();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
         }
     } else {
         output("Data stream is already stopped.");
+
+        if (currentBoard instanceof BoardCyton && w_cytonImpedance != null) {
+            Integer checkingImpOnChan = ((ImpedanceSettingsBoard)currentBoard).isCheckingImpedanceOnChannel();
+            if (checkingImpOnChan != null || w_cytonImpedance.cytonMasterImpedanceCheckIsActive()) {
+                PopupMessage msg = new PopupMessage("Busy Checking Impedance", "Please turn off impedance check to begin recording the data stream.");
+                println("OpenBCI_GUI::Cyton: Please turn off impedance check to begin recording the data stream.");
+                return;
+            }
+        }
     }
 }
 

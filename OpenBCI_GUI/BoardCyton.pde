@@ -514,14 +514,29 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     //Returns the channel number where impedance check is currently active, otherwise return null
+    //Less detailed than the previous method
+    @Override
     public Integer isCheckingImpedanceOnChannel() {
         //printArray(isCheckingImpedance);
         for (int i = 0; i < isCheckingImpedance.length; i++) {
-            if (isCheckingImpedance[i]) {
+            if (isCheckingImpedance(i)) {
                 return i;
             }
         }
         return null;
+    }
+
+    public void forceStopImpedanceFrontEnd(Integer channel, Boolean _isN) {
+        if (channel == null || _isN == null) {
+            outputError("OOPS! Are you sure you know what you are doing with this method? Please pass non-null values.");
+            return;
+        }
+
+        if (_isN) {
+            isCheckingImpedanceN[channel] = false;
+        } else {
+            isCheckingImpedanceP[channel] = false;
+        }
     }
 
     @Override

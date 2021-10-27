@@ -598,6 +598,10 @@ class TopNav {
         }
     }
 
+    public boolean dataStreamingButtonIsActive() {
+        return toggleDataStreamingButton.getCaptionLabel().getText().equals(stopButton_pressToStop_txt);
+    }
+
     public void resetStartStopButton() {
         if (toggleDataStreamingButton != null) {
             toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);

@@ -290,6 +290,13 @@ class ADS1299Settings {
         return board.sendCommand(sb.toString()).getKey().booleanValue();
     }
 
+    //Return true if all commits are successful
+    public void revertAllChannelsToDefaultValues() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String defaultValsAsString = gson.toJson(defaultValues);
+        values = gson.fromJson(defaultValsAsString, ADS1299SettingsValues.class);
+    }
+
     public void saveAllLastValues() {
         String lastVals = getJson();
         Gson gson = new Gson();
