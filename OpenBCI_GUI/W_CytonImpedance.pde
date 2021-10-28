@@ -28,8 +28,8 @@ class W_CytonImpedance extends Widget {
     private int tableHeight = 0;
     private int cellHeight = 10;
     
-    private final float mapInitialW = 716f;
-    private final float mapInitialH = 717f;
+    private final float mapInitialW = 488f;
+    private final float mapInitialH = 488f;
     private int imageContainerW, imageContainerH;
     private PImage cytonHeadplotStatic;
     private CytonElectrodeStatus[] cytonElectrodeStatus;

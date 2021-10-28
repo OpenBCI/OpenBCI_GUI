@@ -37,6 +37,11 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_timeSeries, w);
     // println("  setupWidgets time series -- " + millis());
 
+    w_fft = new W_fft(_this);
+    w_fft.setTitle("FFT Plot");
+    addWidget(w_fft, w);
+    // println("  setupWidgets fft -- " + millis());
+
     if (currentBoard instanceof AccelerometerCapableBoard) {
         w_accelerometer = new W_Accelerometer(_this);
         w_accelerometer.setTitle("Accelerometer");
@@ -48,11 +53,6 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
         w_cytonImpedance.setTitle("Cyton Signal");
         addWidget(w_cytonImpedance, w);
     }
-
-    w_fft = new W_fft(_this);
-    w_fft.setTitle("FFT Plot");
-    addWidget(w_fft, w);
-    // println("  setupWidgets fft -- " + millis());
 
     if(currentBoard instanceof DataSourcePlayback){
         //Playback Widget_3
