@@ -432,7 +432,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         //Hopefully, this lowers the chance of confusing the board with multiple commands sent quickly
         StringBuilder fullCommand = new StringBuilder();
 
-        println("CYTON_IMP_CHECK -- Attempting to change channel== " + channel + " || isActive == " + active);
+        //println("CYTON_IMP_CHECK -- Attempting to change channel== " + channel + " || isActive == " + active);
 
         if (active) {
             
@@ -456,7 +456,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
             //Revert ADS channel settings to what user had before checking impedance on this channel
             currentADS1299Settings.revertToLastValues(channel);
             fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.values));
-            println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
+            //println("CYTON REVERTING TO PREVIOUS ADS SETTINGS");
         }
         
         // Format the impedance command string. Example: z 4 1 0 Z

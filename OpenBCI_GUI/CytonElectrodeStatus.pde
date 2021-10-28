@@ -463,32 +463,8 @@ class CytonElectrodeStatus {
             public void controlEvent(CallbackEvent theEvent) {
                 final int _chan = channelNumber - 1;
                 final int curMillis = millis();
-                
-                println("Toggling Impedance on ~~ " + electrodeLocation);
+                println("CytonElectrodeTestButton: Toggling Impedance on ~~ " + electrodeLocation);
                 w_cytonImpedance.toggleImpedanceOnElectrode(!cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), _chan, is_N_Pin, curMillis);
-
-                /*
-                Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
-                Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
-                if (checkingChanX != null) {
-                    if (_chan != checkingChanX || (_chan == checkingChanX && is_N_Pin != checkingChanX_isNpin)) {
-                        testing_button.setOff();
-                    }
-                }
-                */
-
-                /*
-                boolean response = fullResponse.getKey().booleanValue();
-                if (response) {
-                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(_chan, cytonBoard.isEXGChannelActive(_chan));
-                    w_timeSeries.adsSettingsController.setHasUnappliedSettings(_chan, false);
-                    currentBoard.startStreaming();
-                } else {
-                    PopupMessage msg = new PopupMessage("Board Communication Error", "Error sending impedance test commands. See additional info in Console Log. You may need to reset the hardware.");
-                    println("Board Communication Error: Error sending impedance test commands. See additional info in Console Log. You may need to reset the hardware.");
-                    testing_button.setOff();
-                }
-                */
             }
         });
         testing_button.setDescription("Click to toggle impedance check for this ADS pin.");

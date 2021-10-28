@@ -444,7 +444,7 @@ class W_CytonImpedance extends Widget {
         myButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 boolean isActive = myButton.getBooleanValue();
-                StringBuilder sb = new StringBuilder("/////////////////////////////////////Signal Quality Test: User toggled checking impedance on all channels == ");
+                StringBuilder sb = new StringBuilder("Signal Quality Test: User toggled checking impedance on all channels to ");
                 sb.append(isActive);
                 println(sb.toString());
                 if (!isActive) {
@@ -459,7 +459,7 @@ class W_CytonImpedance extends Widget {
                 }
             }
         });
-        myButton.setDescription("Click to activate/deactivate the accelerometer for capable boards.");
+        myButton.setDescription("Click to check impedance on all electrodes. Please allow time for commands to be sent to the board!");
         return myButton;
     }
 
@@ -473,6 +473,7 @@ class W_CytonImpedance extends Widget {
         myButton.setVisible(signalCheckMode == CytonSignalCheckMode.IMPEDANCE);
         myButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                println("Cyton Impedance Check: User clicked reset all channel settings.");
                 Executors.newSingleThreadExecutor().execute(new Runnable() {
                     @Override
                     public void run() {
@@ -491,88 +492,94 @@ class W_CytonImpedance extends Widget {
     //  This is the most important method in this class.                                                            //
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void toggleImpedanceOnElectrode(final boolean toggle, final Integer checkingChanX, final Boolean checkingChanX_isNpin, final int curMillis) {
-        
-        es.submit(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (THREAD_LOCK) {
-                    setLockAllImpedanceTestingButtons(true);
-                    println("^^^^^^^^^^^NEW THREAD!!!");
+        try {
+            es.submit(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (THREAD_LOCK) {
+                        setLockAllImpedanceTestingButtons(true);
+                        //println("^^^^^^^^^^^NEW THREAD!!!");
 
-                    if (topNav.dataStreamingButtonIsActive()) {
-                        stopRunning();
-                        topNav.resetStartStopButton();
-                    } else {
-                        cytonBoard.stopStreaming();
-                    }
+                        if (topNav.dataStreamingButtonIsActive()) {
+                            stopRunning();
+                            topNav.resetStartStopButton();
+                        } else {
+                            cytonBoard.stopStreaming();
+                        }
 
-                    //Turn off impedance check on another electrode if checking there
-                    Integer checkingOtherChan = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
-                    Boolean checkingOtherChan_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
-                    if (checkingOtherChan != null) {
-                        if (checkingChanX != checkingOtherChan || (checkingChanX == checkingOtherChan && checkingChanX_isNpin != checkingOtherChan_isNpin)) {
-                            println("-----SEND COMMAND TO TOGGLE OFF PREVIOUS ELECTRODE");
-                            cytonBoard.setCheckingImpedanceCyton(checkingOtherChan, false, checkingOtherChan_isNpin);
-                            
-                            checkingOtherChan = checkingOtherChan + 1;
-                            for (CytonElectrodeStatus e : cytonElectrodeStatus) {
-                                //println(_chan, e.getGUIChannelNumber(), " -- ", checkingChanX_isNpin, e.getIsNPin());
-                                if (checkingOtherChan.equals(e.getGUIChannelNumber())
-                                    && checkingOtherChan_isNpin.equals(e.getIsNPin())) {
-                                        println("TOGGLE OFF", e.getGUIChannelNumber(), e.getIsNPin(), "TOGGLE TO ==", false);
-                                        e.overrideTestingButtonSwitch(false);
-                                        w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingOtherChan-1, cytonBoard.isEXGChannelActive(checkingOtherChan-1));
-                                        w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingOtherChan-1, false);
+                        //Turn off impedance check on another electrode if checking there
+                        Integer checkingOtherChan = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
+                        Boolean checkingOtherChan_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
+                        if (checkingOtherChan != null) {
+                            if (checkingChanX != checkingOtherChan || (checkingChanX == checkingOtherChan && checkingChanX_isNpin != checkingOtherChan_isNpin)) {
+                                //println("-----SEND COMMAND TO TOGGLE OFF PREVIOUS ELECTRODE");
+                                cytonBoard.setCheckingImpedanceCyton(checkingOtherChan, false, checkingOtherChan_isNpin);
+                                
+                                checkingOtherChan = checkingOtherChan + 1;
+                                for (CytonElectrodeStatus e : cytonElectrodeStatus) {
+                                    //println(_chan, e.getGUIChannelNumber(), " -- ", checkingChanX_isNpin, e.getIsNPin());
+                                    if (checkingOtherChan.equals(e.getGUIChannelNumber())
+                                        && checkingOtherChan_isNpin.equals(e.getIsNPin())) {
+                                            //println("TOGGLE OFF", e.getGUIChannelNumber(), e.getIsNPin(), "TOGGLE TO ==", false);
+                                            e.overrideTestingButtonSwitch(false);
+                                            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingOtherChan-1, cytonBoard.isEXGChannelActive(checkingOtherChan-1));
+                                            w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingOtherChan-1, false);
+                                    }
                                 }
-                            }
 
-                            println("~*~*~* 200ms Delay");
-                            delay(200);
+                                //Add a small delay between turning off previous channel check and checking impedance on new channel
+                                //println("~*~*~* 150ms Delay");
+                                delay(150);
+                            }
+                        }
+
+                        //println("+++++TOGGLING IMPEDANCE");
+                        final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(checkingChanX, toggle, checkingChanX_isNpin);
+                        boolean response = fullResponse.getKey().booleanValue();
+                        if (!response) {
+                            println("Board Communication Error: Error sending impedance test commands. See additional info in Console Log. You may need to reset the hardware.");
+                            PopupMessage msg = new PopupMessage("Board Communication Error", "Error sending impedance test commands during Check All Channels. See additional info in Console Log. You may need to reset the hardware.");
+                            cytonImpedanceMasterCheck.setOff();
+                        } else {
+                            //If successful, update the front end components to reflect the new state
+                            w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingChanX, cytonBoard.isEXGChannelActive(checkingChanX));
+                            w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingChanX, false);
+                        }
+
+                        boolean shouldBeOn = toggle && response;
+                        final Integer _chan = checkingChanX + 1;
+                        for (CytonElectrodeStatus e : cytonElectrodeStatus) {
+                            //println(_chan, e.getGUIChannelNumber(), " -- ", checkingChanX_isNpin, e.getIsNPin());
+                            if (_chan.equals(e.getGUIChannelNumber())
+                                && checkingChanX_isNpin.equals(e.getIsNPin())) {
+                                    //println("TOGGLE ", e.getGUIChannelNumber(), e.getIsNPin(), "TOGGLE TO ==", shouldBeOn);
+                                    e.overrideTestingButtonSwitch(shouldBeOn);
+                                }
+                        }
+
+                        Boolean isCheckingImpedance = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getLeft();
+                        if (isCheckingImpedance != null) {
+                            if (!currentBoard.isStreaming()) {
+                                cytonBoard.startStreaming();
+                            }
+                        } else {
+                            cytonBoard.stopStreaming();
+                        }
+                        
+                        if (!cytonMasterImpedanceCheckIsActive()) {
+                            setLockAllImpedanceTestingButtons(false);
+                        } else {
+                            prevMasterCheckMillis = curMillis;
+                            masterCheckCounter++;
                         }
                     }
-
-                    println("+++++TOGGLING IMPEDANCE");
-                    final Pair<Boolean, String> fullResponse = cytonBoard.setCheckingImpedanceCyton(checkingChanX, toggle, checkingChanX_isNpin);
-                    boolean response = fullResponse.getKey().booleanValue();
-                    if (!response) {
-                        println("Board Communication Error: Error sending impedance test commands. See additional info in Console Log. You may need to reset the hardware.");
-                        PopupMessage msg = new PopupMessage("Board Communication Error", "Error sending impedance test commands during Check All Channels. See additional info in Console Log. You may need to reset the hardware.");
-                        cytonImpedanceMasterCheck.setOff();
-                    } else {
-                        //If successful, update the front end components to reflect the new state
-                        w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(checkingChanX, cytonBoard.isEXGChannelActive(checkingChanX));
-                        w_timeSeries.adsSettingsController.setHasUnappliedSettings(checkingChanX, false);
-                    }
-
-                    boolean shouldBeOn = toggle && response;
-                    final Integer _chan = checkingChanX + 1;
-                    for (CytonElectrodeStatus e : cytonElectrodeStatus) {
-                        println(_chan, e.getGUIChannelNumber(), " -- ", checkingChanX_isNpin, e.getIsNPin());
-                        if (_chan.equals(e.getGUIChannelNumber())
-                            && checkingChanX_isNpin.equals(e.getIsNPin())) {
-                                println("TOGGLE OFF", e.getGUIChannelNumber(), e.getIsNPin(), "TOGGLE TO ==", shouldBeOn);
-                                e.overrideTestingButtonSwitch(shouldBeOn);
-                            }
-                    }
-
-                    if (cytonImpedanceMasterCheck.getBooleanValue()) {
-                        prevMasterCheckMillis = curMillis;
-                        masterCheckCounter++;
-                    }
-
-                    Boolean isCheckingImpedance = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getLeft();
-                    if (isCheckingImpedance != null) {
-                        if (!currentBoard.isStreaming()) {
-                            cytonBoard.startStreaming();
-                        }
-                    } else {
-                        cytonBoard.stopStreaming();
-                    }
-                    
-                    setLockAllImpedanceTestingButtons(false);
                 }
-            }
-        });
+            });
+        } catch (RejectedExecutionException e) {
+            println("CytonImpedanceError::"+e.getMessage());
+            outputError("Cyton Signal Check Error: Please be patient when pressing \'Check All Channels\' button!");
+            PopupMessage msg = new PopupMessage("Cyton Signal Check Error", "Please be patient when pressing \'Check All Channels\' button! You will likely need to restart a GUI session and turn the Cyton off and on.");
+        }
     }
 
     ////////////////////////////////////////////////////////////////
@@ -605,7 +612,7 @@ class W_CytonImpedance extends Widget {
             Integer guiChanNum = null;
             isNPin = cytonElectrodeStatus[masterCheckCounter].getIsNPin();
             guiChanNum = cytonElectrodeStatus[masterCheckCounter].getGUIChannelNumber();
-            println("MASTER_CHECK_TIMER_CHECKING==", guiChanNum, isNPin);
+            //println("MASTER_CHECK_TIMER_CHECKING==", guiChanNum, isNPin);
 
             /*
             if (guiChanNum == null) {
@@ -625,6 +632,11 @@ class W_CytonImpedance extends Widget {
 
     private void hardResetAllChannels() {
 
+        if (cytonMasterImpedanceCheckIsActive()) {
+            cytonImpedanceMasterCheck.setOff();
+            cytonBoard.stopStreaming();
+        }
+
         if (topNav.dataStreamingButtonIsActive()) {
             stopRunning();
             topNav.resetStartStopButton();
@@ -632,12 +644,12 @@ class W_CytonImpedance extends Widget {
 
         //es.shutdown();
         int timeElapsed = millis();
-        println("______________________________AWAITING TERMINATION OF EXECUTOR SERVICE___");
+        //println("______________________________AWAITING TERMINATION OF EXECUTOR SERVICE___");
         es.shutdown();
         try {
             if (!es.awaitTermination(10, TimeUnit.SECONDS)) {
                 es.shutdownNow();
-                println("OOPS HAD TO FORCE EXECUTOR SERVICE SHUTDOWN");
+                println("ERROR: HAD TO FORCE EXECUTOR SERVICE SHUTDOWN");
             }
         } catch (InterruptedException ex) {
             ex.printStackTrace();
@@ -646,11 +658,14 @@ class W_CytonImpedance extends Widget {
         }
         es = Executors.newCachedThreadPool();
         
+        /*
         final Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
         final Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
         if (checkingChanX != null) {
             println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&HAVING TO FORCE TURN OFF AN ELECTRODE THAT WAS LEFT ON");
         }
+        */
+
         turnOffImpedanceCheckPreviousElectrode();
         setLockAllImpedanceTestingButtons(true);
 
@@ -658,7 +673,7 @@ class W_CytonImpedance extends Widget {
         try {
             if (!es.awaitTermination(10, TimeUnit.SECONDS)) {
                 es.shutdownNow();
-                println("OOPS HAD TO FORCE EXECUTOR SERVICE SHUTDOWN");
+                println("ERROR: HAD TO FORCE EXECUTOR SERVICE SHUTDOWN");
             }
         } catch (InterruptedException ex) {
             ex.printStackTrace();
@@ -667,21 +682,24 @@ class W_CytonImpedance extends Widget {
         }
         es = Executors.newCachedThreadPool();
         
-        timeElapsed = millis() - timeElapsed;
-        println("______________________________SETTING CYTON CHANNEL SETTINGS TO DEFAULT___ElapsedTime==", timeElapsed);
+        // Send board reset twice to increase success rate
+        cytonBoard.sendCommand("d");
+        delay(100);
         cytonBoard.sendCommand("d");
 
-        //Change this method to update ADS1299 settings but don't commit
+        // Update ADS1299 settings to default but don't commit. Instead, sent "d" command twice.
         cytonBoard.getADS1299Settings().revertAllChannelsToDefaultValues();
         w_timeSeries.adsSettingsController.updateAllChanSettingsDropdowns();
 
-        delay(200);
-        //Send board reset twice to increase success rate
-        cytonBoard.sendCommand("d");
+        timeElapsed = millis() - timeElapsed;
+        StringBuilder sb = new StringBuilder("Cyton Impedance Check: Hard reset to default board mode took -- ");
+        sb.append(timeElapsed);
+        sb.append(" ms");
+        println(sb.toString());
 
         prevMasterCheckCounter--;
         setLockAllImpedanceTestingButtons(false);
-        outputSuccess("Cyton: All channels have been reset and board is in default mode!\n\n\n");
+        outputSuccess("Cyton: All channels have been reset and board is in default mode!\n");
     }
 
     private void turnOffImpedanceCheckPreviousElectrode() {
@@ -689,13 +707,13 @@ class W_CytonImpedance extends Widget {
         final Integer checkingChanX = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
         final Boolean checkingChanX_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
         if (checkingChanX != null) {
-            println("---------------------------TURN OFF IMPEDANCE CHECK ON ELECTRODE="+checkingChanX+" | IS_N_PIN="+checkingChanX_isNpin);
+            //println("---------------------------TURN OFF IMPEDANCE CHECK ON ELECTRODE="+checkingChanX+" | IS_N_PIN="+checkingChanX_isNpin);
             toggleImpedanceOnElectrode(false, checkingChanX, checkingChanX_isNpin, millis());
         }
     }
 
     private void setLockAllImpedanceTestingButtons(boolean _b) {
-        println("*************************************************************LOCKING ALL TEST BUTTONS==",_b);
+        //println("*************************************************************LOCKING ALL TEST BUTTONS==",_b);
         for (int i = 0; i < cytonElectrodeStatus.length; i++) {
             cytonElectrodeStatus[i].setLockTestingButton(_b);
         }
