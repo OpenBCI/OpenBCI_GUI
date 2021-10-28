@@ -464,7 +464,6 @@ class CytonElectrodeStatus {
                 final int _chan = channelNumber - 1;
                 final int curMillis = millis();
                 
-                w_cytonImpedance.setLockAllImpedanceTestingButtons(true);
                 println("Toggling Impedance on ~~ " + electrodeLocation);
                 w_cytonImpedance.toggleImpedanceOnElectrode(!cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), _chan, is_N_Pin, curMillis);
 

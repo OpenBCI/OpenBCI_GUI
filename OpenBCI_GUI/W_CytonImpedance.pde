@@ -448,9 +448,15 @@ class W_CytonImpedance extends Widget {
                 sb.append(isActive);
                 println(sb.toString());
                 if (!isActive) {
-                    hardResetAllChannels();
+                    Executors.newSingleThreadExecutor().execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            hardResetAllChannels();
+                        }
+                    });
+                } else {
+                    setLockAllImpedanceTestingButtons(isActive);
                 }
-                setLockAllImpedanceTestingButtons(isActive);
             }
         });
         myButton.setDescription("Click to activate/deactivate the accelerometer for capable boards.");
@@ -467,7 +473,12 @@ class W_CytonImpedance extends Widget {
         myButton.setVisible(signalCheckMode == CytonSignalCheckMode.IMPEDANCE);
         myButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                hardResetAllChannels();
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        hardResetAllChannels();
+                    }
+                });
             }
         });
         myButton.setDescription("Click to reset all channel settings to default.");
@@ -485,7 +496,7 @@ class W_CytonImpedance extends Widget {
             @Override
             public void run() {
                 synchronized (THREAD_LOCK) {
-
+                    setLockAllImpedanceTestingButtons(true);
                     println("^^^^^^^^^^^NEW THREAD!!!");
 
                     if (topNav.dataStreamingButtonIsActive()) {
@@ -619,10 +630,6 @@ class W_CytonImpedance extends Widget {
             topNav.resetStartStopButton();
         }
 
-        turnOffImpedanceCheckPreviousElectrode();
-
-        prevMasterCheckCounter--;
-        
         //es.shutdown();
         int timeElapsed = millis();
         println("______________________________AWAITING TERMINATION OF EXECUTOR SERVICE___");
@@ -645,7 +652,7 @@ class W_CytonImpedance extends Widget {
             println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&HAVING TO FORCE TURN OFF AN ELECTRODE THAT WAS LEFT ON");
         }
         turnOffImpedanceCheckPreviousElectrode();
-
+        setLockAllImpedanceTestingButtons(true);
 
         es.shutdown();
         try {
@@ -668,7 +675,13 @@ class W_CytonImpedance extends Widget {
         cytonBoard.getADS1299Settings().revertAllChannelsToDefaultValues();
         w_timeSeries.adsSettingsController.updateAllChanSettingsDropdowns();
 
-        outputSuccess("Cyton Impedance Check: All channels have been reset!\n\n\n");
+        delay(200);
+        //Send board reset twice to increase success rate
+        cytonBoard.sendCommand("d");
+
+        prevMasterCheckCounter--;
+        setLockAllImpedanceTestingButtons(false);
+        outputSuccess("Cyton: All channels have been reset and board is in default mode!\n\n\n");
     }
 
     private void turnOffImpedanceCheckPreviousElectrode() {
@@ -682,7 +695,7 @@ class W_CytonImpedance extends Widget {
     }
 
     private void setLockAllImpedanceTestingButtons(boolean _b) {
-        //println("LOCKING ALL TEST BUTTONS==",_b);
+        println("*************************************************************LOCKING ALL TEST BUTTONS==",_b);
         for (int i = 0; i < cytonElectrodeStatus.length; i++) {
             cytonElectrodeStatus[i].setLockTestingButton(_b);
         }
