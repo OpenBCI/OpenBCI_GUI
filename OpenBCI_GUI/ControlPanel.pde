@@ -1143,6 +1143,7 @@ class SessionDataBox {
     private int maxDurTextWidth = 82;
     private int maxDurText_x = 0;
     private Textfield sessionNameTextfield;
+    private Textfield streamerTextfield;
     private Button autoSessionName;
     private Button outputODF;
     private Button outputBDF;
@@ -1167,6 +1168,7 @@ class SessionDataBox {
         sessionData_cp5.setAutoDraw(false);
 
         createSessionNameTextfield(textfieldName);
+        createStreamerTextfield("Stream");
 
         //button to autogenerate file name based on time/date
         createAutoSessionNameButton("autoSessionName", "GENERATE SESSION NAME", x + padding, y + 66, w-(padding*2), 24);
@@ -1179,6 +1181,7 @@ class SessionDataBox {
 
     public void update() {
         copyPaste.checkForCopyPaste(sessionNameTextfield);
+        copyPaste.checkForCopyPaste(streamerTextfield);
     }
 
     public void draw() {
@@ -1193,14 +1196,16 @@ class SessionDataBox {
         text("SESSION DATA", x + padding, y + padding);
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
+        text("Stream", x + padding, y + padding*2 + 48);
         popStyle();
         
         //Update the position of UI elements here, as this changes when user selects WiFi mode
         sessionNameTextfield.setPosition(x + 60, y + 32);
-        autoSessionName.setPosition(x + padding, y + 66);
-        outputODF.setPosition(x + padding, y + padding*2 + 18 + 58);
-        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58);
-        maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
+        streamerTextfield.setPosition(x + 60, y + 66);
+        autoSessionName.setPosition(x + padding, y + 100);
+        outputODF.setPosition(x + padding, y + padding*2 + 18 + 92);
+        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 92);
+        maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 58 + padding);
         
         boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
         maxDurationDropdown.setVisible(odfIsSelected);
@@ -1258,6 +1263,45 @@ class SessionDataBox {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!sessionNameTextfield.isActive() && sessionNameTextfield.getText().equals("")) {
                     autogenerateSessionName();
+                }
+            }
+        });
+    }
+
+    private void createStreamerTextfield(String name) {
+        streamerTextfield = sessionData_cp5.addTextfield(name)
+            .setPosition(x + 60, y + 66)
+            .setCaptionLabel("")
+            .setSize(187, 26)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText("file://brainflow_data.csv:a")
+            .align(5, 10, 20, 40)
+            .setAutoClear(false); //Don't clear textfield when pressing Enter key
+        //Clear textfield on double click
+        streamerTextfield.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("SessionData: Enter your custom session name.");
+                streamerTextfield.clear();
+            }
+        });
+        streamerTextfield.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && streamerTextfield.getText().equals("")) {
+                    streamerTextfield.setText("file://brainflow_data.csv:a");
+                }
+            }
+        });
+        streamerTextfield.onReleaseOutside(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!streamerTextfield.isActive() && streamerTextfield.getText().equals("")) {
+                    streamerTextfield.setText("file://brainflow_data.csv:a");
                 }
             }
         });
@@ -1385,6 +1429,14 @@ class SessionDataBox {
         sessionNameTextfield.setText(s);
     }
 
+    public String getStreamerTextfieldString() {
+        return streamerTextfield.getText();
+    }
+
+    public void setStreamerTextfieldString(String s) {
+        streamerTextfield.setText(s);
+    }
+
     // True locks elements, False unlocks elements
     private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
@@ -1403,6 +1455,7 @@ class SessionDataBox {
 
     public void lockSessionDataBoxCp5Elements(boolean b) {
         sessionNameTextfield.setLock(b);
+        streamerTextfield.setLock(b);
         autoSessionName.setLock(b);
         outputODF.setLock(b);
         outputBDF.setLock(b);
@@ -2758,10 +2811,13 @@ class InitBox {
                 if (eegDataSource == DATASOURCE_CYTON) {
                     // Store the current text field value of "Session Name" to be passed along to dataFiles
                     dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
+                    brainflowStreamer = controlPanel.dataLogBoxCyton.getStreamerTextfieldString();
                 } else if (eegDataSource == DATASOURCE_GANGLION) {
                     dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
+                    brainflowStreamer = controlPanel.dataLogBoxGanglion.getStreamerTextfieldString();
                 } else if (eegDataSource == DATASOURCE_GALEA) {
                     dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
+                    brainflowStreamer = controlPanel.dataLogBoxGalea.getStreamerTextfieldString();
                 } else {
                     dataLogger.setSessionName(directoryManager.getFileNameDateTime());
                 }
