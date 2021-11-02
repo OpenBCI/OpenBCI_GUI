@@ -507,6 +507,8 @@ class W_CytonImpedance extends Widget {
                             cytonBoard.stopStreaming();
                         }
 
+                        delay(100);
+
                         //Turn off impedance check on another electrode if checking there
                         Integer checkingOtherChan = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getValue();
                         Boolean checkingOtherChan_isNpin = cytonBoard.isCheckingImpedanceOnAnyChannelsNorP().getKey();
