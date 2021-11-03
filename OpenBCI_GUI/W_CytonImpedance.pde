@@ -49,8 +49,8 @@ class W_CytonImpedance extends Widget {
     private int masterCheckCounter = 0; //Used to iterate through electrodes
     private int prevMasterCheckCounter = -1;
     private int numElectrodesToMasterCheck = 0;
-    private boolean wasDoingImpedanceMasterCheck = false; //Used for state change
     private int prevMasterCheckMillis = 0; //Used for simple timer
+    public boolean isCheckingImpedanceOnAnything = false; //This is more reliable than waiting to see if the Board is checking impedance
 
     private SignalCheckThresholdUI errorThreshold;
     private SignalCheckThresholdUI warningThreshold;
@@ -492,6 +492,7 @@ class W_CytonImpedance extends Widget {
     //  This is the most important method in this class.                                                            //
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void toggleImpedanceOnElectrode(final boolean toggle, final Integer checkingChanX, final Boolean checkingChanX_isNpin, final int curMillis) {
+        isCheckingImpedanceOnAnything = toggle;
         try {
             es.submit(new Runnable() {
                 @Override
@@ -573,6 +574,10 @@ class W_CytonImpedance extends Widget {
                         } else {
                             prevMasterCheckMillis = curMillis;
                             masterCheckCounter++;
+
+                            if (masterCheckCounter == numElectrodesToMasterCheck) {
+                                masterCheckCounter = 0;
+                            }
                         }
                     }
                 }
@@ -605,10 +610,12 @@ class W_CytonImpedance extends Widget {
             }
             */
             
+            /*
             if (masterCheckCounter == numElectrodesToMasterCheck) {
                 masterCheckCounter = 0;
                 prevMasterCheckCounter = 0;
             }
+            */
 
             boolean isNPin = true;
             Integer guiChanNum = null;
