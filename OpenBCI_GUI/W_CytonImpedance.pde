@@ -22,7 +22,7 @@ class W_CytonImpedance extends Widget {
     
     private final int padding = 5;
     private final int padding_3 = 3;
-    private final int numTableRows = 17;
+    private int numTableRows = 9;
     private final int numTableColumns = 3;
     private final int tableWidth = 190;
     private int tableHeight = 0;
@@ -80,6 +80,10 @@ class W_CytonImpedance extends Widget {
 
         footerHeight = navH/2;
         
+        if (currentBoard.getNumEXGChannels() > 8) {
+            numTableRows += 8;
+        }
+
         //Create Table first!
         dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
         dataGrid.setTableFontAndSize(p6, 10);
@@ -262,30 +266,17 @@ class W_CytonImpedance extends Widget {
         cytonElectrodeStatus = new CytonElectrodeStatus[nchan];
         for (int i = 0; i < cytonElectrodeStatus.length; i++) {
             cytonElectrodeStatus[i] = new CytonElectrodeStatus(imp_buttons_cp5, CytonElectrodeLocations.getByIndex(i), cytonBoard, checkingImpedanceOnElectrodeGif);
-            println("CYTON ELECTRODE STATUS making electrode #", i);
+            //println("CYTON ELECTRODE STATUS making electrode #", i);
         }
     }
 
     public void setTableElectrodeNames() {
         if (labelMode.getIsAnatomicalName()) {
             //If true, set anatomical names as text in the table.
-            dataGrid.setString("Hi", 0, 0);
-            dataGrid.setString("Hi", 1, 0);
-            dataGrid.setString("Hi", 2, 0);
-            dataGrid.setString("Hi", 3, 0);
-            dataGrid.setString("Hi", 4, 0);
-            dataGrid.setString("Hi", 5, 0);
-            dataGrid.setString("Hi", 6, 0);
-            dataGrid.setString("Hi", 7, 0);
-            dataGrid.setString("Hi", 8, 0);
-            dataGrid.setString("Hi", 9, 0);
-            dataGrid.setString("Hi", 10, 0);
-            dataGrid.setString("Hi", 11, 0);
-            dataGrid.setString("Hi", 12, 0);
-            dataGrid.setString("Hi", 13, 0);
-            dataGrid.setString("Hi", 14, 0);
-            dataGrid.setString("Hi", 15, 0);
-            dataGrid.setString("Hi", 16, 0);
+            dataGrid.setString("Position", 0, 0);
+            for (int i = 1; i < numTableRows; i++) {
+                dataGrid.setString(cytonElectrodeStatus[i - 1].getThisElectrodeLabel(), i, 0);
+            }
         } else {
             //Else, set ADS Channel names
             dataGrid.setString("Channel", 0, 0);

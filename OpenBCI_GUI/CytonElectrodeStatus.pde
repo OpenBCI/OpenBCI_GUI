@@ -35,22 +35,22 @@ interface CytonElectrodeEnum {
 
 public enum CytonElectrodeLocations implements CytonElectrodeEnum
 {
-    ONE_N(0, 1, "1N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
-    TWO_N(1, 2, "2N", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
-    THREE_N(2, 3, "3N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
-    FOUR_N(3, 4, "4N", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
-    FIVE_N(4, 5, "5N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
-    SIX_N(5, 6, "6N", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
-    SEVEN_N(6, 7, "7N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
-    EIGHT_N(7, 8, "8N", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514),
-    NINE_N(8, 9, "9N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
-    TEN_N(9, 10, "10N", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
-    ELEVEN_N(10, 11, "11N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
-    TWELVE_N(11, 12, "12N", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
-    THIRTEEN_N(12, 13, "13N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
-    FOURTEEN_N(13, 14, "14N", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
-    FIFTEEN_N(14, 15, "15N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
-    SIXTEEN_N(15, 16, "16N", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514);
+    ONE_N(0, 1, "1N", "EEG", 0.10000, 0.38992, "Fp1", 0.50000, 0.15265),
+    TWO_N(1, 2, "2N", "EEG", 0.10000, 0.51967, "Fp2", 0.50000, 0.18308),
+    THREE_N(2, 3, "3N", "EEG", 0.10000,   0.64941, "C3", 0.50000, 0.11283),
+    FOUR_N(3, 4, "4N", "EEG", 0.10000, 0.92547, "C4", 0.50000, 0.17101),
+    FIVE_N(4, 5, "5N", "EEG", 0.18140,   0.64941, "P7", 0.38278, 0.19765),
+    SIX_N(5, 6, "6N", "EEG", 0.11781,	0.64941, "P8", 0.61722, 0.19765),
+    SEVEN_N(6, 7, "7N", "EEG", 0.17313, 0.88820, "O1", 0.37352, 0.15514),
+    EIGHT_N(7, 8, "8N", "EEG", 0.12608, 0.88820, "O2", 0.62530, 0.15514),
+    NINE_N(8, 9, "9N", "EEG", 0.10000, 0.38992, "F7", 0.50000, 0.15265),
+    TEN_N(9, 10, "10N", "EEG", 0.10000, 0.51967, "F8", 0.50000, 0.18308),
+    ELEVEN_N(10, 11, "11N", "EEG", 0.10000,   0.64941, "F3", 0.50000, 0.11283),
+    TWELVE_N(11, 12, "12N", "EEG", 0.10000, 0.92547, "F4", 0.50000, 0.17101),
+    THIRTEEN_N(12, 13, "13N", "EEG", 0.18140,   0.64941, "T7", 0.18278, 0.19765),
+    FOURTEEN_N(13, 14, "14N", "EEG", 0.11781,	0.64941, "T8", 0.11722, 0.19765),
+    FIFTEEN_N(14, 15, "15N", "EEG", 0.17313, 0.88820, "P3", 0.11352, 0.11514),
+    SIXTEEN_N(15, 16, "16N", "EEG", 0.12608, 0.88820, "P4", 0.11530, 0.11514);
 
     private int index;
     private Integer guiChan;
@@ -90,124 +90,6 @@ public enum CytonElectrodeLocations implements CytonElectrodeEnum
     public static CytonElectrodeLocations getByADSChan(String value) {  
         if (value != null) {  
             for (CytonElectrodeLocations location : values()) {  
-                if (location.adsChan.equals(value)) {  
-                    return location;  
-                }  
-            }  
-        }
-        println("getByADSChan - ERROR | Value == " + value);
-        throw new IllegalArgumentException("Invalid electrode location: " + value);
-    }
-
-    public static String[] getAllLocationNames() {
-        return Arrays.toString(values()).replaceAll("^.|.$", "").split(", ");
-    }
-
-    @Override
-    public Integer getChanGUI() {
-        return guiChan;
-    }
-
-    @Override
-    public String getADSChan() {
-        return adsChan;
-    }
-
-    @Override
-    public String getMeasurementType() {
-        return measurement;
-    }
-
-    @Override
-    public boolean isPin_N() {
-        return adsChan.endsWith("N");
-    }
-
-    // 72/2538 = 0.02836
-    //Manual adjustment 70%. 0.02836 * .7 = 0.019852
-    public static float getDiameterScalar() {
-        //return 0.019852; //70%
-        return 0.022688; //80%
-    }
-
-    @Override
-    public float[] getCircleXY() {
-        return new float[] { xPosScale, yPosScale };
-    }
-
-    @Override
-    public String getLabelName() {
-        return labelName;
-    }
-
-    @Override
-    public float[] getLabelXY() {
-        return new float[] { labelXScale, labelYScale };
-    }
-
-    @Override
-    public float getBorderScalar() {
-        return 0.05;
-    }
-}
-
-public enum DaisyElectrodeLocations implements CytonElectrodeEnum
-{
-    NINE_N(0, 9, "9N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
-    NINE_P(1, 9, "9P", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
-    TEN_N(2, 10, "10N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
-    TEN_P(3, 10, "10P", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
-    ELEVEN_N(4, 11, "11N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
-    ELEVEN_P(5, 11, "11P", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
-    TWELVE_N(6, 12, "12N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
-    TWELVE_P(7, 12, "12P", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514),
-    THIRTEEN_N(8, 13, "13N", "EEG", 0.50000, 0.38992, "FCz", 0.50000, 0.35265),
-    THIRTEEN_P(9, 13, "13P", "EEG", 0.50000, 0.51967, "CPz", 0.50000, 0.48308),
-    FOURTEEN_N(10, 14, "14N", "EEG", 0.50000,   0.64941, "POz", 0.50000, 0.61283),
-    FOURTEEN_P(11, 14, "14P", "EEG", 0.50000, 0.92547, "Oz", 0.50000, 0.97101),
-    FIFTEEN_N(12, 15, "15N", "EEG", 0.38140,   0.64941, "PO3", 0.38278, 0.59765),
-    FIFTEEN_P(13, 15, "15P", "EEG", 0.61781,	0.64941, "PO4", 0.61722, 0.59765),
-    SIXTEEN_N(14, 16, "16N", "EEG", 0.37313, 0.88820, "O1", 0.37352, 0.95514),
-    SIXTEEN_P(15, 16, "16P", "EEG", 0.62608, 0.88820, "O2", 0.62530, 0.95514);
-
-    private int index;
-    private Integer guiChan;
-    private String adsChan;
-    private String measurement;
-    //Used to draw electrode status circles on the visual map in the correct locations.
-    private float xPosScale;
-    private float yPosScale;
-    //Used to draw labels
-    private String labelName;
-    private float labelXScale;
-    private float labelYScale;
-
-    private static DaisyElectrodeLocations[] vals = values();
- 
-    DaisyElectrodeLocations(int index, Integer channel, String adsChan, String type, float xPosScale, float yPosScale, String labelName, float labelXScale, float labelYScale) {
-        this.index = index;
-        this.guiChan = channel;
-        this.adsChan = adsChan;
-        this.measurement = type;  
-        this.xPosScale = xPosScale;
-        this.yPosScale = yPosScale;
-        this.labelName = labelName;
-        this.labelXScale = labelXScale;
-        this.labelYScale = labelYScale;
-    }
-
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    public static DaisyElectrodeLocations getByIndex(int i) {
-        return vals[i];
-    }
-
-    public static DaisyElectrodeLocations getByADSChan(String value) {  
-        if (value != null) {  
-            for (DaisyElectrodeLocations location : vals) {  
                 if (location.adsChan.equals(value)) {  
                     return location;  
                 }  
@@ -523,5 +405,9 @@ class CytonElectrodeStatus {
         String s = _showAnatomicalName ? thisElectrode.getLabelName() : thisElectrode.getADSChan();
         text(s, container_x + x, container_y + y);
         popStyle();
+    }
+
+    public String getThisElectrodeLabel() {
+        return thisElectrode.getLabelName();
     }
 }
