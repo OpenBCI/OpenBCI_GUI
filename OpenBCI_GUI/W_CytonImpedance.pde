@@ -451,7 +451,7 @@ class W_CytonImpedance extends Widget {
                 }
             }
         });
-        myButton.setDescription("Click to check impedance on all electrodes. Please allow time for commands to be sent to the board!");
+        myButton.setDescription("Click to check impedance on all electrodes. Please allow time for commands to be sent to the board.");
         return myButton;
     }
 
