@@ -98,8 +98,8 @@ class W_CytonImpedance extends Widget {
         //Init the electrode map and fill and create signal check buttons
         initCytonImpedanceMap();
 
-        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x + padding_3), (int)(y + padding_3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
-        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x + padding_3*2 + 120), (int)(y + padding_3 - navHeight), 90, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x + padding_3), (int)(y + padding_3 - navHeight), 90, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x + padding_3*2 + 90), (int)(y + padding_3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         errorThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "errorThreshold", 90, x + tableWidth + padding, y + h - navH, 30, thresholdTFHeight, SIGNAL_CHECK_RED, signalCheckMode);
         warningThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "warningThreshold", 75, x + tableWidth + padding, y + h - navH/2, 30, thresholdTFHeight, SIGNAL_CHECK_YELLOW, signalCheckMode);
     }
@@ -191,8 +191,8 @@ class W_CytonImpedance extends Widget {
         imp_buttons_cp5.setGraphics(pApplet, 0, 0);
         threshold_ui_cp5.setGraphics(pApplet, 0, 0);
 
-        cytonImpedanceMasterCheck.setPosition((int)(x + padding_3), (int)(y + padding_3 - navHeight));
-        cytonResetAllChannels.setPosition((int)(x + padding_3*2 + 120), (int)(y + padding_3 - navHeight));
+        cytonResetAllChannels.setPosition((int)(x + padding_3), (int)(y + padding_3 - navHeight));
+        cytonImpedanceMasterCheck.setPosition((int)(x + padding_3*2 + 90), (int)(y + padding_3 - navHeight));
 
         resizeTable();
 
@@ -327,6 +327,7 @@ class W_CytonImpedance extends Widget {
 
     public void setMasterCheckInterval(int n) {
         masterCheckInterval = masterCheckInterval.values()[n];
+        println("MASTERCHECKINTERVAL_CHANGE", masterCheckInterval);
     }
     
     public void drawUserLeftRightLabels() {
