@@ -11,13 +11,7 @@
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-interface TimeSeriesAxisEnum {
-    public int getIndex();
-    public int getValue();
-    public String getString();
-}
-
-public enum TimeSeriesXLim implements TimeSeriesAxisEnum
+public enum TimeSeriesXLim implements IndexingInterface
 {
     ONE (0, 1, "1 sec"),
     THREE (1, 3, "3 sec"),
@@ -28,6 +22,7 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
     private int index;
     private int value;
     private String label;
+    private static TimeSeriesXLim[] vals = values();
 
     TimeSeriesXLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -35,7 +30,6 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
         this.label = _label;
     }
 
-    @Override
     public int getValue() {
         return value;
     }
@@ -49,9 +43,17 @@ public enum TimeSeriesXLim implements TimeSeriesAxisEnum
     public int getIndex() {
         return index;
     }
+    
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
 }
 
-public enum TimeSeriesYLim implements TimeSeriesAxisEnum
+public enum TimeSeriesYLim implements IndexingInterface
 {
     AUTO (0, 0, "Auto"),
     UV_50 (1, 50, "50 uV"),
@@ -64,6 +66,7 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
     private int index;
     private int value;
     private String label;
+    private static TimeSeriesYLim[] vals = values();
 
     TimeSeriesYLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -71,7 +74,6 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
         this.label = _label;
     }
 
-    @Override
     public int getValue() {
         return value;
     }
@@ -84,6 +86,14 @@ public enum TimeSeriesYLim implements TimeSeriesAxisEnum
     @Override
     public int getIndex() {
         return index;
+    }
+
+    public static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
     }
 }
 
@@ -148,8 +158,8 @@ class W_timeSeries extends Widget {
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
 
         //This is a newer protocol for setting up dropdowns.
-        addDropdown("VertScale_TS", "Vert Scale", getEnumStrings(yLimit.values()), yLimit.getIndex());
-        addDropdown("Duration", "Window", getEnumStrings(xLimit.values()), xLimit.getIndex());
+        addDropdown("VertScale_TS", "Vert Scale", yLimit.getEnumStringsAsList(), yLimit.getIndex());
+        addDropdown("Duration", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
 
         //Instantiate scrollbar if using playback mode and scrollbar feature in use
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
@@ -378,14 +388,6 @@ class W_timeSeries extends Widget {
         return myButton;
     }
 
-    public List<String> getEnumStrings(TimeSeriesAxisEnum[] enumValues) {
-        List<String> enumStrings = new ArrayList<String>();
-        for (TimeSeriesAxisEnum val : enumValues) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
-
     public TimeSeriesYLim getTSVertScale() {
         return yLimit;
     }
@@ -449,15 +451,14 @@ class ChannelBar {
     int defaultH;
     ControlP5 cbCp5;
     Button onOffButton;
-    Button impCheckButton;
-    int onOff_diameter, impButton_diameter;
+    int onOff_diameter;
     int yScaleButton_h;
     int yScaleButton_w;
     Button yScaleButton_pos;
     Button yScaleButton_neg;
     int yAxisLabel_h;
-    private Textfield yAxisMax;
-    private Textfield yAxisMin;
+    private TextBox yAxisMax;
+    private TextBox yAxisMin;
     
     int yAxisUpperLim;
     int yAxisLowerLim;
@@ -466,7 +467,7 @@ class ChannelBar {
     int minimumChannelHeight;
     int plotBottomWellH = 45;
 
-    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
+    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Se ries trace
     GPointsArray channelPoints;
     int nPoints;
     int numSeconds;
@@ -502,15 +503,8 @@ class ChannelBar {
         onOff_diameter = h > 26 ? 26 : h - 2;
         createOnOffButton("onOffButton"+channelIndex, channelString, x + 6, y + int(h/2) - int(onOff_diameter/2), onOff_diameter, onOff_diameter);
 
-        if(currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impButton_diameter = 22;
-            createImpButton("impButton"+channelIndex, "\u2126", x + 36, y + int(h/2) - int(impButton_diameter/2), impButton_diameter, impButton_diameter);
-        } else {
-            impButton_diameter = 0;
-        }
-
         //Create GPlot for this Channel
-        uiSpaceWidth = 36 + padding_4 + impButton_diameter;
+        uiSpaceWidth = 36 + padding_4;
         yAxisUpperLim = 200;
         yAxisLowerLim = -200;
         numSeconds = 5;
@@ -547,8 +541,10 @@ class ChannelBar {
         yScaleButton_h = 18;
         yAxisLabel_h = 12;
         int padding = 2;
-        yAxisMax = createTextfield(yAxisMax, yAxisUpperLim, "yAxisMax", "+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + int(padding*1.5), yAxisMax.autoWidth + padding_4*2, yAxisLabel_h);
-        yAxisMin = createTextfield(yAxisMin, yAxisLowerLim, "yAxisMin", yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, yAxisMin.autoWidth + padding_4*2, yAxisLabel_h);
+        yAxisMax = new TextBox("+"+yAxisUpperLim+"uV", x + uiSpaceWidth + padding, y + int(padding*1.5), OPENBCI_DARKBLUE, color(255,255,255,175), LEFT, TOP);
+        yAxisMin = new TextBox(yAxisLowerLim+"uV", x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding_4, OPENBCI_DARKBLUE, color(255,255,255,175), LEFT, TOP);
+        customYLim(yAxisMax, yAxisUpperLim);
+        customYLim(yAxisMin, yAxisLowerLim);
         yScaleButton_neg = createYScaleButton(channelIndex, false, "decreaseYscale", "-T", x + uiSpaceWidth + padding, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, contract_default, contract_hover, contract_active); 
         yScaleButton_pos = createYScaleButton(channelIndex, true, "increaseYscale", "+T", x + uiSpaceWidth + padding*2 + yScaleButton_w, y + w/2 - yScaleButton_h/2, yScaleButton_w, yScaleButton_h, expand_default, expand_hover, expand_active);
         
@@ -562,7 +558,6 @@ class ChannelBar {
     }
 
     void update() {
-
         //Reusable variables
         String fmt; float val;
 
@@ -591,14 +586,6 @@ class ChannelBar {
         else {
             onOffButton.setColorBackground(50); // power down == true, set to grey
         }
-
-        if (yAxisMin.isFocus() || yAxisMax.isFocus()) {
-            textFieldIsActive = true;
-        }
-
-        copyPaste.checkForCopyPaste(yAxisMax);
-        copyPaste.checkForCopyPaste(yAxisMin);
-
     }
 
     private String getFmt(float val) {
@@ -668,19 +655,13 @@ class ChannelBar {
             popStyle();
         }
 
-        //draw impedance check Button and values
+        //draw impedance values in time series also for each channel
         drawVoltageValue = true;
-        if (currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impCheckButton.setVisible(true);
+        if (currentBoard instanceof ImpedanceSettingsBoard) {
             if(((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
                 impValue.draw();
                 drawVoltageValue = false;
             }
-        }
-
-        if (currentBoard instanceof BoardGalea && ((ImpedanceSettingsBoard)currentBoard).isCheckingImpedance(channelIndex)) {
-            impValue.draw();
-            drawVoltageValue = false;
         }
         
         if (drawVoltageValue) {
@@ -694,6 +675,8 @@ class ChannelBar {
         b = !hardwareSettingsAreOpen && h > minimumChannelHeight;
         yAxisMin.setVisible(b);
         yAxisMax.setVisible(b);
+        yAxisMin.draw();
+        yAxisMax.draw();
 
         try {
             cbCp5.draw();
@@ -727,12 +710,8 @@ class ChannelBar {
         //Early out if autoscale
         if (_vertScaleValue == 0) {
             isAutoscale = true;
-            yAxisMin.lock();
-            yAxisMax.lock();
             return;
         }
-        yAxisMin.unlock();
-        yAxisMax.unlock();
         isAutoscale = false;
         yAxisLowerLim = -_vertScaleValue;
         yAxisUpperLim = _vertScaleValue;
@@ -757,13 +736,11 @@ class ChannelBar {
     }
 
     //Update yAxis text and responsively size Textfield
-    private void customYLim(Textfield tf, int limit) {
-        String s = limit > 0 ? "+" : "";
-        s += limit+"uV";
-        tf.setText(s);
-        //Responsively scale button size based on number of digits
-        int _width =  s.length() * 6;
-        tf.setSize(_width, yAxisLabel_h);
+    private void customYLim(TextBox tb, int limit) {
+        StringBuilder s = new StringBuilder(limit > 0 ? "+" : "");
+        s.append(limit);
+        s.append("uV");
+        tb.setText(s.toString());
     }
 
     public void resize(int _x, int _y, int _w, int _h) {
@@ -784,16 +761,12 @@ class ChannelBar {
         yScaleButton_neg.setPosition(x + uiSpaceWidth + padding, y + h/2 - yScaleButton_h/2);
         yScaleButton_pos.setPosition(x + uiSpaceWidth + padding*2 + yScaleButton_w, y + h/2 - yScaleButton_h/2);
 
-        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5));
-        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding);
+        yAxisMax.setPosition(x + uiSpaceWidth + padding, y + int(padding*1.5) - 2);
+        yAxisMin.setPosition(x + uiSpaceWidth + padding, y + h - yAxisLabel_h - padding - 1);
 
         onOff_diameter = h > 26 ? 26 : h - 2;
         onOffButton.setSize(onOff_diameter, onOff_diameter);
         onOffButton.setPosition(x + 6, y + int(h/2) - int(onOff_diameter/2));
-
-        if(currentBoard instanceof ImpedanceSettingsBoard && !(currentBoard instanceof BoardGalea)) {
-            impCheckButton.setPosition(x + 36, y + int(h/2) - int(impButton_diameter/2));
-        }
     }
 
     public void updateCP5(PApplet _parent) {
@@ -828,27 +801,6 @@ class ChannelBar {
         onOffButton.setDescription("Click to toggle channel " + channelString + ".");
     }
 
-    private void createImpButton(String name, String text, int _x, int _y, int _w, int _h) {
-        impCheckButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, WHITE, BLACK, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
-        impCheckButton.setCircularButton(true);
-        impCheckButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                println("[" + channelString + "] imp released");
-                // flip impedance check
-                ImpedanceSettingsBoard impBoard = (ImpedanceSettingsBoard)currentBoard;
-                impBoard.setCheckingImpedance(channelIndex, !impBoard.isCheckingImpedance(channelIndex));
-                if(impBoard.isCheckingImpedance(channelIndex)) {
-                    impCheckButton.setColorBackground(BUTTON_PRESSED_DARKGREY);
-                    impCheckButton.setColorCaptionLabel(WHITE);
-                } else {
-                    impCheckButton.setColorBackground(WHITE);
-                    impCheckButton.setColorCaptionLabel(BLACK);
-                }
-            }
-        });
-        impCheckButton.setDescription("Click to toggle impedance check for channel " + channelString + ".");
-    }
-
     private Button createYScaleButton(int chan, boolean shouldIncrease, String bName, String bText, int _x, int _y, int _w, int _h, PImage _default, PImage _hover, PImage _active) {
         _default.resize(_w, _h);
         _hover.resize(_w, _h);
@@ -863,29 +815,6 @@ class ChannelBar {
                 ;
         myButton.onClick(new yScaleButtonCallbackListener(chan, shouldIncrease));
         return myButton;
-    }
-
-    private Textfield createTextfield(Textfield myTextfield, int intValue, String name, String text, int _x, int _y, int _w, int _h) {
-        myTextfield = cbCp5.addTextfield(name)
-            .setPosition(_x, _y)
-            .setCaptionLabel("")
-            .setSize(_w, _h)
-            .setFont(createFont("Arial",10,true))
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
-            .setColorForeground(color(210))  // border color when not selected - grey
-            .setColorActive(isSelected_color)  // border color when selected - green
-            .setColorCursor(color(26, 26, 26))
-            .setText(text) //set the text
-            .align(5, 10, 20, 40)
-            //.onDoublePress(new TFCallbackListener (channelIndex, text, multiplier))
-            .setAutoClear(false)
-            ;
-        myTextfield.addCallback(new TFCallbackListener(channelIndex, myTextfield));
-        customYLim(myTextfield, intValue);
-        return myTextfield;
     }
 
     private class yScaleButtonCallbackListener implements CallbackListener {
@@ -914,47 +843,6 @@ class ChannelBar {
             //Update button text
             customYLim(yAxisMin, yAxisLowerLim);
             customYLim(yAxisMax, yAxisUpperLim);
-        }
-    }
-
-    private class TFCallbackListener implements CallbackListener {
-        private int channel;
-        private Textfield tf;
-        private String rcvString;
-        private int rcvAsInt;
-    
-        TFCallbackListener(int i, Textfield _tf)  {
-            channel = i;
-            tf = _tf;
-        }
-        public void controlEvent(CallbackEvent theEvent) {
-            
-            //Pressing ENTER in the Textfield triggers a "Broadcast"
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                
-                //Try to clean up typing accidents from user input in Textfield
-                rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                rcvAsInt = NumberUtils.toInt(rcvString);
-                if (rcvAsInt == 0) {
-                    rcvAsInt = Math.round(NumberUtils.toFloat(rcvString));
-                }
-                verbosePrint("Textfield: channel===" + channel + "|| string===" + rcvString + "|| asInteger===" + rcvAsInt);
-                
-                if (tf == yAxisMin) {
-                    yAxisLowerLim = rcvAsInt;
-                } else {
-                    yAxisUpperLim = rcvAsInt;
-                }
-                
-                customYLim(tf, rcvAsInt);
-                plot.setYLim(yAxisLowerLim, yAxisUpperLim);
-            }
-
-            //Clicking in the Textfield, which you must do before typing, reformats the text to be an integer
-            if (theEvent.getAction() == ControlP5.ACTION_RELEASED) {
-                int i = (tf == yAxisMin) ? yAxisLowerLim : yAxisUpperLim;
-                tf.setText(Integer.toString(i));
-            }
         }
     }
 };

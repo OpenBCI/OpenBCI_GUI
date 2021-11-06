@@ -579,6 +579,18 @@ class TopNav {
 
     //Execute this function whenver the stop button is pressed
     public void stopButtonWasPressed() {
+
+        //Exit method if doing Cyton impedance check. Avoids a BrainFlow error.
+        if (currentBoard instanceof BoardCyton && w_cytonImpedance != null) {
+            Integer checkingImpOnChan = ((ImpedanceSettingsBoard)currentBoard).isCheckingImpedanceOnChannel();
+            //println("isCheckingImpedanceOnAnythingEZCHECK==",w_cytonImpedance.isCheckingImpedanceOnAnything);
+            if (checkingImpOnChan != null || w_cytonImpedance.cytonMasterImpedanceCheckIsActive() || w_cytonImpedance.isCheckingImpedanceOnAnything) {
+                PopupMessage msg = new PopupMessage("Busy Checking Impedance", "Please turn off impedance check to begin recording the data stream.");
+                println("OpenBCI_GUI::Cyton: Please turn off impedance check to begin recording the data stream.");
+                return;
+            }
+        }
+
         //toggle the data transfer state of the ADS1299...stop it or start it...
         if (currentBoard.isStreaming()) {
             output("openBCI_GUI: stopButton was pressed. Stopping data transfer, wait a few seconds.");
@@ -596,6 +608,10 @@ class TopNav {
                 nextPlayback_millis = millis();  //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             }
         }
+    }
+
+    public boolean dataStreamingButtonIsActive() {
+        return toggleDataStreamingButton.getCaptionLabel().getText().equals(stopButton_pressToStop_txt);
     }
 
     public void resetStartStopButton() {

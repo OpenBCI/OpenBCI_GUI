@@ -491,9 +491,14 @@ class ADS1299SettingsController {
         c = isActive ? (boardSettings.values.srb1[chan] == Srb1.CONNECT ? yesOnColor : noOffColor) : darkNotActive;   
         srb1Lists[chan].setValue(boardSettings.values.srb1[chan].ordinal());
         srb1Lists[chan].setColorBackground(c);
-        srb1Lists[chan].setLock(!isActive);
+        srb1Lists[chan].setLock(!isActive);  
+    }
 
-        
+    public void updateAllChanSettingsDropdowns() {
+        for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
+            updateChanSettingsDropdowns(i, currentBoard.isEXGChannelActive(i));
+            setHasUnappliedSettings(i, false);
+        }
     }
 
     private class SLCallbackListener implements CallbackListener {

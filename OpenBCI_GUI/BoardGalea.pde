@@ -270,6 +270,17 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         return isCheckingImpedance[channel];
     }
 
+    //Returns the channel number where impedance check is currently active, otherwise return null
+    @Override
+    public Integer isCheckingImpedanceOnChannel() {
+        for (int i = 0; i < isCheckingImpedance.length; i++) {
+            if (isCheckingImpedance[i]) {
+                return i;
+            }
+        }
+        return null;
+    }
+
     @Override
     protected double[][] getNewDataInternal() {
         double[][] data = super.getNewDataInternal();
