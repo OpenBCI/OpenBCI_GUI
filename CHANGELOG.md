@@ -5,6 +5,7 @@
 
 ### Improvements
 * For Cyton, only allow checking impedance on one channel at a time #983
+* Make new Cyton Signal Check Widget #983
 
 # v5.0.8
 
