@@ -332,6 +332,14 @@ class DataStatus {
     public double getPercentage() {
         return percentage;
     }
+
+    public void setRailedWarnThreshold(double d) {
+        threshold_railed_warn = d;
+    }
+
+    public void setRailedThreshold(double d) {
+        threshold_railed = d;
+    }
 };
 
 class FilterConstants {
@@ -367,6 +375,7 @@ class TextBox {
     private boolean drawBackground = true;
     private int backgroundEdge_pixels;
     private int alignH,alignV;
+    private boolean drawObject = true;
 
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
@@ -396,6 +405,11 @@ class TextBox {
     }
     
     public void draw() {
+
+        if (!drawObject) {
+            return;
+        }
+
         pushStyle();
         noStroke();
         textFont(font);
@@ -459,6 +473,10 @@ class TextBox {
 
     public int getHeight() {
         return h;
+    }
+
+    public void setVisible(boolean b) {
+        drawObject = b;
     }
 };
 

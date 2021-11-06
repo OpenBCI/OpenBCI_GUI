@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.8";
-String localGUIVersionDate = "September 2021";
+String localGUIVersionString = "v5.0.9";
+String localGUIVersionDate = "October 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -235,17 +235,26 @@ final color WHITE = color(255);
 final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
+final color BUTTON_HOVER_LIGHT = color(211, 222, 232);
 final color BUTTON_PRESSED = color(150, 170, 200); //OPENBCI_DARKBLUE;
+final color BUTTON_PRESSED_LIGHT = color(179, 187, 199);
 final color BUTTON_LOCKED_GREY = color(128);
 final color BUTTON_PRESSED_DARKGREY = color(50);
 final color BUTTON_NOOBGREEN = color(114,204,171);
 final color BUTTON_EXPERTPURPLE = color(135,95,154);
 final color BUTTON_CAUTIONRED = color(214,100,100);
 final color OBJECT_BORDER_GREY = color(150);
+final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
+final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
 //Use the same colors for X,Y,Z throughout Accelerometer widget
 final color ACCEL_X_COLOR = TURN_OFF_RED;
 final color ACCEL_Y_COLOR = color(49, 113, 89);
 final color ACCEL_Z_COLOR = color(54, 87, 158);
+//Signal check colors
+final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow channel color found below
+final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
+final color SIGNAL_CHECK_RED = TURN_OFF_RED;
+final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
 
 
 final int COLOR_SCHEME_DEFAULT = 1;
@@ -273,6 +282,8 @@ final color[] channelColors = {
 final int navHeight = 22;
 
 ButtonHelpText buttonHelpText;
+
+TextFieldUpdateHelper textfieldUpdateHelper;
 
 static CustomOutputStream outputStream;
 
@@ -420,6 +431,7 @@ void delayedSetup() {
     helpWidget = new HelpWidget(0, win_h - 30, win_w, 30);
     //Instantiate buttonHelpText before any buttons have been made
     buttonHelpText = new ButtonHelpText();
+    textfieldUpdateHelper = new TextFieldUpdateHelper();
 
     //setup topNav
     topNav = new TopNav();
@@ -745,19 +757,17 @@ void startRunning() {
 
 void stopRunning() {
     //Check again if board is streaming to avoid IllegalStateException
-    if (currentBoard.isStreaming()) {
+    if (currentBoard.isStreaming() && topNav.dataStreamingButtonIsActive()) {
         //If streaming, attempt to stop stream
         currentBoard.stopStreaming();
-        if (!currentBoard.isStreaming()) {
-            output("Data stream stopped.");
-            try {
-                streamTimeElapsed.stop();
-                sessionTimeElapsed.suspend();
-                dataLogger.onStopStreaming();
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
-            }
+        output("Data stream stopped.");
+        try {
+            streamTimeElapsed.stop();
+            sessionTimeElapsed.suspend();
+            dataLogger.onStopStreaming();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            outputError("GUI Error: Failed to stop Timer. Please make an issue on GitHub in the GUI repo.");
         }
     } else {
         output("Data stream is already stopped.");
