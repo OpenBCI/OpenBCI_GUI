@@ -115,7 +115,7 @@ OpenGL acceleration is required.
 
 - If you are on a Mac and you seem to get a "spinning wheel of death" when trying to open a dialog box to view files (example "SELECT PLAYBACK FILE" button), [please update your Java Runtime Environment](https://www.java.com/en/download/). This happens because Java was not packaged with a version of the GUI producing this error.
 
-- For more on GUI troubleshooting, head over to the [GUI Troublshooting Doc](https://docs.openbci.com/docs/10Troubleshooting/GUI_Troubleshooting).
+- For more on GUI troubleshooting, head over to the [GUI Troublshooting Doc](https://docs.openbci.com/Troubleshooting/GUI_Troubleshooting/).
 
 ## <a name="license"></a> License:
 
