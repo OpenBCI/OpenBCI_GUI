@@ -7,6 +7,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//Used for Widget Dropdown Enums
+interface IndexingInterface {
+    public int getIndex();
+    public String getString();
+}
+
 class Widget{
 
     protected PApplet pApplet;
@@ -286,6 +292,20 @@ class Widget{
         if (dropdownIsActive != previousDropdownIsActive) {
             //println(c.getName(), " lock == ", dropdownIsActive);
             c.setLock(dropdownIsActive);
+            previousDropdownIsActive = dropdownIsActive;
+        }
+    }
+
+    //For use with multiple Cp5 controllers per class/widget
+    protected void lockElementsOnOverlapCheck(List<controlP5.Controller> listOfControllers) {
+        if (dropdownIsActive != previousDropdownIsActive) {
+            for (controlP5.Controller c : listOfControllers) {
+                if (c == null) {
+                    continue; //Gracefully skip over a controller if it is null
+                }
+                //println(c.getName(), " lock == ", dropdownIsActive);
+                c.setLock(dropdownIsActive);
+            } 
             previousDropdownIsActive = dropdownIsActive;
         }
     }

@@ -84,10 +84,10 @@ class W_Focus extends Widget {
         
         //This is the protocol for setting up dropdowns.
         dropdownWidth = 60; //Override the default dropdown width for this widget
-        addDropdown("focusMetricDropdown", "Metric", FocusMetric.getEnumStringsAsList(), focusMetric.getIndex());
-        addDropdown("focusClassifierDropdown", "Classifier", FocusClassifier.getEnumStringsAsList(), focusClassifier.getIndex());
-        addDropdown("focusThresholdDropdown", "Threshold", FocusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
-        addDropdown("focusWindowDropdown", "Window", FocusXLim.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("focusMetricDropdown", "Metric", focusMetric.getEnumStringsAsList(), focusMetric.getIndex());
+        addDropdown("focusClassifierDropdown", "Classifier", focusClassifier.getEnumStringsAsList(), focusClassifier.getIndex());
+        addDropdown("focusThresholdDropdown", "Threshold", focusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
+        addDropdown("focusWindowDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
         
 
         //Create data table

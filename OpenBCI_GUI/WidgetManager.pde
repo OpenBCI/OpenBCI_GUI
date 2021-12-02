@@ -14,6 +14,7 @@ W_fft w_fft;
 W_Networking w_networking;
 W_BandPower w_bandPower;
 W_Accelerometer w_accelerometer;
+W_CytonImpedance w_cytonImpedance;
 W_GanglionImpedance w_ganglionImpedance;
 W_HeadPlot w_headPlot;
 W_template w_template1;
@@ -36,17 +37,21 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_timeSeries, w);
     // println("  setupWidgets time series -- " + millis());
 
-    //Widget_1
     w_fft = new W_fft(_this);
     w_fft.setTitle("FFT Plot");
     addWidget(w_fft, w);
     // println("  setupWidgets fft -- " + millis());
 
     if (currentBoard instanceof AccelerometerCapableBoard) {
-        //Widget_2
         w_accelerometer = new W_Accelerometer(_this);
         w_accelerometer.setTitle("Accelerometer");
         addWidget(w_accelerometer, w);
+    }
+
+    if (currentBoard instanceof BoardCyton) {
+        w_cytonImpedance = new W_CytonImpedance(_this);
+        w_cytonImpedance.setTitle("Cyton Signal");
+        addWidget(w_cytonImpedance, w);
     }
 
     if(currentBoard instanceof DataSourcePlayback){

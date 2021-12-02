@@ -5,12 +5,7 @@ public enum FocusColors {
     GREEN, CYAN, ORANGE
 }
 
-interface FocusEnum {
-    public int getIndex();
-    public String getString();
-}
-
-public enum FocusXLim implements FocusEnum
+public enum FocusXLim implements IndexingInterface
 {
     FIVE (0, 5, "5 sec"),
     TEN (1, 10, "10 sec"),
@@ -19,7 +14,6 @@ public enum FocusXLim implements FocusEnum
     private int index;
     private int value;
     private String label;
-
     private static FocusXLim[] vals = values();
 
     FocusXLim(int _index, int _value, String _label) {
@@ -44,14 +38,14 @@ public enum FocusXLim implements FocusEnum
 
     public static List<String> getEnumStringsAsList() {
         List<String> enumStrings = new ArrayList<String>();
-        for (FocusEnum val : vals) {
+        for (IndexingInterface val : vals) {
             enumStrings.add(val.getString());
         }
         return enumStrings;
     }
 }
 
-public enum FocusMetric implements FocusEnum
+public enum FocusMetric implements IndexingInterface
 {
     CONCENTRATION (0, "Concentration", BrainFlowMetrics.CONCENTRATION, "Concentrating"),
     RELAXATION (1, "Relaxation", BrainFlowMetrics.RELAXATION, "Relaxing");
@@ -60,7 +54,6 @@ public enum FocusMetric implements FocusEnum
     private String label;
     private BrainFlowMetrics metric;
     private String idealState;
-
     private static FocusMetric[] vals = values();
 
     FocusMetric(int _index, String _label, BrainFlowMetrics _metric, String _idealState) {
@@ -90,14 +83,14 @@ public enum FocusMetric implements FocusEnum
 
     public static List<String> getEnumStringsAsList() {
         List<String> enumStrings = new ArrayList<String>();
-        for (FocusEnum val : vals) {
+        for (IndexingInterface val : vals) {
             enumStrings.add(val.getString());
         }
         return enumStrings;
     }
 }
 
-public enum FocusClassifier implements FocusEnum
+public enum FocusClassifier implements IndexingInterface
 {
     REGRESSION (0, "Regression", BrainFlowClassifiers.REGRESSION),
     KNN (1, "KNN", BrainFlowClassifiers.KNN),
@@ -133,14 +126,14 @@ public enum FocusClassifier implements FocusEnum
 
     public static List<String> getEnumStringsAsList() {
         List<String> enumStrings = new ArrayList<String>();
-        for (FocusEnum val : vals) {
+        for (IndexingInterface val : vals) {
             enumStrings.add(val.getString());
         }
         return enumStrings;
     }
 }
 
-public enum FocusThreshold implements FocusEnum
+public enum FocusThreshold implements IndexingInterface
 {
     FIVE_TENTHS (0, .5, "0.5"),
     SIX_TENTHS (1, .6, "0.6"),
@@ -176,7 +169,7 @@ public enum FocusThreshold implements FocusEnum
 
     public static List<String> getEnumStringsAsList() {
         List<String> enumStrings = new ArrayList<String>();
-        for (FocusEnum val : vals) {
+        for (IndexingInterface val : vals) {
             enumStrings.add(val.getString());
         }
         return enumStrings;

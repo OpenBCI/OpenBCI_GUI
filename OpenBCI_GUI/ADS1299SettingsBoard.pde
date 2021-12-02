@@ -143,6 +143,7 @@ class ADS1299Settings {
     
     public ADS1299SettingsValues values;
     public ADS1299SettingsValues previousValues;
+    private ADS1299SettingsValues defaultValues;
 
     protected Board board;
     protected ADS1299SettingsBoard settingsBoard;
@@ -152,6 +153,7 @@ class ADS1299Settings {
         settingsBoard = (ADS1299SettingsBoard)theBoard;
         values = new ADS1299SettingsValues();
         previousValues = new ADS1299SettingsValues();
+        defaultValues = new ADS1299SettingsValues();
 
         int channelCount = board.getNumEXGChannels();
 
@@ -185,6 +187,10 @@ class ADS1299Settings {
         values.previousBias = values.bias.clone();
         values.previousSrb2 = values.srb2.clone();
         values.previousInputType = values.inputType.clone();
+
+        String currentVals = getJson();
+        Gson gson = new Gson();
+        defaultValues = gson.fromJson(currentVals, ADS1299SettingsValues.class);
     }
 
     public boolean loadSettingsValues(String filename) {
@@ -271,6 +277,26 @@ class ADS1299Settings {
         return success;
     }
 
+    //Return true if all commits are successful
+    public boolean commitDefaultsAllAtOnce() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < board.getNumEXGChannels(); i++) {
+            String command = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(i),
+                                        defaultValues.powerDown[i].ordinal(), defaultValues.gain[i].ordinal(),
+                                        defaultValues.inputType[i].ordinal(), defaultValues.bias[i].ordinal(),
+                                        defaultValues.srb2[i].ordinal(), defaultValues.srb1[i].ordinal());
+            sb.append(command);
+        }
+        return board.sendCommand(sb.toString()).getKey().booleanValue();
+    }
+
+    //Return true if all commits are successful
+    public void revertAllChannelsToDefaultValues() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String defaultValsAsString = gson.toJson(defaultValues);
+        values = gson.fromJson(defaultValsAsString, ADS1299SettingsValues.class);
+    }
+
     public void saveAllLastValues() {
         String lastVals = getJson();
         Gson gson = new Gson();
@@ -285,6 +311,14 @@ class ADS1299Settings {
         previousValues.srb1[chan] = values.srb1[chan];
     }
 
+    public void revertToLastValues(int chan) {
+        values.gain[chan] = previousValues.gain[chan];
+        values.inputType[chan] = previousValues.inputType[chan];
+        values.bias[chan] = previousValues.bias[chan];
+        values.srb2[chan] = previousValues.srb2[chan];
+        values.srb1[chan] = previousValues.srb1[chan];
+    }
+
     public boolean equalsLastValues(int chan) {        
         boolean equal = previousValues.gain[chan] == values.gain[chan] &&
                         previousValues.inputType[chan] == values.inputType[chan] &&
@@ -293,6 +327,15 @@ class ADS1299Settings {
                         previousValues.srb1[chan] == values.srb1[chan]
                         ;
         return equal;
+    }
+
+    //Get previous or current values as a string
+    public String getValuesString(int chan, ADS1299SettingsValues vals) {
+        String commandString = String.format("x%c%d%d%d%d%d%dX", settingsBoard.getChannelSelector(chan),
+                                        vals.powerDown[chan].ordinal(), vals.gain[chan].ordinal(),
+                                        vals.inputType[chan].ordinal(), vals.bias[chan].ordinal(),
+                                        vals.srb2[chan].ordinal(), vals.srb1[chan].ordinal());
+        return commandString;
     }
 }
 
