@@ -1,3 +1,10 @@
+# v5.1.0
+
+### Bug Fixes
+
+### Improvements
+* Add BrainFlow Streamer for File and Network to Control Panel #1007
+
 # v5.0.9
 
 ### Bug Fixes
