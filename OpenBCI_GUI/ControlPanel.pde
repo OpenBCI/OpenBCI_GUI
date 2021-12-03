@@ -2179,8 +2179,12 @@ class BrainFlowStreamerBox {
     private Textfield sessionNameTextfield;
     private Textfield streamerTextfield;
     private Button autoSessionName;
-    private Button outputNetwork;
-    private Button outputFile;
+    private Button outputToNetwork;
+    private Button outputToFile;
+    private Button bfFileOutputLocation;
+    private ScrollableList bfFileSaveOption;
+    private String[] bfFileSaveOptionArray = {"Default", "Custom"};
+    private boolean isUsingDefaultFileLocation = true;
     //private String odfMessage = "Output has been set to OpenBCI Data Format (CSV).";
     //private String bdfMessage = "Output has been set to BioSemi Data Format (BDF+).";
 
@@ -2197,6 +2201,7 @@ class BrainFlowStreamerBox {
         bfStreamerCp5.setAutoDraw(false);
 
         createStreamerTextfield("Stream");
+        createDropdown("bfFileSaveOption");
 
         //button to autogenerate file name based on time/date
         createStreamNetworkButton("networkButton", "Network", x + padding, y + 32, (w-padding*3)/2, 24);
@@ -2209,6 +2214,19 @@ class BrainFlowStreamerBox {
     }
 
     public void draw() {
+        int streamerTextfieldY = y + padding*2 + 48;
+        boolean showTextfield = !isUsingDefaultFileLocation || outputToNetwork.isOn();
+
+        if (!isUsingDefaultFileLocation && outputToFile.isOn()) {
+            streamerTextfieldY += 24 + padding;
+            h = 127 + padding;
+        } else if (outputToNetwork.isOn() || !showTextfield) {
+            h = 127 - 24;
+        }
+
+        bfFileSaveOption.setVisible(outputToFile.isOn());
+        streamerTextfield.setVisible(showTextfield);
+
         pushStyle();
         fill(boxColor);
         stroke(boxStrokeColor);
@@ -2219,13 +2237,19 @@ class BrainFlowStreamerBox {
         textAlign(LEFT, TOP);
         text("BrainFlow Streamer", x + padding, y + padding);
         textFont(p4, 14);
-        text("Stream", x + padding, y + padding*2 + 48);
+        if (outputToFile.isOn()) {
+            text("Location", x + padding, y + padding*2 + 46 + 2);
+        }
+        if (showTextfield) {
+            text("Stream", x + padding, streamerTextfieldY);
+        }
         popStyle();
         
         //Update the position of UI elements here
-        streamerTextfield.setPosition(x + 60, y + 66);
-        outputNetwork.setPosition(x + padding, y + 32);
-        outputFile.setPosition(x + padding*2 + (w-padding*3)/2, y + 32);
+        outputToNetwork.setPosition(x + padding, y + 32);
+        outputToFile.setPosition(x + padding*2 + (w-padding*3)/2, y + 32);
+        bfFileSaveOption.setPosition(x + 80, y + padding*2 + 46);
+        streamerTextfield.setPosition(x + 60, streamerTextfieldY - 2);
         
         //boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
         //maxDurationDropdown.setVisible(odfIsSelected);
@@ -2252,7 +2276,7 @@ class BrainFlowStreamerBox {
         //Clear textfield on double click
         streamerTextfield.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                output("SessionData: Enter your custom session name.");
+                output("BrainFlowStreamer: Enter your custom streaming location");
                 streamerTextfield.clear();
             }
         });
@@ -2272,60 +2296,6 @@ class BrainFlowStreamerBox {
         });
     }
 
-    /*
-    private void createMaxDurationDropdown(String name, List<String> _items){
-        maxDurationDropdown = new CustomScrollableList(sessionData_cp5, name)
-            .setOpen(false)
-            .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
-            //.setColorBackground(color(31,69,110)) // text field bg color
-            //.setColorValueLabel(color(0))       // text color
-            //.setColorCaptionLabel(color(255))
-            //.setColorForeground(color(125))    // border color when not selected
-            //.setColorActive(BUTTON_PRESSED)       // border color when selected
-            // .setColorCursor(color(26,26,26))
-            .setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding)
-            .setSize((w-padding*3)/2, (_items.size() + 1) * 24)// + maxFreqList.size())
-            .setBarHeight(24) //height of top/primary bar
-            .setItemHeight(24) //height of all item/dropdown bars
-            .addItems(_items) // used to be .addItems(maxFreqList)
-            .setVisible(false)
-            ;
-        maxDurationDropdown
-            .getCaptionLabel() //the caption label is the text object in the primary bar
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
-            .setFont(p4)
-            .setSize(14)
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(4)
-            ;
-        maxDurationDropdown
-            .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
-            .setFont(h5)
-            .setSize(12) //set the font size of the item bars to 14pt
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(3) //4-pixel vertical offset to center text
-            ;
-        maxDurationDropdown.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {    
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                    int n = (int)(theEvent.getController()).getValue();
-                    settings.setLogFileDurationChoice(n);
-                    println("ControlPanel: Chosen Recording Duration: " + n);
-                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                    lockOutsideElements(true);
-                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    ScrollableList theList = (ScrollableList)(theEvent.getController());
-                    lockOutsideElements(theList.isOpen());
-                }
-            }
-        });
-    }
-    */
-
     private Button createBrainFlowOutputToggle(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
         final Button b = createButton(bfStreamerCp5, name, text, _x, _y, _w, _h);
         b.setSwitch(true); //This turns the button into a switch
@@ -2336,31 +2306,85 @@ class BrainFlowStreamerBox {
     }
 
     private void createStreamNetworkButton(String name, String text, int _x, int _y, int _w, int _h) {
-        outputNetwork = createBrainFlowOutputToggle(name, text, false, _x, _y, _w, _h);
-        outputNetwork.onRelease(new CallbackListener() {
+        outputToNetwork = createBrainFlowOutputToggle(name, text, false, _x, _y, _w, _h);
+        outputToNetwork.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 //output(odfMessage);
                 //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
-                outputNetwork.setOn();
-                outputFile.setOff();
+                outputToNetwork.setOn();
+                outputToFile.setOff();
                 //setToODFHeight();
             }
         });
-        outputNetwork.setDescription("Set BrainFlow Streamer output to a file. A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
+        outputToNetwork.setDescription("Set BrainFlow Streamer output to a file. A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
     }
 
     private void createStreamFileButton(String name, String text, int _x, int _y, int _w, int _h) {
-        outputFile = createBrainFlowOutputToggle(name, text, true, _x, _y, _w, _h);
-        outputFile.onRelease(new CallbackListener() {
+        outputToFile = createBrainFlowOutputToggle(name, text, true, _x, _y, _w, _h);
+        outputToFile.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 //output(bdfMessage);
                 //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
-                outputNetwork.setOn();
-                outputFile.setOff();
+                outputToNetwork.setOff();
+                outputToFile.setOn();
                 //setToBDFHeight();
             }
         });
-        outputFile.setDescription("Set BrainFlow Streamer output to stream over network. This allows you to accept data in a separate process using BrainFlow. This is a helpful feature for developers.");
+        outputToFile.setDescription("Set BrainFlow Streamer output to stream over network. This allows you to accept data in a separate process using BrainFlow. This is a helpful feature for developers.");
+    }
+
+    private void createSelectBrainFlowFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        bfFileOutputLocation = createButton(bfStreamerCp5, name, text, _x, _y, _w, _h);
+        bfFileOutputLocation.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //output("Select a file for playback");
+                selectInput("Select a pre-recorded file for playback:", 
+                            "playbackFileSelected",
+                            new File(directoryManager.getGuiDataPath() + "Recordings")
+                );
+            }
+        });
+        bfFileOutputLocation.setDescription("Click to open a dialog box to select a Location .");
+    }
+
+    private void createDropdown(String name){
+        bfFileSaveOption = new CustomScrollableList(bfStreamerCp5, name)
+            .setOpen(false)
+            .setColor(settings.dropdownColors)
+            .setBackgroundColor(150)
+            .setSize(167, (bfFileSaveOptionArray.length + 1) * 24)
+            .setBarHeight(24) //height of top/primary bar
+            .setItemHeight(24) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        bfFileSaveOption.addItems(bfFileSaveOptionArray);
+        bfFileSaveOption.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(bfFileSaveOptionArray[0])
+            .setFont(p4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        bfFileSaveOption.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(bfFileSaveOptionArray[0])
+            .setFont(h5)
+            .setSize(12) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+        bfFileSaveOption.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int n = (int)(theEvent.getController()).getValue();
+                    isUsingDefaultFileLocation = n == 0;
+                    String outputString = "BrainFlow File Streamer: User selected " + bfFileSaveOptionArray[n];
+                    output(outputString);
+                }
+            }
+        });
+        bfFileSaveOption.setPosition(x + 10, y + 10); //Set arbitrary position to start, gets reset on every draw
     }
 
     public String getSessionTextfieldString() {
