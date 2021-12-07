@@ -70,6 +70,13 @@ class DataLogger {
             }
             settings.setLogFileStartTime(System.nanoTime());
         }
+
+        //Print BrainFlow Streamer Info here after ODF and BDF println
+        if (eegDataSource != DATASOURCE_PLAYBACKFILE && eegDataSource != DATASOURCE_STREAMING) {
+            StringBuilder sb = new StringBuilder("OpenBCI_GUI: BrainFlow Streamer Location: ");
+            sb.append(brainflowStreamer);
+            println(sb.toString());
+        }
     }
 
     public void onStopStreaming() {

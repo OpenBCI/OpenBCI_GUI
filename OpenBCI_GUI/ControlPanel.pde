@@ -2447,9 +2447,6 @@ class BrainFlowStreamerBox {
 
     public String getBrainFlowStreamerString() {
         String s = outputToNetwork.isOn() ? getBFNetworkTextfieldsAsString() : getBFFileLocationAsString();
-        StringBuilder sb = new StringBuilder("BrainFlow Streamer:: Output = ");
-        sb.append(s);
-        println(sb.toString());
         return s;
     }
 

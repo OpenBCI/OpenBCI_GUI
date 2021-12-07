@@ -71,7 +71,6 @@ public class DataWriterBF {
         fileName.append(fileNumber);
         fileName.append(".csv");
         fileName.append(brainflowWriteOption);
-        println("BrainFlowStreamer Output File =="+fileName.toString());
     }
 
     public void incrementBrainFlowStreamerFileNumber() {
