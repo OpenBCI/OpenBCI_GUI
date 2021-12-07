@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.9";
-String localGUIVersionDate = "October 2021";
+String localGUIVersionString = "v5.1.0-alpha.1";
+String localGUIVersionDate = "December 2021";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -130,6 +130,8 @@ String ganglion_portName = "N/A";
 
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
+
+String brainflowStreamer = "";
 
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
@@ -735,10 +737,10 @@ void initFFTObjectsAndBuffer() {
 
 void startRunning() {
     // start streaming on the chosen board
+    dataLogger.onStartStreaming();
     currentBoard.startStreaming();
     if (currentBoard.isStreaming()) {
         output("Data stream started.");
-        dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
         w_timeSeries.closeADSSettings();

@@ -73,7 +73,7 @@ abstract class BoardBrainFlow extends Board {
         }
 
         try {
-            boardShim.start_stream (450000);
+            boardShim.start_stream (450000, brainflowStreamer);
             streaming = true;
         }
         catch (BrainFlowError e) {
@@ -100,6 +100,10 @@ abstract class BoardBrainFlow extends Board {
             println("ERROR: Exception when stoppping stream");
             e.printStackTrace();
             streaming = true;
+        }
+
+        if (eegDataSource != DATASOURCE_PLAYBACKFILE && eegDataSource != DATASOURCE_STREAMING) {
+            dataLogger.fileWriterBF.incrementBrainFlowStreamerFileNumber();
         }
     }
 
