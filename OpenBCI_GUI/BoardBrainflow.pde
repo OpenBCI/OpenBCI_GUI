@@ -72,10 +72,6 @@ abstract class BoardBrainFlow extends Board {
             return;
         }
 
-        if (eegDataSource != DATASOURCE_PLAYBACKFILE && eegDataSource != DATASOURCE_STREAMING) {
-            controlPanel.setBrainFlowStreamerOutput();
-        }
-
         try {
             boardShim.start_stream (450000, brainflowStreamer);
             streaming = true;

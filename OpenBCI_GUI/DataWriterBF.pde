@@ -59,6 +59,13 @@ public class DataWriterBF {
         }
 
         generateBrainFlowStreamerFileName();
+
+        File directory = new File(fileName.toString());
+        if (!directory.exists()){
+            directory.mkdirs();
+            // If you require it to make the entire directory path including parents,
+            // use directory.mkdirs(); here instead.
+        }
     }
     
     private void generateBrainFlowStreamerFileName() {
@@ -79,7 +86,7 @@ public class DataWriterBF {
     }
 
     public void resetBrainFlowStreamer() {
-        fileNumber = -1;
+        fileNumber = 0;
         folderName = "";
         folderPath = "";
         fileName = null;

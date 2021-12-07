@@ -317,6 +317,10 @@ class ControlPanel {
     }
 
     public void setBrainFlowStreamerOutput() {
+        if (getIsBrainFlowSteamerDefaultFileOutput()) {
+            dataLogger.setBfWriterDefaultFolder();
+        }
+
         if (eegDataSource == DATASOURCE_CYTON) {
             brainflowStreamer = bfStreamerBoxCyton.getBrainFlowStreamerString();
         } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -326,6 +330,20 @@ class ControlPanel {
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             brainflowStreamer = bfStreamerBoxSynthetic.getBrainFlowStreamerString();
         }
+    }
+
+    private boolean getIsBrainFlowSteamerDefaultFileOutput() {
+        boolean b = false;
+        if (eegDataSource == DATASOURCE_CYTON) {
+            b = bfStreamerBoxCyton.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            b = bfStreamerBoxGanglion.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            b = bfStreamerBoxGalea.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            b = bfStreamerBoxSynthetic.getIsBrainFlowStreamerDefaultLocation();
+        }
+        return b;
     }
 
 }; //end of ControlPanel class
@@ -2207,10 +2225,11 @@ class BrainFlowStreamerBox {
     private Button outputToNetwork;
     private Button outputToFile;
     private ScrollableList bfFileSaveOption;
-    private boolean isUsingDefaultFileLocation = true;
     private DataWriterBFEnum dataWriterBfEnum = DataWriterBFEnum.DEFAULT;
     private final int HEADER_H = 14;
     private final int OBJECT_H = 24;
+    private final String DEFAULT_IP_ADDRESS = "225.1.1.1";
+    private final String DEFAULT_PORT = "6677";
 
     BrainFlowStreamerBox (int _x, int _y, int _w, int _h, int _padding, String textfieldName) {
         x = _x;
@@ -2285,20 +2304,20 @@ class BrainFlowStreamerBox {
             .setColorForeground(isSelected_color)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText("255.1.1.1") //default ipAddress == ""
+            .setText(DEFAULT_IP_ADDRESS) //default ipAddress == ""
             .align(5, 10, 20, 40)
             //.onDoublePress(cb)
             .addCallback(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
                         if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && ipAddress.getText().equals("")) {
-                            ipAddress.setText("255.1.1.1");
+                            ipAddress.setText(DEFAULT_IP_ADDRESS);
                         }
                     }
                 })
             .onReleaseOutside(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
                         if (!ipAddress.isActive() && ipAddress.getText().equals("")) {
-                            ipAddress.setText("255.1.1.1");
+                            ipAddress.setText(DEFAULT_IP_ADDRESS);
                         }
                     }
                 })
@@ -2316,20 +2335,20 @@ class BrainFlowStreamerBox {
             .setColorForeground(isSelected_color)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText("6677") //default port == 0
+            .setText(DEFAULT_PORT) //default port == 0
             .align(5, 10, 20, 40)
             //.onDoublePress(cb)
             .addCallback(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
                         if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && port.getText().equals("")) {
-                            port.setText("6677");
+                            port.setText(DEFAULT_PORT);
                         }
                     }
                 })
             .onReleaseOutside(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
                         if (!port.isActive() && port.getText().equals("")) {
-                            port.setText("6677");
+                            port.setText(DEFAULT_PORT);
                         }
                     }
                 })
@@ -2409,7 +2428,6 @@ class BrainFlowStreamerBox {
                     int val = (int)(theEvent.getController()).getValue();
                     Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
                     dataWriterBfEnum = (DataWriterBFEnum)bob.get("value");
-                    isUsingDefaultFileLocation = dataWriterBfEnum.getIsDefaultLocation();
                     StringBuilder sb = new StringBuilder("BrainFlow File Streamer: User selected ");
                     sb.append(dataWriterBfEnum.getString());
                     sb.append(" file location.");
@@ -2448,6 +2466,10 @@ class BrainFlowStreamerBox {
     public String getBrainFlowStreamerString() {
         String s = outputToNetwork.isOn() ? getBFNetworkTextfieldsAsString() : getBFFileLocationAsString();
         return s;
+    }
+
+    public boolean getIsBrainFlowStreamerDefaultLocation() {
+        return outputToFile.isOn() && dataWriterBfEnum.getIsDefaultLocation();
     }
 
     // True locks elements, False unlocks elements

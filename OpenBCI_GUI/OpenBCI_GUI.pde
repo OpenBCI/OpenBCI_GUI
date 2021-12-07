@@ -737,10 +737,10 @@ void initFFTObjectsAndBuffer() {
 
 void startRunning() {
     // start streaming on the chosen board
+    dataLogger.onStartStreaming();
     currentBoard.startStreaming();
     if (currentBoard.isStreaming()) {
         output("Data stream started.");
-        dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
         w_timeSeries.closeADSSettings();

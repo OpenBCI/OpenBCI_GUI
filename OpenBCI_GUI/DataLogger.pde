@@ -73,6 +73,7 @@ class DataLogger {
 
         //Print BrainFlow Streamer Info here after ODF and BDF println
         if (eegDataSource != DATASOURCE_PLAYBACKFILE && eegDataSource != DATASOURCE_STREAMING) {
+            controlPanel.setBrainFlowStreamerOutput();
             StringBuilder sb = new StringBuilder("OpenBCI_GUI: BrainFlow Streamer Location: ");
             sb.append(brainflowStreamer);
             println(sb.toString());
@@ -198,6 +199,10 @@ class DataLogger {
 
     public void setBfWriterFolder(String _folderName, String _folderPath) {
         fileWriterBF.setBrainFlowStreamerFolderName(_folderName, _folderPath);
+    }
+
+    public void setBfWriterDefaultFolder() {
+        fileWriterBF.setBrainFlowStreamerFolderName(sessionName, settings.getSessionPath());
     }
 
     public String getBfWriterFilePath() {
