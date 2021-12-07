@@ -254,7 +254,7 @@ class TopNav {
         //hide the center logo if buttons would overlap it
         if (width > 860) {
             //this is the center logo
-            image(logo, width/2 - (128/2) - 2, 2, 128, 29);
+            image(logo, width/2 - (128/2) - 2, 1, 128, 29);
         }
 
         //Draw these buttons during a Session
