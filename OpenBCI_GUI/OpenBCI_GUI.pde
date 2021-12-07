@@ -196,6 +196,7 @@ PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
 
+PImage logo_black;
 PImage logo_blue;
 PImage logo_white;
 PImage consoleImgBlue;
@@ -364,7 +365,7 @@ void setup() {
     p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
     p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
-    cog = loadImage("cog_1024x1024.png");
+    cog = loadImage("obci-logo-blu-cog.png");
 
     // check if the current directory is writable
     File dummy = new File(sketchPath());
@@ -438,13 +439,14 @@ void delayedSetup() {
     //setup topNav
     topNav = new TopNav();
 
-    logo_blue = loadImage("logo_blue.png");
-    logo_white = loadImage("logo_white.png");
+    logo_black = loadImage("obci-logo-blk.png");
+    logo_blue = loadImage("obci-logo-blu.png");
+    logo_white = loadImage("obci-logo-wht.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
     loadingGIF.loop();
-    loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
+    loadingGIF_blue = new Gif(this, "gear-anim__blue-trans.gif");
     loadingGIF_blue.loop();
 
     prepareExitHandler();

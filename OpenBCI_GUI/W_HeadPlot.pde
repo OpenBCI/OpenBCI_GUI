@@ -220,7 +220,6 @@ class HeadPlot {
         hp_h = _h;
         hp_win_x = _win_x;
         hp_win_y = _win_y;
-        thread("doHardCalcs");
         setMaxIntensity_uV(200.0f);  //default intensity scaling for electrodes
     }
 
@@ -1213,6 +1212,9 @@ class HeadPlot {
 
     public void update() {
         //do this when new data is available
+        if (!hardCalcsDone) {
+            thread("doHardCalcs");
+        }
 
         //update electrode colors
         updateElectrodeColors();
