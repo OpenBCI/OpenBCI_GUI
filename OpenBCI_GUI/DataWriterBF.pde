@@ -39,7 +39,7 @@ public class DataWriterBF {
     private String folderPath = "";
     private String folderName = "";
     private StringBuilder fileName = null;
-    private final String brainflowWriteOption = "w";
+    private final String brainflowWriteOption = ":w";
     private int fileNumber = 0;
 
     //variation on constructor to have custom name
@@ -47,7 +47,7 @@ public class DataWriterBF {
         
     }
 
-    public void setBrainFlowStreamerFileName(String _folderName, String _folderPath) {
+    public void setBrainFlowStreamerFolderName(String _folderName, String _folderPath) {
         //settings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + _sessionName + File.separator);
         folderName = _folderName;
         folderPath = _folderPath;
@@ -58,24 +58,32 @@ public class DataWriterBF {
             return;
         }
 
-        fileName = new StringBuilder(folderPath);
+        generateBrainFlowStreamerFileName();
+    }
+    
+    private void generateBrainFlowStreamerFileName() {
+        fileName = new StringBuilder("file://");
+        fileName.append(folderPath);
         fileName.append(File.separator);
         fileName.append("BrainFlow-RAW_");
         fileName.append(folderName);
-        if (fileNumber > 0) {
-            fileName.append("_");
-            fileName.append(fileNumber);
-        }
+        fileName.append("_");
+        fileName.append(fileNumber);
         fileName.append(".csv");
-        //println(fileName.toString());
+        fileName.append(brainflowWriteOption);
+        println("BrainFlowStreamer Output File =="+fileName.toString());
     }
 
-    public void incrementBrainFlowStreamerRecordingNumber() {
+    public void incrementBrainFlowStreamerFileNumber() {
         fileNumber++;
+        generateBrainFlowStreamerFileName();
     }
 
-    public void resetBrainFlowStreamerRecordingNumber() {
-        fileNumber = 0;
+    public void resetBrainFlowStreamer() {
+        fileNumber = -1;
+        folderName = "";
+        folderPath = "";
+        fileName = null;
     }
 
     public String getBrainFlowStreamerRecordingFileName() {
@@ -91,6 +99,14 @@ void bfSelectedFolder(File selection) {
         dataLogger.setBfWriterFolder(null, null);
         return;
     }
+
+    File directory = new File(selection.getAbsolutePath());
+    if (!directory.exists()){
+        directory.mkdirs();
+        // If you require it to make the entire directory path including parents,
+        // use directory.mkdirs(); here instead.
+    }
+
 
     println("DataLogging: bfSelectedFolder: User selected " + selection.getAbsolutePath());
 

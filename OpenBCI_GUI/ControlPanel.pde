@@ -303,6 +303,31 @@ class ControlPanel {
         channelPopup.setClicked(false);
     }
 
+    public void setDataLoggerOutputs() {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            // Store the current text field value of "Session Name" to be passed along to dataFiles
+            dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            dataLogger.setSessionName(directoryManager.getFileNameDateTime());
+        }
+    }
+
+    public void setBrainFlowStreamerOutput() {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            brainflowStreamer = bfStreamerBoxCyton.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            brainflowStreamer = bfStreamerBoxGanglion.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            brainflowStreamer = bfStreamerBoxGalea.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            brainflowStreamer = bfStreamerBoxSynthetic.getBrainFlowStreamerString();
+        }
+    }
+
 }; //end of ControlPanel class
 
 //==============================================================================//
@@ -2417,15 +2442,7 @@ class BrainFlowStreamerBox {
         if (dataLogger.getBfWriterFilePath() == null || dataWriterBfEnum.getIsTurnedOff()) {
             return null;
         }
-
-        StringBuilder sb = new StringBuilder("file:"); 
-        if (!isMac()) {
-            sb.append(File.separator);
-            sb.append(File.separator);
-        }
-        sb.append(dataLogger.getBfWriterFilePath());
-        sb.append(":w"); //Always write to new BrainFlow CSV to follow GUI policy on contiguous files
-        return sb.toString();
+        return dataLogger.getBfWriterFilePath();
     }
 
     public String getBrainFlowStreamerString() {
@@ -3075,20 +3092,9 @@ class InitBox {
                 setInitSessionButtonText("STOP SESSION");
                 // Global steps to START SESSION
                 // Prepare the serial port
-                if (eegDataSource == DATASOURCE_CYTON) {
-                    // Store the current text field value of "Session Name" to be passed along to dataFiles
-                    dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
-                    brainflowStreamer = controlPanel.bfStreamerBoxCyton.getBrainFlowStreamerString();
-                } else if (eegDataSource == DATASOURCE_GANGLION) {
-                    dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
-                    brainflowStreamer = controlPanel.bfStreamerBoxGanglion.getBrainFlowStreamerString();
-                } else if (eegDataSource == DATASOURCE_GALEA) {
-                    dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
-                    brainflowStreamer = controlPanel.bfStreamerBoxGalea.getBrainFlowStreamerString();
-                } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
-                    brainflowStreamer = controlPanel.bfStreamerBoxSynthetic.getBrainFlowStreamerString();
-                }
+
+                //Set data logger outputs to save data to BDF or CSV
+                controlPanel.setDataLoggerOutputs();
 
                 if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
                     wifi_ipAddress = controlPanel.wifiBox.staticIPAddressTF.getText();
