@@ -117,6 +117,14 @@ OpenGL acceleration is required.
 
 - For more on GUI troubleshooting, head over to the [GUI Troublshooting Doc](https://docs.openbci.com/Troubleshooting/GUI_Troubleshooting/).
 
+## Diagram
+
+Here is a Work-in-progress diagram outlining the most important parts of the GUI:
+
+<p align="center">
+  <img alt="banner" src="OpenBCI%20GUI%20Diagram.drawio.png" width="600">
+</p>
+
 ## <a name="license"></a> License:
 
 MIT
