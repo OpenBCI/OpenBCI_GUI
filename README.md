@@ -119,7 +119,7 @@ OpenGL acceleration is required.
 
 ## Diagram
 
-Here is a Work-in-progress diagram outlining the most important parts of the GUI:
+Here is a Work-in-progress diagram outlining the most important parts of the GUI. Created using https://app.diagrams.net/.
 
 <p align="center">
   <img alt="banner" src="OpenBCI%20GUI%20Diagram.drawio.png" width="600">
@@ -128,6 +128,8 @@ Here is a Work-in-progress diagram outlining the most important parts of the GUI
 ## <a name="license"></a> License:
 
 MIT
+
+## Links
 
 [link_shop_wifi_shield]: https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550
 [link_shop_ganglion]: https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board
