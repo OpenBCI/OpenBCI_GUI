@@ -255,6 +255,8 @@ abstract class BoardBrainFlow extends Board {
                                 "No new data received in " + timeout + " seconds. Please check your device and restart a GUI session.");
                         }
                         data_popup_displayed = true;
+                        stopRunning();
+                        topNav.resetStartStopButton();
                     }
                 } else {
                     time_last_datapoint = System.currentTimeMillis() / 1000L;
