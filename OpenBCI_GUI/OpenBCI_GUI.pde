@@ -446,7 +446,7 @@ void delayedSetup() {
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
     loadingGIF.loop();
-    loadingGIF_blue = new Gif(this, "gear-anim__blue-trans.gif");
+    loadingGIF_blue = new Gif(this, "obci_cog_anim-normalblue.gif");
     loadingGIF_blue.loop();
 
     prepareExitHandler();
