@@ -187,6 +187,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
             }
             sendCommand("z");
             startStreaming();
+            packetLossTracker = null;
         }
         else {
             if (!isCheckingImpedance) {
@@ -197,6 +198,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
                 stopStreaming();
             }
             sendCommand("Z");
+            packetLossTracker = setupPacketLossTracker();
         }
         isCheckingImpedance = checkImpedance;
     }
