@@ -16,6 +16,8 @@ abstract class BoardBrainFlow extends Board {
     protected int[] otherChannelsCache = null;
 
     protected boolean streaming = false;
+    protected double time_last_datapoint = -1.0;
+    protected boolean data_popup_displayed = false;
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -95,6 +97,7 @@ abstract class BoardBrainFlow extends Board {
         try {
             boardShim.stop_stream();
             streaming = false;
+            time_last_datapoint = -1.0;
         }
         catch (BrainFlowError e) {
             println("ERROR: Exception when stoppping stream");
@@ -242,7 +245,24 @@ abstract class BoardBrainFlow extends Board {
     protected double[][] getNewDataInternal() {
         if(streaming) {
             try {
-                return boardShim.get_board_data();
+                double[][] data = boardShim.get_board_data();
+                if ((data[0].length == 0) && (time_last_datapoint > 0)) {
+                    double cur_time = System.currentTimeMillis() / 1000L;
+                    double timeout = 5.0;
+                    if (cur_time - time_last_datapoint > timeout) {
+                        if (data_popup_displayed == false) {
+                            PopupMessage msg = new PopupMessage("Data Streaming Error",
+                                "No new data received in " + timeout + " seconds. Please check your device and restart a GUI session.");
+                        }
+                        data_popup_displayed = true;
+                        stopRunning();
+                        topNav.resetStartStopButton();
+                    }
+                } else {
+                    time_last_datapoint = System.currentTimeMillis() / 1000L;
+                    data_popup_displayed = false;
+                }
+                return data;
             } catch (BrainFlowError e) {
                 println("WARNING: could not get board data.");
                 e.printStackTrace();
