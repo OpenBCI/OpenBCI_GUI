@@ -117,15 +117,23 @@ OpenGL acceleration is required.
 
 - For more on GUI troubleshooting, head over to the [GUI Troublshooting Doc](https://docs.openbci.com/Troubleshooting/GUI_Troubleshooting/).
 
+## Diagram
+
+Here is a Work-in-progress diagram outlining the most important parts of the GUI. Created using https://app.diagrams.net/.
+
+<p align="center">
+  <img alt="banner" src="OpenBCI%20GUI%20Diagram.drawio.png" width="600">
+</p>
+
 ## <a name="license"></a> License:
 
 MIT
 
-[link_shop_wifi_shield]: https://shop.openbci.com/collections/frontpage/products/wifi-shield?variant=44534009550
-[link_shop_ganglion]: https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board
-[link_shop_cyton]: https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel
-[link_shop_cyton_daisy]: https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel
-[link_ptw]: https://www.pushtheworldllc.com
-[link_openbci]: http://www.openbci.com
-[link_gui_widget_tutorial]: https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget
-[link_gui_run_from_processing]: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide
+## Links
+
+- [OpenBCI Main Site](http://www.openbci.com)
+- [Ganglion Board](https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board)
+- [Cyton Board](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel)
+- [Cyton+Daisy Boards](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel)
+- [GUI Widget Tutorial](https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget)
+- [Run GUI from Processing IDE](https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide)
