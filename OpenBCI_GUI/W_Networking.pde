@@ -263,6 +263,9 @@ class W_Networking extends Widget {
 
             checkIfEnoughDataToSend();
         }
+
+        //Check if any textfields are active and also for copy/paste if active
+        updateNetworkingTextfields();
     }
 
     private void accumulateNewData() {
@@ -721,6 +724,14 @@ class W_Networking extends Widget {
                 cp5_networking.get(Toggle.class, "filter3").unlock();
                 cp5_networking.get(Toggle.class, "filter4").unlock();
             }
+        }
+    }
+
+    //loop through networking textfields and find out if any are active
+    private void updateNetworkingTextfields(){
+        List<Textfield> allTextfields = cp5_networking.getAll(Textfield.class);
+        for(int i = 0; i < allTextfields.size(); i++){
+            textfieldUpdateHelper.checkTextfield(allTextfields.get(i));
         }
     }
 
