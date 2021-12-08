@@ -232,7 +232,7 @@ class TopNav {
         } else {
             topNavBg = color(255);
             subNavBg = color(229);
-            logo = logo_blue;
+            logo = logo_black;
         }
 
         if (eegDataSource == DATASOURCE_GALEA) {
@@ -254,7 +254,7 @@ class TopNav {
         //hide the center logo if buttons would overlap it
         if (width > 860) {
             //this is the center logo
-            image(logo, width/2 - (128/2) - 2, 6, 128, 22);
+            image(logo, width/2 - (128/2) - 2, 1, 128, 29);
         }
 
         //Draw these buttons during a Session
