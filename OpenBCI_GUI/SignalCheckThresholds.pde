@@ -11,17 +11,17 @@ class SignalCheckThresholdUI {
     private color textColor = color(0);
     private boolean hasUpdatedTextColor = false;
 
-    SignalCheckThresholdUI(ControlP5 _cp5, String _name, int initialValue, int _x, int _y, int _w, int _h, color _textColor, CytonSignalCheckMode _mode) {
+    SignalCheckThresholdUI(ControlP5 _cp5, String _name, int _x, int _y, int _w, int _h, color _textColor, CytonSignalCheckMode _mode) {
         signalCheckMode = _mode;
         name = _name;
         textColor = _textColor;
-        thresholdTF = createTextfield(_cp5, _name, initialValue, _x, _y, _w, _h, _textColor);
-        customThreshold(thresholdTF, initialValue);
-        //textfieldHeight = _h;
-        defaultValue_Percentage = initialValue;
+        defaultValue_Percentage = name.equals("errorThreshold") ? 90 : 75;
         valuePercentage = defaultValue_Percentage;
         defaultValue_kOhms = name == "errorThreshold" ? 2500 : 750;
         valuekOhms = defaultValue_kOhms;
+        thresholdTF = createTextfield(_cp5, _name, 0, _x, _y, _w, _h, _textColor);
+        updateTextfieldModeChanged(_mode);
+        //textfieldHeight = _h;
     }
 
     public void update() {
@@ -105,10 +105,6 @@ class SignalCheckThresholdUI {
 
     public void setPosition(int _x, int _y) {
         thresholdTF.setPosition(_x, _y);
-    }
-
-    public void setSize(int _w, int _h) {
-        thresholdTF.setSize(_w, _h);
     }
 
     private int getDefaultTextfieldIntVal() {
