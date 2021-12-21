@@ -831,7 +831,8 @@ void systemUpdate() { // for updating data values and variables
     //prepare for updating the GUI
     win_w = width;
     win_h = height;
-    textFieldIsActive = false;
+    
+    textfieldUpdateHelper.resetTextFieldIsActive();
 
     currentBoard.update();
 
