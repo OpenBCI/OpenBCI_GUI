@@ -2256,8 +2256,8 @@ class BrainFlowStreamerBox {
         copyPaste.checkForCopyPaste(port);
     }
 
-    public void draw() {
-        int streamerTextfieldY = y + padding*2 + 48;
+        public void draw() {
+        int streamerTextfieldY = y + padding*3 + HEADER_H + OBJECT_H;
 
         bfFileSaveOption.setVisible(outputToFile.isOn());
         ipAddress.setVisible(outputToNetwork.isOn());
@@ -2271,7 +2271,7 @@ class BrainFlowStreamerBox {
         fill(OPENBCI_DARKBLUE);
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("BrainFlow Streamer", x + padding, y + padding);
+        text("BRAINFLOW STREAMER", x + padding, y + padding);
         textFont(p4, 14);
         if (outputToFile.isOn()) {
             text("Location", x + padding, streamerTextfieldY + 2);
@@ -2282,8 +2282,8 @@ class BrainFlowStreamerBox {
         popStyle();
         
         //Update the position of UI elements here
-        outputToNetwork.setPosition(x + padding, y + 32);
-        outputToFile.setPosition(x + padding*2 + (w-padding*3)/2, y + 32);
+        outputToNetwork.setPosition(x + padding, y + HEADER_H + padding*2);
+        outputToFile.setPosition(x + padding*2 + (w-padding*3)/2, y + HEADER_H + padding*2);
         bfFileSaveOption.setPosition(x + 80, streamerTextfieldY);
         ipAddress.setPosition(x + padding * 3, streamerTextfieldY);
         port.setPosition(x + w - padding - port.getWidth(), streamerTextfieldY);
