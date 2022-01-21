@@ -152,7 +152,7 @@ class W_Networking extends Widget {
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
         protocolMode = "Serial"; //default to Serial
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
-        comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
+        comPorts = new ArrayList<String>(Arrays.asList(processing.serial.Serial.list()));
         verbosePrint("comPorts = " + comPorts);
         comPortToSave = 0;
 
@@ -1234,7 +1234,7 @@ class Stream extends Thread {
     LSL.StreamOutlet outlet_aux;
 
     // Serial objects %%%%%
-    Serial serial_networking;
+    processing.serial.Serial serial_networking;
     String portName;
     int baudRate;
     String serialMessage = "";
@@ -2170,7 +2170,7 @@ class Stream extends Thread {
         } else if (this.protocol.equals("Serial")) {
             //Open Serial Port! %%%%%
             try {
-                serial_networking = new Serial(this.pApplet, this.portName, this.baudRate);
+                serial_networking = new processing.serial.Serial(this.pApplet, this.portName, this.baudRate);
                 serial_networking.clear();
                 verbosePrint("Successfully opened SERIAL/COM: " + this.portName);
                 output("Successfully opened SERIAL/COM (" + this.baudRate + "): " + this.portName );

@@ -179,7 +179,7 @@ String playbackData_ShortName;
 boolean recentPlaybackFilesHaveUpdated = false;
 
 // Serial output
-Serial serial_output;
+processing.serial.Serial serial_output;
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
