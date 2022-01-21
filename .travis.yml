@@ -29,16 +29,16 @@ install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
 ### ### LINUX ### ###
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1277-4.0b2/processing-4.0b2-linux64.tgz                 ;fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-4.0b2-linux64.tgz                                                               ;fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-4.0b2:$PATH                                          ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1278-4.0b3/processing-4.0b3-linux64.tgz                 ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-4.0b3-linux64.tgz                                                               ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-4.0b3:$PATH                                          ;fi
   # copy libraries to linux location
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir -p $HOME/sketchbook/libraries/                                                               ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/                        ;fi
   
 ### ### MAC ### ###
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1277-4.0b2/processing-4.0b2-macosx.zip                    ;fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-4.0b2-macosx.zip                                                                    ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1278-4.0b3/processing-4.0b3-macosx.zip                    ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-4.0b3-macosx.zip                                                                    ;fi
   # Processing.app must be in this location for processing-java to work
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$TRAVIS_BUILD_DIR/release_script/mac_only:$PATH                                          ;fi
