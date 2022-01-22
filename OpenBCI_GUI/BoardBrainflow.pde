@@ -254,6 +254,7 @@ abstract class BoardBrainFlow extends Board {
                             PopupMessage msg = new PopupMessage("Data Streaming Error",
                                 "No new data received in " + timeout + " seconds. Please check your device and restart a GUI session.");
                         }
+                        outputError("Data Streaming Error: No new data received in " + timeout + " seconds. Please check your device and restart a GUI session.");
                         data_popup_displayed = true;
                         stopRunning();
                         topNav.resetStartStopButton();
