@@ -94,7 +94,7 @@ class ADS1299SettingsController {
             textFieldIsActive = true;
         }
 
-        copyPaste.checkForCopyPaste(customCommandTF);
+        textfieldUpdateHelper.checkTextfield(customCommandTF);
     }
 
     public void draw() {

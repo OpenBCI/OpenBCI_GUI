@@ -55,6 +55,7 @@ class W_CytonImpedance extends Widget {
     private SignalCheckThresholdUI errorThreshold;
     private SignalCheckThresholdUI warningThreshold;
     private int thresholdTFHeight = 14;
+    private int thresholdTFWidth = 60; //Hard-code this value since there are deep errors with controlp5.textfield.setSize() and creating new graphics in this class - RW 12/13/2021
     
 
     W_CytonImpedance(PApplet _parent){
@@ -100,8 +101,8 @@ class W_CytonImpedance extends Widget {
 
         cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x + padding_3), (int)(y + padding_3 - navHeight), 90, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x + padding_3*2 + 90), (int)(y + padding_3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
-        errorThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "errorThreshold", 90, x + tableWidth + padding, y + h - navH, 30, thresholdTFHeight, SIGNAL_CHECK_RED, signalCheckMode);
-        warningThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "warningThreshold", 75, x + tableWidth + padding, y + h - navH/2, 30, thresholdTFHeight, SIGNAL_CHECK_YELLOW, signalCheckMode);
+        errorThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "errorThreshold", x + tableWidth + padding, y + h - navH, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_RED, signalCheckMode);
+        warningThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "warningThreshold", x + tableWidth + padding, y + h - navH/2, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_YELLOW, signalCheckMode);
     }
 
     public void update(){
@@ -229,10 +230,8 @@ class W_CytonImpedance extends Widget {
         //final int thresholdTF_y = y + tableHeight + padding*2;
         RectDimensions dim = dataGrid.getCellDims(numTableRows - 1, 1);
         warningThreshold.setPosition(dim.x, dim.y + dim.h + padding);
-        warningThreshold.setSize(dim.w, thresholdTFHeight);
         dim = dataGrid.getCellDims(numTableRows - 1, 2);
         errorThreshold.setPosition(dim.x + 1, dim.y + dim.h + padding);
-        errorThreshold.setSize(dim.w, thresholdTFHeight);
     }
 
     private void resizeTable() {
