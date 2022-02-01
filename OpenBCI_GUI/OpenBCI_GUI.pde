@@ -438,6 +438,16 @@ void delayedSetup() {
 
     //setup topNav
     topNav = new TopNav();
+    
+    //Print BrainFlow version
+    StringBuilder brainflowVersion = new StringBuilder("BrainFlow Version: ");
+    try {
+        brainflowVersion.append(BoardShim.get_version());
+    } catch (BrainFlowError e) {
+        e.printStackTrace();
+    }
+    println(brainflowVersion);
+
 
     logo_black = loadImage("obci-logo-blk.png");
     logo_blue = loadImage("obci-logo-blu.png");
