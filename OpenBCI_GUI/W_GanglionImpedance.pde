@@ -103,7 +103,6 @@ class W_GanglionImpedance extends Widget {
                     if (!ganglionBoard.isCheckingImpedance()) {
                         // We need to either stop the time series data, or allow it to scroll, like currently. 
                         // the values in time series are not meaningful when Impedance check is active
-                        topNav.stopButtonWasPressed();
                         println("Starting Ganglion impedance check...");
                         //Start impedance check
                         ganglionBoard.setCheckingImpedance(true);
