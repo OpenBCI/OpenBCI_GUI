@@ -871,7 +871,6 @@ class W_Networking extends Widget {
     /* Call to shutdown some UI stuff. Called from W_manager, maybe do this differently.. */
     void shutDown() {
         hideElements();
-        turnOffButton();
     }
 
     void initializeStreams() {
