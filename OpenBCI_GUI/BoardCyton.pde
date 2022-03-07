@@ -104,7 +104,7 @@ abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapab
 
     public BoardCytonSerialBase() {
         super();
-        smoothData = false;
+        smoothData = true;
     }
 
     // synchronized is important to ensure that we dont free buffers during getting data
