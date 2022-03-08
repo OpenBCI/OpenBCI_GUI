@@ -13,6 +13,7 @@ jobs:
 branches:
   only:
   - master
+  - development
 
 before_install:
 - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d; fi
@@ -28,16 +29,16 @@ install:
   - mkdir $TRAVIS_BUILD_DIR/temp; cd $TRAVIS_BUILD_DIR/temp
 
 ### ### LINUX ### ###
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1278-4.0b3/processing-4.0b3-linux64.tgz                 ;fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-4.0b3-linux64.tgz                                                               ;fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-4.0b3:$PATH                                          ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1282-4.0b7/processing-4.0b7-linux-x64.tgz                 ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then tar -xzvf processing-4.0b7-linux-x64.tgz                                                               ;fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then export PATH=$TRAVIS_BUILD_DIR/temp/processing-4.0b7:$PATH                                          ;fi
   # copy libraries to linux location
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then mkdir -p $HOME/sketchbook/libraries/                                                               ;fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/                        ;fi
   
 ### ### MAC ### ###
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1278-4.0b3/processing-4.0b3-macosx.zip                    ;fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-4.0b3-macosx.zip                                                                    ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1282-4.0b7/processing-4.0b7-macos-x64.zip                   ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-4.0b7-macos-x64.zip                                                                   ;fi
   # Processing.app must be in this location for processing-java to work
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$TRAVIS_BUILD_DIR/release_script/mac_only:$PATH                                          ;fi

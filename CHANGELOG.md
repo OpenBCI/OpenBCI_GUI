@@ -5,7 +5,7 @@
 * Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
 
 ### Improvements
-* Update to Processing 4 and Java 11 #674 #1025
+* Update to Processing 4 #674 #1025
 * Add BrainFlow Streamer for File and Network to Control Panel #1007
 * Update to BrainFlow v4.9.0 and print version to console log #1028
 * Update OpenBCI Logo #1010
