@@ -637,6 +637,12 @@ void initSystem() {
                 return;
             }
         }
+
+        if (guiSettings.getShowCytonSmoothingPopup()) {
+            println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
+            PopupMessage msg = new PopupMessage("Cyton FTDI Buffer Fix Info", "By default, the latency for the Cyton Dongle is set to 16 milliseconds. This may cause data shown to be \"choppy\" or come in \"chunks.\" To fix this, please visit the OpenBCI Documentation to learn how to lower this value to 1 millisecond. For now, the GUI will \"smooth\" the data to account for this.");
+            guiSettings.setShowCytonSmoothingPopup(false);
+        }
     }
 
     updateToNChan(currentBoard.getNumEXGChannels());
@@ -686,6 +692,8 @@ void initSystem() {
     
     //Make sure topNav buttons draw in the correct spot
     topNav.screenHasBeenResized(width, height);
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 
     midInit = false;
 } //end initSystem

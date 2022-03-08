@@ -1,6 +1,7 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.*;
+import java.util.regex.*;
 
 
 interface GuiSettingsEnum {
@@ -30,7 +31,8 @@ enum ExpertModeEnum implements GuiSettingsEnum {
 }
 
 public class GuiSettingsValues {
-    private ExpertModeEnum expertMode = ExpertModeEnum.OFF;
+    public ExpertModeEnum expertMode = ExpertModeEnum.OFF;
+    public boolean showCytonSmoothingPopup = true;
 
     public GuiSettingsValues() {
     }
@@ -38,13 +40,12 @@ public class GuiSettingsValues {
 
 class GuiSettings {
 
-    public GuiSettingsValues values;
+    private GuiSettingsValues values;
     private String filename;
 
     GuiSettings(String settingsDirectory) {
 
         values = new GuiSettingsValues();
-        
         StringBuilder settingsFilename = new StringBuilder(settingsDirectory);
         settingsFilename.append("GuiWideSettings.json");
         filename = settingsFilename.toString();
@@ -52,7 +53,6 @@ class GuiSettings {
         boolean fileExists = fileToCheck.exists();
         if (fileExists) {
             loadSettingsValues();
-            println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from file.");
         } else {
             println("OpenBCI_GUI::Settings: Creating new GUI-wide Settings file.");
             saveToFile();
@@ -60,15 +60,28 @@ class GuiSettings {
     }
 
     public boolean loadSettingsValues() {
+        // Get the number of lines in the JSON file that should exist.
+        // Used to check if JSON is different when settings are added or removed from this class.
+        int linesByDefault = getNumberOfLines(getJson());
+
         try {
             File file = new File(filename);
             StringBuilder fileContents = new StringBuilder((int)file.length());        
             Scanner scanner = new Scanner(file);
+            int tempNumLines = 0;
             while(scanner.hasNextLine()) {
                 fileContents.append(scanner.nextLine() + System.lineSeparator());
+                tempNumLines++;
             }
             Gson gson = new Gson();
-            values = gson.fromJson(fileContents.toString(), GuiSettingsValues.class);
+
+            if (linesByDefault == tempNumLines) {
+                values = gson.fromJson(fileContents.toString(), GuiSettingsValues.class);
+                println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from file.");
+            } else {
+                println("OpenBCI_GUI::Settings: Incompatible GUI-wide Settings found. Creating new file and resetting defaults.");
+                saveToFile();
+            }
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -77,6 +90,7 @@ class GuiSettings {
             saveToFile();
             return false;
         }
+        
     }
 
     public String getJson() {
@@ -114,6 +128,16 @@ class GuiSettings {
         }
     }
 
+    private int getNumberOfLines(String s) {
+        Matcher m = Pattern.compile("\r\n|\r|\n").matcher(s);
+        int lines = 1;
+        while (m.find()) {
+            lines++;
+        }
+        //println("FOUND NUMBER OF LINES BY DEFAULT == " + lines);
+        return lines;
+    }
+
     //Call this method at the end of GUI main Setup in OpenBCI_GUI.pde to make sure everything exists
     //Has to be in this class to make sure other classes exist
     public void applySettings() {
@@ -127,5 +151,14 @@ class GuiSettings {
     
     public boolean getExpertModeBoolean() {
         return values.expertMode.getBooleanValue();
+    }
+
+    public void setShowCytonSmoothingPopup(boolean b) {
+        values.showCytonSmoothingPopup = b;
+        saveToFile();
+    }
+
+    public boolean getShowCytonSmoothingPopup() {
+        return values.showCytonSmoothingPopup;
     }
 }
