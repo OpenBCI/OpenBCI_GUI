@@ -638,9 +638,21 @@ void initSystem() {
             }
         }
 
+        //Show a popup to inform first-time Cyton users about the FTDI buffer fix and Cyton Smoothing feature. Fixes #1026
         if (guiSettings.getShowCytonSmoothingPopup()) {
             println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
-            PopupMessage msg = new PopupMessage("Cyton FTDI Buffer Fix Info", "By default, the latency for the Cyton Dongle is set to 16 milliseconds. This may cause data shown to be \"choppy\" or come in \"chunks.\" To fix this, please visit the OpenBCI Documentation to learn how to lower this value to 1 millisecond. For now, the GUI will \"smooth\" the data to account for this.");
+            String popupTitle = "Cyton FTDI Buffer Fix Info";
+            String popupString = "By default, Cyton Dongle latency is set to 16 milliseconds. Data shown may be \"choppy.\" Visit the OpenBCI Documentation to learn how to fix this. For now, the GUI will \"smooth\" the data to account for this.";
+            String popupButtonText = "Open Docs";
+            String popupButtonURL;
+            if (isMac()) {
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+            } else if (isLinux()){
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+            } else {
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Windows/";
+            }
+            PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
             guiSettings.setShowCytonSmoothingPopup(false);
         }
     }
