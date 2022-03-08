@@ -9,6 +9,9 @@
 * Add BrainFlow Streamer for File and Network to Control Panel #1007
 * Update to BrainFlow v4.9.0 and print version to console log #1028
 * Update OpenBCI Logo #1010
+* Clarify Cyton Smoothing feature #1027
+* Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
+* Update help text for various buttons across the GUI to help new and existing users
 
 # v5.0.9
 
