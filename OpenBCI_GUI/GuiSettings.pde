@@ -134,7 +134,6 @@ class GuiSettings {
         while (m.find()) {
             lines++;
         }
-        //println("FOUND NUMBER OF LINES BY DEFAULT == " + lines);
         return lines;
     }
 
