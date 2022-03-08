@@ -188,7 +188,7 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    println(rcStringReceived + " using COM port: " + openBCI_portName);
+                    println(rcStringReceived + ". Using COM port: " + openBCI_portName);
                     return true;
                 } else {
                     verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");

@@ -642,8 +642,8 @@ void initSystem() {
         if (guiSettings.getShowCytonSmoothingPopup()) {
             println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
             String popupTitle = "Cyton FTDI Buffer Fix Info";
-            String popupString = "By default, Cyton Dongle latency is set to 16 milliseconds. Data shown may be \"choppy.\" Visit the OpenBCI Documentation to learn how to fix this. For now, the GUI will \"smooth\" the data to account for this.";
-            String popupButtonText = "Open Docs";
+            String popupString = "The default settings for the Cyton Dongle driver can make data appear \"choppy.\" Visit the OpenBCI Docs to learn how to fix this. For now, the GUI will \"smooth\" the data for you.";
+            String popupButtonText = "View Fix";
             String popupButtonURL;
             if (isMac()) {
                 popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
