@@ -1199,7 +1199,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //gettingStarted.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        gettingStarted.setDescription("Need help getting started? Click here to view the official OpenBCI Getting Started guides.");
     }
 
     private void createTestingImpedanceButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1210,7 +1210,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //testingImpedance.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        testingImpedance.setDescription("Click here to learn more about testing the impedance on electrodes using the OpenBCI GUI. This process is different for Cyton and Ganglion. Checking impedance only works with passive electrodes.");
     }
 
     private void createTroubleshootingGuideButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1221,7 +1221,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //troubleshootingGuide.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        troubleshootingGuide.setDescription("Having trouble? Start here with some general troubleshooting tips found on the OpenBCI Docs.");
     }
 
     private void createCustomWidgetsButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1232,7 +1232,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //customWidgets.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        customWidgets.setDescription("Click here to learn about creating your own custom OpenBCI widgets!");
     }
 
     private void createOpenbciForumButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1243,7 +1243,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        openbciForum.setDescription("Click here to visit the official OpenBCI Forum.");
     }
 
     private void createFtdiBufferFixButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1262,6 +1262,6 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     }
 }
