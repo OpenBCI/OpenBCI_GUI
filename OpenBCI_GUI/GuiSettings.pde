@@ -1,5 +1,6 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import java.io.*;
 import java.util.regex.*;
 
@@ -42,6 +43,7 @@ class GuiSettings {
 
     private GuiSettingsValues values;
     private String filename;
+    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup");
 
     GuiSettings(String settingsDirectory) {
 
@@ -60,37 +62,35 @@ class GuiSettings {
     }
 
     public boolean loadSettingsValues() {
-        // Get the number of lines in the JSON file that should exist.
-        // Used to check if JSON is different when settings are added or removed from this class.
-        int linesByDefault = getNumberOfLines(getJson());
-
         try {
+
             File file = new File(filename);
             StringBuilder fileContents = new StringBuilder((int)file.length());        
             Scanner scanner = new Scanner(file);
-            int tempNumLines = 0;
+
             while(scanner.hasNextLine()) {
                 fileContents.append(scanner.nextLine() + System.lineSeparator());
-                tempNumLines++;
             }
-            Gson gson = new Gson();
 
-            if (linesByDefault == tempNumLines) {
+            //Check for incompatible or old settings
+            if (validateJsonKeys(fileContents.toString())) {
+                Gson gson = new Gson();
                 values = gson.fromJson(fileContents.toString(), GuiSettingsValues.class);
                 println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from file.");
             } else {
                 println("OpenBCI_GUI::Settings: Incompatible GUI-wide Settings found. Creating new file and resetting defaults.");
                 saveToFile();
             }
+            
             return true;
+
         } catch (IOException e) {
             e.printStackTrace();
             outputWarn("OpenBCI_GUI::Settings: Error loading GUI-wide settings from file. Attempting to create a new one.");
             //If there is an error, attempt to overwrite the file or create a new one
             saveToFile();
             return false;
-        }
-        
+        }      
     }
 
     public String getJson() {
@@ -128,13 +128,18 @@ class GuiSettings {
         }
     }
 
-    private int getNumberOfLines(String s) {
-        Matcher m = Pattern.compile("\r\n|\r|\n").matcher(s);
-        int lines = 1;
-        while (m.find()) {
-            lines++;
-        }
-        return lines;
+    private boolean validateJsonKeys(String stringToSearch) {
+        List<String> foundKeys = new ArrayList<String>();
+        Gson gson = new Gson();
+        Map<String, Object> map = gson.fromJson(stringToSearch, new TypeToken<Map<String, Object>>() {}.getType());
+        map.forEach((x, y) -> foundKeys.add(x));
+
+        Collections.sort(valueKeys);
+        Collections.sort(foundKeys);
+
+        boolean isEqual = valueKeys.equals(foundKeys);
+
+        return isEqual;
     }
 
     //Call this method at the end of GUI main Setup in OpenBCI_GUI.pde to make sure everything exists
