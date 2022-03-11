@@ -287,7 +287,7 @@ class Widget{
         }
     }
     
-    //For use with Cp5 Elements
+    //For use with one Cp5 controller per class/widget
     protected void lockElementOnOverlapCheck(controlP5.Controller c) {
         if (dropdownIsActive != previousDropdownIsActive) {
             //println(c.getName(), " lock == ", dropdownIsActive);
@@ -381,28 +381,28 @@ void WidgetSelector(int n){
 
 // This is a helpful class that will add a channel select feature to a Widget
 class ChannelSelect {
-    private Widget widget;
-    private int x, y, w, navH;
+    protected Widget widget;
+    protected int x, y, w, h, navH, butToggleY;
     public float tri_xpos = 0;
-    private float chanSelectXPos = 0;
-    private final int button_spacer = 10;
+    protected float chanSelectXPos = 0;
+    protected final int button_spacer = 10;
     public ControlP5 cp5_chanSelect;   //ControlP5 to contain our checkboxes
-    private List<Toggle> channelButtons;
-    private int offset;  //offset on nav bar of checkboxes
-    private int buttonW;
-    private int buttonH;
-    private boolean channelSelectHover;
-    private boolean isVisible;
+    protected List<Toggle> channelButtons;
+    protected int offset;  //offset on nav bar of checkboxes
+    protected int buttonW;
+    protected int buttonH;
+    protected boolean channelSelectHover;
+    protected boolean isVisible;
     public List<Integer> activeChan;
     public String chanDropdownName;
-    private boolean showChannelText = true;
-    private boolean wasVisible = false;
+    protected boolean showChannelText = true;
 
     ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
         widget = _widget;
         x = _x;
         y = _y;
         w = _w;
+        h = _navH;
         navH = _navH;
         activeChan = new ArrayList<Integer>();
         chanDropdownName = checkBoxName;
@@ -457,11 +457,6 @@ class ChannelSelect {
                 rect(x,y,w,navH);
             }
         } else { //This is the case in Spectrogram where we need a second channel selector
-            //check for state change
-            if (isVisible != wasVisible) {
-                wasVisible = isVisible;
-                setAllButtonsVisibility(isVisible);
-            }
             //this draws extra grey space behind the checklist buttons
             if (isVisible) {
                 fill(200);
@@ -470,9 +465,11 @@ class ChannelSelect {
         }
         popStyle();
 
-        //Draw channel select buttons
-        cp5_chanSelect.draw();
-
+        if (isVisible) {
+            //Draw channel select buttons
+            cp5_chanSelect.draw();
+        }
+        
         //Draw a border around toggle buttons to indicate if channel is on or off
         if (isVisible) {
             pushStyle();
@@ -493,10 +490,9 @@ class ChannelSelect {
     }
 
     public void mousePressed(boolean dropdownIsActive) {
-        if (!dropdownIsActive && showChannelText) {
+        if (!dropdownIsActive) {
             if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
                 isVisible = !isVisible;
-                setAllButtonsVisibility(isVisible);
             }
         }
     }
@@ -516,7 +512,7 @@ class ChannelSelect {
         for (int i = 0; i < _nchan; i++) {
             //start all items as invisible until user clicks dropdown to show checkboxes
             channelButtons.add(
-                createButton("ch"+(i+1), (i+1), false, x + (button_spacer*(i+2)) + (buttonW*i), y + offset, buttonW, buttonH)
+                createButton("ch"+(i+1), (i+1), true, x + (button_spacer*(i+2)) + (buttonW*i), y + offset, buttonW, buttonH)
             );
         }
     }
@@ -546,66 +542,58 @@ class ChannelSelect {
         myButton.onPress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 int chan = Integer.parseInt(((Toggle)theEvent.getController()).getCaptionLabel().getText()) - 1;  
-                if (((Toggle)theEvent.getController()).getBooleanValue()) {
-                    if (!activeChan.contains(chan)) {
-                        activeChan.add(chan);
-                        Collections.sort(activeChan);
-                    }
-                } else {
-                    activeChan.remove(Integer.valueOf(chan));
-                }
+                boolean b = ((Toggle)theEvent.getController()).getBooleanValue();
+                setToggleState(chan, b);
                 //println(widget + " || " + activeChan);
             }
         });
         return myButton;
     }
 
-    void showChannelText() {
+    public void showChannelText() {
         showChannelText = true;
     }
 
-    void hideChannelText() {
+    public void hideChannelText() {
         showChannelText = false;
     }
 
-    boolean isVisible() {
+    public boolean isVisible() {
         return isVisible;
     }
 
-    void setIsVisible(boolean b) {
+    public void setIsVisible(boolean b) {
         isVisible = b;
     }
 
     public void deactivateAllButtons() {
-        activeChan.clear();
         for (int i = 0; i < nchan; i++) {
             channelButtons.get(i).setState(false);
         }
+        activeChan.clear();
     }
 
     public void activateAllButtons() {
-        activeChan.clear();
         for (int i = 0; i < nchan; i++) {
             channelButtons.get(i).setState(true);
-            activeChan.add(i); //already sorted
+            activeChan.add(i);
         }
+        Collections.sort(activeChan);
     }
 
     public void setToggleState(Integer chan, boolean b) {
         channelButtons.get(chan).setState(b);
-        if (b) {
+        if (b && !activeChan.contains(chan)) {
             activeChan.add(chan);
-            Collections.sort(activeChan);
-        } else {
-            activeChan.remove((Integer)chan);
+        } else if (!b && activeChan.contains(chan)) {
+            activeChan.remove(chan);
         }
-        //print("SET BUTTON TOGGLE -- " + widget + " || " + activeChan);
+        Collections.sort(activeChan);
+        //println(activeChan.toArray());
     }
-
-    private void setAllButtonsVisibility(boolean b) {
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setVisible(b);
-        }
+    
+    public int getHeight() {
+        return h;
     }
 
 } //end of ChannelSelect class

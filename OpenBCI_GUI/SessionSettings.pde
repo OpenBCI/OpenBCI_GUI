@@ -142,7 +142,7 @@ class SessionSettings {
 
     //Used to set text in dropdown menus when loading Networking settings
     String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "TimeSeries", "Focus", "EMG", "BandPower", "Accel/Aux", "FFT", "Pulse"};
+    String[] nwDataTypesArray = {"None", "Focus", "EMG", "AvgBandPower", "BandPower", "TimeSeries", "Accel/Aux", "FFT", "Pulse"};
     String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
 
     //Used to set text in dropdown menus when loading Analog Read settings
@@ -267,6 +267,8 @@ class SessionSettings {
         dropdownColors.setCaptionLabel((int)color(1, 18, 41)); //color of text in primary box
         // dropdownColors.setValueLabel((int)color(1, 18, 41)); //color of text in all dropdown boxes
         dropdownColors.setValueLabel((int)color(100)); //color of text in all dropdown boxes
+
+        setLogFileDurationChoice(defaultOBCIMaxFileSize);
     }
 
     ///////////////////////////////////
@@ -305,6 +307,7 @@ class SessionSettings {
     }
 
     public String getSessionPath() {
+        //println("SESSIONPATH==",sessionPath, millis());
         return sessionPath;
     }
 

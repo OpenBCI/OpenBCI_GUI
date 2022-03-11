@@ -3,6 +3,7 @@
 ### Bug Fixes
 * Stop data stream when no data received after 5 seconds #1011
 * Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
+* Fix dropdown backgrounds in Networking Widget
 
 ### Improvements
 * Update to Processing 4 #674 #1025
@@ -12,6 +13,7 @@
 * Clarify Cyton Smoothing feature #1027
 * Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
 * Update help text for various buttons across the GUI to help new and existing users
+* Update Band Power widget and add Average Band Power data type to Networking Widget
 
 # v5.0.9
 
