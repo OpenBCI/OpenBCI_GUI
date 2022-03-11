@@ -462,16 +462,20 @@ class TopNav {
     }
 
     private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+        color bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
+        smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, bgColor, _textColor);
         smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
                 smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
                 smoothingButton.getCaptionLabel().setText(getSmoothingString());
+                color _bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
+                smoothingButton.setColorBackground(_bgColor);
             }
         });
-        smoothingButton.setDescription("Click here to turn data smoothing on or off.");
+        smoothingButton.setDescription("The default settings for the Cyton Dongle driver can make data appear \"choppy.\" This feature will \"smooth\" the data for you. Click \"Help\" -> \"Cyton Driver Fix\" for more info. Clicking here will toggle this setting.");
     }
 
     private void createLayoutButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -1070,7 +1074,8 @@ class TutorialSelector {
     private Button troubleshootingGuide;
     private Button customWidgets;
     private Button openbciForum;
-    private final int numButtons = 5;
+    private Button ftdiBufferFix;
+    private final int NUM_TUTORIAL_BUTTONS = 6;
 
     TutorialSelector() {
         w = 180;
@@ -1080,7 +1085,7 @@ class TutorialSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*(numButtons+1) + b_h*numButtons;
+        h = margin*(NUM_TUTORIAL_BUTTONS+1) + b_h*NUM_TUTORIAL_BUTTONS;
 
         //Instantiate local cp5 for this box
         tutorial_cp5 = new ControlP5(ourApplet);
@@ -1093,6 +1098,8 @@ class TutorialSelector {
         createGettingStartedButton("gettingStarted", "Getting Started", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createTestingImpedanceButton("testingImpedance", "Testing Impedance", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createFtdiBufferFixButton("ftdiBufferFix", "Cyton Driver Fix", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createTroubleshootingGuideButton("troubleshootingGuide", "Troubleshooting Guide", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
@@ -1192,7 +1199,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //gettingStarted.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        gettingStarted.setDescription("Need help getting started? Click here to view the official OpenBCI Getting Started guides.");
     }
 
     private void createTestingImpedanceButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1203,7 +1210,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //testingImpedance.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        testingImpedance.setDescription("Click here to learn more about testing the impedance on electrodes using the OpenBCI GUI. This process is different for Cyton and Ganglion. Checking impedance only works with passive electrodes.");
     }
 
     private void createTroubleshootingGuideButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1214,7 +1221,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //troubleshootingGuide.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        troubleshootingGuide.setDescription("Having trouble? Start here with some general troubleshooting tips found on the OpenBCI Docs.");
     }
 
     private void createCustomWidgetsButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1225,7 +1232,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //customWidgets.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        customWidgets.setDescription("Click here to learn about creating your own custom OpenBCI widgets!");
     }
 
     private void createOpenbciForumButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1236,6 +1243,25 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        openbciForum.setDescription("Click here to visit the official OpenBCI Forum.");
+    }
+
+    private void createFtdiBufferFixButton(String name, String text, int _x, int _y, int _w, int _h) {
+        openbciForum = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        openbciForum.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                String ftdiDriverDocUrl;
+                if (isMac()) {
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+                } else if (isLinux()){
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+                } else {
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Windows/";
+                }
+                openURLInBrowser(ftdiDriverDocUrl);
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
     }
 }

@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.1.0-alpha.3";
-String localGUIVersionDate = "February 2021";
+String localGUIVersionString = "v5.1.0-alpha.4";
+String localGUIVersionDate = "March 2022";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -637,6 +637,24 @@ void initSystem() {
                 return;
             }
         }
+
+        //Show a popup to inform first-time Cyton users about the FTDI buffer fix and Cyton Smoothing feature. Fixes #1026
+        if (guiSettings.getShowCytonSmoothingPopup()) {
+            println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
+            String popupTitle = "Cyton FTDI Buffer Fix Info";
+            String popupString = "The default settings for the Cyton Dongle driver can make data appear \"choppy.\" Visit the OpenBCI Docs to learn how to fix this. For now, the GUI will \"smooth\" the data for you.";
+            String popupButtonText = "View Fix";
+            String popupButtonURL;
+            if (isMac()) {
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+            } else if (isLinux()){
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+            } else {
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Windows/";
+            }
+            PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
+            guiSettings.setShowCytonSmoothingPopup(false);
+        }
     }
 
     updateToNChan(currentBoard.getNumEXGChannels());
@@ -686,6 +704,8 @@ void initSystem() {
     
     //Make sure topNav buttons draw in the correct spot
     topNav.screenHasBeenResized(width, height);
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 
     midInit = false;
 } //end initSystem
