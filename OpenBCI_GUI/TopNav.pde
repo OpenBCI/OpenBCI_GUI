@@ -1262,6 +1262,6 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        openbciForum.setDescription("Click here to view information on how to lower the Cyton Dongle latency for your current operating system.");
     }
 }

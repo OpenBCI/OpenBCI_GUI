@@ -150,7 +150,8 @@ class W_Networking extends Widget {
         }
         defaultBaud = "57600";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
-        protocolMode = "Serial"; //default to Serial
+        protocolMode = "UDP"; //Set Default to UDP
+        protocolIndex = 2; //Set Default to UDP 
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
         comPorts = new ArrayList<String>(Arrays.asList(processing.serial.Serial.list()));
         verbosePrint("comPorts = " + comPorts);
@@ -220,8 +221,10 @@ class W_Networking extends Widget {
         checkTopNovEvents();
 
         //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(guideButton);
-        lockElementOnOverlapCheck(dataOutputsButton);
+        List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller)guideButton);
+        cp5ElementsToCheck.add((controlP5.Controller)dataOutputsButton);
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
         filterButtonsCheck();
 
         if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
@@ -596,7 +599,7 @@ class W_Networking extends Widget {
 
         ScrollableList scrollList = new CustomScrollableList(cp5_networking_dropdowns, name)
                 .setOpen(false)
-
+                .setBackgroundColor(color(0))
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -744,8 +747,17 @@ class W_Networking extends Widget {
         cp5_networking_baudRate.setGraphics(pApplet, 0,0);
         cp5_networking_portName.setGraphics(pApplet, 0,0);
 
+        //scale the item width of all elements in the networking widget
+        itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
+
         column0 = x+w/22-12;
         int widthd = 46;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
+
+        if (protocolMode.equals("UDP") || protocolMode.equals("LSL")) {
+            widthd = 38;
+            itemWidth = int(map(width, 1024, 1920, 120, 140)) - 4;
+        }
+
         column1 = x+12*w/widthd-25;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
         column2 = x+(12+9*1)*w/widthd-25;
         column3 = x+(12+9*2)*w/widthd-25;
@@ -766,11 +778,8 @@ class W_Networking extends Widget {
         guideButton.setPosition(x0 + 2, y0 + navH + 2);
         dataOutputsButton.setPosition(x0 + 2*2 + guideButton.getWidth() , y0 + navH + 2);
 
-        //scale the item width of all elements in the networking widget
-        itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
-        
         int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
-        int dropdownHeight = (dropdownsItemsToShow + 1) * (this.navH - 4);
+        int dropdownHeight = (dropdownsItemsToShow) * (this.navH - 4);
         int maxDropdownHeight = (settings.nwDataTypesArray.length + 1) * (this.navH - 4);
         if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
 
@@ -1059,6 +1068,8 @@ class W_Networking extends Widget {
             return 125;
         } else if (dataType.equals("EMG")) {
             return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("AvgBandPower")) {
+            return 1;
         } else if (dataType.equals("BandPower")) {
             return 5;
          } else if (dataType.equals("Pulse")) {
@@ -1411,6 +1422,8 @@ class Stream extends Thread {
             sendFFTData();
         } else if (this.dataType.equals("EMG")) {
             sendEMGData();
+        } else if (this.dataType.equals("AvgBandPower")) {
+            sendNormalizedPowerBandData();
         } else if (this.dataType.equals("BandPower")) {
             sendPowerBandData();
         } else if (this.dataType.equals("Accel/Aux")) {
@@ -1766,6 +1779,66 @@ class Stream extends Thread {
         }
     }
 
+    void sendNormalizedPowerBandData() {
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+        int numBandPower = 5; //DELTA, THETA, ALPHA, BETA, GAMMA
+
+        if (this.filter==false || this.filter==true) {
+            // OSC
+            if (this.protocol.equals("OSC")) {
+                msg.clearArguments();
+                for (int i = 0; i < numBandPower; i++) {
+                    msg.add(w_bandPower.getNormalizedBPSelectedChannels()[i]); // [CHAN][BAND]
+                }
+                try {
+                    this.osc.send(msg,this.netaddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")) {
+                // DELTA, THETA, ALPHA, BETA, GAMMA
+                StringBuilder outputter = new StringBuilder("{\"type\":\"averageBandPower\",\"data\":[");
+                for (int i = 0; i < numBandPower; i++) {
+                    outputter.append(str(w_bandPower.getNormalizedBPSelectedChannels()[i]));
+                    if (i != numBandPower - 1) {
+                        outputter.append(",");
+                    } else {
+                        outputter.append("]}\r\n");
+                    }
+                }
+                //println(outputter.toString());
+                try {
+                    this.udp.send(outputter.toString(), this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+                // LSL
+            } else if (this.protocol.equals("LSL")) {
+                // DELTA, THETA, ALPHA, BETA, GAMMA
+                float[] avgPowerLSL = w_bandPower.getNormalizedBPSelectedChannels();
+                outlet_data.push_sample(avgPowerLSL);
+            } else if (this.protocol.equals("Serial")) {
+                serialMessage = "[";
+                for (int i = 0; i < numBandPower; i++) {
+                    float power_band = w_bandPower.getNormalizedBPSelectedChannels()[i];
+                    String power_band_3dec = String.format("%.3f", power_band);
+                    serialMessage += power_band_3dec;
+                    if (i < numBandPower - 1) {
+                        serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+                    }
+                }
+                serialMessage += "]";
+                try {
+                    // println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            }
+        }
+    }
+
     void sendEMGData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
         if (this.filter==false || this.filter==true) {
@@ -1945,7 +2018,7 @@ class Stream extends Thread {
             // Add timestamp to LSL Stream
             outlet_data.push_sample(dataToSend);
         } else if (this.protocol.equals("Serial")) {
-            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
+            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wi-Fi Shield is used
             // 5 chars per pin, including \n char for Z
             serialMessage = "";
             for (int i = 0; i < NUM_ANALOG_READS; i++) {

@@ -1233,6 +1233,10 @@ class HeadPlot {
 
     public void draw() {
 
+        if (!hardCalcsDone) {
+            return;
+        }
+
         pushStyle();
         smooth();
         //draw head parts
