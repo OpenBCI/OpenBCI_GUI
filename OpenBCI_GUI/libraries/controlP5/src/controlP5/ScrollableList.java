@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 03/23/2022
+ * @version 2.3.2
  * 
  */
 
@@ -123,6 +123,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 	}
 
 	@Override protected void onRelease( ) {
+		/*
 		if ( !isDragged ) {
 			if ( getPointer( ).y( ) >= 0 && getPointer( ).y( ) <= barHeight ) {
 				setOpen( !isOpen( ) );
@@ -130,10 +131,21 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 
 				double n = Math.floor( ( getPointer( ).y( ) - barHeight ) / itemHeight );
 
-				// n += itemRange; /* UP */
+				// n += itemRange;
 				int index = ( int ) n + itemIndexOffset;
 				updateIndex( index );
 			}
+		}
+		*/
+		
+		if ( getPointer( ).y( ) >= 0 && getPointer( ).y( ) <= barHeight ) {
+			setOpen( !isOpen( ) );
+		} else if ( isOpen ) {
+			double n = Math.floor( ( getPointer( ).y( ) - barHeight ) / itemHeight );
+
+			// n += itemRange;
+			int index = ( int ) n + itemIndexOffset;
+			updateIndex( index );
 		}
 	}
 
@@ -170,7 +182,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 	}
 
 	@Override protected void onDrag( ) {
-		scroll( getPointer( ).dy( ) );
+		//scroll( getPointer( ).dy( ) );
 	}
 
 	@Override protected void onScroll( int theValue ) {
@@ -208,6 +220,11 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 
 	@Override protected void onEndDrag( ) {
 		updateHover( );
+	}
+
+	@Override protected void mouseReleasedOutside() {
+		//System.out.println("MouseReleaseOutsideScrollableList");
+		close();
 	}
 
 	private int updateHeight( ) {
@@ -395,7 +412,8 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 			g.noStroke( );
 
 			if ( c.isBarVisible( ) ) {
-				boolean b = c.itemHover == -1 && c.isInside && !c.isDragged;
+				//boolean b = c.itemHover == -1 && c.isInside && !c.isDragged;
+				boolean b = c.itemHover == -1 && c.isInside;
 				g.fill( b ? c.getColor( ).getForeground( ) : c.getColor( ).getBackground( ) );
 				g.rect( 0 , 0 , c.getWidth( ) , c.barHeight );
 				g.pushMatrix( );

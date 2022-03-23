@@ -363,14 +363,14 @@ class CustomScrollableList extends ScrollableList {
     @Override
     protected void onEndDrag() {
         super.onEndDrag();
-        setOpen(!isOpen());
+        //setOpen(!isOpen());
     }
 
     // close the dropdown if the mouse leaves it.
     @Override
     protected void onLeave() {
         super.onLeave();
-        close();
+        //close();
     }
 
     @Override

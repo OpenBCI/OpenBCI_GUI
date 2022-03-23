@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 03/23/2022
+ * @version 2.3.2
  * 
  */
 
@@ -96,7 +96,7 @@ public class ControlP5 extends ControlP5Base {
 	/**
 	 * @exclude
 	 */
-	@ControlP5.Invisible public static final String VERSION = "2.3.1";// "##version##";
+	@ControlP5.Invisible public static final String VERSION = "2.3.2";// "2.3.2";
 
 	/**
 	 * @exclude
