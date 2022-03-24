@@ -14,6 +14,7 @@
 * Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
 * Update help text for various buttons across the GUI to help new and existing users
 * Update Band Power widget and add Average Band Power data type to Networking Widget
+* Update ControlP5 Library to 2.3.2 and change ScrollableList behavior to be more consistent with other front-end libraries
 
 # v5.0.9
 
