@@ -3,7 +3,7 @@
 //                       This sketch saves and loads User Settings that appear during Sessions.
 //                       -- All Time Series widget settings in Live, Playback, and Synthetic modes
 //                       -- All FFT widget settings
-//                       -- Default Layout, Notch, Bandpass Filter, Board Mode, and other Global Settings
+//                       -- Default Layout, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
 //                       -- Accelerometer, Analog Read, Head Plot, EMG, Band Power, and Spectrogram
 //                       -- Widget/Container Pairs
@@ -116,10 +116,6 @@ class SessionSettings {
         "SynthEightDefaultSettings.json",
         "SynthSixteenDefaultSettings.json"
         };
-
-    //Used to set text for Notch and BP filter settings
-    String [] dataProcessingNotchArray = {"60Hz", "50Hz", "None"};
-    String [] dataProcessingBPArray = {"1-50 Hz", "7-13 Hz", "15-50 Hz", "5-50 Hz", "No Filter"};
 
     //Used to print the status of each channel in the console when loading settings
     String[] channelsActiveArray = {"Active", "Not Active"};
@@ -365,8 +361,6 @@ class SessionSettings {
         //Make a second JSON object within our JSONArray to store Global settings for the GUI
         JSONObject saveGlobalSettings = new JSONObject();
         saveGlobalSettings.setInt("Current Layout", currentLayout);
-        saveGlobalSettings.setInt("Notch", dataProcessing.bsRange.getIndex());
-        saveGlobalSettings.setInt("Bandpass Filter", dataProcessing.bpRange.getIndex());
         saveGlobalSettings.setInt("Analog Read Vert Scale", arVertScaleSave);
         saveGlobalSettings.setInt("Analog Read Horiz Scale", arHorizScaleSave);
         if (currentBoard instanceof SmoothingCapableBoard) {
@@ -582,8 +576,6 @@ class SessionSettings {
         loadAnalogReadVertScale = loadGlobalSettings.getInt("Analog Read Vert Scale");
         loadAnalogReadHorizScale = loadGlobalSettings.getInt("Analog Read Horiz Scale");
         //Load more global settings after this line, if needed
-        int loadNotchSetting = loadGlobalSettings.getInt("Notch");
-        int loadBandpassSetting = loadGlobalSettings.getInt("Bandpass Filter");
         Boolean loadDataSmoothingSetting = (currentBoard instanceof SmoothingCapableBoard) ? loadGlobalSettings.getBoolean("Data Smoothing") : null;
 
         //get the FFT settings
@@ -745,13 +737,6 @@ class SessionSettings {
         /////////////////////////////////////////////////////////////
         //              Apply Settings below this line             //
         /////////////////////////////////////////////////////////////
-
-        //Apply notch
-        dataProcessing.bsRange = BandStopRanges.getByIndex(loadNotchSetting);
-        topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
-        //Apply Bandpass filter
-        dataProcessing.bpRange = BandPassRanges.getByIndex(loadBandpassSetting);
-        topNav.filtBPButton.getCaptionLabel().setText("BP Filt\n" + dataProcessing.getShortFilterDescription());
 
         //Apply Data Smoothing for capable boards
         if (currentBoard instanceof SmoothingCapableBoard) {
