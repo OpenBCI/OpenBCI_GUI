@@ -1,4 +1,8 @@
-public enum BandStopRanges
+interface FilterEnum {
+    public String getName();
+}
+
+public enum BandStopRanges implements FilterEnum
 {
     Sixty(0, 60.0d),
     Fifty(1, 50.0d),
@@ -32,7 +36,7 @@ public enum BandStopRanges
         return vals[(this.ordinal() + 1) % vals.length];
     }
 
-    public String getDescr() {
+    public String getName() {
         if (freq == null) {
             return "None";
         }
@@ -40,7 +44,7 @@ public enum BandStopRanges
     }
 }
 
-public enum BandPassRanges
+public enum BandPassRanges implements FilterEnum
 {
     FiveToFifty(0, 5.0d, 50.0d),
     SevenToThirteen(1, 7.0d, 13.0d),
@@ -83,7 +87,7 @@ public enum BandPassRanges
         return vals[(this.ordinal() + 1) % vals.length];
     }
 
-    public String getDescr() {
+    public String getName() {
         if ((start == null) || (stop == null)) {
             return "None";
         }

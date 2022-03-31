@@ -114,13 +114,13 @@ class DataProcessing {
     }
 
     public String getFilterDescription() {
-        return bpRange.getDescr();
+        return bpRange.getName();
     }
     public String getShortFilterDescription() {
-        return bpRange.getDescr();
+        return bpRange.getName();
     }
     public String getShortNotchDescription() {
-        return bsRange.getDescr();
+        return bsRange.getName();
     }
 
     public synchronized void incrementFilterConfiguration() {

@@ -349,7 +349,7 @@ class TopNav {
         //filtersButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtersButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-               //incrementNotchConfiguration();
+                FilterUIPopup filtersUI = new FilterUIPopup();
             }
         });
         filtersButton.setDescription("Here you can adjust the Filters that are applied to \"Filtered\" data.");

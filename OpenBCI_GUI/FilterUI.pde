@@ -1,23 +1,23 @@
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
 
-interface FilterInterface {
 
-}
+
+
 
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
     private final int defaultWidth = 500;
     private final int defaultHeight = 250;
 
-    private final int headerHeight = 55;
+    private final int headerHeight = 32;
     private final int padding = 20;
 
     private final int buttonWidth = 120;
     private final int buttonHeight = 40;
 
-    private String message = "Empty Popup";
-    private String headerMessage = "Error";
+    private String message = "Sample text string";
+    private String headerMessage = "Filters";
     private String buttonMessage = "OK";
     private String buttonLink = null;
 
@@ -26,11 +26,8 @@ class FilterUIPopup extends PApplet implements Runnable {
     
     private ControlP5 cp5;
 
-    public FilterUIPopup(String header, String msg) {
+    public FilterUIPopup() {
         super();
-
-        headerMessage = header;
-        message = msg;
 
         Thread t = new Thread(this);
         t.start();        
