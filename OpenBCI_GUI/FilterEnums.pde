@@ -1,8 +1,73 @@
-interface FilterEnum {
-    public String getName();
+interface FilterSettingsEnum {
+    public String getString();
 }
 
-public enum BandStopRanges implements FilterEnum
+public enum BFFilter implements FilterSettingsEnum
+{
+    BANDSTOP (0, "BandStop"),
+    BANDPASS (1, "BandPass");
+
+    private int index;
+    private String name;
+ 
+    BFFilter(int index, String _name) {
+        this.index = index;
+        this.name = _name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+    
+    public String getString() {
+        return name;
+    }
+}
+
+public enum FilterChannelSelect implements FilterSettingsEnum
+{
+    ALL_CHANNELS (0, "All Channels"),
+    CUSTOM_CHANNELS (1, "Custom");
+
+    private int index;
+    private String name;
+ 
+    FilterChannelSelect(int index, String _name) {
+        this.index = index;
+        this.name = _name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+}
+
+enum FilterActiveOnChannel implements FilterSettingsEnum {
+    ON(0, "Active"),
+    OFF(1, "Inactive");
+
+    private int index;
+    private String name;
+
+    FilterActiveOnChannel(int index, String _name) {
+        this.index = index;
+        this.name = _name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+}
+
+public enum BandStopRanges implements FilterSettingsEnum
 {
     Sixty(0, 60.0d),
     Fifty(1, 50.0d),
@@ -36,7 +101,7 @@ public enum BandStopRanges implements FilterEnum
         return vals[(this.ordinal() + 1) % vals.length];
     }
 
-    public String getName() {
+    public String getString() {
         if (freq == null) {
             return "None";
         }
@@ -44,7 +109,7 @@ public enum BandStopRanges implements FilterEnum
     }
 }
 
-public enum BandPassRanges implements FilterEnum
+public enum BandPassRanges implements FilterSettingsEnum
 {
     FiveToFifty(0, 5.0d, 50.0d),
     SevenToThirteen(1, 7.0d, 13.0d),
@@ -87,7 +152,7 @@ public enum BandPassRanges implements FilterEnum
         return vals[(this.ordinal() + 1) % vals.length];
     }
 
-    public String getName() {
+    public String getString() {
         if ((start == null) || (stop == null)) {
             return "None";
         }

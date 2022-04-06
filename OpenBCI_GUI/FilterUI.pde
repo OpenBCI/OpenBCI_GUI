@@ -1,20 +1,17 @@
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
 
-
-
-
-
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
     private final int defaultWidth = 500;
-    private final int defaultHeight = 250;
+    private final int defaultHeight = 500;
 
     private final int headerHeight = 32;
     private final int padding = 20;
 
     private final int buttonWidth = 120;
     private final int buttonHeight = 40;
+    private final int spacer = 6; //space between buttons
 
     private String message = "Sample text string";
     private String headerMessage = "Filters";
@@ -25,6 +22,8 @@ class FilterUIPopup extends PApplet implements Runnable {
     private color buttonColor = OPENBCI_BLUE;
     
     private ControlP5 cp5;
+    private BFFilter brainFlowFilter = BFFilter.BANDSTOP;
+    private FilterChannelSelect filterChannelSelect = FilterChannelSelect.ALL_CHANNELS;
 
     public FilterUIPopup() {
         super();
@@ -50,7 +49,15 @@ class FilterUIPopup extends PApplet implements Runnable {
         surface.setResizable(false);
 
         cp5 = new ControlP5(this);
+        cp5.setGraphics(this, 0,0);
+        cp5.setAutoDraw(false);
 
+        int filterX = int(defaultWidth/2 - spacer/2 - buttonWidth);
+        int filterY = headerHeight + spacer;
+        int chanSelectX = defaultWidth/2 + spacer/2;
+        createDropdown("filter", filterX, filterY, brainFlowFilter, BFFilter.values());
+        createDropdown("channelSelect", chanSelectX, filterY, filterChannelSelect, FilterChannelSelect.values());
+        /*
         cp5.addButton("onButtonPressed")
             .setPosition(width/2 - buttonWidth/2, height - buttonHeight - padding)
             .setSize(buttonWidth, buttonHeight)
@@ -63,6 +70,17 @@ class FilterUIPopup extends PApplet implements Runnable {
             .toUpperCase(false)
             .setSize(20)
             .setText(buttonMessage);
+            */
+        List l = Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h");
+        /* add a ScrollableList, by default it behaves like a DropdownList */
+        cp5.addScrollableList("dropdown")
+            .setPosition(100, 100)
+            .setSize(200, 100)
+            .setBarHeight(20)
+            .setItemHeight(20)
+            .addItems(l)
+            // .setType(ScrollableList.LIST) // currently supported DROPDOWN and LIST
+            ;
     }
 
     @Override
@@ -84,7 +102,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         rect((width - w)/2, (height - h)/2, w, headerHeight);
 
         //draw header text
-        textFont(p0, 24);
+        textFont(h4, 14);
         fill(255);
         textAlign(LEFT, CENTER);
         text(headerMessage, (width - w)/2 + padding, (height - h)/2, w, headerHeight);
@@ -115,6 +133,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         dispose();
     }
 
+    /*
     public void onButtonPressed() {
         if (buttonLink != null) {
             link(buttonLink);
@@ -124,4 +143,49 @@ class FilterUIPopup extends PApplet implements Runnable {
         frame.dispose();
         exit();
     }
-};
+    */
+
+    private ScrollableList createDropdown(String name, int _x, int _y, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
+        int dropdownW = buttonWidth;
+        int dropdownH = 20;
+        //ScrollableList list = new CustomScrollableList(cp5, name)
+        ScrollableList list = cp5.addScrollableList(name)
+            .setPosition(_x, _y)
+            .setOpen(false)
+            .setColorBackground(WHITE) // text field bg color
+            .setColorValueLabel(color(0))       // text color
+            .setColorCaptionLabel(color(0))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
+            .setBackgroundColor(OBJECT_BORDER_GREY)
+            .setSize(dropdownW, dropdownH * (eValues.length + 1))//temporary size
+            .setBarHeight(dropdownH) //height of top/primary bar
+            .setItemHeight(dropdownH) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        // for each entry in the enum, add it to the dropdown.
+        for (FilterSettingsEnum value : eValues) {
+            // this will store the *actual* enum object inside the dropdown!
+            list.addItem(value.getString(), value);
+        }
+        //Style the text in the ScrollableList
+        list.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(e.getString())
+            .setFont(h5)
+            .setSize(12)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(e.getString())
+            .setFont(p6)
+            .setSize(10) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+        //list.addCallback(new SLCallbackListener(chanNum));
+        return list;
+    }
+}
