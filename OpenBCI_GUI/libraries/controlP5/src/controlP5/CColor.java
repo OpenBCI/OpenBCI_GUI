@@ -18,8 +18,8 @@ package controlP5;
  * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified 03/23/2022
- * @version 2.3.2
+ * @modified 04/07/2022
+ * @version 2.3.3
  * 
  */
 
