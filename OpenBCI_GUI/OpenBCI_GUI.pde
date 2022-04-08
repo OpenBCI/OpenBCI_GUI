@@ -297,6 +297,7 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 DirectoryManager directoryManager;
 SessionSettings settings;
 GuiSettings guiSettings;
+FilterSettings filterSettings;
 
 final int navBarHeight = 32;
 TopNav topNav;
@@ -704,6 +705,9 @@ void initSystem() {
     
     //Make sure topNav buttons draw in the correct spot
     topNav.screenHasBeenResized(width, height);
+
+    //Instantiate Global Filter Settings Class
+    filterSettings = new FilterSettings(((Board)currentBoard));
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 

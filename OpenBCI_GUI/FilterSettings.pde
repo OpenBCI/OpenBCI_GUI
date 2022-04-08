@@ -3,8 +3,8 @@ public class FilterSettingsValues {
     //public BandPassStop[] bpStopFreq;
     //public BandStopCenter[] bsCenterFreq;
     //public FilterType[] bpFilterType;
-    public FilterActiveOnChannel[] bandstopFilterActiveOnChannels;
-    public FilterActiveOnChannel[] bandpassFilterActiveOnChannels;
+    public FilterActiveOnChannel[] bandstopFilterActive;
+    public FilterActiveOnChannel[] bandpassFilterActive;
 
     public FilterSettingsValues() {
     }
@@ -17,6 +17,7 @@ class FilterSettings {
     private FilterSettingsValues defaultValues;
 
     protected Board board;
+    public int channelCount;
 
     FilterSettings(Board theBoard) {
         board = theBoard;
@@ -24,13 +25,13 @@ class FilterSettings {
         //previousValues = new FilterSettingsValues();
         defaultValues = new FilterSettingsValues();
 
-        int channelCount = board.getNumEXGChannels();
+        channelCount = board.getNumEXGChannels();
 
-        values.bandstopFilterActiveOnChannels = new FilterActiveOnChannel[channelCount];
-        Arrays.fill(values.bandstopFilterActiveOnChannels, FilterActiveOnChannel.ON);
+        values.bandstopFilterActive = new FilterActiveOnChannel[channelCount];
+        Arrays.fill(values.bandstopFilterActive, FilterActiveOnChannel.ON);
 
-        values.bandpassFilterActiveOnChannels = new FilterActiveOnChannel[channelCount];
-        Arrays.fill(values.bandpassFilterActiveOnChannels, FilterActiveOnChannel.ON);
+        values.bandpassFilterActive = new FilterActiveOnChannel[channelCount];
+        Arrays.fill(values.bandpassFilterActive, FilterActiveOnChannel.ON);
 
         /*
         // initialize all arrays with some defaults
@@ -121,6 +122,10 @@ class FilterSettings {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String defaultValsAsString = gson.toJson(defaultValues);
         values = gson.fromJson(defaultValsAsString, FilterSettingsValues.class);
+    }
+
+    public int getChannelCount() {
+        return channelCount;
     }
 }
 
