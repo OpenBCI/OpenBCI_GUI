@@ -148,7 +148,6 @@ class FilterUIPopup extends PApplet implements Runnable {
     private ScrollableList createDropdown(String name, int _x, int _y, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
         int dropdownW = buttonWidth;
         int dropdownH = 20;
-        //ScrollableList list = new CustomScrollableList(cp5, name)
         ScrollableList list = cp5.addScrollableList(name)
             .setPosition(_x, _y)
             .setOpen(false)
@@ -157,7 +156,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(OBJECT_BORDER_GREY)
+            .setOutlineColor(OBJECT_BORDER_GREY)
             .setSize(dropdownW, dropdownH * (eValues.length + 1))//temporary size
             .setBarHeight(dropdownH) //height of top/primary bar
             .setItemHeight(dropdownH) //height of all item/dropdown bars

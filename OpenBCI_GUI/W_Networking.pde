@@ -597,9 +597,9 @@ class W_Networking extends Widget {
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
 
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_dropdowns, name)
+        ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
-                .setBackgroundColor(color(0))
+                .setOutlineColor(color(0))
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -634,9 +634,9 @@ class W_Networking extends Widget {
     }
 
     void createBaudDropdown(String name, List<String> _items) {
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_baudRate, name)
+        ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name)
                 .setOpen(false)
-                .setBackgroundColor(color(0))
+                .setOutlineColor(color(0))
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -672,9 +672,9 @@ class W_Networking extends Widget {
 
     void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
         if (isEmpty) _items.add("None"); // Fix #642 and #637
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_portName, name)
+        ScrollableList scrollList = cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
-            .setBackgroundColor(color(0))
+            .setOutlineColor(color(0))
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))

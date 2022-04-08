@@ -61,11 +61,11 @@ class W_PacketLoss extends Widget {
     }
 
     private void createTableDropdown() {
-        tableDropdown = new CustomScrollableList(cp5_widget, "TableTimeWindow")
-            .setDrawOutlineWhenClosed(false)
+        tableDropdown = cp5_widget.addScrollableList("TableTimeWindow")
+            .setDrawOutline(false)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(OBJECT_BORDER_GREY)
+            .setOutlineColor(OBJECT_BORDER_GREY)
             .setBarHeight(cellHeight) //height of top/primary bar
             .setItemHeight(cellHeight) //height of all item/dropdown bars
             ;
