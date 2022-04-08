@@ -707,7 +707,7 @@ void initSystem() {
     topNav.screenHasBeenResized(width, height);
 
     //Instantiate Global Filter Settings Class
-    filterSettings = new FilterSettings(((Board)currentBoard));
+    filterSettings = new FilterSettings(((DataSource)currentBoard));
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 

@@ -4,14 +4,15 @@ import processing.awt.PSurfaceAWT;
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
     private final int defaultWidth = 500;
-    private final int defaultHeight = 600;
+    private final int defaultHeight = 650;
 
-    private final int headerHeight = 32;
+    private final int headerHeight = 36;
     private final int padding = 20;
 
     private final int buttonWidth = 120;
     private final int buttonHeight = 40;
-    private final int spacer = 6; //space between buttons
+    private final int sm_spacer = 6; //space between buttons
+    private final int lg_spacer = 12;
 
     private String message = "Sample text string";
     private String headerMessage = "Filters";
@@ -22,10 +23,22 @@ class FilterUIPopup extends PApplet implements Runnable {
     private color buttonColor = OPENBCI_BLUE;
     
     private ControlP5 cp5;
-    private BFFilter brainFlowFilter = BFFilter.BANDSTOP;
-    private FilterChannelSelect filterChannelSelect = FilterChannelSelect.ALL_CHANNELS;
+    private int uiObjectHeight = 26;
+    private int textfieldWidth = 80;
+    private int onOff_diameter = uiObjectHeight;
+    private BFFilter brainFlowFilter = BFFilter.BANDPASS;
+    private FilterChannelSelect filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
 
-    Button[] onOffButtons;
+    private Button masterOnOffButton;
+    private Textfield masterFirstColumnTextfield;
+    private Textfield masterSecondColumnTextfield;
+    private ScrollableList masterFilterTypeDropdown;
+    private Button[] onOffButtons;
+    private Textfield[] firstColumnTextfields;
+    private Textfield[] secondColumnTextfields;
+    private ScrollableList[] filterTypeDropdowns;
+
+    private BrainFlowFilterTypes masterFilterType = BrainFlowFilterTypes.BUTTERWORTH;
 
     public FilterUIPopup() {
         super();
@@ -34,6 +47,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         t.start();
 
         onOffButtons = new Button[filterSettings.getChannelCount()];
+        firstColumnTextfields = new Textfield[filterSettings.getChannelCount()];
+        secondColumnTextfields = new Textfield[filterSettings.getChannelCount()];
+        filterTypeDropdowns = new ScrollableList[filterSettings.getChannelCount()];
     }
 
     @Override
@@ -88,8 +104,20 @@ class FilterUIPopup extends PApplet implements Runnable {
         //draw message
         textFont(p3, 16);
         fill(102);
-        textAlign(LEFT, TOP);
-        text("Channel", spacer, headerHeight + spacer, w-padding*2, h-padding*2-headerHeight);
+        textAlign(CENTER, TOP);
+        text("Channel", lg_spacer, headerHeight + sm_spacer, textfieldWidth, headerHeight);
+        String firstColumnHeader = "";
+        String secondColumnHeader = "";
+        if (brainFlowFilter == BFFilter.BANDPASS) {
+            firstColumnHeader = "Start";
+            secondColumnHeader = "Stop";
+        } else if (brainFlowFilter == BFFilter.BANDSTOP) {
+            firstColumnHeader = "Center";
+            secondColumnHeader = "Width";
+        }
+        text(firstColumnHeader, lg_spacer*2 + textfieldWidth, headerHeight + sm_spacer, textfieldWidth, headerHeight);
+        text(secondColumnHeader, lg_spacer*3 + textfieldWidth*2, headerHeight + sm_spacer, textfieldWidth, headerHeight);
+        text("Type",lg_spacer*3 + textfieldWidth*3, headerHeight + sm_spacer, buttonWidth, headerHeight);
         
         popStyle();
         
@@ -123,18 +151,20 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
     */
     private void createAllCp5Objects() {
-        int filterX = int(defaultWidth/2 - spacer/2 - buttonWidth);
-        int filterY = spacer;
-        int chanSelectX = defaultWidth/2 + spacer/2;
+        int filterX = int(defaultWidth/2 - sm_spacer/2 - buttonWidth);
+        int filterY = sm_spacer;
+        int chanSelectX = defaultWidth/2 + sm_spacer/2;
         createDropdown("filter", filterX, filterY, brainFlowFilter, BFFilter.values());
         createDropdown("channelSelect", chanSelectX, filterY, filterChannelSelect, FilterChannelSelect.values());
 
         createOnOffButtons();
+        createTextfields();
+        createTypeDropdowns();
     }
 
     private ScrollableList createDropdown(String name, int _x, int _y, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
         int dropdownW = buttonWidth;
-        int dropdownH = 20;
+        int dropdownH = uiObjectHeight;
         ScrollableList list = cp5.addScrollableList(name)
             .setPosition(_x, _y)
             .setOpen(false)
@@ -220,9 +250,10 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void createOnOffButtons() {
-        int onOff_diameter = 26;
+        //FIX ME: Master OnOff button needs to be made special
+        createOnOffButton("masterOnOffButton", "All", 0, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer, onOff_diameter, onOff_diameter);
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
-            createOnOffButton("onOffButton"+chan, str(chan+1), chan, spacer*2, headerHeight*2 + spacer*(chan+1) + onOff_diameter*chan, onOff_diameter, onOff_diameter);
+            createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+2) + onOff_diameter*(chan+1), onOff_diameter, onOff_diameter);
         }
     }
 
@@ -265,12 +296,23 @@ class FilterUIPopup extends PApplet implements Runnable {
                 */
             }
         });
-        onOffButtons[chan].setDescription("Click to toggle filter on channel " + text + ".");
+        //This doesn't work by default in the popup window
+        //onOffButtons[chan].setDescription("Click to toggle filter on channel " + text + ".");
     }
 
-    /*
-    private Textfield createTextfield(String name, int intValue, int _x, int _y, int _w, int _h, color _textColor) {
+    private void createTextfields() {
+        masterFirstColumnTextfield = createTextfield("masterFirstColumnTextfield", 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
+        masterSecondColumnTextfield = createTextfield("masterSecondColumnTextfield", 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
+        for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
+            firstColumnTextfields[chan] = createTextfield("firstColumnTextfield"+chan, 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
+            secondColumnTextfields[chan] = createTextfield("secondColumnTextfield"+chan, 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
+        }
+    }
+
+    private Textfield createTextfield(String name, int intValue, int _x, int _y, int _w, int _h) {
         //Create these textfields under cp5_widget base instance so because they are always visible
+        StringBuilder sb = new StringBuilder(str(intValue));
+        sb.append(" Hz");
         final Textfield myTextfield = cp5.addTextfield(name)
             .setPosition(_x, _y)
             .setCaptionLabel("")
@@ -279,14 +321,15 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(_textColor)  // text color
+            .setColorValueLabel(BLACK)  // text color
             .setColorForeground(color(210))  // border color when not selected - grey
             .setColorActive(isSelected_color)  // border color when selected - green
             .setColorCursor(color(26, 26, 26))
-            .setText("%") //set the text
+            .setText(sb.toString()) //set the text
             .align(5, 10, 20, 40)
             .setAutoClear(false)
             ; //Don't clear textfield when pressing Enter key
+        myTextfield.getValueLabel().align(CENTER, CENTER);
         //Clear textfield on double click
         myTextfield.onDoublePress(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -298,8 +341,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         myTextfield.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && myTextfield.getText().equals("")) {
-                    setTextfieldVal(getDefaultTextfieldIntVal());
-                    customThreshold(myTextfield, getDefaultTextfieldIntVal());
+                    //setTextfieldVal(getDefaultTextfieldIntVal());
+                    //customThreshold(myTextfield, getDefaultTextfieldIntVal());
                 }
                 //Pressing ENTER in the Textfield triggers a "Broadcast"
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
@@ -309,8 +352,11 @@ class FilterUIPopup extends PApplet implements Runnable {
                     if (rcvAsInt <= 0) {
                         rcvAsInt = 0; //Only positive values will be used here
                     }
-                    setTextfieldVal(rcvAsInt);
-                    customThreshold(myTextfield, rcvAsInt);
+                    StringBuilder sb = new StringBuilder(rcvAsInt);
+                    sb.append(" Hz");
+                    myTextfield.setText(sb.toString());
+                    //setTextfieldVal(rcvAsInt);
+                    //customThreshold(myTextfield, rcvAsInt);
                 }
             }
         });
@@ -318,25 +364,22 @@ class FilterUIPopup extends PApplet implements Runnable {
         myTextfield.onReleaseOutside(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
-                    setTextfieldVal(getDefaultTextfieldIntVal());
-                    customThreshold(myTextfield, getDefaultTextfieldIntVal());
+                    //setTextfieldVal(getDefaultTextfieldIntVal());
+                    //customThreshold(myTextfield, getDefaultTextfieldIntVal());
                 }
             }
         });
         return myTextfield;
     }
-
+    
     private void customThreshold(Textfield tf, int value) {
         StringBuilder sb = new StringBuilder();
         sb.append(value);
-        sb.append(isSignalCheckRailedMode() ? "%" : " k\u2126");
+        sb.append(" Hz");
         tf.setText(sb.toString());
     }
 
-    public void setPosition(int _x, int _y) {
-        thresholdTF.setPosition(_x, _y);
-    }
-
+    /*
     private int getDefaultTextfieldIntVal() {
         return isSignalCheckRailedMode() ? defaultValue_Percentage : defaultValue_kOhms;
     }
@@ -344,8 +387,10 @@ class FilterUIPopup extends PApplet implements Runnable {
     private int getTextfieldIntVal() {
         return isSignalCheckRailedMode() ? valuePercentage : valuekOhms;
     }
+    */
 
     private void setTextfieldVal(int val) {
+        /*
         if (isSignalCheckRailedMode()) {
             if (name == "errorThreshold") {
                 for (int i = 0; i < nchan; i++) {
@@ -365,6 +410,16 @@ class FilterUIPopup extends PApplet implements Runnable {
             }
             valuekOhms = val;
         }
+        */
     }
-    */
+
+    private void createTypeDropdowns() {
+        //Make these dropdowns in reverse so the top ones draw above the lower ones
+        for (int chan = filterSettings.getChannelCount() - 1; chan >= 0; chan--) {
+            filterTypeDropdowns[chan] = createDropdown("filterType"+chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), masterFilterType, BrainFlowFilterTypes.values());
+        }
+        masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, masterFilterType, BrainFlowFilterTypes.values());
+    }
+
+
 }

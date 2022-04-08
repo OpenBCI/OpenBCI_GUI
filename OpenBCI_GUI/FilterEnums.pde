@@ -47,13 +47,35 @@ public enum FilterChannelSelect implements FilterSettingsEnum
 }
 
 enum FilterActiveOnChannel implements FilterSettingsEnum {
-    ON(0, "Active"),
-    OFF(1, "Inactive");
+    ON (0, "Active"),
+    OFF (1, "Inactive");
 
     private int index;
     private String name;
 
     FilterActiveOnChannel(int index, String _name) {
+        this.index = index;
+        this.name = _name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+}
+
+enum BrainFlowFilterTypes implements FilterSettingsEnum {
+    BUTTERWORTH (0, "Butterworth"),
+    CHEBYSHEV (1, "Chebyshev"),
+    BESSEL (2, "Bessel");
+
+    private int index;
+    private String name;
+
+    BrainFlowFilterTypes(int index, String _name) {
         this.index = index;
         this.name = _name;
     }

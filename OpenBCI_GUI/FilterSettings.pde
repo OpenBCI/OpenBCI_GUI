@@ -16,10 +16,10 @@ class FilterSettings {
     //public FilterSettingsValues previousValues;
     private FilterSettingsValues defaultValues;
 
-    protected Board board;
+    protected DataSource board;
     public int channelCount;
 
-    FilterSettings(Board theBoard) {
+    FilterSettings(DataSource theBoard) {
         board = theBoard;
         values = new FilterSettingsValues();
         //previousValues = new FilterSettingsValues();
