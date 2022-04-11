@@ -129,4 +129,53 @@ class FilterSettings {
     public int getChannelCount() {
         return channelCount;
     }
+
+    //Avoid error with popup being in another thread.
+    public void storeSettings() {
+        StringBuilder settingsFilename = new StringBuilder(directoryManager.getSettingsPath());
+        settingsFilename.append("FilterSettings");
+        settingsFilename.append("_");
+        settingsFilename.append(getChannelCount());
+        settingsFilename.append("Channels.json");
+        String filename = settingsFilename.toString();
+        File fileToSave = new File(filename);
+        selectOutput("Save filter settings to file", "storeFilterSettings", fileToSave);
+    }
+    //Avoid error with popup being in another thread.
+    public void loadSettings() {
+        StringBuilder settingsFilename = new StringBuilder(directoryManager.getSettingsPath());
+        settingsFilename.append("FilterSettings");
+        settingsFilename.append("_");
+        settingsFilename.append(getChannelCount());
+        settingsFilename.append("Channels.json");
+        String filename = settingsFilename.toString();
+        File fileToLoad = new File(filename);
+        selectInput("Select settings file to load", "loadFilterSettings", fileToLoad);
+    }
+}
+
+//Used by button in the Filter UI. Must be global and public.
+public void loadFilterSettings(File selection) {
+    if (selection == null) {
+        output("Filters Settings file not selected.");
+    } else {
+        if (filterSettings.loadSettingsValues(selection.getAbsolutePath())) {
+            outputSuccess("Filter Settings Loaded!");
+        } else {
+            outputError("Failed to load Filter Settings.");
+        }
+    }
+}
+
+//Used by button in the Filter UI. Must be global and public.
+public void storeFilterSettings(File selection) {
+    if (selection == null) {
+        output("Filter Settings file not selected.");
+    } else {
+        if (filterSettings.saveToFile(selection.getAbsolutePath())) {
+            outputSuccess("Filter Settings Saved!");
+        } else {
+            outputError("Failed to save Filter Settings.");
+        }
+    }
 }

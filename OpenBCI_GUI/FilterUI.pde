@@ -86,6 +86,9 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void draw() {
+
+        checkIfSessionWasClosed();
+
         final int w = defaultWidth;
         final int h = defaultHeight;
 
@@ -141,17 +144,15 @@ class FilterUIPopup extends PApplet implements Runnable {
         dispose();
     }
 
-    /*
-    public void onButtonPressed() {
-        if (buttonLink != null) {
-            link(buttonLink);
+    private void checkIfSessionWasClosed() {
+        if (systemMode == SYSTEMMODE_PREINIT) {
+            noLoop();
+            Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+            frame.dispose();
+            exit();
         }
-        noLoop();
-        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
-        frame.dispose();
-        exit();
     }
-    */
+
     private void createAllCp5Objects() {
         createOnOffButtons();
         createTextfields();
@@ -446,7 +447,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         saveButton.setBorderColor(OBJECT_BORDER_GREY);
         saveButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                selectOutput("Save filter settings to file", "storeFilterSettings");
+                filterSettings.storeSettings();
             }
         });
     }
@@ -456,32 +457,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         loadButton.setBorderColor(OBJECT_BORDER_GREY);
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                selectInput("Select settings file to load", "loadFilterSettings");
+                filterSettings.loadSettings();
             }
         });
-    }
-
-    void loadFilterSettings(File selection) {
-        if (selection == null) {
-            output("Filters Settings file not selected.");
-        } else {
-            if (filterSettings.loadSettingsValues(selection.getAbsolutePath())) {
-                outputSuccess("Filter Settings Loaded!");
-            } else {
-                outputError("Failed to load Filter Settings.");
-            }
-        }
-    }
-
-    void storeFilterSettings(File selection) {
-        if (selection == null) {
-            output("Filter Settings file not selected.");
-        } else {
-            if (filterSettings.saveToFile(selection.getAbsolutePath())) {
-                outputSuccess("Filter Settings Saved!");
-            } else {
-                outputError("Failed to save Filter Settings.");
-            }
-        }
     }
 }
