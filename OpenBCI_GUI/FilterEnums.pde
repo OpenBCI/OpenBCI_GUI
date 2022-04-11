@@ -10,9 +10,9 @@ public enum BFFilter implements FilterSettingsEnum
     private int index;
     private String name;
  
-    BFFilter(int index, String _name) {
+    BFFilter(int index, String name) {
         this.index = index;
-        this.name = _name;
+        this.name = name;
     }
 
     public int getIndex() {
@@ -32,9 +32,9 @@ public enum FilterChannelSelect implements FilterSettingsEnum
     private int index;
     private String name;
  
-    FilterChannelSelect(int index, String _name) {
+    FilterChannelSelect(int index, String name) {
         this.index = index;
-        this.name = _name;
+        this.name = name;
     }
 
     public int getIndex() {
@@ -53,9 +53,9 @@ enum FilterActiveOnChannel implements FilterSettingsEnum {
     private int index;
     private String name;
 
-    FilterActiveOnChannel(int index, String _name) {
+    FilterActiveOnChannel(int index, String name) {
         this.index = index;
-        this.name = _name;
+        this.name = name;
     }
 
     public int getIndex() {
@@ -67,17 +67,19 @@ enum FilterActiveOnChannel implements FilterSettingsEnum {
     }
 }
 
-enum BrainFlowFilterTypes implements FilterSettingsEnum {
-    BUTTERWORTH (0, "Butterworth"),
-    CHEBYSHEV (1, "Chebyshev"),
-    BESSEL (2, "Bessel");
+enum BrainFlowFilterType implements FilterSettingsEnum {
+    BUTTERWORTH (0, "Butterworth", FilterTypes.BUTTERWORTH.get_code()),
+    CHEBYSHEV (1, "Chebyshev", FilterTypes.CHEBYSHEV_TYPE_1.get_code()),
+    BESSEL (2, "Bessel", FilterTypes.BESSEL.get_code());
 
     private int index;
     private String name;
+    private int value;
 
-    BrainFlowFilterTypes(int index, String _name) {
+    BrainFlowFilterType(int index, String name, int value) {
         this.index = index;
-        this.name = _name;
+        this.name = name;
+        this.value = value;
     }
 
     public int getIndex() {
@@ -86,6 +88,61 @@ enum BrainFlowFilterTypes implements FilterSettingsEnum {
 
     public String getString() {
         return name;
+    }
+
+    private int getValue() {
+        return value;
+    }
+}
+
+enum GlobalEnvironmentalFilter implements FilterSettingsEnum {
+    FIFTY (0, "50 Hz"),
+    SIXTY (1, "60 Hz"),
+    FIFTY_AND_SIXTY (2, "50 + 60 Hz"),
+    NONE (3, "None");
+
+    private int index;
+    private String name;
+
+    GlobalEnvironmentalFilter(int index, String name) {
+        this.index = index;
+        this.name = name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+}
+
+public enum BrainFlowFilterOrder implements FilterSettingsEnum {
+    TWO (0, "2", 2),
+    THREE (1, "3", 3),
+    FOUR (2, "4", 4);
+
+    private int index;
+    private String name;
+    private int value;
+
+    BrainFlowFilterOrder(int index, String name, int value) {
+        this.index = index;
+        this.name = name;
+        this.value = value;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+
+    public int getValue() {
+        return value;
     }
 }
 

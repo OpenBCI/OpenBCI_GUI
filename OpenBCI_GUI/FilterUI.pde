@@ -6,13 +6,11 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int defaultWidth = 500;
     private final int defaultHeight = 650;
 
-    private final int headerHeight = 36;
-    private final int padding = 20;
-
-    private final int buttonWidth = 120;
-    private final int buttonHeight = 40;
-    private final int sm_spacer = 6; //space between buttons
+    private final int sm_spacer = 6;
     private final int lg_spacer = 12;
+    private int uiObjectHeight = 26;
+    private final int headerHeight = uiObjectHeight + sm_spacer*2;
+    private final int headerObjWidth = 90;
 
     private String message = "Sample text string";
     private String headerMessage = "Filters";
@@ -23,22 +21,32 @@ class FilterUIPopup extends PApplet implements Runnable {
     private color buttonColor = OPENBCI_BLUE;
     
     private ControlP5 cp5;
-    private int uiObjectHeight = 26;
+
     private int textfieldWidth = 80;
     private int onOff_diameter = uiObjectHeight;
     private BFFilter brainFlowFilter = BFFilter.BANDPASS;
     private FilterChannelSelect filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
+    private GlobalEnvironmentalFilter globalEnvFilter = GlobalEnvironmentalFilter.FIFTY_AND_SIXTY;
+
+    private Button saveButton;
+    private Button loadButton;
 
     private Button masterOnOffButton;
     private Textfield masterFirstColumnTextfield;
     private Textfield masterSecondColumnTextfield;
     private ScrollableList masterFilterTypeDropdown;
+    private ScrollableList masterFilterOrderDropdown;
+    private BrainFlowFilterType masterFilterType = BrainFlowFilterType.BUTTERWORTH;
+    private BrainFlowFilterOrder masterFilterOrder = BrainFlowFilterOrder.TWO;
+
     private Button[] onOffButtons;
     private Textfield[] firstColumnTextfields;
     private Textfield[] secondColumnTextfields;
     private ScrollableList[] filterTypeDropdowns;
+    private ScrollableList[] filterOrderDropdowns;
 
-    private BrainFlowFilterTypes masterFilterType = BrainFlowFilterTypes.BUTTERWORTH;
+    private final int typeDropdownWidth = headerObjWidth;
+    private final int orderDropdownWidth = 60;
 
     public FilterUIPopup() {
         super();
@@ -50,6 +58,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         firstColumnTextfields = new Textfield[filterSettings.getChannelCount()];
         secondColumnTextfields = new Textfield[filterSettings.getChannelCount()];
         filterTypeDropdowns = new ScrollableList[filterSettings.getChannelCount()];
+        filterOrderDropdowns = new ScrollableList[filterSettings.getChannelCount()];
     }
 
     @Override
@@ -93,14 +102,6 @@ class FilterUIPopup extends PApplet implements Runnable {
         fill(headerColor);
         rect((width - w)/2, (height - h)/2, w, headerHeight);
         
-        /*
-        //draw header text
-        textFont(h3, 16);
-        fill(255);
-        textAlign(LEFT, CENTER);
-        text(headerMessage, (width - w)/2 + padding, 0, w, headerHeight);
-        */
-        
         //draw message
         textFont(p3, 16);
         fill(102);
@@ -117,7 +118,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         }
         text(firstColumnHeader, lg_spacer*2 + textfieldWidth, headerHeight + sm_spacer, textfieldWidth, headerHeight);
         text(secondColumnHeader, lg_spacer*3 + textfieldWidth*2, headerHeight + sm_spacer, textfieldWidth, headerHeight);
-        text("Type",lg_spacer*3 + textfieldWidth*3, headerHeight + sm_spacer, buttonWidth, headerHeight);
+        text("Type", lg_spacer*4 + textfieldWidth*3, headerHeight + sm_spacer, typeDropdownWidth, headerHeight);
+        text("Order", lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight + sm_spacer, orderDropdownWidth, headerHeight);
         
         popStyle();
         
@@ -151,80 +153,25 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
     */
     private void createAllCp5Objects() {
-        int filterX = int(defaultWidth/2 - sm_spacer/2 - buttonWidth);
-        int filterY = sm_spacer;
-        int chanSelectX = defaultWidth/2 + sm_spacer/2;
-        createDropdown("filter", filterX, filterY, brainFlowFilter, BFFilter.values());
-        createDropdown("channelSelect", chanSelectX, filterY, filterChannelSelect, FilterChannelSelect.values());
-
         createOnOffButtons();
         createTextfields();
         createTypeDropdowns();
-    }
+        createOrderDropdowns();
 
-    private ScrollableList createDropdown(String name, int _x, int _y, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
-        int dropdownW = buttonWidth;
-        int dropdownH = uiObjectHeight;
-        ScrollableList list = cp5.addScrollableList(name)
-            .setPosition(_x, _y)
-            .setOpen(false)
-            .setColorBackground(WHITE) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(0))
-            .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setOutlineColor(OBJECT_BORDER_GREY)
-            .setSize(dropdownW, dropdownH * (eValues.length + 1))//temporary size
-            .setBarHeight(dropdownH) //height of top/primary bar
-            .setItemHeight(dropdownH) //height of all item/dropdown bars
-            .setVisible(true)
-            ;
-        // for each entry in the enum, add it to the dropdown.
-        for (FilterSettingsEnum value : eValues) {
-            // this will store the *actual* enum object inside the dropdown!
-            list.addItem(value.getString(), value);
-        }
-        //Style the text in the ScrollableList
-        list.getCaptionLabel() //the caption label is the text object in the primary bar
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(e.getString())
-            .setFont(h5)
-            .setSize(12)
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(4)
-            ;
-        list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(e.getString())
-            .setFont(p6)
-            .setSize(10) //set the font size of the item bars to 14pt
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(3) //4-pixel vertical offset to center text
-            ;
-        list.addCallback(new SLCallbackListener());
-        return list;
-    }
-
-    private class SLCallbackListener implements CallbackListener {
-        SLCallbackListener()  {
-        }
-        public void controlEvent(CallbackEvent theEvent) {
-            //Selecting an item from ScrollableList triggers Broadcast
-            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
-                int val = (int)(theEvent.getController()).getValue();
-                Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
-                FilterSettingsEnum myEnum = (FilterSettingsEnum)bob.get("value");
-                println("FilterSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
-
-                if (myEnum instanceof BFFilter) {
-                    brainFlowFilter = (BFFilter)myEnum;
-                } else if (myEnum instanceof FilterChannelSelect) {
-                    filterChannelSelect = (FilterChannelSelect)myEnum;
-                }
-
-                updateCp5Objects();
-            }
-        }
+        // Create header objects last so they always draw on top!
+        int headerObjY = sm_spacer;
+        int halfObjWidth = headerObjWidth/2;
+        int middle = defaultWidth / 2;
+        int headerObj1_x = middle - halfObjWidth - sm_spacer*2 - headerObjWidth*2;
+        int headerObj2_x = middle - halfObjWidth - sm_spacer - headerObjWidth;
+        int headerObj3_x_middle = middle - halfObjWidth;
+        int headerObj4_x = middle + halfObjWidth + sm_spacer;
+        int headerObj5_x = middle + halfObjWidth + sm_spacer*2 + headerObjWidth;
+        createDropdown("filter", headerObj1_x, headerObjY, headerObjWidth, brainFlowFilter, BFFilter.values());
+        createDropdown("channelSelect", headerObj2_x, headerObjY, headerObjWidth, filterChannelSelect, FilterChannelSelect.values());
+        createDropdown("environmentalFilter", headerObj3_x_middle, headerObjY, headerObjWidth, globalEnvFilter, GlobalEnvironmentalFilter.values());
+        createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", headerObj4_x, headerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", headerObj5_x, headerObjY, headerObjWidth, uiObjectHeight);
     }
 
     private void updateCp5Objects() {
@@ -235,12 +182,12 @@ class FilterUIPopup extends PApplet implements Runnable {
             color updateColor = offColor;
             switch (brainFlowFilter) {
                 case BANDSTOP:
-                    if (filterSettings.values.bandstopFilterActive[chan] == FilterActiveOnChannel.ON) {
+                    if (filterSettings.values.bandStopFilterActive[chan] == FilterActiveOnChannel.ON) {
                         updateColor = onColor;
                     }
                     break;
                 case BANDPASS:
-                    if (filterSettings.values.bandpassFilterActive[chan] == FilterActiveOnChannel.ON) {
+                    if (filterSettings.values.bandPassFilterActive[chan] == FilterActiveOnChannel.ON) {
                         updateColor = onColor;
                     }
                     break;
@@ -266,20 +213,20 @@ class FilterUIPopup extends PApplet implements Runnable {
                 println("[" + text + "] onOff released");
                 switch (brainFlowFilter) {
                     case BANDSTOP:
-                        if (filterSettings.values.bandstopFilterActive[chan] == FilterActiveOnChannel.ON) {
-                            filterSettings.values.bandstopFilterActive[chan] = FilterActiveOnChannel.OFF;
+                        if (filterSettings.values.bandStopFilterActive[chan] == FilterActiveOnChannel.ON) {
+                            filterSettings.values.bandStopFilterActive[chan] = FilterActiveOnChannel.OFF;
                             onOffButtons[chan].setColorBackground(50);
                         } else {
-                            filterSettings.values.bandstopFilterActive[chan] = FilterActiveOnChannel.ON;
+                            filterSettings.values.bandStopFilterActive[chan] = FilterActiveOnChannel.ON;
                             onOffButtons[chan].setColorBackground(channelColors[chan%8]);
                         }
                         break;
                     case BANDPASS:
-                        if (filterSettings.values.bandpassFilterActive[chan] == FilterActiveOnChannel.ON) {
-                            filterSettings.values.bandpassFilterActive[chan] = FilterActiveOnChannel.OFF;
+                        if (filterSettings.values.bandPassFilterActive[chan] == FilterActiveOnChannel.ON) {
+                            filterSettings.values.bandPassFilterActive[chan] = FilterActiveOnChannel.OFF;
                             onOffButtons[chan].setColorBackground(50);
                         } else {
-                            filterSettings.values.bandpassFilterActive[chan] = FilterActiveOnChannel.ON;
+                            filterSettings.values.bandPassFilterActive[chan] = FilterActiveOnChannel.ON;
                             onOffButtons[chan].setColorBackground(channelColors[chan%8]);
                         }
                         break;
@@ -413,13 +360,128 @@ class FilterUIPopup extends PApplet implements Runnable {
         */
     }
 
+
+    private ScrollableList createDropdown(String name, int _x, int _y, int _w, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
+        int dropdownH = uiObjectHeight;
+        ScrollableList list = cp5.addScrollableList(name)
+            .setPosition(_x, _y)
+            .setOpen(false)
+            .setColorBackground(WHITE) // text field bg color
+            .setColorValueLabel(color(0))       // text color
+            .setColorCaptionLabel(color(0))
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
+            .setOutlineColor(OBJECT_BORDER_GREY)
+            .setSize(_w, dropdownH * (eValues.length + 1))//temporary size
+            .setBarHeight(dropdownH) //height of top/primary bar
+            .setItemHeight(dropdownH) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        // for each entry in the enum, add it to the dropdown.
+        for (FilterSettingsEnum value : eValues) {
+            // this will store the *actual* enum object inside the dropdown!
+            list.addItem(value.getString(), value);
+        }
+        //Style the text in the ScrollableList
+        list.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(e.getString())
+            .setFont(h5)
+            .setSize(12)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(e.getString())
+            .setFont(p6)
+            .setSize(10) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+        list.addCallback(new SLCallbackListener());
+        return list;
+    }
+
+    private class SLCallbackListener implements CallbackListener {
+        SLCallbackListener()  {
+        }
+        public void controlEvent(CallbackEvent theEvent) {
+            //Selecting an item from ScrollableList triggers Broadcast
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+                int val = (int)(theEvent.getController()).getValue();
+                Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+                FilterSettingsEnum myEnum = (FilterSettingsEnum)bob.get("value");
+                println("FilterSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
+
+                if (myEnum instanceof BFFilter) {
+                    brainFlowFilter = (BFFilter)myEnum;
+                } else if (myEnum instanceof FilterChannelSelect) {
+                    filterChannelSelect = (FilterChannelSelect)myEnum;
+                }
+
+                updateCp5Objects();
+            }
+        }
+    }
+
     private void createTypeDropdowns() {
         //Make these dropdowns in reverse so the top ones draw above the lower ones
         for (int chan = filterSettings.getChannelCount() - 1; chan >= 0; chan--) {
-            filterTypeDropdowns[chan] = createDropdown("filterType"+chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), masterFilterType, BrainFlowFilterTypes.values());
+            
+            filterTypeDropdowns[chan] = createDropdown("filterType"+chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
         }
-        masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, masterFilterType, BrainFlowFilterTypes.values());
+        masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
     }
 
+    private void createOrderDropdowns() {
+        for (int chan = filterSettings.getChannelCount() - 1; chan >= 0; chan--) {
+            filterOrderDropdowns[chan] = createDropdown("filterOrder"+chan, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
+        }
+        masterFilterOrderDropdown = createDropdown("masterFilterOrderDropdown", lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer, orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
+    }
 
+    private void createFilterSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
+        saveButton = createButton(cp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        saveButton.setBorderColor(OBJECT_BORDER_GREY);
+        saveButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectOutput("Save filter settings to file", "storeFilterSettings");
+            }
+        });
+    }
+
+    private void createFilterSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
+        loadButton = createButton(cp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        loadButton.setBorderColor(OBJECT_BORDER_GREY);
+        loadButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                selectInput("Select settings file to load", "loadFilterSettings");
+            }
+        });
+    }
+
+    void loadFilterSettings(File selection) {
+        if (selection == null) {
+            output("Filters Settings file not selected.");
+        } else {
+            if (filterSettings.loadSettingsValues(selection.getAbsolutePath())) {
+                outputSuccess("Filter Settings Loaded!");
+            } else {
+                outputError("Failed to load Filter Settings.");
+            }
+        }
+    }
+
+    void storeFilterSettings(File selection) {
+        if (selection == null) {
+            output("Filter Settings file not selected.");
+        } else {
+            if (filterSettings.saveToFile(selection.getAbsolutePath())) {
+                outputSuccess("Filter Settings Saved!");
+            } else {
+                outputError("Failed to save Filter Settings.");
+            }
+        }
+    }
 }

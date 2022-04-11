@@ -3,10 +3,51 @@ public class FilterSettingsValues {
     //public BandPassStop[] bpStopFreq;
     //public BandStopCenter[] bsCenterFreq;
     //public FilterType[] bpFilterType;
-    public FilterActiveOnChannel[] bandstopFilterActive;
-    public FilterActiveOnChannel[] bandpassFilterActive;
+    public FilterActiveOnChannel[] bandStopFilterActive;
+    public double[] bandStopCenterFreq;
+    public double[] bandStopWidth;
+    public BrainFlowFilterType[] bandStopFilterType;
+    public BrainFlowFilterOrder[] bandStopFilterOrder;
 
-    public FilterSettingsValues() {
+    public FilterActiveOnChannel[] bandPassFilterActive;
+    public double[] bandPassCenterFreq;
+    public double[] bandPassWidth;
+    public BrainFlowFilterType[] bandPassFilterType;
+    public BrainFlowFilterOrder[] bandPassFilterOrder;
+
+    public GlobalEnvironmentalFilter globalEnvironmentalFilter;
+
+    public FilterSettingsValues(int channelCount) {
+        bandStopFilterActive = new FilterActiveOnChannel[channelCount];
+        bandStopCenterFreq = new double[channelCount];
+        bandStopWidth = new double[channelCount];
+        bandStopFilterType = new BrainFlowFilterType[channelCount];
+        bandStopFilterOrder = new BrainFlowFilterOrder[channelCount];
+        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.OFF);
+        Arrays.fill(bandStopCenterFreq, 60);
+        Arrays.fill(bandStopWidth, 4);
+        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BUTTERWORTH);
+        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.TWO);
+
+
+        bandPassFilterActive = new FilterActiveOnChannel[channelCount];
+        bandPassCenterFreq = new double[channelCount];
+        bandPassWidth = new double[channelCount];
+        bandPassFilterType = new BrainFlowFilterType[channelCount];
+        bandPassFilterOrder = new BrainFlowFilterOrder[channelCount];
+        //Default to 5-50Hz Bandpass on all channels since this has been the default for years
+        Pair<Double, Double> bandPassRange = calcBandPassCenterAndWidth(5, 50);
+        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.OFF);
+        Arrays.fill(bandStopCenterFreq, bandPassRange.getLeft());
+        Arrays.fill(bandStopWidth, bandPassRange.getRight());
+        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BUTTERWORTH);
+        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.TWO);
+    }
+
+    public Pair<Double, Double> calcBandPassCenterAndWidth(int start, int stop) {
+        double centerFreq = (start + stop) / 2.0;
+        double bandWidth = stop - start;
+        return new ImmutablePair<Double, Double>(centerFreq, bandWidth);
     }
 }
 
@@ -21,56 +62,16 @@ class FilterSettings {
 
     FilterSettings(DataSource theBoard) {
         board = theBoard;
-        values = new FilterSettingsValues();
-        //previousValues = new FilterSettingsValues();
-        defaultValues = new FilterSettingsValues();
-
         channelCount = board.getNumEXGChannels();
 
-        values.bandstopFilterActive = new FilterActiveOnChannel[channelCount];
-        Arrays.fill(values.bandstopFilterActive, FilterActiveOnChannel.ON);
-
-        values.bandpassFilterActive = new FilterActiveOnChannel[channelCount];
-        Arrays.fill(values.bandpassFilterActive, FilterActiveOnChannel.ON);
+        values = new FilterSettingsValues(channelCount);
+        defaultValues = new FilterSettingsValues(channelCount);
 
         /*
-        // initialize all arrays with some defaults
-        // (which happen to be Cyton defaults, but they don't have to be.
-        // we set defaults on board contruction)
-        values.powerDown = new PowerDown[channelCount];
-        previousValues.powerDown = new PowerDown[channelCount];
-        Arrays.fill(values.powerDown, PowerDown.ON);
-
-        values.gain = new Gain[channelCount];
-        previousValues.gain = new Gain[channelCount];
-        Arrays.fill(values.gain, Gain.X24);
-
-        values.inputType = new InputType[channelCount];
-        previousValues.inputType = new InputType[channelCount];
-        Arrays.fill(values.inputType, InputType.NORMAL);
-        
-        values.bias = new Bias[channelCount];
-        previousValues.bias = new Bias[channelCount];
-        Arrays.fill(values.bias, Bias.INCLUDE);
-
-        values.srb2 = new Srb2[channelCount];
-        previousValues.srb2 = new Srb2[channelCount];
-        Arrays.fill(values.srb2, Srb2.CONNECT);
-
-        values.srb1 = new Srb1[channelCount];
-        previousValues.srb1 = new Srb1[channelCount];
-        Arrays.fill(values.srb1, Srb1.DISCONNECT);
-        */
-
-        /*
-        values.previousBias = values.bias.clone();
-        values.previousSrb2 = values.srb2.clone();
-        values.previousInputType = values.inputType.clone();
-        */
-
         String currentVals = getJson();
         Gson gson = new Gson();
         defaultValues = gson.fromJson(currentVals, FilterSettingsValues.class);
+        */
     }
 
     public boolean loadSettingsValues(String filename) {
@@ -124,17 +125,8 @@ class FilterSettings {
         values = gson.fromJson(defaultValsAsString, FilterSettingsValues.class);
     }
 
+    //Called in UI to control number of channels. This is set from the board when this class is instantiated.
     public int getChannelCount() {
         return channelCount;
     }
 }
-
-interface FilterSettingsInterface {
-
-    // Interface methods
-    public ADS1299Settings getADS1299Settings();
-    public char getChannelSelector(int channel);
-    public double getGain(int channel);
-    public void setUseDynamicScaler(boolean val);
-    public boolean getUseDynamicScaler();
-};
