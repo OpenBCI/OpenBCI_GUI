@@ -46,6 +46,29 @@ public enum FilterChannelSelect implements FilterSettingsEnum
     }
 }
 
+enum GlobalEnvironmentalFilter implements FilterSettingsEnum {
+    FIFTY (0, "50 Hz"),
+    SIXTY (1, "60 Hz"),
+    FIFTY_AND_SIXTY (2, "50 + 60 Hz"),
+    NONE (3, "None");
+
+    private int index;
+    private String name;
+
+    GlobalEnvironmentalFilter(int index, String name) {
+        this.index = index;
+        this.name = name;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+}
+
 enum FilterActiveOnChannel implements FilterSettingsEnum {
     ON (0, "Active"),
     OFF (1, "Inactive");
@@ -120,29 +143,6 @@ public enum BrainFlowFilterOrder implements FilterSettingsEnum {
 
     public int getValue() {
         return value;
-    }
-}
-
-enum GlobalEnvironmentalFilter implements FilterSettingsEnum {
-    FIFTY (0, "50 Hz"),
-    SIXTY (1, "60 Hz"),
-    FIFTY_AND_SIXTY (2, "50 + 60 Hz"),
-    NONE (3, "None");
-
-    private int index;
-    private String name;
-
-    GlobalEnvironmentalFilter(int index, String name) {
-        this.index = index;
-        this.name = name;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public String getString() {
-        return name;
     }
 }
 

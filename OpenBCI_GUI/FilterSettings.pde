@@ -1,50 +1,80 @@
+//Global variable to track if filter settings were loaded.
+public boolean filterSettingsWereLoadedFromFile = false;
+
 public class FilterSettingsValues {
-    //public BandPassStart[] bpStartFreq;
-    //public BandPassStop[] bpStopFreq;
-    //public BandStopCenter[] bsCenterFreq;
-    //public FilterType[] bpFilterType;
+    
+    public BFFilter brainFlowFilter;
+    public FilterChannelSelect filterChannelSelect;
+    public GlobalEnvironmentalFilter globalEnvFilter;
+
+    public FilterActiveOnChannel masterBandStopFilterActive;
+    public double masterBandStopCenterFreq;
+    public double masterBandStopWidth;
+    public BrainFlowFilterType masterBandStopFilterType = BrainFlowFilterType.BUTTERWORTH;
+    public BrainFlowFilterOrder masterBandStopFilterOrder = BrainFlowFilterOrder.TWO;
+
     public FilterActiveOnChannel[] bandStopFilterActive;
     public double[] bandStopCenterFreq;
     public double[] bandStopWidth;
     public BrainFlowFilterType[] bandStopFilterType;
     public BrainFlowFilterOrder[] bandStopFilterOrder;
+    
+    public FilterActiveOnChannel masterBandPassFilterActive;
+    public double masterBandPassStartFreq;
+    public double masterBandPassStopFreq;
+    public BrainFlowFilterType masterBandPassFilterType = BrainFlowFilterType.BUTTERWORTH;
+    public BrainFlowFilterOrder masterBandPassFilterOrder = BrainFlowFilterOrder.TWO;
 
-    //Default to 5-50Hz Bandpass on all channels since this has been the default for years
-    private final double defaultBPStartFreq = 5;
-    private final double defaultBPStopFreq = 50;
     public FilterActiveOnChannel[] bandPassFilterActive;
     public double[] bandPassStartFreq;
     public double[] bandPassStopFreq;
     public BrainFlowFilterType[] bandPassFilterType;
     public BrainFlowFilterOrder[] bandPassFilterOrder;
 
-    public GlobalEnvironmentalFilter globalEnvironmentalFilter;
-
     public FilterSettingsValues(int channelCount) {
+        brainFlowFilter = BFFilter.BANDPASS;
+        filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
+        globalEnvFilter = GlobalEnvironmentalFilter.FIFTY_AND_SIXTY;
+
+        //Set Master Values for all channels for BandStop Filter
+        masterBandStopFilterActive = FilterActiveOnChannel.OFF;
+        masterBandStopCenterFreq = 60;
+        masterBandStopWidth = 4;
+        masterBandStopFilterType = BrainFlowFilterType.BESSEL;
+        masterBandStopFilterOrder = BrainFlowFilterOrder.TWO;
+        //Create and assign master value to all channels
         bandStopFilterActive = new FilterActiveOnChannel[channelCount];
         bandStopCenterFreq = new double[channelCount];
         bandStopWidth = new double[channelCount];
         bandStopFilterType = new BrainFlowFilterType[channelCount];
         bandStopFilterOrder = new BrainFlowFilterOrder[channelCount];
-        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.ON);
-        Arrays.fill(bandStopCenterFreq, 60);
-        Arrays.fill(bandStopWidth, 4);
-        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BESSEL);
-        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.THREE);
+        Arrays.fill(bandStopFilterActive, masterBandStopFilterActive);
+        Arrays.fill(bandStopCenterFreq, masterBandStopCenterFreq);
+        Arrays.fill(bandStopWidth, masterBandStopWidth);
+        Arrays.fill(bandStopFilterType, masterBandStopFilterType);
+        Arrays.fill(bandStopFilterOrder, masterBandStopFilterOrder);
 
-
+        //Set Master Values for all channels for BandPass Filter
+        //Default to 5-50Hz BandPass on all channels since this has been the default for years
+        masterBandPassFilterActive = FilterActiveOnChannel.ON;
+        masterBandPassStartFreq = 5;
+        masterBandPassStopFreq = 50;
+        masterBandPassFilterType = BrainFlowFilterType.BUTTERWORTH;
+        masterBandPassFilterOrder = BrainFlowFilterOrder.TWO;
+        //Create and assign master value to all channels
         bandPassFilterActive = new FilterActiveOnChannel[channelCount];
         bandPassStartFreq = new double[channelCount];
         bandPassStopFreq = new double[channelCount];
         bandPassFilterType = new BrainFlowFilterType[channelCount];
         bandPassFilterOrder = new BrainFlowFilterOrder[channelCount];
-        Arrays.fill(bandPassFilterActive, FilterActiveOnChannel.ON);
-        Arrays.fill(bandPassStartFreq, defaultBPStartFreq);
-        Arrays.fill(bandPassStopFreq, defaultBPStopFreq);
-        Arrays.fill(bandPassFilterType, BrainFlowFilterType.BUTTERWORTH);
-        Arrays.fill(bandPassFilterOrder, BrainFlowFilterOrder.TWO);
+        Arrays.fill(bandPassFilterActive, masterBandPassFilterActive);
+        Arrays.fill(bandPassStartFreq, masterBandPassStartFreq);
+        Arrays.fill(bandPassStopFreq, masterBandPassStopFreq);
+        Arrays.fill(bandPassFilterType, masterBandPassFilterType);
+        Arrays.fill(bandPassFilterOrder, masterBandPassFilterOrder);
     }
 
+    //Called in data processing to convert start & stop frequencies to center & width frequencies. Makes it simpler for users on the front-end.
     public Pair<Double, Double> getBandPassCenterAndWidth(int chan) {
         double centerFreq = (bandPassStartFreq[chan] + bandPassStopFreq[chan]) / 2.0;
         double bandWidth = bandPassStopFreq[chan] - bandPassStartFreq[chan];
@@ -87,7 +117,15 @@ class FilterSettings {
             values = gson.fromJson(fileContents.toString(), FilterSettingsValues.class);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace();    
+            File f = new File(filename);
+            if (f.exists()) {
+                if (f.delete()) {
+                    println("FilterSettings: Could not load filter settings from disk. Deleting this file...");
+                } else {
+                    println("FilterSettings: Error deleting old/broken filter settings file! Please make sure the GUI has proper read/write permissions.");
+                }
+            }
             return false;
         }
     }
@@ -162,8 +200,9 @@ public void loadFilterSettings(File selection) {
     } else {
         if (filterSettings.loadSettingsValues(selection.getAbsolutePath())) {
             outputSuccess("Filter Settings Loaded!");
+            filterSettingsWereLoadedFromFile = true;
         } else {
-            outputError("Failed to load Filter Settings.");
+            outputError("Failed to load Filter Settings. The old/broken file has been deleted.");
         }
     }
 }
