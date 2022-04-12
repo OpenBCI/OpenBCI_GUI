@@ -422,29 +422,11 @@ class FilterUIPopup extends PApplet implements Runnable {
                         if (masterFirstColumnTextfieldWasActive != masterFirstColumnTextfield.isActive()) {
                             myTextfield.submit();
                             masterFirstColumnTextfieldWasActive = false;
-                            /*
-                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
-                            if (myTextfieldValue <= 0) {
-                                myTextfieldValue = 0; //Only positive values will be used here
-                            }
-                            myTextfield.setText(String.valueOf(myTextfieldValue));
-                            setMasterFilterValueFromTextfield(isFirstColumn, myTextfieldValue);
-                            */
                         }
                     } else {
                         if (masterSecondColumnTextfieldWasActive != masterSecondColumnTextfield.isActive()) {
                             myTextfield.submit();
                             masterSecondColumnTextfieldWasActive = false;
-                            /*
-                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
-                            if (myTextfieldValue <= 0) {
-                                myTextfieldValue = 0; //Only positive values will be used here
-                            }
-                            myTextfield.setText(String.valueOf(myTextfieldValue));
-                            setMasterFilterValueFromTextfield(isFirstColumn, myTextfieldValue);
-                            */
                         }
                     }
                 }
@@ -534,7 +516,6 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void setMasterFilterValueFromTextfield(boolean isFirstColumn, float val) {
-        println("SET MASTER FILTER VALUE FROM TEXTFIELD");
         Double valAsDouble = Double.valueOf(val);
         switch (filterSettings.values.brainFlowFilter) {
             case BANDSTOP:
@@ -660,7 +641,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 int val = (int)(theEvent.getController()).getValue();
                 Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
                 FilterSettingsEnum myEnum = (FilterSettingsEnum)bob.get("value");
-                println("FilterSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
+                //println("FilterSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
 
                 if (theEvent.getController().getName().startsWith("masterFilter")) {
                     if (myEnum instanceof BrainFlowFilterType) {

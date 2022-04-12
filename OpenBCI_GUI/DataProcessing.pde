@@ -195,17 +195,6 @@ class DataProcessing {
                     break;
             }
 
-            /*
-            if (bsRange != BandStopRanges.None) {
-                DataFilter.perform_bandstop(tempArray, currentBoard.getSampleRate(), (double)bsRange.getFreq(), (double)4.0, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
-            }
-            if (bpRange != BandPassRanges.None) {
-                double centerFreq = (bpRange.getStart() + bpRange.getStop()) / 2.0;
-                double bandWidth = bpRange.getStop() - bpRange.getStart();
-                DataFilter.perform_bandpass(tempArray, currentBoard.getSampleRate(), centerFreq, bandWidth, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
-            }
-            */
-
             doubleToFloatArray(tempArray, data_forDisplay_uV[Ichan]);
         } catch (BrainFlowError e) {
             e.printStackTrace();

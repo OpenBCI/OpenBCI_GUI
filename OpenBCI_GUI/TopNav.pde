@@ -346,7 +346,6 @@ class TopNav {
 
     private void createFiltersButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         filtersButton = createTNButton("filtersButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        //filtersButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         filtersButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 FilterUIPopup filtersUI = new FilterUIPopup();
@@ -359,7 +358,6 @@ class TopNav {
         SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
         color bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
         smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, bgColor, _textColor);
-        //smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;

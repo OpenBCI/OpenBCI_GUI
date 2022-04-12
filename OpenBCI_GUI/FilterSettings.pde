@@ -96,13 +96,7 @@ class FilterSettings {
         channelCount = board.getNumEXGChannels();
 
         values = new FilterSettingsValues(channelCount);
-        defaultValues = new FilterSettingsValues(channelCount);
-
-        /*
-        String currentVals = getJson();
-        Gson gson = new Gson();
-        defaultValues = gson.fromJson(currentVals, FilterSettingsValues.class);
-        */
+        defaultValues = values;
     }
 
     public boolean loadSettingsValues(String filename) {
@@ -147,16 +141,6 @@ class FilterSettings {
             return false;
         }
     }
-
-    /*
-    public boolean isChannelActive(int chan) {
-        return values.powerDown[chan] == PowerDown.ON;
-    }
-
-    public void setChannelActive(int chan, boolean active) {
-        values.powerDown[chan] = active ? PowerDown.ON : PowerDown.OFF;
-    }
-    */
 
     public void revertAllChannelsToDefaultValues() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
