@@ -259,7 +259,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             switch (filterSettings.values.brainFlowFilter) {
                 case BANDSTOP:
                     //Fetch on/off button color
-                    if (filterSettings.values.bandStopFilterActive[chan] == FilterActiveOnChannel.ON) {
+                    if (filterSettings.values.bandStopFilterActive[chan].isActive()) {
                         updateColor = onColor;
                     } else {
                         updateColor = offColor;
@@ -274,7 +274,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     break;
                 case BANDPASS:
                     //Fetch on/off button color
-                    if (filterSettings.values.bandPassFilterActive[chan] == FilterActiveOnChannel.ON) {
+                    if (filterSettings.values.bandPassFilterActive[chan].isActive()) {
                         updateColor = onColor;
                     }
                     //Fetch filter values
@@ -315,7 +315,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 println("[" + text + "] onOff released");
                 switch (filterSettings.values.brainFlowFilter) {
                     case BANDSTOP:
-                        if (filterSettings.values.bandStopFilterActive[chan] == FilterActiveOnChannel.ON) {
+                        if (filterSettings.values.bandStopFilterActive[chan].isActive()) {
                             filterSettings.values.bandStopFilterActive[chan] = FilterActiveOnChannel.OFF;
                             onOffButtons[chan].setColorBackground(BUTTON_PRESSED_DARKGREY);
                         } else {
@@ -324,7 +324,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                         break;
                     case BANDPASS:
-                        if (filterSettings.values.bandPassFilterActive[chan] == FilterActiveOnChannel.ON) {
+                        if (filterSettings.values.bandPassFilterActive[chan].isActive()) {
                             filterSettings.values.bandPassFilterActive[chan] = FilterActiveOnChannel.OFF;
                             onOffButtons[chan].setColorBackground(BUTTON_PRESSED_DARKGREY);
                         } else {
@@ -333,8 +333,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                         break;
                 }
-                //printArray(filterSettings.values.bandstopFilterActive);
-                //printArray(filterSettings.values.bandpassFilterActive);
+                //printArray(filterSettings.values.bandStopFilterActive);
+                //printArray(filterSettings.values.bandPassFilterActive);
             }
         });
     }
@@ -786,8 +786,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 //Update all channel cp5 objects, including master "all" channel, with new values
                 updateChannelCp5Objects();
-                //printArray(filterSettings.values.bandstopFilterActive);
-                //printArray(filterSettings.values.bandpassFilterActive);
+                //printArray(filterSettings.values.bandStopFilterActive);
+                //printArray(filterSettings.values.bandPassFilterActive);
             }
         });
     }

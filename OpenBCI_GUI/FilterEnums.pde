@@ -88,6 +88,10 @@ enum FilterActiveOnChannel implements FilterSettingsEnum {
     public String getString() {
         return name;
     }
+
+    public boolean isActive() {
+        return name.equals("Active");
+    }
 }
 
 enum BrainFlowFilterType implements FilterSettingsEnum {
