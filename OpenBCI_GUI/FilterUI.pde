@@ -312,32 +312,42 @@ class FilterUIPopup extends PApplet implements Runnable {
         //Autogenerate session name if user presses Enter key and textfield value is null
         myTextfield.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                int myTextfieldValue = 0;
+                float myTextfieldValue = 0;
                 boolean isFirstColumn = name.startsWith("firstColumn");
                 //TODO: Set to default value if the textfield would be blank
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && myTextfield.getText().equals("")) {
                     myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
+                    setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
                 //Pressing ENTER in the Textfield triggers a "Broadcast"
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     //Try to clean up typing accidents from user input in Textfield
                     String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                    myTextfieldValue = NumberUtils.toInt(rcvString);
+                    myTextfieldValue = NumberUtils.toFloat(rcvString);
                     if (myTextfieldValue <= 0) {
                         myTextfieldValue = 0; //Only positive values will be used here
                     }
-                    myTextfield.setText(Integer.toString(myTextfieldValue));
+                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
-                setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
             }
         });
         //Autogenerate session name if user leaves textfield and value is null
+        // FIX ME
         myTextfield.onReleaseOutside(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
-                    int myTextfieldValue = 0;
                     boolean isFirstColumn = name.startsWith("firstColumn");
-                    myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
+                    float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
+                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    //setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
+                } else {
+                    String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
+                    myTextfieldValue = NumberUtils.toFloat(rcvString);
+                    if (myTextfieldValue <= 0) {
+                        myTextfieldValue = 0; //Only positive values will be used here
+                    }
+                    myTextfield.setText(String.valueOf(myTextfieldValue));
                     setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
             }
@@ -345,7 +355,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         return myTextfield;
     }
 
-    private int getDefaultFilterValueAsInt(boolean isFirstColumn, int chan) {
+    private float getDefaultFilterValueAsInt(boolean isFirstColumn, int chan) {
         double val = 0;
         switch (brainFlowFilter) {
             case BANDSTOP:
@@ -363,28 +373,31 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 break;
         }
-        return (int)val;
+        float valAsFloat = (float)val;
+        return valAsFloat;
     }
     
-    private void setFilterIntValueFromTextfield(boolean isFirstColumn, int chan, int val) {
+    private void setFilterIntValueFromTextfield(boolean isFirstColumn, int chan, float val) {
+        Double valAsDouble = Double.valueOf(val);
         switch (brainFlowFilter) {
             case BANDSTOP:
                 if (isFirstColumn) {
-                    filterSettings.defaultValues.bandStopCenterFreq[chan] = val;
+                    filterSettings.values.bandStopCenterFreq[chan] = valAsDouble;
                 } else {
-                    filterSettings.defaultValues.bandStopWidth[chan] = val;
+                    filterSettings.values.bandStopWidth[chan] = valAsDouble;
                 }
                 break;
             case BANDPASS:
                 if (isFirstColumn) {
-                    filterSettings.defaultValues.bandPassStartFreq[chan] = val;
+                    filterSettings.values.bandPassStartFreq[chan] = valAsDouble;
                 } else {
-                    filterSettings.defaultValues.bandPassStopFreq[chan] = val;
+                    filterSettings.values.bandPassStopFreq[chan] = valAsDouble;
                 }
                 break;
         }
-        //printArray(filterSettings.values.bandPassStartFreq);
-        //printArray(filterSettings.values.bandPassStopFreq);
+        println(isFirstColumn, chan, val);
+        printArray(filterSettings.values.bandPassStartFreq);
+        printArray(filterSettings.values.bandPassStopFreq);
     }
 
     private ScrollableList createDropdown(String name, final int chan, int _x, int _y, int _w, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
