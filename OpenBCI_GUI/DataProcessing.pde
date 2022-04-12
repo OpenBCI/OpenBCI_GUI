@@ -92,8 +92,6 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    public BandPassRanges bpRange = BandPassRanges.FiveToFifty;
-    public BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
@@ -111,24 +109,6 @@ class DataProcessing {
         newDataToSend = false;
         avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
-    }
-
-    public String getFilterDescription() {
-        return bpRange.getString();
-    }
-    public String getShortFilterDescription() {
-        return bpRange.getString();
-    }
-    public String getShortNotchDescription() {
-        return bsRange.getString();
-    }
-
-    public synchronized void incrementFilterConfiguration() {
-        bpRange = bpRange.next();
-    }
-
-    public synchronized  void incrementNotchConfiguration() {
-        bsRange = bsRange.next();
     }
     
     //Process data on a channel-by-channel basis
