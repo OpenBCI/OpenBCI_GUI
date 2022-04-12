@@ -124,6 +124,7 @@ class DataProcessing {
             
             //Apply BandStop filter if the filter should be active on this channel
             if (filterSettings.values.bandStopFilterActive[Ichan].isActive()) {
+                double chebyshevRipple = filterSettings.values.bandStopFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandstop(
                     tempArray,
                     currentBoard.getSampleRate(),
@@ -131,12 +132,13 @@ class DataProcessing {
                     filterSettings.values.bandStopWidth[Ichan],
                     filterSettings.values.bandStopFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandStopFilterType[Ichan].getValue(),
-                    (double)0.0);
+                    chebyshevRipple);
             }
 
             //Apply BandPass filter if the filter should be active on this channel
             if (filterSettings.values.bandPassFilterActive[Ichan].isActive()) {
                 Pair<Double, Double> centerAndWidth = filterSettings.values.getBandPassCenterAndWidth(Ichan);
+                double chebyshevRipple = filterSettings.values.bandPassFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandpass(
                     tempArray,
                     currentBoard.getSampleRate(),
@@ -144,7 +146,7 @@ class DataProcessing {
                     centerAndWidth.getRight(),
                     filterSettings.values.bandPassFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandPassFilterType[Ichan].getValue(),
-                    (double)0.0);
+                    chebyshevRipple);
             }
 
             //Apply Environmental Noise filter on all channels. Do it like this since there are no codes for NONE or FIFTY_AND_SIXTY in BrainFlow

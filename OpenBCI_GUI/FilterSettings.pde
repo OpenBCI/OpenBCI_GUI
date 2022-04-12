@@ -40,8 +40,8 @@ public class FilterSettingsValues {
         masterBandStopFilterActive = FilterActiveOnChannel.OFF;
         masterBandStopCenterFreq = 60;
         masterBandStopWidth = 4;
-        masterBandStopFilterType = BrainFlowFilterType.BESSEL;
-        masterBandStopFilterOrder = BrainFlowFilterOrder.TWO;
+        masterBandStopFilterType = BrainFlowFilterType.BUTTERWORTH;
+        masterBandStopFilterOrder = BrainFlowFilterOrder.FOUR;
         //Create and assign master value to all channels
         bandStopFilterActive = new FilterActiveOnChannel[channelCount];
         bandStopCenterFreq = new double[channelCount];
@@ -60,7 +60,7 @@ public class FilterSettingsValues {
         masterBandPassStartFreq = 5;
         masterBandPassStopFreq = 50;
         masterBandPassFilterType = BrainFlowFilterType.BUTTERWORTH;
-        masterBandPassFilterOrder = BrainFlowFilterOrder.TWO;
+        masterBandPassFilterOrder = BrainFlowFilterOrder.FOUR;
         //Create and assign master value to all channels
         bandPassFilterActive = new FilterActiveOnChannel[channelCount];
         bandPassStartFreq = new double[channelCount];
