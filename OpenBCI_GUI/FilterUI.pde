@@ -45,6 +45,9 @@ class FilterUIPopup extends PApplet implements Runnable {
     private ScrollableList[] filterTypeDropdowns;
     private ScrollableList[] filterOrderDropdowns;
 
+    private boolean[] firstColumnTextfieldWasActive;
+    private boolean[] secondColumnTextfieldWasActive;
+
     private final int typeDropdownWidth = headerObjWidth;
     private final int orderDropdownWidth = 60;
 
@@ -54,11 +57,14 @@ class FilterUIPopup extends PApplet implements Runnable {
         Thread t = new Thread(this);
         t.start();
 
-        onOffButtons = new Button[filterSettings.getChannelCount()];
-        firstColumnTextfields = new Textfield[filterSettings.getChannelCount()];
-        secondColumnTextfields = new Textfield[filterSettings.getChannelCount()];
-        filterTypeDropdowns = new ScrollableList[filterSettings.getChannelCount()];
-        filterOrderDropdowns = new ScrollableList[filterSettings.getChannelCount()];
+        int numChans = filterSettings.getChannelCount();
+        onOffButtons = new Button[numChans];
+        firstColumnTextfields = new Textfield[numChans];
+        secondColumnTextfields = new Textfield[numChans];
+        filterTypeDropdowns = new ScrollableList[numChans];
+        filterOrderDropdowns = new ScrollableList[numChans];
+        firstColumnTextfieldWasActive = new boolean[numChans];
+        secondColumnTextfieldWasActive = new boolean[numChans];
     }
 
     @Override
@@ -330,25 +336,52 @@ class FilterUIPopup extends PApplet implements Runnable {
                     myTextfield.setText(String.valueOf(myTextfieldValue));
                     setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
+                if (myTextfield.isActive()) {
+                    if (isFirstColumn) {
+                        firstColumnTextfieldWasActive[channel] = true; 
+                    } else {
+                        secondColumnTextfieldWasActive[channel] = true;
+                    }
+                }
             }
         });
         //Autogenerate session name if user leaves textfield and value is null
-        // FIX ME
         myTextfield.onReleaseOutside(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                boolean isFirstColumn = name.startsWith("firstColumn");
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
-                    boolean isFirstColumn = name.startsWith("firstColumn");
                     float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
                     myTextfield.setText(String.valueOf(myTextfieldValue));
-                    //setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 } else {
-                    String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                    myTextfieldValue = NumberUtils.toFloat(rcvString);
-                    if (myTextfieldValue <= 0) {
-                        myTextfieldValue = 0; //Only positive values will be used here
+                    /*
+                    /// If released outside textfield and a state change has occured 
+                    if (isFirstColumn) {
+                        if (firstColumnTextfieldWasActive[channel] != firstColumnTextfields[channel].isActive()) {
+                            println("FIRST COLUMN GET STRING == " + theEvent.getController().getStringValue());
+                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
+                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
+                            if (myTextfieldValue <= 0) {
+                                myTextfieldValue = 0; //Only positive values will be used here
+                            }
+                            myTextfield.setText(String.valueOf(myTextfieldValue));
+                            setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
+                            firstColumnTextfieldWasActive[channel] = firstColumnTextfields[channel].isActive();
+                            println("RELEASED OUTSIDE UPDATE FIRST COLUMN TEXTFIELD1111111");
+                        }
+                    } else {
+                        if (secondColumnTextfieldWasActive[channel] != secondColumnTextfields[channel].isActive()) {
+                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
+                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
+                            if (myTextfieldValue <= 0) {
+                                myTextfieldValue = 0; //Only positive values will be used here
+                            }
+                            myTextfield.setText(String.valueOf(myTextfieldValue));
+                            setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
+                            secondColumnTextfieldWasActive[channel] = secondColumnTextfields[channel].isActive();
+                            println("RELEASED OUTSIDE UPDATE SECOND COLUMN TEXTFIELD2222222");
+                        }
                     }
-                    myTextfield.setText(String.valueOf(myTextfieldValue));
-                    setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
+                    */
                 }
             }
         });
