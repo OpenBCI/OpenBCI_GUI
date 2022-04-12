@@ -353,35 +353,16 @@ class FilterUIPopup extends PApplet implements Runnable {
                     float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
                     myTextfield.setText(String.valueOf(myTextfieldValue));
                 } else {
-                    /*
-                    /// If released outside textfield and a state change has occured 
+                    /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
                         if (firstColumnTextfieldWasActive[channel] != firstColumnTextfields[channel].isActive()) {
-                            println("FIRST COLUMN GET STRING == " + theEvent.getController().getStringValue());
-                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
-                            if (myTextfieldValue <= 0) {
-                                myTextfieldValue = 0; //Only positive values will be used here
-                            }
-                            myTextfield.setText(String.valueOf(myTextfieldValue));
-                            setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
-                            firstColumnTextfieldWasActive[channel] = firstColumnTextfields[channel].isActive();
-                            println("RELEASED OUTSIDE UPDATE FIRST COLUMN TEXTFIELD1111111");
+                            myTextfield.submit();
                         }
                     } else {
                         if (secondColumnTextfieldWasActive[channel] != secondColumnTextfields[channel].isActive()) {
-                            String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                            float myTextfieldValue = NumberUtils.toFloat(rcvString);
-                            if (myTextfieldValue <= 0) {
-                                myTextfieldValue = 0; //Only positive values will be used here
-                            }
-                            myTextfield.setText(String.valueOf(myTextfieldValue));
-                            setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
-                            secondColumnTextfieldWasActive[channel] = secondColumnTextfields[channel].isActive();
-                            println("RELEASED OUTSIDE UPDATE SECOND COLUMN TEXTFIELD2222222");
+                            myTextfield.submit();
                         }
                     }
-                    */
                 }
             }
         });
