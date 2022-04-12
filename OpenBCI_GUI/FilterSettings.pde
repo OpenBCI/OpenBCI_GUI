@@ -9,9 +9,12 @@ public class FilterSettingsValues {
     public BrainFlowFilterType[] bandStopFilterType;
     public BrainFlowFilterOrder[] bandStopFilterOrder;
 
+    //Default to 5-50Hz Bandpass on all channels since this has been the default for years
+    private final double defaultBPStartFreq = 5;
+    private final double defaultBPStopFreq = 50;
     public FilterActiveOnChannel[] bandPassFilterActive;
-    public double[] bandPassCenterFreq;
-    public double[] bandPassWidth;
+    public double[] bandPassStartFreq;
+    public double[] bandPassStopFreq;
     public BrainFlowFilterType[] bandPassFilterType;
     public BrainFlowFilterOrder[] bandPassFilterOrder;
 
@@ -23,30 +26,28 @@ public class FilterSettingsValues {
         bandStopWidth = new double[channelCount];
         bandStopFilterType = new BrainFlowFilterType[channelCount];
         bandStopFilterOrder = new BrainFlowFilterOrder[channelCount];
-        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.OFF);
+        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.ON);
         Arrays.fill(bandStopCenterFreq, 60);
         Arrays.fill(bandStopWidth, 4);
-        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BUTTERWORTH);
-        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.TWO);
+        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BESSEL);
+        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.THREE);
 
 
         bandPassFilterActive = new FilterActiveOnChannel[channelCount];
-        bandPassCenterFreq = new double[channelCount];
-        bandPassWidth = new double[channelCount];
+        bandPassStartFreq = new double[channelCount];
+        bandPassStopFreq = new double[channelCount];
         bandPassFilterType = new BrainFlowFilterType[channelCount];
         bandPassFilterOrder = new BrainFlowFilterOrder[channelCount];
-        //Default to 5-50Hz Bandpass on all channels since this has been the default for years
-        Pair<Double, Double> bandPassRange = calcBandPassCenterAndWidth(5, 50);
-        Arrays.fill(bandStopFilterActive, FilterActiveOnChannel.OFF);
-        Arrays.fill(bandStopCenterFreq, bandPassRange.getLeft());
-        Arrays.fill(bandStopWidth, bandPassRange.getRight());
-        Arrays.fill(bandStopFilterType, BrainFlowFilterType.BUTTERWORTH);
-        Arrays.fill(bandStopFilterOrder, BrainFlowFilterOrder.TWO);
+        Arrays.fill(bandPassFilterActive, FilterActiveOnChannel.ON);
+        Arrays.fill(bandPassStartFreq, defaultBPStartFreq);
+        Arrays.fill(bandPassStopFreq, defaultBPStopFreq);
+        Arrays.fill(bandPassFilterType, BrainFlowFilterType.BUTTERWORTH);
+        Arrays.fill(bandPassFilterOrder, BrainFlowFilterOrder.TWO);
     }
 
-    public Pair<Double, Double> calcBandPassCenterAndWidth(int start, int stop) {
-        double centerFreq = (start + stop) / 2.0;
-        double bandWidth = stop - start;
+    public Pair<Double, Double> getBandPassCenterAndWidth(int chan) {
+        double centerFreq = (bandPassStartFreq[chan] + bandPassStopFreq[chan]) / 2.0;
+        double bandWidth = bandPassStopFreq[chan] - bandPassStartFreq[chan];
         return new ImmutablePair<Double, Double>(centerFreq, bandWidth);
     }
 }

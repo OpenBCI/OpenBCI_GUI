@@ -113,11 +113,11 @@ class FilterUIPopup extends PApplet implements Runnable {
         String firstColumnHeader = "";
         String secondColumnHeader = "";
         if (brainFlowFilter == BFFilter.BANDPASS) {
-            firstColumnHeader = "Start";
-            secondColumnHeader = "Stop";
+            firstColumnHeader = "Start (Hz)";
+            secondColumnHeader = "Stop (Hz)";
         } else if (brainFlowFilter == BFFilter.BANDSTOP) {
-            firstColumnHeader = "Center";
-            secondColumnHeader = "Width";
+            firstColumnHeader = "Center (Hz)";
+            secondColumnHeader = "Width (Hz)";
         }
         text(firstColumnHeader, lg_spacer*2 + textfieldWidth, headerHeight + sm_spacer, textfieldWidth, headerHeight);
         text(secondColumnHeader, lg_spacer*3 + textfieldWidth*2, headerHeight + sm_spacer, textfieldWidth, headerHeight);
@@ -168,32 +168,68 @@ class FilterUIPopup extends PApplet implements Runnable {
         int headerObj3_x_middle = middle - halfObjWidth;
         int headerObj4_x = middle + halfObjWidth + sm_spacer;
         int headerObj5_x = middle + halfObjWidth + sm_spacer*2 + headerObjWidth;
-        createDropdown("filter", headerObj1_x, headerObjY, headerObjWidth, brainFlowFilter, BFFilter.values());
-        createDropdown("channelSelect", headerObj2_x, headerObjY, headerObjWidth, filterChannelSelect, FilterChannelSelect.values());
-        createDropdown("environmentalFilter", headerObj3_x_middle, headerObjY, headerObjWidth, globalEnvFilter, GlobalEnvironmentalFilter.values());
+        createDropdown("filter", 0, headerObj1_x, headerObjY, headerObjWidth, brainFlowFilter, BFFilter.values());
+        createDropdown("channelSelect", 0, headerObj2_x, headerObjY, headerObjWidth, filterChannelSelect, FilterChannelSelect.values());
+        createDropdown("environmentalFilter", 0, headerObj3_x_middle, headerObjY, headerObjWidth, globalEnvFilter, GlobalEnvironmentalFilter.values());
         createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", headerObj4_x, headerObjY, headerObjWidth, uiObjectHeight);
         createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", headerObj5_x, headerObjY, headerObjWidth, uiObjectHeight);
+
+        updateCp5Objects();
     }
 
+    // Master method to update objects from the FilterSettings Class
     private void updateCp5Objects() {
-        //Update button on/off visual state. We can reuse buttons in this way but maybe not other Cp5 objects.
+        
+        // Update UI objects for all channels
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
+
             color onColor = channelColors[chan%8];
             color offColor = color(50);
             color updateColor = offColor;
+
+            String firstColumnTFValue = "";
+            String secondColumnTFValue = "";
+
+            BrainFlowFilterType updateFilterType = BrainFlowFilterType.BUTTERWORTH;
+
+            BrainFlowFilterOrder updateFilterOrder = BrainFlowFilterOrder.TWO;
+
             switch (brainFlowFilter) {
                 case BANDSTOP:
+                    //Fetch on/off button color
                     if (filterSettings.values.bandStopFilterActive[chan] == FilterActiveOnChannel.ON) {
                         updateColor = onColor;
                     }
+                    //Fetch filter values
+                    firstColumnTFValue = String.valueOf(filterSettings.values.bandStopCenterFreq[chan]);
+                    secondColumnTFValue = String.valueOf(filterSettings.values.bandStopWidth[chan]);
+                    //Fetch filter type
+                    updateFilterType = filterSettings.values.bandStopFilterType[chan];
+                    //Fetch order
+                    updateFilterOrder = filterSettings.values.bandStopFilterOrder[chan];
                     break;
                 case BANDPASS:
+                    //Fetch on/off button color
                     if (filterSettings.values.bandPassFilterActive[chan] == FilterActiveOnChannel.ON) {
                         updateColor = onColor;
                     }
+                    //Fetch filter values
+                    firstColumnTFValue = String.valueOf(filterSettings.values.bandPassStartFreq[chan]);
+                    secondColumnTFValue = String.valueOf(filterSettings.values.bandPassStopFreq[chan]);
+                    //Fetch filter type
+                    updateFilterType = filterSettings.values.bandPassFilterType[chan];
+                    //Fetch order
+                    updateFilterOrder = filterSettings.values.bandPassFilterOrder[chan];
                     break;
             }
+
+            //Apply changes to UI objects after fetching data
             onOffButtons[chan].setColorBackground(updateColor);
+            firstColumnTextfields[chan].setText(firstColumnTFValue);
+            secondColumnTextfields[chan].setText(secondColumnTFValue);
+            filterTypeDropdowns[chan].getCaptionLabel().setText(updateFilterType.getString());
+            filterOrderDropdowns[chan].getCaptionLabel().setText(updateFilterOrder.getString());
+
         }
     }
 
@@ -234,33 +270,21 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 //printArray(filterSettings.values.bandstopFilterActive);
                 //printArray(filterSettings.values.bandpassFilterActive);
-                /*
-                currentBoard.setEXGChannelActive(channelIndex, newState);
-                if (currentBoard instanceof ADS1299SettingsBoard) {
-                    w_timeSeries.adsSettingsController.updateChanSettingsDropdowns(channelIndex, currentBoard.isEXGChannelActive(channelIndex));
-                    boolean hasUnappliedChanges = currentBoard.isEXGChannelActive(channelIndex) != newState;
-                    w_timeSeries.adsSettingsController.setHasUnappliedSettings(channelIndex, hasUnappliedChanges);
-                }
-                */
             }
         });
-        //This doesn't work by default in the popup window
-        //onOffButtons[chan].setDescription("Click to toggle filter on channel " + text + ".");
     }
 
     private void createTextfields() {
-        masterFirstColumnTextfield = createTextfield("masterFirstColumnTextfield", 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
-        masterSecondColumnTextfield = createTextfield("masterSecondColumnTextfield", 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
+        masterFirstColumnTextfield = createTextfield("masterFirstColumnTextfield", 0, 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
+        masterSecondColumnTextfield = createTextfield("masterSecondColumnTextfield", 0, 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer, textfieldWidth, uiObjectHeight);
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
-            firstColumnTextfields[chan] = createTextfield("firstColumnTextfield"+chan, 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
-            secondColumnTextfields[chan] = createTextfield("secondColumnTextfield"+chan, 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
+            firstColumnTextfields[chan] = createTextfield("firstColumnTextfield"+chan, chan, 0, lg_spacer*2 + textfieldWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
+            secondColumnTextfields[chan] = createTextfield("secondColumnTextfield"+chan, chan, 0, lg_spacer*3 + textfieldWidth*2, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), textfieldWidth, uiObjectHeight);
         }
     }
 
-    private Textfield createTextfield(String name, int intValue, int _x, int _y, int _w, int _h) {
+    private Textfield createTextfield(final String name, final int channel, int intValue, int _x, int _y, int _w, int _h) {
         //Create these textfields under cp5_widget base instance so because they are always visible
-        StringBuilder sb = new StringBuilder(str(intValue));
-        sb.append(" Hz");
         final Textfield myTextfield = cp5.addTextfield(name)
             .setPosition(_x, _y)
             .setCaptionLabel("")
@@ -273,7 +297,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setColorForeground(color(210))  // border color when not selected - grey
             .setColorActive(isSelected_color)  // border color when selected - green
             .setColorCursor(color(26, 26, 26))
-            .setText(sb.toString()) //set the text
+            .setText(Integer.toString(intValue)) //set the text
             .align(5, 10, 20, 40)
             .setAutoClear(false)
             ; //Don't clear textfield when pressing Enter key
@@ -288,81 +312,82 @@ class FilterUIPopup extends PApplet implements Runnable {
         //Autogenerate session name if user presses Enter key and textfield value is null
         myTextfield.addCallback(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                int myTextfieldValue = 0;
+                boolean isFirstColumn = name.startsWith("firstColumn");
+                //TODO: Set to default value if the textfield would be blank
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && myTextfield.getText().equals("")) {
-                    //setTextfieldVal(getDefaultTextfieldIntVal());
-                    //customThreshold(myTextfield, getDefaultTextfieldIntVal());
+                    myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
                 }
                 //Pressing ENTER in the Textfield triggers a "Broadcast"
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     //Try to clean up typing accidents from user input in Textfield
                     String rcvString = theEvent.getController().getStringValue().replaceAll("[A-Za-z!@#$%^&()=/*_]","");
-                    int rcvAsInt = NumberUtils.toInt(rcvString);
-                    if (rcvAsInt <= 0) {
-                        rcvAsInt = 0; //Only positive values will be used here
+                    myTextfieldValue = NumberUtils.toInt(rcvString);
+                    if (myTextfieldValue <= 0) {
+                        myTextfieldValue = 0; //Only positive values will be used here
                     }
-                    StringBuilder sb = new StringBuilder(rcvAsInt);
-                    sb.append(" Hz");
-                    myTextfield.setText(sb.toString());
-                    //setTextfieldVal(rcvAsInt);
-                    //customThreshold(myTextfield, rcvAsInt);
+                    myTextfield.setText(Integer.toString(myTextfieldValue));
                 }
+                setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
             }
         });
         //Autogenerate session name if user leaves textfield and value is null
         myTextfield.onReleaseOutside(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
-                    //setTextfieldVal(getDefaultTextfieldIntVal());
-                    //customThreshold(myTextfield, getDefaultTextfieldIntVal());
+                    int myTextfieldValue = 0;
+                    boolean isFirstColumn = name.startsWith("firstColumn");
+                    myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
+                    setFilterIntValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
             }
         });
         return myTextfield;
     }
-    
-    private void customThreshold(Textfield tf, int value) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(value);
-        sb.append(" Hz");
-        tf.setText(sb.toString());
-    }
 
-    /*
-    private int getDefaultTextfieldIntVal() {
-        return isSignalCheckRailedMode() ? defaultValue_Percentage : defaultValue_kOhms;
-    }
-
-    private int getTextfieldIntVal() {
-        return isSignalCheckRailedMode() ? valuePercentage : valuekOhms;
-    }
-    */
-
-    private void setTextfieldVal(int val) {
-        /*
-        if (isSignalCheckRailedMode()) {
-            if (name == "errorThreshold") {
-                for (int i = 0; i < nchan; i++) {
-                    is_railed[i].setRailedThreshold((double) val);
+    private int getDefaultFilterValueAsInt(boolean isFirstColumn, int chan) {
+        double val = 0;
+        switch (brainFlowFilter) {
+            case BANDSTOP:
+                if (isFirstColumn) {
+                    val = filterSettings.defaultValues.bandStopCenterFreq[chan];
+                } else {
+                    val = filterSettings.defaultValues.bandStopWidth[chan];
                 }
-            } else {
-                for (int i = 0; i < nchan; i++) {
-                    is_railed[i].setRailedWarnThreshold((double) val);
+                break;
+            case BANDPASS:
+                if (isFirstColumn) {
+                    val = filterSettings.defaultValues.bandPassStartFreq[chan];
+                } else {
+                    val = filterSettings.defaultValues.bandPassStopFreq[chan];
                 }
-            }
-            valuePercentage = val;
-        } else {
-            if (name == "errorThreshold") {
-                w_cytonImpedance.updateElectrodeStatusYellowThreshold((double)val);
-            } else {
-                w_cytonImpedance.updateElectrodeStatusGreenThreshold((double)val);
-            }
-            valuekOhms = val;
+                break;
         }
-        */
+        return (int)val;
+    }
+    
+    private void setFilterIntValueFromTextfield(boolean isFirstColumn, int chan, int val) {
+        switch (brainFlowFilter) {
+            case BANDSTOP:
+                if (isFirstColumn) {
+                    filterSettings.defaultValues.bandStopCenterFreq[chan] = val;
+                } else {
+                    filterSettings.defaultValues.bandStopWidth[chan] = val;
+                }
+                break;
+            case BANDPASS:
+                if (isFirstColumn) {
+                    filterSettings.defaultValues.bandPassStartFreq[chan] = val;
+                } else {
+                    filterSettings.defaultValues.bandPassStopFreq[chan] = val;
+                }
+                break;
+        }
+        //printArray(filterSettings.values.bandPassStartFreq);
+        //printArray(filterSettings.values.bandPassStopFreq);
     }
 
-
-    private ScrollableList createDropdown(String name, int _x, int _y, int _w, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
+    private ScrollableList createDropdown(String name, final int chan, int _x, int _y, int _w, FilterSettingsEnum e, FilterSettingsEnum[] eValues) {
         int dropdownH = uiObjectHeight;
         ScrollableList list = cp5.addScrollableList(name)
             .setPosition(_x, _y)
@@ -400,12 +425,14 @@ class FilterUIPopup extends PApplet implements Runnable {
             .getStyle() //need to grab style before affecting the paddingTop
             .setPaddingTop(3) //4-pixel vertical offset to center text
             ;
-        list.addCallback(new SLCallbackListener());
+        list.addCallback(new SLCallbackListener(chan));
         return list;
     }
 
     private class SLCallbackListener implements CallbackListener {
-        SLCallbackListener()  {
+        private int chan;
+        SLCallbackListener(int _chan)  {
+            chan = _chan;
         }
         public void controlEvent(CallbackEvent theEvent) {
             //Selecting an item from ScrollableList triggers Broadcast
@@ -417,11 +444,28 @@ class FilterUIPopup extends PApplet implements Runnable {
 
                 if (myEnum instanceof BFFilter) {
                     brainFlowFilter = (BFFilter)myEnum;
+                    updateCp5Objects();
                 } else if (myEnum instanceof FilterChannelSelect) {
                     filterChannelSelect = (FilterChannelSelect)myEnum;
+                } else if (myEnum instanceof BrainFlowFilterType) {
+                    switch (brainFlowFilter) {
+                        case BANDSTOP:
+                            filterSettings.values.bandStopFilterType[chan] = (BrainFlowFilterType)myEnum;
+                            break;
+                        case BANDPASS:
+                            filterSettings.values.bandPassFilterType[chan] = (BrainFlowFilterType)myEnum;
+                            break;
+                    }
+                } else if (myEnum instanceof BrainFlowFilterOrder) {
+                    switch (brainFlowFilter) {
+                        case BANDSTOP:
+                            filterSettings.values.bandStopFilterOrder[chan] = (BrainFlowFilterOrder)myEnum;
+                            break;
+                        case BANDPASS:
+                            filterSettings.values.bandPassFilterOrder[chan] = (BrainFlowFilterOrder)myEnum;
+                            break;
+                    }
                 }
-
-                updateCp5Objects();
             }
         }
     }
@@ -430,16 +474,16 @@ class FilterUIPopup extends PApplet implements Runnable {
         //Make these dropdowns in reverse so the top ones draw above the lower ones
         for (int chan = filterSettings.getChannelCount() - 1; chan >= 0; chan--) {
             
-            filterTypeDropdowns[chan] = createDropdown("filterType"+chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
+            filterTypeDropdowns[chan] = createDropdown("filterType"+chan, chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
         }
-        masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
+        masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", 0, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, typeDropdownWidth, masterFilterType, BrainFlowFilterType.values());
     }
 
     private void createOrderDropdowns() {
         for (int chan = filterSettings.getChannelCount() - 1; chan >= 0; chan--) {
-            filterOrderDropdowns[chan] = createDropdown("filterOrder"+chan, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
+            filterOrderDropdowns[chan] = createDropdown("filterOrder"+chan, chan, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
         }
-        masterFilterOrderDropdown = createDropdown("masterFilterOrderDropdown", lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer, orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
+        masterFilterOrderDropdown = createDropdown("masterFilterOrderDropdown", 0, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer, orderDropdownWidth, masterFilterOrder, BrainFlowFilterOrder.values());
     }
 
     private void createFilterSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
