@@ -210,6 +210,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             try {
                 updateHeaderCp5Objects();
                 updateChannelCp5Objects();
+                setUItoChannelMode(filterSettings.values.filterChannelSelect);
             } catch (Exception e) {
                 println(e.getMessage());
                 outputError("Filter Settings: Unable to apply settings. Please save Filter Settings to a new file.");
