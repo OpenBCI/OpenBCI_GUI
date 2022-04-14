@@ -3,8 +3,10 @@ import processing.awt.PSurfaceAWT;
 
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
-    private int variableWidth = 500;
-    private int variableHeight = 700;
+    private int variableWidth;
+    private int variableHeight;
+    private int shortHeight;
+    private int maxHeight;
 
     private final int sm_spacer = 6;
     private final int halfSmSpacer = sm_spacer/2;
@@ -81,7 +83,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         secondColumnTextfieldWasActive = new boolean[numChans];
 
         variableWidth = (headerObjWidth * numHeaderObjects) + sm_spacer*5 + lg_spacer*2;
-        variableHeight = headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2);
+        maxHeight = headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2);
+        shortHeight = headerHeight*2 + sm_spacer*(1+4) + uiObjectHeight*(1+2) + lg_spacer;
+        variableHeight = shortHeight;
     }
 
     @Override
@@ -101,7 +105,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         surface.setResizable(false);
 
         cp5 = new ControlP5(this);
-        cp5.setGraphics(this, 0,0);
+        cp5.setGraphics(this, 0, 0);
         cp5.setAutoDraw(false);
 
         createAllCp5Objects();
@@ -109,12 +113,15 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void draw() {
-
-         if (variableWidth != width || variableHeight != height) {
+        
+        // Important: Reset the CP5 graphics reference points X,Y,W,H at the beginning of the next draw after screen has been resized.
+        // Otherwise, the numbers are wrong.
+        if (variableWidth != width || variableHeight != height) {
             variableWidth = width;
             variableHeight = height;
-            popupResized();
-         }
+            arrangeAllObjectsXY();
+            cp5.setGraphics(this, 0, 0);
+        }
 
         checkIfSessionWasClosed();
         checkIfSettingsWereLoaded();
@@ -228,7 +235,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[5], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
         
         updateChannelCp5Objects();
-        popupResized();
+        arrangeAllObjectsXY();
+        setUItoChannelMode(filterSettings.values.filterChannelSelect);
     }
 
     private void updateHeaderCp5Objects() {
@@ -255,10 +263,10 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         footerObjX[0] = middle - lg_spacer/2 - headerObjWidth;
         footerObjX[1] = middle + lg_spacer/2;
-        footerObjY = headerHeight*2 + sm_spacer*(filterSettings.getChannelCount()+3) + uiObjectHeight*(filterSettings.getChannelCount()+1) + lg_spacer*2;
+        setFooterObjYPosition(filterSettings.values.filterChannelSelect);
     }
 
-    public void popupResized() {
+    public void arrangeAllObjectsXY() {
         calculateXYForHeaderColumnsAndFooter();
 
         bfGlobalFilterDropdown.setPosition(headerObjX[1], headerObjY);
@@ -750,11 +758,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     updateChannelCp5Objects();
                 } else if (myEnum instanceof FilterChannelSelect) {
                     filterSettings.values.filterChannelSelect = (FilterChannelSelect)myEnum;
-                    int numChans = filterSettings.getChannelCount();
-                    int newHeight = (FilterChannelSelect)myEnum == FilterChannelSelect.CUSTOM_CHANNELS ?
-                        headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2) :
-                        headerHeight*2 + sm_spacer*(1+4) + uiObjectHeight*(1+2);
-                    surface.setSize(variableWidth, newHeight);
+                    setUItoChannelMode(filterSettings.values.filterChannelSelect);
                 } else if (myEnum instanceof GlobalEnvironmentalFilter) {
                     filterSettings.values.globalEnvFilter = (GlobalEnvironmentalFilter)myEnum;
                 } else if (myEnum instanceof BrainFlowFilterType) {
@@ -851,4 +855,33 @@ class FilterUIPopup extends PApplet implements Runnable {
             }
         });
     }
+
+    private void setUItoChannelMode(FilterChannelSelect myEnum) {
+        int numChans = filterSettings.getChannelCount();
+        boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
+        int newHeight =  showAllChannels ? maxHeight : shortHeight;
+
+        // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+        surface.setSize(variableWidth, newHeight);
+
+        for (int chan = 0; chan < numChans; chan++) {
+            onOffButtons[chan].setVisible(showAllChannels);
+            firstColumnTextfields[chan].setVisible(showAllChannels);
+            secondColumnTextfields[chan].setVisible(showAllChannels);
+            filterTypeDropdowns[chan].setVisible(showAllChannels);
+            filterOrderDropdowns[chan].setVisible(showAllChannels);
+        }
+
+        setFooterObjYPosition(myEnum);
+        saveButton.setPosition(footerObjX[0], footerObjY);
+        loadButton.setPosition(footerObjX[1], footerObjY);
+    }
+
+    private void setFooterObjYPosition(FilterChannelSelect myEnum) {
+        boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
+        int numChans = filterSettings.getChannelCount();
+        int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+3) + uiObjectHeight*(numChans+1) + lg_spacer*2;
+        int footerMinHeightY = headerHeight*2 + sm_spacer*3 + uiObjectHeight + lg_spacer;
+        footerObjY = showAllChannels ? footerMaxHeightY : footerMinHeightY;
+    } 
 }

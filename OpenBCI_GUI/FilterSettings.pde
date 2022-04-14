@@ -33,7 +33,7 @@ public class FilterSettingsValues {
 
     public FilterSettingsValues(int channelCount) {
         brainFlowFilter = BFFilter.BANDPASS;
-        filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
+        filterChannelSelect = FilterChannelSelect.ALL_CHANNELS;
         globalEnvFilter = GlobalEnvironmentalFilter.FIFTY_AND_SIXTY;
 
         //Set Master Values for all channels for BandStop Filter
