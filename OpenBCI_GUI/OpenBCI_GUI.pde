@@ -649,10 +649,11 @@ void initSystem() {
             String popupButtonURL;
             if (isMac()) {
                 popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+                PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
             } else if (isLinux()){
                 popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+                PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
             }
-            PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
             guiSettings.setShowCytonSmoothingPopup(false);
         }
     }
