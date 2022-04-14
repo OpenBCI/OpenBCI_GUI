@@ -639,6 +639,7 @@ void initSystem() {
         }
 
         //Show a popup to inform first-time Cyton users about the FTDI buffer fix and Cyton Smoothing feature. Fixes #1026
+        //Windows Users: Latest BrainFlow will automatically fix this in the background on Session Start! Fixed in #1039
         if (guiSettings.getShowCytonSmoothingPopup()) {
             println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
             String popupTitle = "Cyton FTDI Buffer Fix Info";
@@ -649,8 +650,6 @@ void initSystem() {
                 popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
             } else if (isLinux()){
                 popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
-            } else {
-                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Windows/";
             }
             PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
             guiSettings.setShowCytonSmoothingPopup(false);
