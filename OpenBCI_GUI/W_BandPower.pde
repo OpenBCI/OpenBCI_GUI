@@ -9,12 +9,25 @@
 //    Averaged over all channels
 //
 //    Created by: Wangshu Sun, May 2017
+//    Modified by: Richard Waltman, March 2022
 //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
 class W_BandPower extends Widget {
+
+    // indexes
+    final int DELTA = 0; // 1-4 Hz
+    final int THETA = 1; // 4-8 Hz
+    final int ALPHA = 2; // 8-13 Hz
+    final int BETA = 3; // 13-30 Hz
+    final int GAMMA = 4; // 30-55 Hz
     
     private final int NUM_BANDS = 5;
+    private float[] activePower = new float[NUM_BANDS];
+    private float[] normalizedBandPowers = new float[NUM_BANDS];
+
     GPlot bp_plot;
     public ChannelSelect bpChanSelect;
     boolean prevChanSelectIsVisible = false;
@@ -56,17 +69,19 @@ class W_BandPower extends Widget {
 
         //setting bg colors of histogram bars to match the color scheme of the channel colors w/ an opacity of 150/255
         bp_plot.getHistogram().setBgColors(new color[] {
-                color((int)channelColors[2], 150), color((int)channelColors[1], 150),
-                color((int)channelColors[3], 150), color((int)channelColors[4], 150), color((int)channelColors[6], 150)
-
+                color((int)channelColors[6], 150),
+                color((int)channelColors[4], 150),
+                color((int)channelColors[3], 150),
+                color((int)channelColors[2], 150), 
+                color((int)channelColors[1], 150),
             }
         );
     } //end of constructor
 
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-
-        float[] activePower = new float[NUM_BANDS];
+        
+        float normalizingSum = 0;
 
         for (int i = 0; i < NUM_BANDS; i++) {
             float sum = 0;
@@ -74,8 +89,15 @@ class W_BandPower extends Widget {
             for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
                 int chan = bpChanSelect.activeChan.get(j);
                 sum += dataProcessing.avgPowerInBins[chan][i];
-                activePower[i] = sum / bpChanSelect.activeChan.size();
             }
+
+            activePower[i] = sum / bpChanSelect.activeChan.size();
+
+            normalizingSum += activePower[i];
+        }
+
+        for (int i = 0; i < NUM_BANDS; i++) {
+            normalizedBandPowers[i] = activePower[i] / normalizingSum;
         }
         
         //Update channel checkboxes and active channels
@@ -137,11 +159,15 @@ class W_BandPower extends Widget {
 
     void flexGPlotSizeAndPosition() {
         if (bpChanSelect.isVisible()) {
-                bp_plot.setPos(x, y);
-                bp_plot.setOuterDim(w, h);
+            bp_plot.setPos(x, y + bpChanSelect.getHeight() - navH);
+            bp_plot.setOuterDim(w, h - bpChanSelect.getHeight() + navH);
         } else {
-            bp_plot.setPos(x, y - navHeight);
-            bp_plot.setOuterDim(w, h + navHeight);
+            bp_plot.setPos(x, y - navH);
+            bp_plot.setOuterDim(w, h + navH);
         }
+    }
+
+    public float[] getNormalizedBPSelectedChannels() {
+        return normalizedBandPowers;
     }
 };

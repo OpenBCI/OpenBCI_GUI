@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 04/07/2022
+ * @version 2.3.3
  * 
  */
 
@@ -622,6 +622,7 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 				}
 			}
 			if ( !inside( ) ) {
+				//System.out.println("CONTROLLER SET MOUSE PRESSED NOT INSIDE");
 				setIsInside( false );
 				if ( isMousePressed ) {
 					isMousePressed = false;
@@ -633,6 +634,13 @@ public abstract class Controller< T > implements ControllerInterface< T > , CDra
 				if ( this instanceof Textfield ) {
 					mouseReleasedOutside( );
 					onReleaseOutside( );
+					cp5.getControlBroadcaster( ).invokeAction( new CallbackEvent( this , ACTION_RELEASE_OUTSIDE ) );
+					callListener( ACTION_RELEASE_OUTSIDE );
+				}
+				if ( this instanceof ScrollableList) {
+					mouseReleasedOutside( );
+					onReleaseOutside( );
+					cp5.getControlBroadcaster( ).invokeAction( new CallbackEvent( this , ACTION_RELEASE_OUTSIDE ) );
 					callListener( ACTION_RELEASE_OUTSIDE );
 				}
 			}

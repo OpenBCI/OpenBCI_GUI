@@ -28,7 +28,7 @@ synchronized void keyPressed() {
         return;
     }
 
-    boolean anyActiveTextfields = isNetworkingTextActive() || textFieldIsActive;
+    boolean anyActiveTextfields = textfieldUpdateHelper.getAnyTextfieldsActive();
 
     if(!controlPanel.isOpen && !anyActiveTextfields){ //don't parse the key if the control panel is open
         if (guiSettings.getExpertModeBoolean() || key == ' ') { //Check if Expert Mode is On or Spacebar has been pressed

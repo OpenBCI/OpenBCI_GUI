@@ -10,7 +10,7 @@ class PopupMessage extends PApplet implements Runnable {
     private final int headerHeight = 55;
     private final int padding = 20;
 
-    private final int buttonWidth = 100;
+    private final int buttonWidth = 120;
     private final int buttonHeight = 40;
 
     private String message = "Empty Popup";

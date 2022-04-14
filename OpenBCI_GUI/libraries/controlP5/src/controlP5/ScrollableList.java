@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 04/07/2022
+ * @version 2.3.3
  * 
  */
 
@@ -47,7 +47,7 @@ import processing.event.KeyEvent;
 public class ScrollableList extends Controller< ScrollableList > implements ControlListener {
 
 	private int _myType = DROPDOWN;
-	protected int _myBackgroundColor = 0x00ffffff;
+	protected int _myOutlineColor = 0x00000000;
 	protected int itemHeight = 13;
 	protected int barHeight = 10;
 	private float scrollSensitivity = 1;
@@ -59,6 +59,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 	private int itemSpacing = 1;
 	private int _myDirection = PApplet.DOWN;
 	private boolean isBarVisible = true;
+	private boolean drawOutline = true;
 	static public final int LIST = ControlP5.LIST;
 	static public final int DROPDOWN = ControlP5.DROPDOWN;
 	static public final int CHECKBOX = ControlP5.CHECKBOX; /* TODO */
@@ -123,6 +124,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 	}
 
 	@Override protected void onRelease( ) {
+		/*
 		if ( !isDragged ) {
 			if ( getPointer( ).y( ) >= 0 && getPointer( ).y( ) <= barHeight ) {
 				setOpen( !isOpen( ) );
@@ -130,10 +132,21 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 
 				double n = Math.floor( ( getPointer( ).y( ) - barHeight ) / itemHeight );
 
-				// n += itemRange; /* UP */
+				// n += itemRange;
 				int index = ( int ) n + itemIndexOffset;
 				updateIndex( index );
 			}
+		}
+		*/
+		
+		if ( getPointer( ).y( ) >= 0 && getPointer( ).y( ) <= barHeight ) {
+			setOpen( !isOpen( ) );
+		} else if ( isOpen ) {
+			double n = Math.floor( ( getPointer( ).y( ) - barHeight ) / itemHeight );
+
+			// n += itemRange;
+			int index = ( int ) n + itemIndexOffset;
+			updateIndex( index );
 		}
 	}
 
@@ -170,7 +183,7 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 	}
 
 	@Override protected void onDrag( ) {
-		scroll( getPointer( ).dy( ) );
+		//scroll( getPointer( ).dy( ) );
 	}
 
 	@Override protected void onScroll( int theValue ) {
@@ -210,6 +223,11 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 		updateHover( );
 	}
 
+	@Override protected void mouseReleasedOutside() {
+		//System.out.println("MouseReleaseOutsideScrollableList");
+		close();
+	}
+
 	private int updateHeight( ) {
 		itemRange = ( PApplet.abs( getHeight( ) ) - ( isBarVisible( ) ? barHeight : 0 ) ) / itemHeight;
 		return itemHeight * ( items.size( ) < itemRange ? items.size( ) : itemRange );
@@ -244,6 +262,15 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 
 	public boolean isBarVisible( ) {
 		return isBarVisible;
+	}
+
+	public boolean getDrawOutline() {
+		return drawOutline;
+	}
+
+	public ScrollableList setDrawOutline(boolean shouldDraw) {
+		drawOutline = shouldDraw;
+        return this;
 	}
 
 	private Map< String , Object > getDefaultItemMap( String theName , Object theValue ) {
@@ -362,13 +389,13 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 		// TODO Auto-generated method stub
 	}
 
-	public ScrollableList setBackgroundColor( int theColor ) {
-		_myBackgroundColor = theColor;
+	public ScrollableList setOutlineColor( int theColor ) {
+		_myOutlineColor = theColor;
 		return this;
 	}
 
-	public int getBackgroundColor( ) {
-		return _myBackgroundColor;
+	public int getOutlineColor( ) {
+		return _myOutlineColor;
 	}
 
 	@Override @ControlP5.Invisible public ScrollableList updateDisplayMode( int theMode ) {
@@ -393,9 +420,20 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 			// setHeight( -200 ); /* UP */
 
 			g.noStroke( );
+			
+			if (c.getDrawOutline()) {
+				int h = c.updateHeight( );
+				int bar = ( c.isBarVisible( ) ? c.barHeight : 0 );
+				h += bar;
+				g.pushMatrix();
+				g.fill( c.getOutlineColor( ) );
+				g.rect( -1 , -1, c.getWidth( ) + 2 , h + 2);
+				g.popMatrix();
+			}
 
 			if ( c.isBarVisible( ) ) {
-				boolean b = c.itemHover == -1 && c.isInside && !c.isDragged;
+				//boolean b = c.itemHover == -1 && c.isInside && !c.isDragged;
+				boolean b = c.itemHover == -1 && c.isInside;
 				g.fill( b ? c.getColor( ).getForeground( ) : c.getColor( ).getBackground( ) );
 				g.rect( 0 , 0 , c.getWidth( ) , c.barHeight );
 				g.pushMatrix( );
@@ -418,8 +456,6 @@ public class ScrollableList extends Controller< ScrollableList > implements Cont
 				g.pushMatrix( );
 				// g.translate( 0 , - ( h + bar +
 				// c.itemSpacing ) ); /* UP */
-				g.fill( c.getBackgroundColor( ) );
-				g.rect( 0 , bar , c.getWidth( ) , h );
 				g.pushMatrix( );
 				g.translate( 0 , ( bar == 0 ? 0 : ( c.barHeight + c.itemSpacing ) ) );
 				/* draw visible items */

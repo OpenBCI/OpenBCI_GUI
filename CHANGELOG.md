@@ -1,3 +1,21 @@
+# v5.1.0
+
+### Bug Fixes
+* Stop data stream when no data received after 5 seconds #1011
+* Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
+* Fix dropdown backgrounds in Networking Widget
+
+### Improvements
+* Update to Processing 4 #674 #1025
+* Add BrainFlow Streamer for File and Network to Control Panel #1007
+* Update to BrainFlow v4.9.0 and print version to console log #1028
+* Update OpenBCI Logo #1010
+* Clarify Cyton Smoothing feature #1027
+* Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
+* Update help text for various buttons across the GUI to help new and existing users
+* Update Band Power widget and add Average Band Power data type to Networking Widget
+* Update ControlP5 Library to 2.3.2 and change ScrollableList behavior to be more consistent with other front-end libraries
+
 # v5.0.9
 
 ### Bug Fixes
