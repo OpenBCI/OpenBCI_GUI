@@ -24,8 +24,6 @@ class FilterUIPopup extends PApplet implements Runnable {
     private int footerObjY = 0;
     private int[] footerObjX = new int[numFooterObjects];
 
-
-
     private String message = "Sample text string";
     private String headerMessage = "Filters";
     private String buttonMessage = "OK";
@@ -66,6 +64,8 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private final int typeDropdownWidth = headerObjWidth;
     private final int orderDropdownWidth = 60;
+
+    DecimalFormat df = new DecimalFormat("#.0");
 
     public FilterUIPopup() {
         super();
@@ -314,8 +314,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 if (filterSettings.values.masterBandStopFilterActive == FilterActiveOnChannel.ON) {
                     updateColor = onColor;
                 }
-                firstColumnTFValue = String.valueOf(filterSettings.values.masterBandStopCenterFreq);
-                secondColumnTFValue = String.valueOf(filterSettings.values.masterBandStopWidth);
+                firstColumnTFValue = df.format(filterSettings.values.masterBandStopCenterFreq);
+                secondColumnTFValue = df.format(filterSettings.values.masterBandStopWidth);
                 updateFilterType = filterSettings.values.masterBandStopFilterType;
                 updateFilterOrder = filterSettings.values.masterBandStopFilterOrder;
                 break;
@@ -323,8 +323,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 if (filterSettings.values.masterBandPassFilterActive == FilterActiveOnChannel.ON) {
                     updateColor = onColor;
                 }
-                firstColumnTFValue = String.valueOf(filterSettings.values.masterBandPassStartFreq);
-                secondColumnTFValue = String.valueOf(filterSettings.values.masterBandPassStopFreq);
+                firstColumnTFValue = df.format(filterSettings.values.masterBandPassStartFreq);
+                secondColumnTFValue = df.format(filterSettings.values.masterBandPassStopFreq);
                 updateFilterType = filterSettings.values.masterBandPassFilterType;
                 updateFilterOrder = filterSettings.values.masterBandPassFilterOrder;
                 break;
@@ -480,7 +480,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                     if (myTextfieldValue <= 0) {
                         myTextfieldValue = 0; //Only positive values will be used here
                     }
-                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    String valToSet = df.format(myTextfieldValue);
+                    myTextfield.setText(valToSet);
                     setMasterFilterValueFromTextfield(isFirstColumn, myTextfieldValue);
                 }
                 if (myTextfield.isActive()) {
@@ -498,7 +499,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 boolean isFirstColumn = name.startsWith("masterFirstColumn");
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
                     float myTextfieldValue = getDefaultMasterFilterValueAsInt(isFirstColumn);
-                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    String valToSet = df.format(myTextfieldValue);
+                    myTextfield.setText(valToSet);
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
@@ -538,7 +540,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                     if (myTextfieldValue <= 0) {
                         myTextfieldValue = 0; //Only positive values will be used here
                     }
-                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    String valToSet = df.format(myTextfieldValue);
+                    myTextfield.setText(valToSet);
                     setFilterValueFromTextfield(isFirstColumn, channel, myTextfieldValue);
                 }
                 if (myTextfield.isActive()) {
@@ -556,7 +559,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 boolean isFirstColumn = name.startsWith("firstColumn");
                 if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
                     float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
-                    myTextfield.setText(String.valueOf(myTextfieldValue));
+                    String valToSet = df.format(myTextfieldValue);
+                    myTextfield.setText(valToSet);
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
