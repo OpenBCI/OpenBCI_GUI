@@ -402,7 +402,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         }
     }
 
-    private void createOnOffButton(String name, final String text, int chan, int _x, int _y, int _w, int _h) {
+    private void createOnOffButton(String name, final String text, final int chan, int _x, int _y, int _w, int _h) {
         onOffButtons[chan] = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, channelColors[chan%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         onOffButtons[chan].setCircularButton(true);
         onOffButtons[chan].onRelease(new CallbackListener() {

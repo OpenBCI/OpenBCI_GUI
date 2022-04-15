@@ -132,7 +132,9 @@ class GuiSettings {
         List<String> foundKeys = new ArrayList<String>();
         Gson gson = new Gson();
         Map<String, Object> map = gson.fromJson(stringToSearch, new TypeToken<Map<String, Object>>() {}.getType());
-        map.forEach((x, y) -> foundKeys.add(x));
+        for (String mapKey : map.keySet()) {
+            foundKeys.add(mapKey);
+        }
 
         Collections.sort(valueKeys);
         Collections.sort(foundKeys);
