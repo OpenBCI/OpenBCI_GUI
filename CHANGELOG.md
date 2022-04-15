@@ -7,6 +7,7 @@
 
 ### Improvements
 * Update to Processing 4 #674 #1025
+* Add new FilterUI to allow custom filters per channel #988
 * Add BrainFlow Streamer for File and Network to Control Panel #1007
 * Update to BrainFlow v4.9.0 and print version to console log #1028
 * Update OpenBCI Logo #1010
@@ -14,7 +15,8 @@
 * Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
 * Update help text for various buttons across the GUI to help new and existing users
 * Update Band Power widget and add Average Band Power data type to Networking Widget
-* Update ControlP5 Library to 2.3.2 and change ScrollableList behavior to be more consistent with other front-end libraries
+* Update ControlP5 Library to 2.3.3 and change ScrollableList behavior to be more consistent with other front-end libraries
+* Remove old multi-line filter buttons in TopNav that draw incorrectly on some PCs #1013
 
 # v5.0.9
 
