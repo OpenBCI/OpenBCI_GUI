@@ -24,8 +24,7 @@ class TopNav {
 
     public Button toggleDataStreamingButton;
 
-    public Button filtBPButton;
-    public Button filtNotchButton;
+    public Button filtersButton;
     public Button smoothingButton;
 
     public Button debugButton;
@@ -88,8 +87,7 @@ class TopNav {
         if (!secondaryNavInit) {
             //Buttons on the left side of the GUI secondary nav bar
             createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
-            createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-            createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+            createFiltersButton("Filters", PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
             //Appears at Top Right SubNav while in a Session
             createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
@@ -97,101 +95,14 @@ class TopNav {
         }
 
         if (needToMakeSmoothingButton) {
-            int pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3;
-            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+            int pos_x = (int)filtersButton.getPosition()[0] + filtersButton.getWidth() + PAD_3;
+            //Make smoothing button wider than most other topnav buttons to fit text comfortably
+            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W + 40, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
         }
         
         
         //updateSecondaryNavButtonsColor();
     }
-
-    /*
-    void updateNavButtonsBasedOnColorScheme() {
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            controlPanelCollapser.setColorNotPressed(color(255));
-            debugButton.setColorNotPressed(color(255));
-            //highRezButton.setColorNotPressed(color(255));
-            issuesButton.setColorNotPressed(color(255));
-            shopButton.setColorNotPressed(color(255));
-            tutorialsButton.setColorNotPressed(color(255));
-            updateGuiVersionButton.setColorNotPressed(color(255));
-            configButton.setColorNotPressed(color(255));
-
-            controlPanelCollapser.textColorNotActive = OPENBCI_DARKBLUE;
-            debugButton.textColorNotActive = OPENBCI_DARKBLUE;
-            //highRezButton.textColorNotActive = OPENBCI_DARKBLUE;
-            issuesButton.textColorNotActive = OPENBCI_DARKBLUE;
-            shopButton.textColorNotActive = OPENBCI_DARKBLUE;
-            tutorialsButton.textColorNotActive = OPENBCI_DARKBLUE;
-            updateGuiVersionButton.textColorNotActive = OPENBCI_DARKBLUE;
-            configButton.textColorNotActive = OPENBCI_DARKBLUE;
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            controlPanelCollapser.setColorNotPressed(OPENBCI_BLUE);
-            debugButton.setColorNotPressed(OPENBCI_BLUE);
-            //highRezButton.setColorNotPressed(OPENBCI_BLUE);
-            issuesButton.setColorNotPressed(OPENBCI_BLUE);
-            shopButton.setColorNotPressed(OPENBCI_BLUE);
-            tutorialsButton.setColorNotPressed(OPENBCI_BLUE);
-            updateGuiVersionButton.setColorNotPressed(OPENBCI_BLUE);
-            configButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-
-            controlPanelCollapser.textColorNotActive = color(255);
-            debugButton.textColorNotActive = color(255);
-            //highRezButton.textColorNotActive = color(255);
-            issuesButton.textColorNotActive = color(255);
-            shopButton.textColorNotActive = color(255);
-            tutorialsButton.textColorNotActive = color(255);
-            updateGuiVersionButton.textColorNotActive = color(255);
-            configButton.textColorNotActive = color(255);
-        }
-
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            updateSecondaryNavButtonsColor();
-        }
-    }
-    */
-
-    /*
-    void updateSecondaryNavButtonsColor() {
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            filtBPButton.setColorNotPressed(color(255));
-            filtNotchButton.setColorNotPressed(color(255));
-            layoutButton.setColorNotPressed(color(255));
-
-            filtBPButton.textColorNotActive = OPENBCI_DARKBLUE;
-            filtNotchButton.textColorNotActive = OPENBCI_DARKBLUE;
-            layoutButton.textColorNotActive = OPENBCI_DARKBLUE;
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.textColorNotActive = OPENBCI_DARKBLUE;
-                smoothingButton.setColorNotPressed(color(255));
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.textColorNotActive = OPENBCI_DARKBLUE;
-                gainButton.setColorNotPressed(color(255));
-            }
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            filtBPButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-            filtNotchButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-            layoutButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-
-            filtBPButton.textColorNotActive = color(255);
-            filtNotchButton.textColorNotActive = color(255);
-            layoutButton.textColorNotActive = color(255);
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-                smoothingButton.textColorNotActive = color(255);
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-                gainButton.textColorNotActive = color(255);
-            }
-        }
-    }
-    */
 
     void update() {
         //ignore settings button when help dropdown is open
@@ -261,8 +172,7 @@ class TopNav {
         boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
         if (secondaryNavInit) {
             toggleDataStreamingButton.setVisible(isSession);
-            filtBPButton.setVisible(isSession);
-            filtNotchButton.setVisible(isSession);
+            filtersButton.setVisible(isSession);
             layoutButton.setVisible(isSession);
            
         }
@@ -296,8 +206,7 @@ class TopNav {
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
             toggleDataStreamingButton.setPosition(PAD_3, SUBNAV_BUT_Y);
-            filtNotchButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
-            filtBPButton.setPosition(PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y);
+            filtersButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
 
             layoutButton.setPosition(width - 3 - layoutButton.getWidth(), SUBNAV_BUT_Y);
             settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, SUBNAV_BUT_Y);
@@ -403,11 +312,7 @@ class TopNav {
     }
 
     private String getSmoothingString() {
-        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n       Off";
-    }
-
-    private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\n   Body uV" : "Gain Mode\n   Classic";
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing On" : "Smoothing Off";
     }
 
     private Button createTNButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -439,33 +344,20 @@ class TopNav {
         toggleDataStreamingButton.setDescription("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
     }
 
-    private void createFiltNotchButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtNotchButton = createTNButton("filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        filtNotchButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
-        filtNotchButton.onRelease(new CallbackListener() {
+    private void createFiltersButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        filtersButton = createTNButton("filtersButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtersButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-               incrementNotchConfiguration();
+                FilterUIPopup filtersUI = new FilterUIPopup();
             }
         });
-        filtNotchButton.setDescription("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
-    }
-
-    private void createFiltBPButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtBPButton = createTNButton("filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        filtBPButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
-        filtBPButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-               incrementFilterConfiguration();
-            }
-        });
-        filtBPButton.setDescription("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
+        filtersButton.setDescription("Here you can adjust the Filters that are applied to \"Filtered\" data.");
     }
 
     private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
         color bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
         smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, bgColor, _textColor);
-        smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
@@ -630,26 +522,9 @@ class TopNav {
         smoothingButton = null;
     }
 
-    private void incrementFilterConfiguration() {
-        dataProcessing.incrementFilterConfiguration();
-
-        //update the button strings
-        topNav.filtBPButton.getCaptionLabel().setText("BP Filt\n" + dataProcessing.getShortFilterDescription());
-        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
-    }
-
-    private void incrementNotchConfiguration() {
-        dataProcessing.incrementNotchConfiguration();
-
-        //update the button strings
-        topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
-        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
-    }
-
     public void setLockTopLeftSubNavCp5Objects(boolean _b) {
         toggleDataStreamingButton.setLock(_b);
-        filtNotchButton.setLock(_b);
-        filtBPButton.setLock(_b);
+        filtersButton.setLock(_b);
     }
 }
 

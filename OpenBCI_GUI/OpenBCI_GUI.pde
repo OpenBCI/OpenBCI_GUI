@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.1.0-alpha.6";
-String localGUIVersionDate = "March 2022";
+String localGUIVersionString = "v5.1.0-alpha.7";
+String localGUIVersionDate = "April 2022";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -297,6 +297,7 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 DirectoryManager directoryManager;
 SessionSettings settings;
 GuiSettings guiSettings;
+FilterSettings filterSettings;
 
 final int navBarHeight = 32;
 TopNav topNav;
@@ -704,6 +705,9 @@ void initSystem() {
     
     //Make sure topNav buttons draw in the correct spot
     topNav.screenHasBeenResized(width, height);
+
+    //Instantiate Global Filter Settings Class
+    filterSettings = new FilterSettings(((DataSource)currentBoard));
 
     verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 

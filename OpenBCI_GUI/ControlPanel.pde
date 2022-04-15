@@ -1332,10 +1332,10 @@ class SessionDataBox {
     }
 
     private void createMaxDurationDropdown(String name, List<String> _items){
-        maxDurationDropdown = new CustomScrollableList(sessionData_cp5, name)
+        maxDurationDropdown = sessionData_cp5.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             //.setColorBackground(color(31,69,110)) // text field bg color
             //.setColorValueLabel(color(0))       // text color
             //.setColorCaptionLabel(color(255))
@@ -1982,7 +1982,7 @@ class RecentPlaybackBox {
     }
 
     void createRecentPlaybackFilesDropdown(String name, List<String> _items){
-        recentPlaybackSL = new CustomScrollableList(rpb_cp5, name)
+        recentPlaybackSL = rpb_cp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2127,14 +2127,14 @@ class GaleaBox {
     }
 
     private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
-        ScrollableList list = new CustomScrollableList(localCP5, name)
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, uiElementH)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2393,10 +2393,10 @@ class BrainFlowStreamerBox {
     }
 
     private void createDropdown(String name){
-        bfFileSaveOption = new CustomScrollableList(bfStreamerCp5, name)
+        bfFileSaveOption = bfStreamerCp5.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(167, (dataWriterBfEnum.values().length + 1) * 24)
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2593,14 +2593,14 @@ class StreamingBoardBox {
     }
 
     private ScrollableList createDropdown(String name, BrainFlowStreaming_Boards[] enumValues){
-        ScrollableList list = new CustomScrollableList(localCP5, name)
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, objectH)//temporary size
             .setBarHeight(objectH) //height of top/primary bar
             .setItemHeight(objectH) //height of all item/dropdown bars
@@ -2781,10 +2781,10 @@ class SDBox {
 
     private void createDropdown(String name){
 
-        sdList = new CustomScrollableList(cp5_sdBox, name)
+        sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
