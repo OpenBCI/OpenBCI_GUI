@@ -348,8 +348,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                         updateColor = offColor;
                     }
                     //Fetch filter values
-                    firstColumnTFValue = String.valueOf(filterSettings.values.bandStopCenterFreq[chan]);
-                    secondColumnTFValue = String.valueOf(filterSettings.values.bandStopWidth[chan]);
+                    firstColumnTFValue = df.format(filterSettings.values.bandStopCenterFreq[chan]);
+                    secondColumnTFValue = df.format(filterSettings.values.bandStopWidth[chan]);
                     //Fetch filter type
                     updateFilterType = filterSettings.values.bandStopFilterType[chan];
                     //Fetch order
@@ -361,8 +361,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                         updateColor = onColor;
                     }
                     //Fetch filter values
-                    firstColumnTFValue = String.valueOf(filterSettings.values.bandPassStartFreq[chan]);
-                    secondColumnTFValue = String.valueOf(filterSettings.values.bandPassStopFreq[chan]);
+                    firstColumnTFValue = df.format(filterSettings.values.bandPassStartFreq[chan]);
+                    secondColumnTFValue = df.format(filterSettings.values.bandPassStopFreq[chan]);
                     //Fetch filter type
                     updateFilterType = filterSettings.values.bandPassFilterType[chan];
                     //Fetch order
