@@ -5,8 +5,11 @@ import processing.awt.PSurfaceAWT;
 class FilterUIPopup extends PApplet implements Runnable {
     private int variableWidth;
     private int variableHeight;
+    private int newVariableHeight;
     private int shortHeight;
     private int maxHeight;
+    private boolean needToResizePopup = false;
+    private boolean needToResetCp5Graphics = false;
 
     private final int sm_spacer = 6;
     private final int halfSmSpacer = sm_spacer/2;
@@ -113,14 +116,21 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void draw() {
-        
+
         // Important: Reset the CP5 graphics reference points X,Y,W,H at the beginning of the next draw after screen has been resized.
         // Otherwise, the numbers are wrong.
-        if (variableWidth != width || variableHeight != height) {
+        if (needToResetCp5Graphics) {
             variableWidth = width;
             variableHeight = height;
             arrangeAllObjectsXY();
             cp5.setGraphics(this, 0, 0);
+        }
+
+        if (needToResizePopup) {
+            // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+            surface.setSize(variableWidth, newVariableHeight);
+            needToResizePopup = false;
+            needToResetCp5Graphics = true;
         }
 
         checkIfSessionWasClosed();
@@ -864,10 +874,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void setUItoChannelMode(FilterChannelSelect myEnum) {
         int numChans = filterSettings.getChannelCount();
         boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
-        int newHeight =  showAllChannels ? maxHeight : shortHeight;
-
-        // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
-        surface.setSize(variableWidth, newHeight);
+        newVariableHeight =  showAllChannels ? maxHeight : shortHeight;
 
         for (int chan = 0; chan < numChans; chan++) {
             onOffButtons[chan].setVisible(showAllChannels);
@@ -880,6 +887,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         setFooterObjYPosition(myEnum);
         saveButton.setPosition(footerObjX[0], footerObjY);
         loadButton.setPosition(footerObjX[1], footerObjY);
+
+        needToResizePopup = true;
     }
 
     private void setFooterObjYPosition(FilterChannelSelect myEnum) {
