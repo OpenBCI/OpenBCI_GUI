@@ -6,10 +6,9 @@
 * Fix dropdown backgrounds in Networking Widget
 
 ### Improvements
-* Update to Processing 4 #674 #1025
 * Add new FilterUI to allow custom filters per channel #988
 * Add BrainFlow Streamer for File and Network to Control Panel #1007
-* Update to BrainFlow v4.9.0 and print version to console log #1028
+* Update to BrainFlow v4.9.0+ and print version to console log #1028
 * Update OpenBCI Logo #1010
 * Clarify Cyton Smoothing feature #1027
 * Set Cyton Smoothing on by default and increase communication with a popup and additional Help button #1026
