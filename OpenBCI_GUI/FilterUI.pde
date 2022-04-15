@@ -127,8 +127,12 @@ class FilterUIPopup extends PApplet implements Runnable {
         }
 
         if (needToResizePopup) {
-            // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
-            surface.setSize(variableWidth, newVariableHeight);
+            try {
+                // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+                surface.setSize(variableWidth, newVariableHeight);
+            } catch (Exception e) {
+                println("WHY DID I CRASH HERE?");
+            }
             needToResizePopup = false;
             needToResetCp5Graphics = true;
         }
