@@ -354,7 +354,7 @@ class TopNav {
         filtersButton.setDescription("Here you can adjust the Filters that are applied to \"Filtered\" data.");
     }
 
-    private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+    private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, final color _bg, color _textColor) {
         SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
         color bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
         smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, bgColor, _textColor);
