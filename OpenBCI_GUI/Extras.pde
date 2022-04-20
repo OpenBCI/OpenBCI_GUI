@@ -1,3 +1,9 @@
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.prefs.Preferences;
+import static java.lang.System.setErr;
+import static java.util.prefs.Preferences.systemRoot;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -39,6 +45,47 @@ private void checkIs64BitJava() {
     boolean is64Bit = System.getProperty("sun.arch.data.model").indexOf("64") >= 0;
     if (!is64Bit) {
         PopupMessage msg = new PopupMessage("32-bit Java Detected", "OpenBCI GUI v5 and BrainFlow are made for 64-bit Java (Windows, Linux, and Mac). Please update your OS, computer, Processing IDE, or revert to GUI v4 or earlier.");
+    }
+}
+
+//https://stackoverflow.com/a/23538961
+public static class AdministratorChecker
+{
+    public static final boolean IS_RUNNING_AS_ADMINISTRATOR;
+
+    static
+    {
+        IS_RUNNING_AS_ADMINISTRATOR = isRunningAsAdministrator();
+    }
+
+    private static boolean isRunningAsAdministrator()
+    {
+        Preferences preferences = systemRoot();
+
+        synchronized (System.err)
+        {
+            setErr(new PrintStream(new OutputStream()
+            {
+                @Override
+                public void write(int b)
+                {
+                }
+            }));
+
+            try
+            {
+                preferences.put("foo", "bar"); // SecurityException on Windows
+                preferences.remove("foo");
+                preferences.flush(); // BackingStoreException on Linux
+                return true;
+            } catch (Exception exception)
+            {
+                return false;
+            } finally
+            {
+                setErr(System.err);
+            }
+        }
     }
 }
 

@@ -60,7 +60,7 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.1.0-alpha.8";
+String localGUIVersionString = "v5.1.0-alpha.9";
 String localGUIVersionDate = "April 2022";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -377,6 +377,10 @@ void setup() {
             "If you just downloaded the GUI, move it out of the disk image or Downloads folder.\n\n" +
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
+    }
+
+    if (!AdministratorChecker.IS_RUNNING_AS_ADMINISTRATOR) {
+        println("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
     }
     
     directoryManager = new DirectoryManager();
