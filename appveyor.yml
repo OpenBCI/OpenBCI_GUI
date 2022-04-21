@@ -15,7 +15,7 @@ environment:
   PFX_SECRET:
     secure: riFz0cFHurMtG+nv5QVdOA==
   PFX_SALT:
-    secure: 5L76iacuQoxJu3eTWqrwkf5xm865BH1mQeS9URs2NOhB2I/Ks5o=
+    secure: O2YyYaulbMhQJxigoc5Y9i9CGCrRCKV7stBrdF4yzMlwgLXxeTk=
 
 build: off
 
@@ -44,7 +44,7 @@ install:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - python %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI_UnitTests\run-unittests.py
-  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\264e373428ce94944a2e7bfb5627a57a-SHA2.pfx.enc
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\264e373428ce94944a2e7bfb5627a57a-SHA2.pfx
   - set /p GUI_COMMIT_TIME= < temp\timestamp.txt
   - set /p GUI_VERSION_STRING= < temp\versionstring.txt
 
