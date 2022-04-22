@@ -11,11 +11,11 @@ environment:
   AWS_SECRET_ACCESS_KEY:
     secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
   PFX_PASS:
-    secure: EZiGNtfDGzcIiU0NJRu/0w==
+    secure: JnQMob+NNaJaxMB1j2ZMpg==
   PFX_SECRET:
-    secure: riFz0cFHurMtG+nv5QVdOA==
+    secure: 8cIrkEaUGrY+O7b6deHC8w==
   PFX_SALT:
-    secure: ksAtpPmxk0LDIfrHVoRwIcxdhI9DqxnaZZ1YTxrSA/G8dgr6ASDvNdmsQzEBdWh3Ssyvqwnfh1GMBoye+hQQdw==
+    secure: Kug29ZxPuvQBx59q4s/xitvGBiNiX2VBfwAwFV3J54u5wa6Y5w0O3isPpTTUcNOs2ATFNd/nPOtq9lyPh1fncg==
 
 build: off
 
@@ -63,4 +63,3 @@ notifications:
     on_build_success: false
     on_build_failure: true
     on_build_status_changed: true
-    
