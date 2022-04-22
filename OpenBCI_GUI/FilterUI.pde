@@ -20,7 +20,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int halfObjWidth = headerObjWidth/2;
     private final int numHeaderObjects = 6;
     private final int numColumns = 5;
-    private final int numFooterObjects = 2;
+    private final int numFooterObjects = 3;
     private int[] headerObjX = new int[numHeaderObjects];
     private final int headerObjY = sm_spacer;
     private int[] columnObjX = new int[numColumns];
@@ -47,6 +47,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private ScrollableList bfEnvironmentalNoiseDropdown;
     private Button saveButton;
     private Button loadButton;
+    private Button defaultButton;
 
     private Button masterOnOffButton;
     private Textfield masterFirstColumnTextfield;
@@ -127,12 +128,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         }
 
         if (needToResizePopup) {
-            try {
-                // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
-                surface.setSize(variableWidth, newVariableHeight);
-            } catch (Exception e) {
-                println("WHY DID I CRASH HERE?");
-            }
+            // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+            surface.setSize(variableWidth, newVariableHeight);
             needToResizePopup = false;
             needToResetCp5Graphics = true;
         }
@@ -158,13 +155,14 @@ class FilterUIPopup extends PApplet implements Runnable {
         
         // Draw text labels
         textFont(p3, 16);
-        textAlign(CENTER, TOP);
+        textAlign(RIGHT, TOP);
         // Header labels
         fill(WHITE);
         text("Filter", headerObjX[0], headerObjY, headerObjWidth, uiObjectHeight);
         text("Channels", headerObjX[2], headerObjY, headerObjWidth, uiObjectHeight);
         text("Notch", headerObjX[4], headerObjY, headerObjWidth, uiObjectHeight);
         // Column labels
+        textAlign(CENTER, TOP);
         fill(102);
         text("Channel", columnObjX[0], headerHeight + sm_spacer, textfieldWidth, headerHeight);
         String firstColumnHeader = "";
@@ -238,6 +236,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         
         createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", footerObjX[0], footerObjY, headerObjWidth, uiObjectHeight);
         createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", footerObjX[1], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Load Defaults", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
         
         createOnOffButtons();
         createTextfields();
@@ -276,8 +275,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         columnObjX[3] = middle + halfObjWidth + lg_spacer;
         columnObjX[4] = middle + halfObjWidth + lg_spacer*2 + headerObjWidth;
 
-        footerObjX[0] = middle - lg_spacer/2 - headerObjWidth;
-        footerObjX[1] = middle + lg_spacer/2;
+        footerObjX[0] = middle - halfObjWidth - lg_spacer - headerObjWidth;
+        footerObjX[1] = middle - halfObjWidth;
+        footerObjX[2] = middle + halfObjWidth + lg_spacer;
         setFooterObjYPosition(filterSettings.values.filterChannelSelect);
     }
 
@@ -308,6 +308,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         saveButton.setPosition(footerObjX[0], footerObjY);
         loadButton.setPosition(footerObjX[1], footerObjY);
+        defaultButton.setPosition(footerObjX[2], footerObjY);
     }
 
     // Master method to update objects from the FilterSettings Class
@@ -407,9 +408,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         onOffButtons[chan].setCircularButton(true);
         onOffButtons[chan].onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-
-                //boolean newState = !currentBoard.isEXGChannelActive(channelIndex);
-                println("[" + text + "] onOff released");
+                //println("[" + text + "] onOff released");
                 switch (filterSettings.values.brainFlowFilter) {
                     case BANDSTOP:
                         if (filterSettings.values.bandStopFilterActive[chan].isActive()) {
@@ -834,6 +833,17 @@ class FilterUIPopup extends PApplet implements Runnable {
         loadButton.onClick(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 filterSettings.loadSettings();
+            }
+        });
+    }
+
+    private void createFilterSettingsDefaultButton(String name, String text, int _x, int _y, int _w, int _h) {
+        defaultButton = createButton(cp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        defaultButton.setBorderColor(OBJECT_BORDER_GREY);
+        defaultButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                filterSettings.revertAllChannelsToDefaultValues();
+                filterSettingsWereLoadedFromFile = true;
             }
         });
     }
