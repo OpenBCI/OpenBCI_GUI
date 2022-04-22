@@ -329,7 +329,7 @@ def main ():
     sketch_dir = find_sketch_dir()
 
     # ask about signing
-    windows_signing = True
+    windows_signing = False
     windows_pfx_path = args.pfx_path
     windows_pfx_password = args.pfx_password
 
