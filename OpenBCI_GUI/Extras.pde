@@ -47,13 +47,20 @@ private void checkIs64BitJava() {
         PopupMessage msg = new PopupMessage("32-bit Java Detected", "OpenBCI GUI v5 and BrainFlow are made for 64-bit Java (Windows, Linux, and Mac). Please update your OS, computer, Processing IDE, or revert to GUI v4 or earlier.");
     }
 }
-
 /**
-     * Determines if elevated rights are required to install/uninstall the application.
-     *
-     * @param path the installation path, or <tt>null</tt> if the installation path is unknown
-     * @return <tt>true</tt> if elevation is needed to have administrator permissions, <tt>false</tt> otherwise.
-     */
+* Determines if elevated rights are required to install/uninstall the application.
+*
+* @return <code>true</code> if elevation is needed to have administrator permissions, <code>false</code> otherwise.
+*/
+public boolean isElevationNeeded() {
+    return isElevationNeeded(null);
+}
+/**
+* Determines if elevated rights are required to install/uninstall the application.
+*
+* @param path the installation path, or <tt>null</tt> if the installation path is unknown
+* @return <tt>true</tt> if elevation is needed to have administrator permissions, <tt>false</tt> otherwise.
+*/
 public boolean isElevationNeeded(String path) {
     boolean result;
     if (isWindows()) {
@@ -62,9 +69,9 @@ public boolean isElevationNeeded(String path) {
             path = new File(path).getParent();
         }
         if (path == null || path.trim().length() == 0) {
-            path = getProgramFiles();
+            path = getWindowsProgramFiles();
         }
-        result = !isPrivilegedMode() && !canWrite(path);
+        result = !canWrite(path);
     } else {
         if (path != null) {
             result = !canWrite(path);
@@ -75,10 +82,10 @@ public boolean isElevationNeeded(String path) {
     return result;
 }
 /**
-     * Determine if user has administrative privileges.
-     *
-     * @return
-     */
+* Determine if user has administrative privileges.
+*
+* @return
+*/
 public boolean isAdminUser() {
     if (isWindows()) {
         try {
@@ -88,7 +95,7 @@ public boolean isAdminUser() {
             p.waitFor();
             return (p.exitValue() == 0);
         } catch (Exception e) {
-            return canWrite(getProgramFiles());
+            return canWrite(getWindowsProgramFiles());
         }
     }
     try {
@@ -102,6 +109,40 @@ public boolean isAdminUser() {
     } catch (Exception e) {
         return System.getProperty("user.name").equals("root");
     }
+}
+/**
+* Tries to determine the Windows Program Files directory.
+*
+* @return the Windows Program Files directory
+*/
+private String getWindowsProgramFiles() {
+    String path = System.getenv("ProgramFiles");
+    if (path == null) {
+        path = "C:\\Program Files";
+    }
+    return path;
+}
+/**
+* Determines if the specified path can be written to.
+*
+* @param path the path to check
+* @return <tt>true</tt> if the path can be written to, otherwise <tt>false</tt>
+*/
+private boolean canWrite(String path) {
+    File file = new File(path);
+    boolean canWrite = file.canWrite();
+    if (canWrite) {
+        // make sure that the path can actually be written to, for IZPACK-727
+        try {
+            File test = File.createTempFile(".izpackwritecheck", null, file);
+            if (!test.delete()) {
+                test.deleteOnExit();
+            }
+        } catch (IOException exception) {
+            canWrite = false;
+        }
+    }
+    return canWrite;
 }
 
 //compute the standard deviation
