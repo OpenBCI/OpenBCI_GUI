@@ -244,6 +244,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
             print ("Successfully signed app.")
 
     if LOCAL_OS == WINDOWS:
+        print("Using Windows")
         exe_dir = os.path.join(build_dir, "OpenBCI_GUI.exe")
         assert(os.path.isfile(exe_dir))
 
