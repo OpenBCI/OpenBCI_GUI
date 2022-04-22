@@ -11,11 +11,11 @@ environment:
   AWS_SECRET_ACCESS_KEY:
     secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
   PFX_PASS:
-    secure: JnQMob+NNaJaxMB1j2ZMpg==
+    secure: EZiGNtfDGzcIiU0NJRu/0w==
   PFX_SECRET:
-    secure: KMCvNFb8xIkdb6BhiF8OPQ==
+    secure: riFz0cFHurMtG+nv5QVdOA==
   PFX_SALT:
-    secure: 1PI3suai43cVDfWDkcrGcoZwNMVix81fPHnPT64Fe4pZOA73hCA=
+    secure: pKfPUW+ZIdeazABae9hsgAAaWVtR1vUpYlwGgiWSRbBwk5fFkN+/h5gwrILKFWAoLjl3+OVKaK0PZgMm9P9SLw==
 
 build: off
 
