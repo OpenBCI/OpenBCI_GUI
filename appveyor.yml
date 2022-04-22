@@ -15,7 +15,7 @@ environment:
   PFX_SECRET:
     secure: KMCvNFb8xIkdb6BhiF8OPQ==
   PFX_SALT:
-    secure: YWLJ3bCtJYHRxalKhNXlHaOH93GiSemBlKtbqPbkcLr+NKO7r4M=secret12345
+    secure: 1PI3suai43cVDfWDkcrGcoZwNMVix81fPHnPT64Fe4pZOA73hCA=
 
 build: off
 
