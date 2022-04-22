@@ -379,8 +379,10 @@ void setup() {
         return; // early exit
     }
 
-    if (!AdministratorChecker.IS_RUNNING_AS_ADMINISTRATOR) {
-        println("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
+    if (!isAdminUser()) {
+        if (isElevationNeeded()) {
+            println("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
+        }
     }
     
     directoryManager = new DirectoryManager();

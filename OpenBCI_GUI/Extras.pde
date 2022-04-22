@@ -48,47 +48,61 @@ private void checkIs64BitJava() {
     }
 }
 
-//https://stackoverflow.com/a/23538961
-public static class AdministratorChecker
-{
-    public static final boolean IS_RUNNING_AS_ADMINISTRATOR;
-
-    static
-    {
-        IS_RUNNING_AS_ADMINISTRATOR = isRunningAsAdministrator();
-    }
-
-    private static boolean isRunningAsAdministrator()
-    {
-        Preferences preferences = systemRoot();
-
-        synchronized (System.err)
-        {
-            setErr(new PrintStream(new OutputStream()
-            {
-                @Override
-                public void write(int b)
-                {
-                }
-            }));
-
-            try
-            {
-                preferences.put("foo", "bar"); // SecurityException on Windows
-                preferences.remove("foo");
-                preferences.flush(); // BackingStoreException on Linux
-                return true;
-            } catch (Exception exception)
-            {
-                return false;
-            } finally
-            {
-                setErr(System.err);
-            }
+/**
+     * Determines if elevated rights are required to install/uninstall the application.
+     *
+     * @param path the installation path, or <tt>null</tt> if the installation path is unknown
+     * @return <tt>true</tt> if elevation is needed to have administrator permissions, <tt>false</tt> otherwise.
+     */
+public boolean isElevationNeeded(String path) {
+    boolean result;
+    if (isWindows()) {
+        if (path != null) {
+            // use the parent path, as that needs to be written to in order to delete the tree
+            path = new File(path).getParent();
+        }
+        if (path == null || path.trim().length() == 0) {
+            path = getProgramFiles();
+        }
+        result = !isPrivilegedMode() && !canWrite(path);
+    } else {
+        if (path != null) {
+            result = !canWrite(path);
+        } else {
+            result = !System.getProperty("user.name").equals("root");
         }
     }
+    return result;
 }
-
+/**
+     * Determine if user has administrative privileges.
+     *
+     * @return
+     */
+public boolean isAdminUser() {
+    if (isWindows()) {
+        try {
+            String NTAuthority = "HKU\\S-1-5-19";
+            String command = "reg query \""+ NTAuthority + "\"";
+            Process p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            return (p.exitValue() == 0);
+        } catch (Exception e) {
+            return canWrite(getProgramFiles());
+        }
+    }
+    try {
+        String command = "id -u";
+        Process p = Runtime.getRuntime().exec(command);
+        p.waitFor();
+        InputStream stdIn = p.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stdIn));
+        String value = bufferedReader.readLine();
+        return value.equals("0");
+    } catch (Exception e) {
+        return System.getProperty("user.name").equals("root");
+    }
+}
 
 //compute the standard deviation
 float std(float[] data) {
