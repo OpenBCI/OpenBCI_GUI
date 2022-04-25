@@ -30,5 +30,8 @@
             <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"></supportedOS>
         </application>
     </compatibility>
-
 </assembly>
+
+<Identity Name="Microsoft.SDKSamples.PackageSample.CS" 
+Publisher="CN=OpenBCI, Inc., O=OpenBCI, Inc., L=Brooklyn, S=New York, C=US" 
+Version="1.0.1.0" />
