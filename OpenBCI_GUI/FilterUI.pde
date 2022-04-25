@@ -60,14 +60,21 @@ class FilterUIPopup extends PApplet implements Runnable {
     private Textfield[] secondColumnTextfields;
     private ScrollableList[] filterTypeDropdowns;
     private ScrollableList[] filterOrderDropdowns;
-
+    
     private boolean masterFirstColumnTextfieldWasActive;
     private boolean masterSecondColumnTextfieldWasActive;
     private boolean[] firstColumnTextfieldWasActive;
     private boolean[] secondColumnTextfieldWasActive;
+   
+    private boolean[] filterSettingsWereModified;
+    private int[] filterSettingsWereModifiedFadeCounter;
+    private boolean masterFilterSettingWasModified;
+    private int masterFilterSettingWasModifiedFadeCounter;
+    private int filterSettingWasModifiedFadeTime = 1000;
 
     private final int typeDropdownWidth = headerObjWidth;
     private final int orderDropdownWidth = 60;
+    private int widthOfAllChannelColumns;
 
     DecimalFormat df = new DecimalFormat("#.0");
 
@@ -85,11 +92,15 @@ class FilterUIPopup extends PApplet implements Runnable {
         filterOrderDropdowns = new ScrollableList[numChans];
         firstColumnTextfieldWasActive = new boolean[numChans];
         secondColumnTextfieldWasActive = new boolean[numChans];
+        filterSettingsWereModified = new boolean[numChans];
+        filterSettingsWereModifiedFadeCounter = new int[numChans];
 
         variableWidth = (headerObjWidth * numHeaderObjects) + sm_spacer*5 + lg_spacer*2;
         maxHeight = headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2);
         shortHeight = headerHeight*2 + sm_spacer*(1+4) + uiObjectHeight*(1+2) + lg_spacer;
         variableHeight = shortHeight;
+        //Include spacer on the outside left and right of all columns. Used to draw visual feedback
+        widthOfAllChannelColumns = headerObjWidth*numColumns + lg_spacer*(numColumns-1) + lg_spacer*2; 
     }
 
     @Override
@@ -148,6 +159,33 @@ class FilterUIPopup extends PApplet implements Runnable {
         fill(238);
         rect(0, 0, width, height);
 
+        // Draw visual feedback that a channel was modified
+        if (masterFilterSettingWasModified) {
+            int timeDelta = millis() - masterFilterSettingWasModifiedFadeCounter;
+            // Fade the color alpha value from 190 to 0
+            int alphaFadeValue = (int)map(timeDelta, 0, filterSettingWasModifiedFadeTime, 190, 0);
+            fill(color(57, 128, 204, alphaFadeValue)); //light blue from TopNav
+            noStroke();
+            rect(columnObjX[0] - lg_spacer, (int)masterOnOffButton.getPosition()[1] - (int)sm_spacer/2, widthOfAllChannelColumns, uiObjectHeight + sm_spacer);
+            if (timeDelta > filterSettingWasModifiedFadeTime) {
+                masterFilterSettingWasModified = false;
+            }
+        }
+        
+        for (int i = 0; i < filterSettings.getChannelCount(); i++) {
+            if (filterSettingsWereModified[i]) {
+                int timeDelta = millis() - filterSettingsWereModifiedFadeCounter[i];
+                // Fade the color alpha value from 190 to 0
+                int alphaFadeValue = (int)map(timeDelta, 0, filterSettingWasModifiedFadeTime, 190, 0);
+                fill(color(57, 128, 204, alphaFadeValue)); //light blue from TopNav
+                noStroke();
+                rect(columnObjX[0] - lg_spacer, (int)onOffButtons[i].getPosition()[1] - (int)sm_spacer/2, widthOfAllChannelColumns, uiObjectHeight + sm_spacer);
+                if (timeDelta > filterSettingWasModifiedFadeTime) {
+                    filterSettingsWereModified[i] = false;
+                }
+            }
+        }
+        
         // Draw header
         noStroke();
         fill(headerColor);
@@ -396,7 +434,6 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void createOnOffButtons() {
-        //FIX ME: Master OnOff button needs to be made special
         createMasterOnOffButton("masterOnOffButton", "All", lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer, onOff_diameter, onOff_diameter);
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
             createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+2) + onOff_diameter*(chan+1), onOff_diameter, onOff_diameter);
@@ -429,6 +466,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                         break;
                 }
+                filterSettingWasModifiedOnChannel(chan);
                 //printArray(filterSettings.values.bandStopFilterActive);
                 //printArray(filterSettings.values.bandPassFilterActive);
             }
@@ -514,6 +552,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     float myTextfieldValue = getDefaultMasterFilterValueAsInt(isFirstColumn);
                     String valToSet = df.format(myTextfieldValue);
                     myTextfield.setText(valToSet);
+                    setMasterFilterSettingWasModified();
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
@@ -574,6 +613,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
                     String valToSet = df.format(myTextfieldValue);
                     myTextfield.setText(valToSet);
+                    filterSettingWasModifiedOnChannel(channel);
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
@@ -638,6 +678,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 break;
         }
         updateChannelCp5Objects();
+        setMasterFilterSettingWasModified();
         //println(isFirstColumn, chan, val);
         //printArray(filterSettings.values.bandPassStartFreq);
         //printArray(filterSettings.values.bandPassStopFreq);
@@ -683,6 +724,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 break;
         }
+        filterSettingWasModifiedOnChannel(chan);
         //println(isFirstColumn, chan, val);
         //printArray(filterSettings.values.bandPassStartFreq);
         //printArray(filterSettings.values.bandPassStopFreq);
@@ -768,6 +810,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                     }
                     updateChannelCp5Objects();
+                    setMasterFilterSettingWasModified();
                     return;
                 }
 
@@ -788,6 +831,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             filterSettings.values.bandPassFilterType[chan] = (BrainFlowFilterType)myEnum;
                             break;
                     }
+                    filterSettingWasModifiedOnChannel(chan);
                 } else if (myEnum instanceof BrainFlowFilterOrder) {
                     switch (filterSettings.values.brainFlowFilter) {
                         case BANDSTOP:
@@ -797,6 +841,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             filterSettings.values.bandPassFilterOrder[chan] = (BrainFlowFilterOrder)myEnum;
                             break;
                     }
+                    filterSettingWasModifiedOnChannel(chan);
                 }
             }
         }
@@ -879,6 +924,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 //Update all channel cp5 objects, including master "all" channel, with new values
                 updateChannelCp5Objects();
+                setMasterFilterSettingWasModified();
                 //printArray(filterSettings.values.bandStopFilterActive);
                 //printArray(filterSettings.values.bandPassFilterActive);
             }
@@ -911,5 +957,15 @@ class FilterUIPopup extends PApplet implements Runnable {
         int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+3) + uiObjectHeight*(numChans+1) + lg_spacer*2;
         int footerMinHeightY = headerHeight*2 + sm_spacer*3 + uiObjectHeight + lg_spacer;
         footerObjY = showAllChannels ? footerMaxHeightY : footerMinHeightY;
-    } 
+    }
+
+    private void filterSettingWasModifiedOnChannel(int chan) {
+        filterSettingsWereModified[chan] = true;
+        filterSettingsWereModifiedFadeCounter[chan] = millis();
+    }
+
+    private void setMasterFilterSettingWasModified() {
+        masterFilterSettingWasModified = true;
+        masterFilterSettingWasModifiedFadeCounter = millis();
+    }
 }
