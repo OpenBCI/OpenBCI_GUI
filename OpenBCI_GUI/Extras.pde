@@ -1,3 +1,9 @@
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.prefs.Preferences;
+import static java.lang.System.setErr;
+import static java.util.prefs.Preferences.systemRoot;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -41,7 +47,103 @@ private void checkIs64BitJava() {
         PopupMessage msg = new PopupMessage("32-bit Java Detected", "OpenBCI GUI v5 and BrainFlow are made for 64-bit Java (Windows, Linux, and Mac). Please update your OS, computer, Processing IDE, or revert to GUI v4 or earlier.");
     }
 }
-
+/**
+* Determines if elevated rights are required to install/uninstall the application.
+*
+* @return <code>true</code> if elevation is needed to have administrator permissions, <code>false</code> otherwise.
+*/
+public boolean isElevationNeeded() {
+    return isElevationNeeded(null);
+}
+/**
+* Determines if elevated rights are required to install/uninstall the application.
+*
+* @param path the installation path, or <tt>null</tt> if the installation path is unknown
+* @return <tt>true</tt> if elevation is needed to have administrator permissions, <tt>false</tt> otherwise.
+*/
+public boolean isElevationNeeded(String path) {
+    boolean result;
+    if (isWindows()) {
+        if (path != null) {
+            // use the parent path, as that needs to be written to in order to delete the tree
+            path = new File(path).getParent();
+        }
+        if (path == null || path.trim().length() == 0) {
+            path = getWindowsProgramFiles();
+        }
+        result = !canWrite(path);
+    } else {
+        if (path != null) {
+            result = !canWrite(path);
+        } else {
+            result = !System.getProperty("user.name").equals("root");
+        }
+    }
+    return result;
+}
+/**
+* Determine if user has administrative privileges.
+*
+* @return
+*/
+public boolean isAdminUser() {
+    if (isWindows()) {
+        try {
+            String NTAuthority = "HKU\\S-1-5-19";
+            String command = "reg query \""+ NTAuthority + "\"";
+            Process p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            return (p.exitValue() == 0);
+        } catch (Exception e) {
+            return canWrite(getWindowsProgramFiles());
+        }
+    }
+    try {
+        String command = "id -u";
+        Process p = Runtime.getRuntime().exec(command);
+        p.waitFor();
+        InputStream stdIn = p.getInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stdIn));
+        String value = bufferedReader.readLine();
+        return value.equals("0");
+    } catch (Exception e) {
+        return System.getProperty("user.name").equals("root");
+    }
+}
+/**
+* Tries to determine the Windows Program Files directory.
+*
+* @return the Windows Program Files directory
+*/
+private String getWindowsProgramFiles() {
+    String path = System.getenv("ProgramFiles");
+    if (path == null) {
+        path = "C:\\Program Files";
+    }
+    return path;
+}
+/**
+* Determines if the specified path can be written to.
+*
+* @param path the path to check
+* @return <tt>true</tt> if the path can be written to, otherwise <tt>false</tt>
+*/
+private boolean canWrite(String path) {
+    File file = new File(path);
+    boolean canWrite = file.canWrite();
+    if (canWrite) {
+        // make sure that the path can actually be written to, for IZPACK-727
+        try {
+            File test = File.createTempFile(".izpackwritecheck", null, file);
+            if (!test.delete()) {
+                test.deleteOnExit();
+            }
+        } catch (IOException exception) {
+            canWrite = false;
+        }
+    }
+    return canWrite;
+}
 
 //compute the standard deviation
 float std(float[] data) {
