@@ -75,6 +75,8 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int typeDropdownWidth = headerObjWidth;
     private final int orderDropdownWidth = 60;
     private int widthOfAllChannelColumns;
+    
+    private final int showAllChanExpanderHeight = 16;
 
     DecimalFormat df = new DecimalFormat("#.0");
 
@@ -274,7 +276,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         
         createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", footerObjX[0], footerObjY, headerObjWidth, uiObjectHeight);
         createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", footerObjX[1], footerObjY, headerObjWidth, uiObjectHeight);
-        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Load Defaults", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Reset Settings", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
         
         createOnOffButtons();
         createTextfields();
