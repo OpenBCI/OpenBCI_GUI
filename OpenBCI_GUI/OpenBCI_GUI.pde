@@ -378,10 +378,6 @@ void setup() {
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
     }
-
-    if (!isAdminUser() || isElevationNeeded()) {
-        println("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
-    }
     
     directoryManager = new DirectoryManager();
 
@@ -483,6 +479,10 @@ void delayedSetup() {
 
     //Apply GUI-wide settings to front end at the end of setup
     guiSettings.applySettings();
+
+    if (!isAdminUser() || isElevationNeeded()) {
+        outputError("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
+    }
 }
 
 //====================== END-OF-SETUP ==========================//
