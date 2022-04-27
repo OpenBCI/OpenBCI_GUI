@@ -169,9 +169,10 @@ class FilterUIPopup extends PApplet implements Runnable {
         rect(0, 0, width, height);
 
         // Draw visual feedback that a channel was modified
+        // When a user interacts with an object for a channel, it will highlight blue and fade out
         if (masterFilterSettingWasModified) {
+            // Fade out the color alpha value from 190 to 0 over time (ex. 1 second)
             int timeDelta = millis() - masterFilterSettingWasModifiedFadeCounter;
-            // Fade the color alpha value from 190 to 0
             int alphaFadeValue = (int)map(timeDelta, 0, filterSettingWasModifiedFadeTime, 190, 0);
             fill(color(57, 128, 204, alphaFadeValue)); //light blue from TopNav
             noStroke();
