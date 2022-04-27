@@ -348,7 +348,9 @@ class TopNav {
         filtersButton = createTNButton("filtersButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         filtersButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                FilterUIPopup filtersUI = new FilterUIPopup();
+                if (!filterUIPopupIsOpen) {
+                    FilterUIPopup filtersUI = new FilterUIPopup();
+                }
             }
         });
         filtersButton.setDescription("Here you can adjust the Filters that are applied to \"Filtered\" data.");

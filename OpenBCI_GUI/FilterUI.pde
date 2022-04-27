@@ -1,6 +1,8 @@
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
 
+public boolean filterUIPopupIsOpen = false;
+
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
     private int fixedWidth;
@@ -87,6 +89,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     public FilterUIPopup() {
         super();
+        filterUIPopupIsOpen = true;
 
         Thread t = new Thread(this);
         t.start();
@@ -271,6 +274,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     @Override
     void exit() {
         dispose();
+        filterUIPopupIsOpen = false;
     }
 
     private void checkIfSessionWasClosed() {
