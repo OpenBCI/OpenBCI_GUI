@@ -373,7 +373,7 @@ class DataSourceBox {
         datasource_cp5 = new ControlP5(ourApplet);
         datasource_cp5.setGraphics(ourApplet, 0,0);
         datasource_cp5.setAutoDraw(false);
-        createDatasourceList(datasource_cp5, "sourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, h3);
+        createDatasourceList(datasource_cp5, "sourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, p3);
     }
 
     public void update() {
