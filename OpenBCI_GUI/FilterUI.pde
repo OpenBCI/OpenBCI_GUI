@@ -3,7 +3,7 @@ import processing.awt.PSurfaceAWT;
 
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
-    private int variableWidth;
+    private int fixedWidth;
     private int variableHeight;
     private int newVariableHeight;
     private int shortHeight;
@@ -18,7 +18,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int headerHeight = uiObjectHeight + sm_spacer*2;
     private final int headerObjWidth = 90;
     private final int halfObjWidth = headerObjWidth/2;
-    private final int numHeaderObjects = 6;
+    private final int numHeaderObjects = 4;
     private final int numColumns = 5;
     private final int numFooterObjects = 3;
     private int[] headerObjX = new int[numHeaderObjects];
@@ -43,7 +43,6 @@ class FilterUIPopup extends PApplet implements Runnable {
     
 
     private ScrollableList bfGlobalFilterDropdown;
-    private ScrollableList bfFilterChannelSelect;
     private ScrollableList bfEnvironmentalNoiseDropdown;
     private Button saveButton;
     private Button loadButton;
@@ -76,7 +75,13 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int orderDropdownWidth = 60;
     private int widthOfAllChannelColumns;
     
-    private final int showAllChanExpanderHeight = 16;
+    private int expanderX, expanderY, expanderW;
+    private final int expanderH = 16;
+    private boolean expanderIsHover = false;
+    private int expanderTriangleWidth = 22;
+    private int expanderTriangleHeight = 10;
+    private int[] expanderTriangleXYCollapsed = new int[6];
+    private int[] expanderTriangleXYExpanded = new int[6];
 
     DecimalFormat df = new DecimalFormat("#.0");
 
@@ -97,12 +102,12 @@ class FilterUIPopup extends PApplet implements Runnable {
         filterSettingsWereModified = new boolean[numChans];
         filterSettingsWereModifiedFadeCounter = new int[numChans];
 
-        variableWidth = (headerObjWidth * numHeaderObjects) + sm_spacer*5 + lg_spacer*2;
-        maxHeight = headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2);
-        shortHeight = headerHeight*2 + sm_spacer*(1+4) + uiObjectHeight*(1+2) + lg_spacer;
+        fixedWidth = (headerObjWidth * 6) + sm_spacer*5;
+        maxHeight = headerHeight*3 + sm_spacer*(numChans+5) + uiObjectHeight*(numChans+2) + expanderH;
+        shortHeight = headerHeight*2 + sm_spacer*(1+5) + uiObjectHeight*(1+2) + lg_spacer + expanderH;
         variableHeight = shortHeight;
         //Include spacer on the outside left and right of all columns. Used to draw visual feedback
-        widthOfAllChannelColumns = headerObjWidth*numColumns + lg_spacer*(numColumns-1) + lg_spacer*2; 
+        widthOfAllChannelColumns = headerObjWidth*numColumns + lg_spacer*(numColumns-1) + lg_spacer*2;
     }
 
     @Override
@@ -112,7 +117,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void settings() {
-        size(variableWidth, variableHeight);
+        size(fixedWidth, variableHeight);
     }
 
     @Override
@@ -134,7 +139,6 @@ class FilterUIPopup extends PApplet implements Runnable {
         // Important: Reset the CP5 graphics reference points X,Y,W,H at the beginning of the next draw after screen has been resized.
         // Otherwise, the numbers are wrong.
         if (needToResetCp5Graphics) {
-            variableWidth = width;
             variableHeight = height;
             arrangeAllObjectsXY();
             cp5.setGraphics(this, 0, 0);
@@ -142,7 +146,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         if (needToResizePopup) {
             // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
-            surface.setSize(variableWidth, newVariableHeight);
+            surface.setSize(fixedWidth, newVariableHeight);
             needToResizePopup = false;
             needToResetCp5Graphics = true;
         }
@@ -150,7 +154,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         checkIfSessionWasClosed();
         checkIfSettingsWereLoaded();
 
-        final int w = variableWidth;
+        final int w = fixedWidth;
         final int h = variableHeight;
 
         pushStyle();
@@ -192,6 +196,22 @@ class FilterUIPopup extends PApplet implements Runnable {
         noStroke();
         fill(headerColor);
         rect(0, 0, width, headerHeight);
+
+        // Draw Channel Expander
+        expanderIsHover = mouseY > expanderY - expanderH/2
+            && mouseX < expanderX + expanderW
+            && mouseY < expanderY + expanderH/2
+            && mouseX > expanderX;
+        color expanderColor = expanderIsHover ? OPENBCI_BLUE : color(102);
+        int[] triXY = filterSettings.values.filterChannelSelect == FilterChannelSelect.ALL_CHANNELS ?
+            expanderTriangleXYCollapsed :
+            expanderTriangleXYExpanded;
+        stroke(expanderColor);
+        fill(expanderColor);
+        line(expanderX, expanderY, triXY[0], expanderY);
+        line(triXY[4], expanderY, expanderX + expanderW - 1, expanderY);
+        noStroke();
+        triangle(triXY[0], triXY[1], triXY[2], triXY[3], triXY[4], triXY[5]);
         
         // Draw text labels
         textFont(p3, 16);
@@ -199,8 +219,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         // Header labels
         fill(WHITE);
         text("Filter", headerObjX[0], headerObjY, headerObjWidth, uiObjectHeight);
-        text("Channels", headerObjX[2], headerObjY, headerObjWidth, uiObjectHeight);
-        text("Notch", headerObjX[4], headerObjY, headerObjWidth, uiObjectHeight);
+        text("Notch", headerObjX[2], headerObjY, headerObjWidth, uiObjectHeight);
         // Column labels
         textAlign(CENTER, TOP);
         fill(102);
@@ -235,7 +254,13 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void mousePressed() {
-
+        if (expanderIsHover) {
+            filterSettings.values.filterChannelSelect = 
+                filterSettings.values.filterChannelSelect == FilterChannelSelect.CUSTOM_CHANNELS ?
+                FilterChannelSelect.ALL_CHANNELS :
+                FilterChannelSelect.CUSTOM_CHANNELS;
+            setUItoChannelMode(filterSettings.values.filterChannelSelect);
+        }
     }
 
     @Override
@@ -285,8 +310,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         // Create header objects last so they always draw on top!
         bfGlobalFilterDropdown = createDropdown("filter", -1, headerObjX[1], headerObjY, headerObjWidth, filterSettings.values.brainFlowFilter, BFFilter.values());
-        bfFilterChannelSelect = createDropdown("channelSelect", -1, headerObjX[3], headerObjY, headerObjWidth, filterSettings.values.filterChannelSelect, FilterChannelSelect.values());
-        bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[5], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
+        bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[3], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
         
         updateChannelCp5Objects();
         arrangeAllObjectsXY();
@@ -295,19 +319,16 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private void updateHeaderCp5Objects() {
         bfGlobalFilterDropdown.getCaptionLabel().setText(filterSettings.values.brainFlowFilter.getString());
-        bfFilterChannelSelect.getCaptionLabel().setText(filterSettings.values.filterChannelSelect.getString());
         bfEnvironmentalNoiseDropdown.getCaptionLabel().setText(filterSettings.values.globalEnvFilter.getString());
     }
 
     private void calculateXYForHeaderColumnsAndFooter() {
         int middle = width / 2;
 
-        headerObjX[0] = middle - halfSmSpacer - sm_spacer*2 - headerObjWidth*3;
-        headerObjX[1] = middle - halfSmSpacer - sm_spacer - headerObjWidth*2;
-        headerObjX[2] = middle - halfSmSpacer - headerObjWidth;
-        headerObjX[3] = middle + halfSmSpacer;
-        headerObjX[4] = middle + halfSmSpacer + sm_spacer + headerObjWidth;
-        headerObjX[5] = middle + halfSmSpacer + sm_spacer*2 + headerObjWidth*2;
+        headerObjX[0] = middle - sm_spacer*2 - headerObjWidth*2;
+        headerObjX[1] = middle - sm_spacer - headerObjWidth;
+        headerObjX[2] = middle + sm_spacer - halfObjWidth;
+        headerObjX[3] = middle + sm_spacer*2 + headerObjWidth - halfObjWidth;
         
         columnObjX[0] = middle - halfObjWidth - lg_spacer*2 - headerObjWidth*2;
         columnObjX[1] = middle - halfObjWidth - lg_spacer - headerObjWidth;
@@ -325,8 +346,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         calculateXYForHeaderColumnsAndFooter();
 
         bfGlobalFilterDropdown.setPosition(headerObjX[1], headerObjY);
-        bfFilterChannelSelect.setPosition(headerObjX[3], headerObjY);
-        bfEnvironmentalNoiseDropdown.setPosition(headerObjX[5], headerObjY);
+        bfEnvironmentalNoiseDropdown.setPosition(headerObjX[3], headerObjY);
 
         int rowY = (int)masterOnOffButton.getPosition()[1];
         int onOffButtonNewX = columnObjX[0] + textfieldWidth/2 - onOff_diameter/2;
@@ -336,6 +356,24 @@ class FilterUIPopup extends PApplet implements Runnable {
         masterSecondColumnTextfield.setPosition(columnObjX[2], rowY);
         masterFilterTypeDropdown.setPosition(columnObjX[3], rowY);
         masterFilterOrderDropdown.setPosition(filterOrderDropdownNewX, rowY);
+
+        expanderX = columnObjX[0] - lg_spacer;
+        expanderY = (int)masterOnOffButton.getPosition()[1] + uiObjectHeight + sm_spacer + expanderH/2; 
+        expanderW = widthOfAllChannelColumns;
+
+        expanderTriangleXYCollapsed[0] = expanderX + expanderW/2 - expanderTriangleWidth/2;
+        expanderTriangleXYCollapsed[1] = expanderY - expanderTriangleHeight/2;
+        expanderTriangleXYCollapsed[2] = expanderX + expanderW/2;
+        expanderTriangleXYCollapsed[3] = expanderY + expanderH/2;
+        expanderTriangleXYCollapsed[4] = expanderX + expanderW/2 + expanderTriangleWidth/2;
+        expanderTriangleXYCollapsed[5] = expanderTriangleXYCollapsed[1];
+
+        expanderTriangleXYExpanded[0] = expanderTriangleXYCollapsed[0];
+        expanderTriangleXYExpanded[1] = expanderY + expanderTriangleHeight/2;
+        expanderTriangleXYExpanded[2] = expanderTriangleXYCollapsed[2];
+        expanderTriangleXYExpanded[3] = expanderY - expanderH/2;
+        expanderTriangleXYExpanded[4] = expanderTriangleXYCollapsed[4];
+        expanderTriangleXYExpanded[5] = expanderTriangleXYExpanded[1];
 
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
             rowY = (int)onOffButtons[chan].getPosition()[1];
@@ -438,7 +476,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void createOnOffButtons() {
         createMasterOnOffButton("masterOnOffButton", "All", lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer, onOff_diameter, onOff_diameter);
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
-            createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+2) + onOff_diameter*(chan+1), onOff_diameter, onOff_diameter);
+            createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+3) + onOff_diameter*(chan+1) + expanderH, onOff_diameter, onOff_diameter);
         }
     }
 
@@ -819,9 +857,6 @@ class FilterUIPopup extends PApplet implements Runnable {
                 if (myEnum instanceof BFFilter) {
                     filterSettings.values.brainFlowFilter = (BFFilter)myEnum;
                     updateChannelCp5Objects();
-                } else if (myEnum instanceof FilterChannelSelect) {
-                    filterSettings.values.filterChannelSelect = (FilterChannelSelect)myEnum;
-                    setUItoChannelMode(filterSettings.values.filterChannelSelect);
                 } else if (myEnum instanceof GlobalEnvironmentalFilter) {
                     filterSettings.values.globalEnvFilter = (GlobalEnvironmentalFilter)myEnum;
                 } else if (myEnum instanceof BrainFlowFilterType) {
@@ -956,8 +991,8 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void setFooterObjYPosition(FilterChannelSelect myEnum) {
         boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
         int numChans = filterSettings.getChannelCount();
-        int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+3) + uiObjectHeight*(numChans+1) + lg_spacer*2;
-        int footerMinHeightY = headerHeight*2 + sm_spacer*3 + uiObjectHeight + lg_spacer;
+        int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+1) + lg_spacer*2 + expanderH;
+        int footerMinHeightY = headerHeight*2 + sm_spacer*4 + uiObjectHeight + lg_spacer + expanderH;
         footerObjY = showAllChannels ? footerMaxHeightY : footerMinHeightY;
     }
 
@@ -969,5 +1004,9 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void setMasterFilterSettingWasModified() {
         masterFilterSettingWasModified = true;
         masterFilterSettingWasModifiedFadeCounter = millis();
+    }
+
+    private void checkIfExpanderWasClicked() {
+        setUItoChannelMode(filterSettings.values.filterChannelSelect);
     }
 }
