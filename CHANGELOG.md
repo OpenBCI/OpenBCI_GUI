@@ -4,6 +4,7 @@
 * Stop data stream when no data received after 5 seconds #1011
 * Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
 * Fix dropdown backgrounds in Networking Widget
+* Update priveleges for Windows users and check if GUI has been run as Administrator
 
 ### Improvements
 * Add new FilterUI to allow custom filters per channel #988
