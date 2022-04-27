@@ -76,6 +76,10 @@ public boolean isElevationNeeded(String path) {
         if (path != null) {
             result = !canWrite(path);
         } else {
+            if (isMac()) {
+                //Mac user name is never simply "root"
+                return false;
+            }
             result = !System.getProperty("user.name").equals("root");
         }
     }
@@ -87,6 +91,9 @@ public boolean isElevationNeeded(String path) {
 * @return
 */
 public boolean isAdminUser() {
+    if (isMac()) {
+        return true;
+    }
     if (isWindows()) {
         try {
             String NTAuthority = "HKU\\S-1-5-19";
