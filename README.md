@@ -95,7 +95,7 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 
 Follow the guide to [Run the OpenBCI GUI From Processing IDE][link_gui_run_from_processing]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
-**Please use Processing 3.5.4 or 3.5.3 for all operating systems.**
+**Important: Please use Processing 3.5.4 or 3.5.3 for all operating systems.** Processing 4 is not ready for our use in production at this time.
 
 ### System Requirements
 #### Hardware
