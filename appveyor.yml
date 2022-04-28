@@ -11,11 +11,11 @@ environment:
   AWS_SECRET_ACCESS_KEY:
     secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
   PFX_PASS:
-    secure: JnQMob+NNaJaxMB1j2ZMpg==
+    secure: HFlvHivXXp6aQmUc3h1PBBga7E3ZyYaxwMuCjNasXZA=
   PFX_SECRET:
-    secure: o20Bd03q99GV8DP6ibmrIg==
+    secure: PcOXO1xDMa3VRUG6eW+91g==
   PFX_SALT:
-    secure: NbIEu7d842cTiczH+jvWB4KMwHT5thrhTv1YAiBbjph52IPcQtPMKO+0hxKCnAQB61TmSJkvXlO/rgG3NEzIUw==
+    secure: x/WLIGDVMCz3yYBVXVN6bjR7R2S40uCY54Q+bVbUMTi+5DW1MSYUcKX/qyzN750zNQZ5j1X4dbujBYnT3FdY6Q==
 
 build: off
 
@@ -30,7 +30,7 @@ install:
 
   # decrypt pfx file if env are set (not set in PR builds)
   - ps: if($env:PFX_SECRET) { iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1')) }
-  - ps: if($env:PFX_SECRET) { appveyor-tools\secure-file -decrypt $env:APPVEYOR_BUILD_FOLDER\release_script\windows_only\319685bff3b7c1b14816095b6cd23e38-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT }
+  - ps: if($env:PFX_SECRET) { appveyor-tools\secure-file -decrypt $env:APPVEYOR_BUILD_FOLDER\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT }
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
@@ -44,7 +44,7 @@ install:
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
   - python %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI_UnitTests\run-unittests.py
-  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\319685bff3b7c1b14816095b6cd23e38-SHA2.pfx
+  - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
   - set /p GUI_COMMIT_TIME= < temp\timestamp.txt
   - set /p GUI_VERSION_STRING= < temp\versionstring.txt
 
