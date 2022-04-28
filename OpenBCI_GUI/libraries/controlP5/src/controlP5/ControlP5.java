@@ -20,8 +20,8 @@ package controlP5;
  * Boston, MA 02111-1307 USA
  * 
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 04/07/2022
+ * @version 2.3.3
  * 
  */
 
@@ -96,7 +96,7 @@ public class ControlP5 extends ControlP5Base {
 	/**
 	 * @exclude
 	 */
-	@ControlP5.Invisible public static final String VERSION = "2.3.1";// "##version##";
+	@ControlP5.Invisible public static final String VERSION = "2.3.3";// "2.3.3";
 
 	/**
 	 * @exclude
@@ -241,7 +241,7 @@ public class ControlP5 extends ControlP5Base {
 	static int welcome = 0;
 
 	private void welcome( ) {
-		System.out.println( "ControlP5 " + VERSION + " " + "infos, comments, questions at http://www.sojamo.de/libraries/controlP5" );
+		System.out.println( "ControlP5 " + VERSION + " " + "infos, comments, questions at https://github.com/retiutut/controlp5" );
 	}
 
 	public ControlP5 setGraphics( PApplet theApplet , int theX , int theY ) {

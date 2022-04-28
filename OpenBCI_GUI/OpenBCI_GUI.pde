@@ -60,8 +60,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.0.9";
-String localGUIVersionDate = "October 2021";
+String localGUIVersionString = "v5.1.0-beta.1";
+String localGUIVersionDate = "April 2022";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -131,6 +131,8 @@ String ganglion_portName = "N/A";
 String wifi_portName = "N/A";
 String wifi_ipAddress = "192.168.4.1";
 
+String brainflowStreamer = "";
+
 ////// ---- Define variables related to OpenBCI board operations
 //Define number of channels from cyton...first EEG channels, then aux channels
 int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show fewer on the GUI
@@ -177,7 +179,7 @@ String playbackData_ShortName;
 boolean recentPlaybackFilesHaveUpdated = false;
 
 // Serial output
-Serial serial_output;
+processing.serial.Serial serial_output;
 
 //Control Panel for (re)configuring system settings
 PlotFontInfo fontInfo;
@@ -194,6 +196,7 @@ PImage cog;
 Gif loadingGIF;
 Gif loadingGIF_blue;
 
+PImage logo_black;
 PImage logo_blue;
 PImage logo_white;
 PImage consoleImgBlue;
@@ -294,6 +297,7 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 DirectoryManager directoryManager;
 SessionSettings settings;
 GuiSettings guiSettings;
+FilterSettings filterSettings;
 
 final int navBarHeight = 32;
 TopNav topNav;
@@ -362,7 +366,7 @@ void setup() {
     p5 = createFont("fonts/OpenSans-Regular.ttf", 12);
     p6 = createFont("fonts/OpenSans-Regular.ttf", 10);
 
-    cog = loadImage("cog_1024x1024.png");
+    cog = loadImage("obci-logo-blu-cog.png");
 
     // check if the current directory is writable
     File dummy = new File(sketchPath());
@@ -435,14 +439,25 @@ void delayedSetup() {
 
     //setup topNav
     topNav = new TopNav();
+    
+    //Print BrainFlow version
+    StringBuilder brainflowVersion = new StringBuilder("BrainFlow Version: ");
+    try {
+        brainflowVersion.append(BoardShim.get_version());
+    } catch (BrainFlowError e) {
+        e.printStackTrace();
+    }
+    println(brainflowVersion);
 
-    logo_blue = loadImage("logo_blue.png");
-    logo_white = loadImage("logo_white.png");
+
+    logo_black = loadImage("obci-logo-blk.png");
+    logo_blue = loadImage("obci-logo-blu.png");
+    logo_white = loadImage("obci-logo-wht.png");
     consoleImgBlue = loadImage("console-45x45-dots_blue.png");
     consoleImgWhite = loadImage("console-45x45-dots_white.png");
     loadingGIF = new Gif(this, "ajax_loader_gray_512.gif");
     loadingGIF.loop();
-    loadingGIF_blue = new Gif(this, "OpenBCI-LoadingGIF-blue-256.gif");
+    loadingGIF_blue = new Gif(this, "obci_cog_anim-normalblue.gif");
     loadingGIF_blue.loop();
 
     prepareExitHandler();
@@ -464,6 +479,10 @@ void delayedSetup() {
 
     //Apply GUI-wide settings to front end at the end of setup
     guiSettings.applySettings();
+
+    if (!isAdminUser() || isElevationNeeded()) {
+        outputError("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
+    }
 }
 
 //====================== END-OF-SETUP ==========================//
@@ -623,6 +642,24 @@ void initSystem() {
                 return;
             }
         }
+
+        //Show a popup to inform first-time Cyton users about the FTDI buffer fix and Cyton Smoothing feature. Fixes #1026
+        //Windows Users: Latest BrainFlow will automatically fix this in the background on Session Start! Fixed in #1039
+        if (guiSettings.getShowCytonSmoothingPopup()) {
+            println("OpenBCI_GUI: Showing Cyton FTDI Buffer Fix Popup");
+            String popupTitle = "Cyton FTDI Buffer Fix Info";
+            String popupString = "The default settings for the Cyton Dongle driver can make data appear \"choppy.\" Visit the OpenBCI Docs to learn how to fix this. For now, the GUI will \"smooth\" the data for you.";
+            String popupButtonText = "View Fix";
+            String popupButtonURL;
+            if (isMac()) {
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+                PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
+            } else if (isLinux()){
+                popupButtonURL = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+                PopupMessage msg = new PopupMessage(popupTitle, popupString, popupButtonText, popupButtonURL);
+            }
+            guiSettings.setShowCytonSmoothingPopup(false);
+        }
     }
 
     updateToNChan(currentBoard.getNumEXGChannels());
@@ -672,6 +709,11 @@ void initSystem() {
     
     //Make sure topNav buttons draw in the correct spot
     topNav.screenHasBeenResized(width, height);
+
+    //Instantiate Global Filter Settings Class
+    filterSettings = new FilterSettings(((DataSource)currentBoard));
+
+    verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + millis());
 
     midInit = false;
 } //end initSystem
@@ -735,10 +777,10 @@ void initFFTObjectsAndBuffer() {
 
 void startRunning() {
     // start streaming on the chosen board
+    dataLogger.onStartStreaming();
     currentBoard.startStreaming();
     if (currentBoard.isStreaming()) {
         output("Data stream started.");
-        dataLogger.onStartStreaming();
         // todo: this should really be some sort of signal that listeners can register for "OnStreamStarted"
         // close hardware settings if user starts streaming
         w_timeSeries.closeADSSettings();
@@ -827,7 +869,8 @@ void systemUpdate() { // for updating data values and variables
     //prepare for updating the GUI
     win_w = width;
     win_h = height;
-    textFieldIsActive = false;
+    
+    textfieldUpdateHelper.resetTextFieldIsActive();
 
     currentBoard.update();
 

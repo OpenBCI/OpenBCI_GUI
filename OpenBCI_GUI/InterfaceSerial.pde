@@ -43,7 +43,7 @@ int numPacketsDroppedSerial = 0;
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
-void serialEvent(Serial port){
+void serialEvent(processing.serial.Serial port){
     //check to see which serial port it is
     if (iSerial.isOpenBCISerial(port)) {
 
@@ -122,7 +122,7 @@ void serialEvent(Serial port){
 class InterfaceSerial {
 
     //here is the serial port for this OpenBCI board
-    private Serial serial_openBCI = null;
+    private processing.serial.Serial serial_openBCI = null;
     private boolean portIsOpen = false;
 
     //final static int DATAMODE_TXT = 0;
@@ -223,7 +223,7 @@ class InterfaceSerial {
         output("Attempting to open Serial/COM port: " + openBCI_portName);
         try {
             println("InterfaceSerial: openSerialPort: attempting to open serial port: " + openBCI_portName);
-            serial_openBCI = new Serial(applet, comPort, baud); //open the com port
+            serial_openBCI = new processing.serial.Serial(applet, comPort, baud); //open the com port
             serial_openBCI.clear(); // clear anything in the com port's buffer
             portIsOpen = true;
             println("InterfaceSerial: openSerialPort: port is open (t)? ... " + portIsOpen);
@@ -320,7 +320,7 @@ class InterfaceSerial {
             return false;
         }
     }
-    public boolean isOpenBCISerial(Serial port) {
+    public boolean isOpenBCISerial(processing.serial.Serial port) {
         if (serial_openBCI == port) {
             return true;
         } else {

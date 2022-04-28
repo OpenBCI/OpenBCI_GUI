@@ -1,92 +1,151 @@
-public enum BandStopRanges
+interface FilterSettingsEnum {
+    public String getString();
+}
+
+public enum BFFilter implements FilterSettingsEnum
 {
-    Sixty(0, 60.0d),
-    Fifty(1, 50.0d),
-    None(2, null);
+    BANDSTOP (0, "BandStop"),
+    BANDPASS (1, "BandPass");
 
     private int index;
-    private Double freq;
-
-    private static BandStopRanges[] vals = values();
+    private String name;
  
-    BandStopRanges(int index, Double freq) {
+    BFFilter(int index, String name) {
         this.index = index;
-        this.freq = freq;
+        this.name = name;
     }
 
     public int getIndex() {
         return index;
     }
- 
-    public Double getFreq() {
-        return freq;
-    }
-
-    public static BandStopRanges getByIndex(int i)
-    {
-        return vals[i];
-    }
-
-    public BandStopRanges next()
-    {
-        return vals[(this.ordinal() + 1) % vals.length];
-    }
-
-    public String getDescr() {
-        if (freq == null) {
-            return "None";
-        }
-        return freq.intValue() + "Hz";
+    
+    public String getString() {
+        return name;
     }
 }
 
-public enum BandPassRanges
+public enum FilterChannelSelect implements FilterSettingsEnum
 {
-    FiveToFifty(0, 5.0d, 50.0d),
-    SevenToThirteen(1, 7.0d, 13.0d),
-    FifteenToFifty(2, 15.0d, 50.0d),
-    OneToFifty(3, 1.0d, 50.0d),
-    OneToHundred(4, 1.0d, 100.0d),
-    None(5, null, null);
+    ALL_CHANNELS (0, "All Channels"),
+    CUSTOM_CHANNELS (1, "Per Channel");
 
     private int index;
-    private Double start;
-    private Double stop;
-
-    private static BandPassRanges[] vals = values();
+    private String name;
  
-    BandPassRanges(int index, Double start, Double stop) {
+    FilterChannelSelect(int index, String name) {
         this.index = index;
-        this.start = start;
-        this.stop = stop;
+        this.name = name;
     }
 
     public int getIndex() {
         return index;
     }
- 
-    public Double getStart() {
-        return start;
+
+    public String getString() {
+        return name;
+    }
+}
+
+enum GlobalEnvironmentalFilter implements FilterSettingsEnum {
+    FIFTY (0, "50 Hz"),
+    SIXTY (1, "60 Hz"),
+    FIFTY_AND_SIXTY (2, "50 + 60 Hz"),
+    NONE (3, "None");
+
+    private int index;
+    private String name;
+
+    GlobalEnvironmentalFilter(int index, String name) {
+        this.index = index;
+        this.name = name;
     }
 
-    public Double getStop() {
-        return stop;
+    public int getIndex() {
+        return index;
     }
 
-    public static BandPassRanges getByIndex(int i)
-    {
-        return vals[i];
+    public String getString() {
+        return name;
+    }
+}
+
+enum FilterActiveOnChannel implements FilterSettingsEnum {
+    ON (0, "Active"),
+    OFF (1, "Inactive");
+
+    private int index;
+    private String name;
+
+    FilterActiveOnChannel(int index, String name) {
+        this.index = index;
+        this.name = name;
     }
 
-    public BandPassRanges next()
-    {
-        return vals[(this.ordinal() + 1) % vals.length];
+    public int getIndex() {
+        return index;
     }
 
-    public String getDescr() {
-        if ((start == null) || (stop == null)) {
-            return "None";
-        }
-        return start.intValue() + "-" + stop.intValue() + "Hz";
+    public String getString() {
+        return name;
+    }
+
+    public boolean isActive() {
+        return name.equals("Active");
+    }
+}
+
+enum BrainFlowFilterType implements FilterSettingsEnum {
+    BUTTERWORTH (0, "Butterworth", FilterTypes.BUTTERWORTH.get_code()),
+    CHEBYSHEV (1, "Chebyshev", FilterTypes.CHEBYSHEV_TYPE_1.get_code()),
+    BESSEL (2, "Bessel", FilterTypes.BESSEL.get_code());
+
+    private int index;
+    private String name;
+    private int value;
+
+    BrainFlowFilterType(int index, String name, int value) {
+        this.index = index;
+        this.name = name;
+        this.value = value;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+
+    private int getValue() {
+        return value;
+    }
+}
+
+public enum BrainFlowFilterOrder implements FilterSettingsEnum {
+    TWO (0, "2", 2),
+    THREE (1, "3", 3),
+    FOUR (2, "4", 4);
+
+    private int index;
+    private String name;
+    private int value;
+
+    BrainFlowFilterOrder(int index, String name, int value) {
+        this.index = index;
+        this.name = name;
+        this.value = value;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getString() {
+        return name;
+    }
+
+    public int getValue() {
+        return value;
     }
 }

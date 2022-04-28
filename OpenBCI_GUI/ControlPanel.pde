@@ -58,6 +58,10 @@ class ControlPanel {
     SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
+    BrainFlowStreamerBox bfStreamerBoxCyton;
+    BrainFlowStreamerBox bfStreamerBoxGanglion;
+    BrainFlowStreamerBox bfStreamerBoxGalea;
+    BrainFlowStreamerBox bfStreamerBoxSynthetic;
 
     ChannelPopup channelPopup;
     RadioConfigBox rcBox;
@@ -93,13 +97,15 @@ class ControlPanel {
         rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
 
         serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
-        wifiBox = new WifiBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
+        wifiBox = new WifiBox(x + w + x + w - 3, interfaceBoxCyton.y, w, h, globalPadding);
 
-        dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON, dataLogger.getDataLoggerOutputFormat(), "sessionNameCyton");
-        channelCountBox = new ChannelCountBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding);
-        synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
-        sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
+        channelCountBox = new ChannelCountBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
+        dataLogBoxCyton = new SessionDataBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding, DATASOURCE_CYTON, dataLogger.getDataLoggerOutputFormat(), "sessionNameCyton");
+        bfStreamerBoxCyton = new BrainFlowStreamerBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding, "bfStreamerCyton");
+        sdBox = new SDBox(x + w, (bfStreamerBoxCyton.y + bfStreamerBoxCyton.h), w, h, globalPadding);
+        
+        //Draw this to the right of the other cyton boxes
+        sampleRateCytonBox = new SampleRateCytonBox(wifiBox.x, wifiBox.y + wifiBox.h, w, h, globalPadding);
         
         //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
@@ -108,6 +114,10 @@ class ControlPanel {
 
         galeaBox = new GaleaBox(x + w, dataSourceBox.y, w, h, globalPadding);
         dataLogBoxGalea = new SessionDataBox(x + w, (galeaBox.y + galeaBox.h), w, h, globalPadding, DATASOURCE_GALEA, dataLogger.getDataLoggerOutputFormat(), "sessionNameGalea");
+        bfStreamerBoxGalea = new BrainFlowStreamerBox(x + w, (dataLogBoxGalea.y + dataLogBoxGalea.h), w, h, globalPadding, "bfStreamerGalea");
+
+        synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        bfStreamerBoxSynthetic = new BrainFlowStreamerBox(x + w, (synthChannelCountBox.y + synthChannelCountBox.h), w, h, globalPadding, "bfStreamerSynthetic");
         
         streamingBoardBox = new StreamingBoardBox(x + w, dataSourceBox.y, w, h, globalPadding);
 
@@ -118,7 +128,9 @@ class ControlPanel {
         // Ganglion
         bleBox = new BLEBox(x + w, interfaceBoxGanglion.y + interfaceBoxGanglion.h, w, h, globalPadding);
         dataLogBoxGanglion = new SessionDataBox(x + w, (bleBox.y + bleBox.h), w, h, globalPadding, DATASOURCE_GANGLION, dataLogger.getDataLoggerOutputFormat(), "sessionNameGanglion");
-        sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding);
+        bfStreamerBoxGanglion = new BrainFlowStreamerBox(x + w, (dataLogBoxGanglion.y + dataLogBoxGanglion.h), w, h, globalPadding, "bfStreamerGanglion");
+        sampleRateGanglionBox = new SampleRateGanglionBox(x + w, (bfStreamerBoxGanglion.y + bfStreamerBoxGanglion.h), w, h, globalPadding);
+
     }
 
     public void resetListItems(){
@@ -163,6 +175,11 @@ class ControlPanel {
 
         streamingBoardBox.update();
 
+        bfStreamerBoxCyton.update();
+        bfStreamerBoxGanglion.update();
+        bfStreamerBoxGalea.update();
+        bfStreamerBoxSynthetic.update();
+
         sdBox.update();
         rcBox.update();
         comPortBox.update();
@@ -191,14 +208,12 @@ class ControlPanel {
 
             //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
-                if (selectedProtocol == BoardProtocol.NONE) {
-                    interfaceBoxCyton.draw();
-                } else {
-                    interfaceBoxCyton.draw();
+                interfaceBoxCyton.draw();
+                if (selectedProtocol != BoardProtocol.NONE) {
                     if (selectedProtocol == BoardProtocol.SERIAL) {
                         serialBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
                         serialBox.draw();
-                        dataLogBoxCyton.y = serialBox.y + serialBox.h; 
+                        channelCountBox.y = serialBox.y + serialBox.h;
                         if (rcBox.isShowing) {
                             comPortBox.draw();
                             rcBox.draw();
@@ -208,18 +223,19 @@ class ControlPanel {
                             }
                         }
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
-                        wifiBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
-
+                        wifiBox.y = interfaceBoxCyton.y;
+                        wifiBox.x = interfaceBoxCyton.x + interfaceBoxCyton.w;
+                        sampleRateCytonBox.y = wifiBox.y + wifiBox.h;
+                        channelCountBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
                         wifiBox.draw();
-                        dataLogBoxCyton.y = wifiBox.y + wifiBox.h;
-
                         sampleRateCytonBox.draw();
                     }
-                    channelCountBox.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
-                    sdBox.y = channelCountBox.y + channelCountBox.h;
-                    sampleRateCytonBox.y = channelCountBox.y;
+                    dataLogBoxCyton.y = channelCountBox.y + channelCountBox.h;
+                    bfStreamerBoxCyton.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
+                    sdBox.y = bfStreamerBoxCyton.y + bfStreamerBoxCyton.h;
                     channelCountBox.draw();
                     sdBox.draw();
+                    bfStreamerBoxCyton.draw();
                     dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
@@ -228,9 +244,11 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_GALEA) {
                 dataLogBoxGalea.y = galeaBox.y + galeaBox.h;  
                 dataLogBoxGalea.draw();
+                bfStreamerBoxGalea.draw();
                 galeaBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
+                bfStreamerBoxSynthetic.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 if (selectedProtocol == BoardProtocol.NONE) {
                     interfaceBoxGanglion.draw();
@@ -241,12 +259,16 @@ class ControlPanel {
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
                     } else if (selectedProtocol == BoardProtocol.WIFI) {
-                        wifiBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
-                        dataLogBoxGanglion.y = wifiBox.y + wifiBox.h;
+                        wifiBox.y = interfaceBoxGanglion.y;
+                        wifiBox.x = interfaceBoxGanglion.x + interfaceBoxGanglion.w;
+                        sampleRateGanglionBox.y = wifiBox.y + wifiBox.h;
+                        sampleRateGanglionBox.x = wifiBox.x;
+                        dataLogBoxGanglion.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         wifiBox.draw();
-                        sampleRateGanglionBox.y = dataLogBoxGanglion.y +dataLogBoxGanglion.h;
                         sampleRateGanglionBox.draw();
                     }
+                    bfStreamerBoxGanglion.y = dataLogBoxGanglion.y + dataLogBoxGanglion.h;
+                    bfStreamerBoxGanglion.draw();
                     dataLogBoxGanglion.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
             } else if (eegDataSource == DATASOURCE_STREAMING) {
@@ -279,6 +301,49 @@ class ControlPanel {
 
     private void hideChannelListCP() {
         channelPopup.setClicked(false);
+    }
+
+    public void setDataLoggerOutputs() {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            // Store the current text field value of "Session Name" to be passed along to dataFiles
+            dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            dataLogger.setSessionName(directoryManager.getFileNameDateTime());
+        }
+    }
+
+    public void setBrainFlowStreamerOutput() {
+        if (getIsBrainFlowSteamerDefaultFileOutput()) {
+            dataLogger.setBfWriterDefaultFolder();
+        }
+
+        if (eegDataSource == DATASOURCE_CYTON) {
+            brainflowStreamer = bfStreamerBoxCyton.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            brainflowStreamer = bfStreamerBoxGanglion.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            brainflowStreamer = bfStreamerBoxGalea.getBrainFlowStreamerString();
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            brainflowStreamer = bfStreamerBoxSynthetic.getBrainFlowStreamerString();
+        }
+    }
+
+    private boolean getIsBrainFlowSteamerDefaultFileOutput() {
+        boolean b = false;
+        if (eegDataSource == DATASOURCE_CYTON) {
+            b = bfStreamerBoxCyton.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            b = bfStreamerBoxGanglion.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            b = bfStreamerBoxGalea.getIsBrainFlowStreamerDefaultLocation();
+        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+            b = bfStreamerBoxSynthetic.getIsBrainFlowStreamerDefaultLocation();
+        }
+        return b;
     }
 
 }; //end of ControlPanel class
@@ -797,6 +862,8 @@ class WifiBox {
         text("WIFI SHIELDS", x + padding, y + padding);
         popStyle();
 
+        wifiDynamic_x = x + padding;
+        wifiStatic_x = x + padding*2 + (w-padding*3)/2;
         wifiButtons_y = y + padding*2 + 16;
         wifiIPAddressDynamic.setPosition(wifiDynamic_x, wifiButtons_y);
         wifiIPAddressStatic.setPosition(wifiStatic_x, wifiButtons_y);
@@ -812,7 +879,8 @@ class WifiBox {
         } else {
             wifiList.setPosition(x + padding, wifiButtons_y + 24 + padding);
 
-            refreshWifi_y = y + h - padding - 24;
+            refreshWifi_x = x + padding;
+            refreshWifi_y = y + padding*5 + 72 + 8 + 24;
             refreshWifi.setPosition(refreshWifi_x, refreshWifi_y);
 
             String boardIpInfo = "BOARD IP: ";
@@ -823,18 +891,18 @@ class WifiBox {
             fill(OPENBCI_DARKBLUE);
             textFont(h3, 16);
             textAlign(LEFT, TOP);
-            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 46);
+            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 15);
             popStyle();
 
             if (wifiIsRefreshing){
                 //Display spinning cog gif
-                image(loadingGIF_blue, w + 225,  refreshWifi_y + 4, 20, 20);
+                image(loadingGIF_blue, x + 225,  refreshWifi_y + 4, 20, 20);
             } else {
                 //Draw small grey circle
                 pushStyle();
                 fill(#999999);
                 ellipseMode(CENTER);
-                ellipse(w + 225 + 10, refreshWifi_y + 12, 12, 12);
+                ellipse(x + 225 + 10, refreshWifi_y + 12, 12, 12);
                 popStyle();
             }
         }
@@ -1264,10 +1332,10 @@ class SessionDataBox {
     }
 
     private void createMaxDurationDropdown(String name, List<String> _items){
-        maxDurationDropdown = new CustomScrollableList(sessionData_cp5, name)
+        maxDurationDropdown = sessionData_cp5.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             //.setColorBackground(color(31,69,110)) // text field bg color
             //.setColorValueLabel(color(0))       // text color
             //.setColorCaptionLabel(color(255))
@@ -1539,6 +1607,8 @@ class SampleRateGanglionBox {
     }
 
     public void draw() {
+        sr200_butX = x + padding;
+        sr1600_butX = x + padding*2 + (w-padding*3)/2;
         srButton_butY =  y + padding*2 + 18;
         sampleRate200.setPosition(sr200_butX, srButton_butY);
         sampleRate1600.setPosition(sr1600_butX, srButton_butY);
@@ -1912,7 +1982,7 @@ class RecentPlaybackBox {
     }
 
     void createRecentPlaybackFilesDropdown(String name, List<String> _items){
-        recentPlaybackSL = new CustomScrollableList(rpb_cp5, name)
+        recentPlaybackSL = rpb_cp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
@@ -2057,14 +2127,14 @@ class GaleaBox {
     }
 
     private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
-        ScrollableList list = new CustomScrollableList(localCP5, name)
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, uiElementH)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2142,6 +2212,292 @@ class GaleaBox {
     public String getIPAddress() {
         return ipAddress;
     }
+};
+
+class BrainFlowStreamerBox {
+    public int x, y, w, h, padding; //size and position
+    private ControlP5 bfStreamerCp5;
+    private int maxDurTextWidth = 82;
+    private int maxDurText_x = 0;
+    private Textfield ipAddress;
+    private Textfield port;
+    private Button autoSessionName;
+    private Button outputToNetwork;
+    private Button outputToFile;
+    private ScrollableList bfFileSaveOption;
+    private DataWriterBFEnum dataWriterBfEnum = DataWriterBFEnum.DEFAULT;
+    private final int HEADER_H = 14;
+    private final int OBJECT_H = 24;
+    private final String DEFAULT_IP_ADDRESS = "225.1.1.1";
+    private final String DEFAULT_PORT = "6677";
+
+    BrainFlowStreamerBox (int _x, int _y, int _w, int _h, int _padding, String textfieldName) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = HEADER_H + OBJECT_H*2 + _padding*4;
+        padding = _padding;
+
+        //Instantiate local cp5 for this box
+        bfStreamerCp5 = new ControlP5(ourApplet);
+        bfStreamerCp5.setGraphics(ourApplet, 0,0);
+        bfStreamerCp5.setAutoDraw(false);
+
+        createDropdown("bfFileSaveOption");
+        createNetworkTextfields();
+
+        //button to autogenerate file name based on time/date
+        createStreamNetworkButton("networkButton", "Network", x + padding, y + 32, (w-padding*3)/2, OBJECT_H);
+        createStreamFileButton("fileButton", "File", x + padding*2 + (w-padding*3)/2, y + 32, (w-padding*3)/2, OBJECT_H);
+    }
+
+    public void update() {
+        copyPaste.checkForCopyPaste(ipAddress);
+        copyPaste.checkForCopyPaste(port);
+    }
+
+        public void draw() {
+        int streamerTextfieldY = y + padding*3 + HEADER_H + OBJECT_H;
+
+        bfFileSaveOption.setVisible(outputToFile.isOn());
+        ipAddress.setVisible(outputToNetwork.isOn());
+        port.setVisible(outputToNetwork.isOn());
+
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w, h);
+        fill(OPENBCI_DARKBLUE);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("BRAINFLOW STREAMER", x + padding, y + padding);
+        textFont(p4, 14);
+        if (outputToFile.isOn()) {
+            text("Location", x + padding, streamerTextfieldY + 2);
+        } else if (outputToNetwork.isOn()) {
+            text("IP", x + padding, streamerTextfieldY + 2);
+            text("Port", x + w - padding*2 - port.getWidth() - 14 - padding, streamerTextfieldY + 2);
+        }
+        popStyle();
+        
+        //Update the position of UI elements here
+        outputToNetwork.setPosition(x + padding, y + HEADER_H + padding*2);
+        outputToFile.setPosition(x + padding*2 + (w-padding*3)/2, y + HEADER_H + padding*2);
+        bfFileSaveOption.setPosition(x + 80, streamerTextfieldY);
+        ipAddress.setPosition(x + padding * 3, streamerTextfieldY);
+        port.setPosition(x + w - padding - port.getWidth(), streamerTextfieldY);
+        
+        bfStreamerCp5.draw();
+    }
+
+    private void createNetworkTextfields() {
+        ipAddress = bfStreamerCp5.addTextfield("ipAddress")
+            .setPosition(x + padding * 3, y + HEADER_H + padding*2)
+            .setCaptionLabel("")
+            .setSize(120, OBJECT_H)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(DEFAULT_IP_ADDRESS) //default ipAddress == ""
+            .align(5, 10, 20, 40)
+            //.onDoublePress(cb)
+            .addCallback(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && ipAddress.getText().equals("")) {
+                            ipAddress.setText(DEFAULT_IP_ADDRESS);
+                        }
+                    }
+                })
+            .onReleaseOutside(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        if (!ipAddress.isActive() && ipAddress.getText().equals("")) {
+                            ipAddress.setText(DEFAULT_IP_ADDRESS);
+                        }
+                    }
+                })
+            .onDoublePress(cb);
+        
+        port = bfStreamerCp5.addTextfield("port")
+            .setPosition(x + padding*5 + w/2, y + HEADER_H + padding*2)
+            .setCaptionLabel("")
+            .setSize(50, OBJECT_H)
+            .setFont(f2)
+            .setFocus(false)
+            .setColor(color(26, 26, 26))
+            .setColorBackground(color(255, 255, 255)) // text field bg color
+            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorActive(isSelected_color)  // border color when selected
+            .setColorCursor(color(26, 26, 26))
+            .setText(DEFAULT_PORT) //default port == 0
+            .align(5, 10, 20, 40)
+            //.onDoublePress(cb)
+            .addCallback(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && port.getText().equals("")) {
+                            port.setText(DEFAULT_PORT);
+                        }
+                    }
+                })
+            .onReleaseOutside(new CallbackListener() {
+                    public void controlEvent(CallbackEvent theEvent) {
+                        if (!port.isActive() && port.getText().equals("")) {
+                            port.setText(DEFAULT_PORT);
+                        }
+                    }
+                })
+            .onDoublePress(cb);
+    }
+
+    private Button createBrainFlowOutputToggle(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        final Button b = createButton(bfStreamerCp5, name, text, _x, _y, _w, _h);
+        b.setSwitch(true); //This turns the button into a switch
+        if (isToggled) {
+            b.setOn();
+        }
+        return b;
+    }
+
+    private void createStreamNetworkButton(String name, String text, int _x, int _y, int _w, int _h) {
+        outputToNetwork = createBrainFlowOutputToggle(name, text, false, _x, _y, _w, _h);
+        outputToNetwork.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //output(odfMessage);
+                //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
+                outputToNetwork.setOn();
+                outputToFile.setOff();
+                //setToODFHeight();
+            }
+        });
+        outputToNetwork.setDescription("Use BrainFlow Streamer to output to network address. You can accept this data stream using a separate process which utilizes any BrainFlow binding. This is a helpful feature for developers.");
+    }
+
+    private void createStreamFileButton(String name, String text, int _x, int _y, int _w, int _h) {
+        outputToFile = createBrainFlowOutputToggle(name, text, true, _x, _y, _w, _h);
+        outputToFile.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                //output(bdfMessage);
+                //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
+                outputToNetwork.setOff();
+                outputToFile.setOn();
+                //setToBDFHeight();
+            }
+        });
+        outputToFile.setDescription("Set BrainFlow Streamer output to stream over network. A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
+    }
+
+    private void createDropdown(String name){
+        bfFileSaveOption = bfStreamerCp5.addScrollableList(name)
+            .setOpen(false)
+            .setColor(settings.dropdownColors)
+            .setOutlineColor(150)
+            .setSize(167, (dataWriterBfEnum.values().length + 1) * 24)
+            .setBarHeight(24) //height of top/primary bar
+            .setItemHeight(24) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        for (DataWriterBFEnum value : dataWriterBfEnum.values()) {
+            // this will store the *actual* enum object inside the dropdown!
+            bfFileSaveOption.addItem(value.getString(), value);
+        }
+        bfFileSaveOption.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(dataWriterBfEnum.getString())
+            .setFont(p4)
+            .setSize(14)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        bfFileSaveOption.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(dataWriterBfEnum.getString())
+            .setFont(h5)
+            .setSize(12) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+        bfFileSaveOption.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
+                    int val = (int)(theEvent.getController()).getValue();
+                    Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+                    dataWriterBfEnum = (DataWriterBFEnum)bob.get("value");
+                    StringBuilder sb = new StringBuilder("BrainFlow File Streamer: User selected ");
+                    sb.append(dataWriterBfEnum.getString());
+                    sb.append(" file location.");
+                    output(sb.toString());
+                    if (dataWriterBfEnum.getIsCustomLocation()) {
+                        selectOutput("Select a folder to save BrainFlow CSV files to:", 
+                                "bfSelectedFolder",
+                                new File(directoryManager.getRecordingsPath())
+                        );
+                    }
+                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
+                    lockOutsideElements(true);
+                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
+                    lockOutsideElements(false);
+                }
+            }
+        });
+        bfFileSaveOption.setPosition(x + 10, y + 10); //Set arbitrary position to start, gets reset on every draw
+    }
+
+    private String getBFNetworkTextfieldsAsString() {
+        StringBuilder sb = new StringBuilder("streaming_board://");
+        sb.append(ipAddress.getText());
+        sb.append(":");
+        sb.append(port.getText());
+        return sb.toString();
+    }
+
+    private String getBFFileLocationAsString() {
+        if (dataLogger.getBfWriterFilePath() == null || dataWriterBfEnum.getIsTurnedOff()) {
+            return null;
+        }
+        return dataLogger.getBfWriterFilePath();
+    }
+
+    public String getBrainFlowStreamerString() {
+        String s = outputToNetwork.isOn() ? getBFNetworkTextfieldsAsString() : getBFFileLocationAsString();
+        return s;
+    }
+
+    public boolean getIsBrainFlowStreamerDefaultLocation() {
+        return outputToFile.isOn() && dataWriterBfEnum.getIsDefaultLocation();
+    }
+
+    // True locks elements, False unlocks elements
+    private void lockOutsideElements (boolean _toggle) {
+        if (eegDataSource == DATASOURCE_CYTON) {
+            //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
+            controlPanel.channelCountBox.lockCp5Objects(_toggle);
+            if (_toggle) {
+                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
+            } else {
+                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).unlock();
+            }
+            controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
+        }
+    }
+
+    public void lockSessionDataBoxCp5Elements(boolean b) {
+        ipAddress.setLock(b);
+        port.setLock(b);
+    }
+
+    //Clear text field on double-click
+    CallbackListener cb = new CallbackListener() { 
+        public void controlEvent(CallbackEvent theEvent) {
+            Textfield tf = ((Textfield)theEvent.getController());
+            tf.clear();
+        }
+    };
 };
 
 class StreamingBoardBox {
@@ -2237,14 +2593,14 @@ class StreamingBoardBox {
     }
 
     private ScrollableList createDropdown(String name, BrainFlowStreaming_Boards[] enumValues){
-        ScrollableList list = new CustomScrollableList(localCP5, name)
+        ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, objectH)//temporary size
             .setBarHeight(objectH) //height of top/primary bar
             .setItemHeight(objectH) //height of all item/dropdown bars
@@ -2293,7 +2649,7 @@ class StreamingBoardBox {
     //Clear text field on double-click
     CallbackListener cb = new CallbackListener() { 
         public void controlEvent(CallbackEvent theEvent) {
-            port.clear();
+            ((Textfield)(theEvent.getController())).clear();
         }
     };
 };
@@ -2425,10 +2781,10 @@ class SDBox {
 
     private void createDropdown(String name){
 
-        sdList = new CustomScrollableList(cp5_sdBox, name)
+        sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
             .setColor(settings.dropdownColors)
-            .setBackgroundColor(150)
+            .setOutlineColor(150)
             .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
             .setItemHeight(24) //height of all item/dropdown bars
@@ -2755,16 +3111,9 @@ class InitBox {
                 setInitSessionButtonText("STOP SESSION");
                 // Global steps to START SESSION
                 // Prepare the serial port
-                if (eegDataSource == DATASOURCE_CYTON) {
-                    // Store the current text field value of "Session Name" to be passed along to dataFiles
-                    dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_GANGLION) {
-                    dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
-                } else if (eegDataSource == DATASOURCE_GALEA) {
-                    dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
-                } else {
-                    dataLogger.setSessionName(directoryManager.getFileNameDateTime());
-                }
+
+                //Set data logger outputs to save data to BDF or CSV
+                controlPanel.setDataLoggerOutputs();
 
                 if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
                     wifi_ipAddress = controlPanel.wifiBox.staticIPAddressTF.getText();

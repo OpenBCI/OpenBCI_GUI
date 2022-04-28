@@ -28,7 +28,6 @@ class W_Networking extends Widget {
     ControlP5 cp5_networking_baudRate;
     ControlP5 cp5_networking_portName;
 
-    boolean dataDropdownsShouldBeClosed = false;
     // CColor dropdownColors_networking = new CColor();
 
     // PApplet ourApplet;
@@ -125,6 +124,8 @@ class W_Networking extends Widget {
 
     HashMap<String, Object> cp5Map = new HashMap<String, Object>();
 
+    List<controlP5.Controller> cp5ElementsToCheck;
+
     W_Networking(PApplet _parent) {
         super(_parent);
         // ourApplet = _parent;
@@ -150,27 +151,30 @@ class W_Networking extends Widget {
         }
         defaultBaud = "57600";
         baudRates = Arrays.asList(settings.nwBaudRatesArray);
-        protocolMode = "Serial"; //default to Serial
+        protocolMode = "UDP"; //Set Default to UDP
+        protocolIndex = 2; //Set Default to UDP 
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
-        comPorts = new ArrayList<String>(Arrays.asList(Serial.list()));
+        comPorts = new ArrayList<String>(Arrays.asList(processing.serial.Serial.list()));
         verbosePrint("comPorts = " + comPorts);
         comPortToSave = 0;
 
 
         initialize_UI();
-        cp5_networking.setAutoDraw(false);
-        cp5_networking_dropdowns.setAutoDraw(false);
-        cp5_networking_portName.setAutoDraw(false);
-        cp5_networking_baudRate.setAutoDraw(false);
 
-        fetchCP5Data();
+        putCP5DataIntoMap();
         
         dataBufferToSend = new float[currentBoard.getNumEXGChannels()][nPointsPerUpdate];
         dataAccumulationQueue = new LinkedList<double[]>();
+
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller)guideButton);
+        cp5ElementsToCheck.add((controlP5.Controller)dataOutputsButton);
+        cp5ElementsToCheck.add((controlP5.Controller)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1"));
+        cp5ElementsToCheck.add((controlP5.Controller)cp5_networking_baudRate.get(ScrollableList.class, "baud_rate"));
     }
 
     //Used to update the Hashmap
-    public void fetchCP5Data() {
+    public void putCP5DataIntoMap() {
         for (int i = 0; i < datatypeNames.length; i++) {
             //datatypes
             cp5Map.put(datatypeNames[i], int(cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).getValue()));
@@ -219,16 +223,10 @@ class W_Networking extends Widget {
 
         checkTopNovEvents();
 
-        //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(guideButton);
-        lockElementOnOverlapCheck(dataOutputsButton);
+        //lock left button interaction and certain dropdowns when widgetSelector dropdown is active
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
         filterButtonsCheck();
-
-        if (dataDropdownsShouldBeClosed) { //this if takes care of the scenario where you select the same widget that is active...
-            dataDropdownsShouldBeClosed = false;
-        } else {
-            openCloseDropdowns();
-        }
+        checkOverlappingSerialDropdown();
 
         if (protocolMode.equals("OSC")) {
             cp5ElementsAreActive = textfieldsAreActive(oscTextFieldNames);
@@ -253,7 +251,7 @@ class W_Networking extends Widget {
         if (cp5ElementsAreActive != previousCP5State) {
             if (!cp5ElementsAreActive) {
                 //Cp5 textfield elements state change from 1 to 0, so save cp5 data
-                fetchCP5Data();
+                putCP5DataIntoMap();
             }
             previousCP5State = cp5ElementsAreActive;
         }
@@ -263,6 +261,9 @@ class W_Networking extends Widget {
 
             checkIfEnoughDataToSend();
         }
+
+        //Check if any textfields are active and also for copy/paste if active
+        updateNetworkingTextfields();
     }
 
     private void accumulateNewData() {
@@ -375,6 +376,11 @@ class W_Networking extends Widget {
         cp5_networking_dropdowns = new ControlP5(pApplet);
         cp5_networking_baudRate = new ControlP5(pApplet);
         cp5_networking_portName = new ControlP5(pApplet);
+        
+        cp5_networking.setAutoDraw(false);
+        cp5_networking_dropdowns.setAutoDraw(false);
+        cp5_networking_portName.setAutoDraw(false);
+        cp5_networking_baudRate.setAutoDraw(false);
 
         /* Textfields */
         // OSC
@@ -591,9 +597,9 @@ class W_Networking extends Widget {
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
 
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_dropdowns, name)
+        ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
-
+                .setOutlineColor(color(0))
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -628,9 +634,9 @@ class W_Networking extends Widget {
     }
 
     void createBaudDropdown(String name, List<String> _items) {
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_baudRate, name)
+        ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name)
                 .setOpen(false)
-
+                .setOutlineColor(color(0))
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -666,8 +672,9 @@ class W_Networking extends Widget {
 
     void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
         if (isEmpty) _items.add("None"); // Fix #642 and #637
-        ScrollableList scrollList = new CustomScrollableList(cp5_networking_portName, name)
+        ScrollableList scrollList = cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
+            .setOutlineColor(color(0))
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
@@ -724,6 +731,14 @@ class W_Networking extends Widget {
         }
     }
 
+    //loop through networking textfields and find out if any are active
+    private void updateNetworkingTextfields(){
+        List<Textfield> allTextfields = cp5_networking.getAll(Textfield.class);
+        for(int i = 0; i < allTextfields.size(); i++){
+            textfieldUpdateHelper.checkTextfield(allTextfields.get(i));
+        }
+    }
+
     void screenResized() {
         super.screenResized();
 
@@ -733,8 +748,17 @@ class W_Networking extends Widget {
         cp5_networking_baudRate.setGraphics(pApplet, 0,0);
         cp5_networking_portName.setGraphics(pApplet, 0,0);
 
+        //scale the item width of all elements in the networking widget
+        itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
+
         column0 = x+w/22-12;
         int widthd = 46;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
+
+        if (protocolMode.equals("UDP") || protocolMode.equals("LSL")) {
+            widthd = 38;
+            itemWidth = int(map(width, 1024, 1920, 120, 140)) - 4;
+        }
+
         column1 = x+12*w/widthd-25;//This value has been fine-tuned to look proper in windowed mode 1024*768 and fullscreen on 1920x1080
         column2 = x+(12+9*1)*w/widthd-25;
         column3 = x+(12+9*2)*w/widthd-25;
@@ -755,11 +779,8 @@ class W_Networking extends Widget {
         guideButton.setPosition(x0 + 2, y0 + navH + 2);
         dataOutputsButton.setPosition(x0 + 2*2 + guideButton.getWidth() , y0 + navH + 2);
 
-        //scale the item width of all elements in the networking widget
-        itemWidth = int(map(width, 1024, 1920, 100, 120)) - 4;
-        
         int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
-        int dropdownHeight = (dropdownsItemsToShow + 1) * (this.navH - 4);
+        int dropdownHeight = (dropdownsItemsToShow) * (this.navH - 4);
         int maxDropdownHeight = (settings.nwDataTypesArray.length + 1) * (this.navH - 4);
         if (dropdownHeight > maxDropdownHeight) dropdownHeight = maxDropdownHeight;
 
@@ -871,7 +892,6 @@ class W_Networking extends Widget {
     /* Call to shutdown some UI stuff. Called from W_manager, maybe do this differently.. */
     void shutDown() {
         hideElements();
-        turnOffButton();
     }
 
     void initializeStreams() {
@@ -1049,6 +1069,8 @@ class W_Networking extends Widget {
             return 125;
         } else if (dataType.equals("EMG")) {
             return currentBoard.getNumEXGChannels();
+        } else if (dataType.equals("AvgBandPower")) {
+            return 1;
         } else if (dataType.equals("BandPower")) {
             return 5;
          } else if (dataType.equals("Pulse")) {
@@ -1084,66 +1106,15 @@ class W_Networking extends Widget {
         println("clearing cp5_networking...");
     }
 
-    void closeAllDropdowns() {
-        dataDropdownsShouldBeClosed = true;
-        w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").close();
-        w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").close();
-        w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").close();
-        w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").close();
-        w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
-        w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").close();
-        //since this method is called when items are selected, go ahead and save settings to HashMap via fetchCP5Data
-        fetchCP5Data();
-    }
-
-    void openCloseDropdowns() {
-        //datatype dropdowns
-        for (int i = 0; i < datatypeNames.length; i++) {
-            if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).isOpen()) {
-                if (!cp5_networking_dropdowns.getController(datatypeNames[i]).isMouseOver()) {
-                    cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).close();
-                }
-            }
-            //If using a TopNav object, objects become locked and won't open
-            if (!cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).isOpen()) {
-                if (cp5_networking_dropdowns.getController(datatypeNames[i]).isMouseOver()) {
-                    cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[i]).open();
-                }
-            }
-        }
+    void checkOverlappingSerialDropdown() {        
+        //When using serial mode, lock baud rate dropdown when datatype dropdown is in use
         if (protocolMode.equals("Serial")) {
-            //When using serial mode, lock baud rate dropdown when datatype dropdown is in use
+            
             if (cp5_networking_dropdowns.get(ScrollableList.class, datatypeNames[0]).isOpen()) {
                 cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").lock();
             } else {
                 if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isLock()) {
                     cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").unlock();
-                }
-            }
-            //baud rate
-            if (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
-                if (!cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").close();
-                }
-            }
-            if (!cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").isOpen()) {
-                if (cp5_networking_baudRate.getController("baud_rate").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").open();
-                }
-            }
-            //port name
-            if (cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
-                if (!cp5_networking_portName.getController("port_name").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_portName.get(ScrollableList.class, "port_name").close();
-                }
-            }
-            if (!cp5_networking_portName.get(ScrollableList.class, "port_name").isOpen()) {
-                if (cp5_networking_portName.getController("port_name").isMouseOver()) {
-                    // println("2");
-                    cp5_networking_portName.get(ScrollableList.class, "port_name").open();
                 }
             }
         }
@@ -1234,7 +1205,7 @@ class Stream extends Thread {
     LSL.StreamOutlet outlet_aux;
 
     // Serial objects %%%%%
-    Serial serial_networking;
+    processing.serial.Serial serial_networking;
     String portName;
     int baudRate;
     String serialMessage = "";
@@ -1401,6 +1372,8 @@ class Stream extends Thread {
             sendFFTData();
         } else if (this.dataType.equals("EMG")) {
             sendEMGData();
+        } else if (this.dataType.equals("AvgBandPower")) {
+            sendNormalizedPowerBandData();
         } else if (this.dataType.equals("BandPower")) {
             sendPowerBandData();
         } else if (this.dataType.equals("Accel/Aux")) {
@@ -1756,6 +1729,66 @@ class Stream extends Thread {
         }
     }
 
+    void sendNormalizedPowerBandData() {
+        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
+        int numBandPower = 5; //DELTA, THETA, ALPHA, BETA, GAMMA
+
+        if (this.filter==false || this.filter==true) {
+            // OSC
+            if (this.protocol.equals("OSC")) {
+                msg.clearArguments();
+                for (int i = 0; i < numBandPower; i++) {
+                    msg.add(w_bandPower.getNormalizedBPSelectedChannels()[i]); // [CHAN][BAND]
+                }
+                try {
+                    this.osc.send(msg,this.netaddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            // UDP
+            } else if (this.protocol.equals("UDP")) {
+                // DELTA, THETA, ALPHA, BETA, GAMMA
+                StringBuilder outputter = new StringBuilder("{\"type\":\"averageBandPower\",\"data\":[");
+                for (int i = 0; i < numBandPower; i++) {
+                    outputter.append(str(w_bandPower.getNormalizedBPSelectedChannels()[i]));
+                    if (i != numBandPower - 1) {
+                        outputter.append(",");
+                    } else {
+                        outputter.append("]}\r\n");
+                    }
+                }
+                //println(outputter.toString());
+                try {
+                    this.udp.send(outputter.toString(), this.ip, this.port);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+                // LSL
+            } else if (this.protocol.equals("LSL")) {
+                // DELTA, THETA, ALPHA, BETA, GAMMA
+                float[] avgPowerLSL = w_bandPower.getNormalizedBPSelectedChannels();
+                outlet_data.push_sample(avgPowerLSL);
+            } else if (this.protocol.equals("Serial")) {
+                serialMessage = "[";
+                for (int i = 0; i < numBandPower; i++) {
+                    float power_band = w_bandPower.getNormalizedBPSelectedChannels()[i];
+                    String power_band_3dec = String.format("%.3f", power_band);
+                    serialMessage += power_band_3dec;
+                    if (i < numBandPower - 1) {
+                        serialMessage += ",";  //add a comma to serialMessage to separate chan values, as long as it isn't last value...
+                    }
+                }
+                serialMessage += "]";
+                try {
+                    // println(serialMessage);
+                    this.serial_networking.write(serialMessage);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            }
+        }
+    }
+
     void sendEMGData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ... just like the FFT data
         if (this.filter==false || this.filter==true) {
@@ -1935,7 +1968,7 @@ class Stream extends Thread {
             // Add timestamp to LSL Stream
             outlet_data.push_sample(dataToSend);
         } else if (this.protocol.equals("Serial")) {
-            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wifi Shield is used
+            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wi-Fi Shield is used
             // 5 chars per pin, including \n char for Z
             serialMessage = "";
             for (int i = 0; i < NUM_ANALOG_READS; i++) {
@@ -2170,7 +2203,7 @@ class Stream extends Thread {
         } else if (this.protocol.equals("Serial")) {
             //Open Serial Port! %%%%%
             try {
-                serial_networking = new Serial(this.pApplet, this.portName, this.baudRate);
+                serial_networking = new processing.serial.Serial(this.pApplet, this.portName, this.baudRate);
                 serial_networking.clear();
                 verbosePrint("Successfully opened SERIAL/COM: " + this.portName);
                 output("Successfully opened SERIAL/COM (" + this.baudRate + "): " + this.portName );
@@ -2237,43 +2270,43 @@ void Protocol(int protocolIndex) {
 }
 
 void dataType1(int n) {
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void dataType2(int n) {
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void dataType3(int n) {
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void dataType4(int n) {
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void port_name(int n) {
     w_networking.setComPortToSave(n);
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void baud_rate(int n) {
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void filter1(int n) {
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter1").setLabel(s);
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void filter2(int n) {
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter2").setLabel(s);
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void filter3(int n) {
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter3").setLabel(s);
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 void filter4(int n) {
     String s = n == 1 ? "On" : "Off";
     w_networking.cp5_networking.get(Toggle.class, "filter4").setLabel(s);
-    w_networking.closeAllDropdowns();
+    w_networking.putCP5DataIntoMap();
 }
 
 //loop through networking textfields and find out if any are active

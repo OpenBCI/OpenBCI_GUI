@@ -22,8 +22,8 @@ package controlP5;
  * Suite 330, Boston, MA 02111-1307 USA
  *
  * @author Andreas Schlegel (http://www.sojamo.de)
- * @modified ##date##
- * @version ##version##
+ * @modified 04/07/2022
+ * @version 2.3.3
  *
  */
 

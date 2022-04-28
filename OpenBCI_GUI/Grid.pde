@@ -8,6 +8,7 @@ class Grid {
     private int rowHeight;
     private boolean horizontallyCenterTextInCells = false;
     private boolean drawTableBorder = false;
+    private boolean drawTableInnerLines = true;
 
     private int x, y, w;
     private int pad_horiz = 5;
@@ -43,14 +44,16 @@ class Grid {
         stroke(0);
         textFont(p5, 12);
 
-        // draw row lines
-        for (int i = 0; i < numRows - 1; i++) {
-            line(x, y + rowOffset[i], x + w, y + rowOffset[i]);
-        }
+        if (drawTableInnerLines) {
+            // draw row lines
+            for (int i = 0; i < numRows - 1; i++) {
+                line(x, y + rowOffset[i], x + w, y + rowOffset[i]);
+            }
 
-        // draw column lines
-        for (int i = 1; i < numCols; i++) {
-            line(x + colOffset[i], y, x + colOffset[i], y + rowOffset[numRows - 1]);
+            // draw column lines
+            for (int i = 1; i < numCols; i++) {
+                line(x + colOffset[i], y, x + colOffset[i], y + rowOffset[numRows - 1]);
+            }
         }
 
         // draw cell strings
@@ -137,5 +140,9 @@ class Grid {
 
     public void setDrawTableBorder(boolean b) {
         drawTableBorder = b;
+    }
+
+    public void setDrawTableInnerLines(boolean b) {
+        drawTableInnerLines = b;
     }
 }

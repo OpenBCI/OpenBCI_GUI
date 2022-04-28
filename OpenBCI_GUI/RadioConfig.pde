@@ -15,7 +15,7 @@
 
 class RadioConfig {
 
-    private Serial serial_direct_board;
+    private processing.serial.Serial serial_direct_board;
     private final int NUM_RADIO_CHAN = 26;
     private String rcStringReceived = "";
     private boolean autoscanPressed = false;
@@ -85,7 +85,7 @@ class RadioConfig {
         if(!connect_to_portName(rcConfig)){
             return;
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x07);
@@ -112,7 +112,7 @@ class RadioConfig {
         if(!connect_to_portName()){
             return false;
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x07);
@@ -155,7 +155,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x00);
@@ -176,7 +176,7 @@ class RadioConfig {
                 return false;
             }
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x00);
@@ -188,7 +188,7 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    println(rcStringReceived + " using COM port: " + openBCI_portName);
+                    println(rcStringReceived + ". Using COM port: " + openBCI_portName);
                     return true;
                 } else {
                     verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
@@ -221,7 +221,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -260,7 +260,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -288,7 +288,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -312,7 +312,7 @@ class RadioConfig {
             output("Attempting to open Serial/COM port: " + openBCI_portName);
             try {
                 println("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
-                serial_output = new Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
+                serial_output = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
                 serial_output.clear(); // clear anything in the com port's buffer
                 // portIsOpen = true;
                 println("Radios_Config: connect_to_portName: Port is open!");
@@ -344,7 +344,7 @@ class RadioConfig {
             verbosePrint("Attempting to open Serial/COM port: " + openBCI_portName);
             try {
                 verbosePrint("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
-                serial_output = new Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
+                serial_output = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
                 serial_output.clear(); // clear anything in the com port's buffer
                 // portIsOpen = true;
                 verbosePrint("Radios_Config: connect_to_portName: Port is open!");

@@ -92,8 +92,6 @@ class DataProcessing {
     float data_std_uV[];
     float polarity[];
     boolean newDataToSend;
-    public BandPassRanges bpRange = BandPassRanges.FiveToFifty;
-    public BandStopRanges bsRange = BandStopRanges.Sixty;
     final int[] processing_band_low_Hz = {
         1, 4, 8, 13, 30
     }; //lower bound for each frequency band of interest (2D classifier only)
@@ -112,41 +110,73 @@ class DataProcessing {
         avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
     }
-
-    public String getFilterDescription() {
-        return bpRange.getDescr();
-    }
-    public String getShortFilterDescription() {
-        return bpRange.getDescr();
-    }
-    public String getShortNotchDescription() {
-        return bsRange.getDescr();
-    }
-
-    public synchronized void incrementFilterConfiguration() {
-        bpRange = bpRange.next();
-    }
-
-    public synchronized  void incrementNotchConfiguration() {
-        bsRange = bsRange.next();
-    }
     
+    //Process data on a channel-by-channel basis
     private synchronized void processChannel(int Ichan, float[][] data_forDisplay_uV, float[] prevFFTdata) {            
         int Nfft = getNfftSafe();
         double foo;
 
-        //filter the data in the time domain
-        // todo use double arrays here and convert to float only to plot data
+        // Filter the data in the time domain
+        // TODO: Use double arrays here and convert to float only to plot data.
+        // ^^^ This might not feasible or meaningful performance improvement. I looked into it a while ago and it seems we need floats for the FFT library also. -RW 2022)
         try {
             double[] tempArray = floatToDoubleArray(data_forDisplay_uV[Ichan]);
-            if (bsRange != BandStopRanges.None) {
-                DataFilter.perform_bandstop(tempArray, currentBoard.getSampleRate(), (double)bsRange.getFreq(), (double)4.0, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
+            
+            //Apply BandStop filter if the filter should be active on this channel
+            if (filterSettings.values.bandStopFilterActive[Ichan].isActive()) {
+                double chebyshevRipple = filterSettings.values.bandStopFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
+                DataFilter.perform_bandstop(
+                    tempArray,
+                    currentBoard.getSampleRate(),
+                    filterSettings.values.bandStopCenterFreq[Ichan],
+                    filterSettings.values.bandStopWidth[Ichan],
+                    filterSettings.values.bandStopFilterOrder[Ichan].getValue(),
+                    filterSettings.values.bandStopFilterType[Ichan].getValue(),
+                    chebyshevRipple);
             }
-            if (bpRange != BandPassRanges.None) {
-                double centerFreq = (bpRange.getStart() + bpRange.getStop()) / 2.0;
-                double bandWidth = bpRange.getStop() - bpRange.getStart();
-                DataFilter.perform_bandpass(tempArray, currentBoard.getSampleRate(), centerFreq, bandWidth, 2, FilterTypes.BUTTERWORTH.get_code(), (double)0.0);
+
+            //Apply BandPass filter if the filter should be active on this channel
+            if (filterSettings.values.bandPassFilterActive[Ichan].isActive()) {
+                Pair<Double, Double> centerAndWidth = filterSettings.values.getBandPassCenterAndWidth(Ichan);
+                double chebyshevRipple = filterSettings.values.bandPassFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
+                DataFilter.perform_bandpass(
+                    tempArray,
+                    currentBoard.getSampleRate(),
+                    centerAndWidth.getLeft(),
+                    centerAndWidth.getRight(),
+                    filterSettings.values.bandPassFilterOrder[Ichan].getValue(),
+                    filterSettings.values.bandPassFilterType[Ichan].getValue(),
+                    chebyshevRipple);
             }
+
+            //Apply Environmental Noise filter on all channels. Do it like this since there are no codes for NONE or FIFTY_AND_SIXTY in BrainFlow
+            switch (filterSettings.values.globalEnvFilter) {
+                case FIFTY_AND_SIXTY:
+                    DataFilter.remove_environmental_noise(
+                        tempArray,
+                        currentBoard.getSampleRate(),
+                        NoiseTypes.FIFTY.get_code());
+                    DataFilter.remove_environmental_noise(
+                        tempArray,
+                        currentBoard.getSampleRate(),
+                        NoiseTypes.SIXTY.get_code());
+                    break;
+                case FIFTY:
+                    DataFilter.remove_environmental_noise(
+                        tempArray,
+                        currentBoard.getSampleRate(),
+                        NoiseTypes.FIFTY.get_code());
+                    break;
+                case SIXTY:
+                    DataFilter.remove_environmental_noise(
+                        tempArray,
+                        currentBoard.getSampleRate(),
+                        NoiseTypes.SIXTY.get_code());
+                    break;
+                default:
+                    break;
+            }
+
             doubleToFloatArray(tempArray, data_forDisplay_uV[Ichan]);
         } catch (BrainFlowError e) {
             e.printStackTrace();

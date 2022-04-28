@@ -24,8 +24,7 @@ class TopNav {
 
     public Button toggleDataStreamingButton;
 
-    public Button filtBPButton;
-    public Button filtNotchButton;
+    public Button filtersButton;
     public Button smoothingButton;
 
     public Button debugButton;
@@ -88,8 +87,7 @@ class TopNav {
         if (!secondaryNavInit) {
             //Buttons on the left side of the GUI secondary nav bar
             createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
-            createFiltNotchButton("Notch\n" + dataProcessing.getShortNotchDescription(), PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
-            createFiltBPButton("BP Filt\n" + dataProcessing.getShortFilterDescription(), PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+            createFiltersButton("Filters", PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
             //Appears at Top Right SubNav while in a Session
             createLayoutButton("Layout", width - 3 - 60, SUBNAV_BUT_Y, 60, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
@@ -97,101 +95,14 @@ class TopNav {
         }
 
         if (needToMakeSmoothingButton) {
-            int pos_x = (int)filtBPButton.getPosition()[0] + filtBPButton.getWidth() + PAD_3;
-            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, p5, 12, SUBNAV_LIGHTBLUE, WHITE);
+            int pos_x = (int)filtersButton.getPosition()[0] + filtersButton.getWidth() + PAD_3;
+            //Make smoothing button wider than most other topnav buttons to fit text comfortably
+            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W + 40, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
         }
         
         
         //updateSecondaryNavButtonsColor();
     }
-
-    /*
-    void updateNavButtonsBasedOnColorScheme() {
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            controlPanelCollapser.setColorNotPressed(color(255));
-            debugButton.setColorNotPressed(color(255));
-            //highRezButton.setColorNotPressed(color(255));
-            issuesButton.setColorNotPressed(color(255));
-            shopButton.setColorNotPressed(color(255));
-            tutorialsButton.setColorNotPressed(color(255));
-            updateGuiVersionButton.setColorNotPressed(color(255));
-            configButton.setColorNotPressed(color(255));
-
-            controlPanelCollapser.textColorNotActive = OPENBCI_DARKBLUE;
-            debugButton.textColorNotActive = OPENBCI_DARKBLUE;
-            //highRezButton.textColorNotActive = OPENBCI_DARKBLUE;
-            issuesButton.textColorNotActive = OPENBCI_DARKBLUE;
-            shopButton.textColorNotActive = OPENBCI_DARKBLUE;
-            tutorialsButton.textColorNotActive = OPENBCI_DARKBLUE;
-            updateGuiVersionButton.textColorNotActive = OPENBCI_DARKBLUE;
-            configButton.textColorNotActive = OPENBCI_DARKBLUE;
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            controlPanelCollapser.setColorNotPressed(OPENBCI_BLUE);
-            debugButton.setColorNotPressed(OPENBCI_BLUE);
-            //highRezButton.setColorNotPressed(OPENBCI_BLUE);
-            issuesButton.setColorNotPressed(OPENBCI_BLUE);
-            shopButton.setColorNotPressed(OPENBCI_BLUE);
-            tutorialsButton.setColorNotPressed(OPENBCI_BLUE);
-            updateGuiVersionButton.setColorNotPressed(OPENBCI_BLUE);
-            configButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-
-            controlPanelCollapser.textColorNotActive = color(255);
-            debugButton.textColorNotActive = color(255);
-            //highRezButton.textColorNotActive = color(255);
-            issuesButton.textColorNotActive = color(255);
-            shopButton.textColorNotActive = color(255);
-            tutorialsButton.textColorNotActive = color(255);
-            updateGuiVersionButton.textColorNotActive = color(255);
-            configButton.textColorNotActive = color(255);
-        }
-
-        if (systemMode >= SYSTEMMODE_POSTINIT) {
-            updateSecondaryNavButtonsColor();
-        }
-    }
-    */
-
-    /*
-    void updateSecondaryNavButtonsColor() {
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
-            filtBPButton.setColorNotPressed(color(255));
-            filtNotchButton.setColorNotPressed(color(255));
-            layoutButton.setColorNotPressed(color(255));
-
-            filtBPButton.textColorNotActive = OPENBCI_DARKBLUE;
-            filtNotchButton.textColorNotActive = OPENBCI_DARKBLUE;
-            layoutButton.textColorNotActive = OPENBCI_DARKBLUE;
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.textColorNotActive = OPENBCI_DARKBLUE;
-                smoothingButton.setColorNotPressed(color(255));
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.textColorNotActive = OPENBCI_DARKBLUE;
-                gainButton.setColorNotPressed(color(255));
-            }
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            filtBPButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-            filtNotchButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-            layoutButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-
-            filtBPButton.textColorNotActive = color(255);
-            filtNotchButton.textColorNotActive = color(255);
-            layoutButton.textColorNotActive = color(255);
-
-            if (currentBoard instanceof SmoothingCapableBoard) {
-                smoothingButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-                smoothingButton.textColorNotActive = color(255);
-            }
-
-            if (currentBoard instanceof ADS1299SettingsBoard) {
-                gainButton.setColorNotPressed(SUBNAV_LIGHTBLUE);
-                gainButton.textColorNotActive = color(255);
-            }
-        }
-    }
-    */
 
     void update() {
         //ignore settings button when help dropdown is open
@@ -232,7 +143,7 @@ class TopNav {
         } else {
             topNavBg = color(255);
             subNavBg = color(229);
-            logo = logo_blue;
+            logo = logo_black;
         }
 
         if (eegDataSource == DATASOURCE_GALEA) {
@@ -254,15 +165,14 @@ class TopNav {
         //hide the center logo if buttons would overlap it
         if (width > 860) {
             //this is the center logo
-            image(logo, width/2 - (128/2) - 2, 6, 128, 22);
+            image(logo, width/2 - (128/2) - 2, 1, 128, 29);
         }
 
         //Draw these buttons during a Session
         boolean isSession = systemMode == SYSTEMMODE_POSTINIT;
         if (secondaryNavInit) {
             toggleDataStreamingButton.setVisible(isSession);
-            filtBPButton.setVisible(isSession);
-            filtNotchButton.setVisible(isSession);
+            filtersButton.setVisible(isSession);
             layoutButton.setVisible(isSession);
            
         }
@@ -296,8 +206,7 @@ class TopNav {
 
         if (systemMode == SYSTEMMODE_POSTINIT) {
             toggleDataStreamingButton.setPosition(PAD_3, SUBNAV_BUT_Y);
-            filtNotchButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
-            filtBPButton.setPosition(PAD_3*3 + toggleDataStreamingButton.getWidth() + SUBNAV_BUT_W, SUBNAV_BUT_Y);
+            filtersButton.setPosition(PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y);
 
             layoutButton.setPosition(width - 3 - layoutButton.getWidth(), SUBNAV_BUT_Y);
             settingsButton.setPosition(width - (settingsButton.getWidth()*2) + PAD_3, SUBNAV_BUT_Y);
@@ -403,15 +312,11 @@ class TopNav {
     }
 
     private String getSmoothingString() {
-        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing\n       On" : "Smoothing\n       Off";
-    }
-
-    private String getGainString() {
-        return ((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler() ? "Gain Mode\n   Body uV" : "Gain Mode\n   Classic";
+        return ((SmoothingCapableBoard)currentBoard).getSmoothingActive() ? "Smoothing On" : "Smoothing Off";
     }
 
     private Button createTNButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
-        return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, -2);
+        return createButton(topNav_cp5, name, text, _x, _y, _w, _h, 0, _font, _fontSize, _bg, _textColor, BUTTON_HOVER, BUTTON_PRESSED, OPENBCI_DARKBLUE, -1);
     }
 
     private void createControlPanelCollapser(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -439,39 +344,32 @@ class TopNav {
         toggleDataStreamingButton.setDescription("Press this button to Stop/Start the data stream. Or press <SPACEBAR>");
     }
 
-    private void createFiltNotchButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtNotchButton = createTNButton("filtNotchButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        filtNotchButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
-        filtNotchButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-               incrementNotchConfiguration();
+    private void createFiltersButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
+        filtersButton = createTNButton("filtersButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
+        filtersButton.onRelease(new CallbackListener() {
+            public synchronized void controlEvent(CallbackEvent theEvent) {
+                if (!filterUIPopupIsOpen) {
+                    FilterUIPopup filtersUI = new FilterUIPopup();
+                }
             }
         });
-        filtNotchButton.setDescription("Here you can adjust the Notch Filter that is applied to all \"Filtered\" data.");
+        filtersButton.setDescription("Here you can adjust the Filters that are applied to \"Filtered\" data.");
     }
 
-    private void createFiltBPButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        filtBPButton = createTNButton("filtBPButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        filtBPButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
-        filtBPButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-               incrementFilterConfiguration();
-            }
-        });
-        filtBPButton.setDescription("Here you can adjust the Band Pass Filter that is applied to all \"Filtered\" data.");
-    }
-
-    private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
-        smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
-        smoothingButton.getCaptionLabel().getStyle().setMarginTop(-int(_h/4));
+    private void createSmoothingButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, final color _bg, color _textColor) {
+        SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
+        color bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
+        smoothingButton = createTNButton("smoothingButton", text, _x, _y, _w, _h, font, _fontSize, bgColor, _textColor);
         smoothingButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 SmoothingCapableBoard smoothBoard = (SmoothingCapableBoard)currentBoard;
                 smoothBoard.setSmoothingActive(!smoothBoard.getSmoothingActive());
                 smoothingButton.getCaptionLabel().setText(getSmoothingString());
+                color _bgColor = smoothBoard.getSmoothingActive() ? _bg : BUTTON_LOCKED_GREY;
+                smoothingButton.setColorBackground(_bgColor);
             }
         });
-        smoothingButton.setDescription("Click here to turn data smoothing on or off.");
+        smoothingButton.setDescription("The default settings for the Cyton Dongle driver can make data appear \"choppy.\" This feature will \"smooth\" the data for you. Click \"Help\" -> \"Cyton Driver Fix\" for more info. Clicking here will toggle this setting.");
     }
 
     private void createLayoutButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
@@ -626,26 +524,9 @@ class TopNav {
         smoothingButton = null;
     }
 
-    private void incrementFilterConfiguration() {
-        dataProcessing.incrementFilterConfiguration();
-
-        //update the button strings
-        topNav.filtBPButton.getCaptionLabel().setText("BP Filt\n" + dataProcessing.getShortFilterDescription());
-        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
-    }
-
-    private void incrementNotchConfiguration() {
-        dataProcessing.incrementNotchConfiguration();
-
-        //update the button strings
-        topNav.filtNotchButton.getCaptionLabel().setText("Notch\n" + dataProcessing.getShortNotchDescription());
-        // topNav.titleMontage.string = "EEG Data (" + dataProcessing.getFilterDescription() + ")";
-    }
-
     public void setLockTopLeftSubNavCp5Objects(boolean _b) {
         toggleDataStreamingButton.setLock(_b);
-        filtNotchButton.setLock(_b);
-        filtBPButton.setLock(_b);
+        filtersButton.setLock(_b);
     }
 }
 
@@ -1070,7 +951,8 @@ class TutorialSelector {
     private Button troubleshootingGuide;
     private Button customWidgets;
     private Button openbciForum;
-    private final int numButtons = 5;
+    private Button ftdiBufferFix;
+    private final int NUM_TUTORIAL_BUTTONS = 6;
 
     TutorialSelector() {
         w = 180;
@@ -1080,7 +962,7 @@ class TutorialSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*(numButtons+1) + b_h*numButtons;
+        h = margin*(NUM_TUTORIAL_BUTTONS+1) + b_h*NUM_TUTORIAL_BUTTONS;
 
         //Instantiate local cp5 for this box
         tutorial_cp5 = new ControlP5(ourApplet);
@@ -1093,6 +975,8 @@ class TutorialSelector {
         createGettingStartedButton("gettingStarted", "Getting Started", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createTestingImpedanceButton("testingImpedance", "Testing Impedance", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
+        createFtdiBufferFixButton("ftdiBufferFix", "Cyton Driver Fix", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createTroubleshootingGuideButton("troubleshootingGuide", "Troubleshooting Guide", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
@@ -1192,7 +1076,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //gettingStarted.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        gettingStarted.setDescription("Need help getting started? Click here to view the official OpenBCI Getting Started guides.");
     }
 
     private void createTestingImpedanceButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1203,7 +1087,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //testingImpedance.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        testingImpedance.setDescription("Click here to learn more about testing the impedance on electrodes using the OpenBCI GUI. This process is different for Cyton and Ganglion. Checking impedance only works with passive electrodes.");
     }
 
     private void createTroubleshootingGuideButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1214,7 +1098,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //troubleshootingGuide.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        troubleshootingGuide.setDescription("Having trouble? Start here with some general troubleshooting tips found on the OpenBCI Docs.");
     }
 
     private void createCustomWidgetsButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1225,7 +1109,7 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //customWidgets.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        customWidgets.setDescription("Click here to learn about creating your own custom OpenBCI widgets!");
     }
 
     private void createOpenbciForumButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1236,6 +1120,25 @@ class TutorialSelector {
                 toggleVisibility(); //shut layoutSelector if something is selected
             }
         });
-        //openbciForum.setDescription("Here you can alter the overall layout of the GUI, allowing for different container configurations with more or less widgets.");
+        openbciForum.setDescription("Click here to visit the official OpenBCI Forum.");
+    }
+
+    private void createFtdiBufferFixButton(String name, String text, int _x, int _y, int _w, int _h) {
+        openbciForum = createButton(tutorial_cp5, name, text, _x, _y, _w, _h);
+        openbciForum.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                String ftdiDriverDocUrl;
+                if (isMac()) {
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Mac/";
+                } else if (isLinux()){
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Linux/";
+                } else {
+                    ftdiDriverDocUrl = "https://docs.openbci.com/Troubleshooting/FTDI_Fix_Windows/";
+                }
+                openURLInBrowser(ftdiDriverDocUrl);
+                toggleVisibility(); //shut layoutSelector if something is selected
+            }
+        });
+        openbciForum.setDescription("Click here to view information on how to lower the Cyton Dongle latency for your current operating system.");
     }
 }

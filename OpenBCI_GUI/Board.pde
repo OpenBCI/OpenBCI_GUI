@@ -4,7 +4,7 @@ abstract class Board implements DataSource {
 
     private FixedStack<double[]> accumulatedData = new FixedStack<double[]>();
     private double[][] dataThisFrame;
-    private PacketLossTracker packetLossTracker;
+    protected PacketLossTracker packetLossTracker;
 
     // accessible by all boards, can be returned as valid empty data
     protected double[][] emptyData;

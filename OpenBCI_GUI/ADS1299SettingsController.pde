@@ -94,7 +94,7 @@ class ADS1299SettingsController {
             textFieldIsActive = true;
         }
 
-        copyPaste.checkForCopyPaste(customCommandTF);
+        textfieldUpdateHelper.checkTextfield(customCommandTF);
     }
 
     public void draw() {
@@ -311,14 +311,14 @@ class ADS1299SettingsController {
     private ScrollableList createDropdown(int chanNum, String name, ADSSettingsEnum[] enumValues, ADSSettingsEnum e, color _backgroundColor) {
         int dropdownW = int((w - (spaceBetweenButtons*6)) / 5);
         int dropdownH = 18;
-        ScrollableList list = new CustomScrollableList(hwsCp5, name)
+        ScrollableList list = hwsCp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(_backgroundColor) // text field bg color
             .setColorValueLabel(color(0))       // text color
             .setColorCaptionLabel(color(0))
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setBackgroundColor(OBJECT_BORDER_GREY)
+            .setOutlineColor(OBJECT_BORDER_GREY)
             .setSize(dropdownW, dropdownH)//temporary size
             .setBarHeight(dropdownH) //height of top/primary bar
             .setItemHeight(dropdownH) //height of all item/dropdown bars
