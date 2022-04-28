@@ -347,7 +347,7 @@ class TopNav {
     private void createFiltersButton(String text, int _x, int _y, int _w, int _h, PFont font, int _fontSize, color _bg, color _textColor) {
         filtersButton = createTNButton("filtersButton", text, _x, _y, _w, _h, font, _fontSize, _bg, _textColor);
         filtersButton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
+            public synchronized void controlEvent(CallbackEvent theEvent) {
                 if (!filterUIPopupIsOpen) {
                     FilterUIPopup filtersUI = new FilterUIPopup();
                 }
