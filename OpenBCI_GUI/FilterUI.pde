@@ -1,9 +1,11 @@
 import java.awt.Frame;
 import processing.awt.PSurfaceAWT;
 
+public boolean filterUIPopupIsOpen = false;
+
 // Instantiate this class to show a popup message
 class FilterUIPopup extends PApplet implements Runnable {
-    private int variableWidth;
+    private int fixedWidth;
     private int variableHeight;
     private int newVariableHeight;
     private int shortHeight;
@@ -18,9 +20,9 @@ class FilterUIPopup extends PApplet implements Runnable {
     private final int headerHeight = uiObjectHeight + sm_spacer*2;
     private final int headerObjWidth = 90;
     private final int halfObjWidth = headerObjWidth/2;
-    private final int numHeaderObjects = 6;
+    private final int numHeaderObjects = 4;
     private final int numColumns = 5;
-    private final int numFooterObjects = 2;
+    private final int numFooterObjects = 3;
     private int[] headerObjX = new int[numHeaderObjects];
     private final int headerObjY = sm_spacer;
     private int[] columnObjX = new int[numColumns];
@@ -43,10 +45,10 @@ class FilterUIPopup extends PApplet implements Runnable {
     
 
     private ScrollableList bfGlobalFilterDropdown;
-    private ScrollableList bfFilterChannelSelect;
     private ScrollableList bfEnvironmentalNoiseDropdown;
     private Button saveButton;
     private Button loadButton;
+    private Button defaultButton;
 
     private Button masterOnOffButton;
     private Textfield masterFirstColumnTextfield;
@@ -59,19 +61,35 @@ class FilterUIPopup extends PApplet implements Runnable {
     private Textfield[] secondColumnTextfields;
     private ScrollableList[] filterTypeDropdowns;
     private ScrollableList[] filterOrderDropdowns;
-
+    
     private boolean masterFirstColumnTextfieldWasActive;
     private boolean masterSecondColumnTextfieldWasActive;
     private boolean[] firstColumnTextfieldWasActive;
     private boolean[] secondColumnTextfieldWasActive;
+   
+    private boolean[] filterSettingsWereModified;
+    private int[] filterSettingsWereModifiedFadeCounter;
+    private boolean masterFilterSettingWasModified;
+    private int masterFilterSettingWasModifiedFadeCounter;
+    private int filterSettingWasModifiedFadeTime = 1000;
 
     private final int typeDropdownWidth = headerObjWidth;
     private final int orderDropdownWidth = 60;
+    private int widthOfAllChannelColumns;
+    
+    private int expanderX, expanderY, expanderW;
+    private final int expanderH = 16;
+    private boolean expanderIsHover = false;
+    private int expanderTriangleWidth = 22;
+    private int expanderTriangleHeight = 10;
+    private int[] expanderTriangleXYCollapsed = new int[6];
+    private int[] expanderTriangleXYExpanded = new int[6];
 
     DecimalFormat df = new DecimalFormat("#.0");
 
     public FilterUIPopup() {
         super();
+        filterUIPopupIsOpen = true;
 
         Thread t = new Thread(this);
         t.start();
@@ -84,11 +102,15 @@ class FilterUIPopup extends PApplet implements Runnable {
         filterOrderDropdowns = new ScrollableList[numChans];
         firstColumnTextfieldWasActive = new boolean[numChans];
         secondColumnTextfieldWasActive = new boolean[numChans];
+        filterSettingsWereModified = new boolean[numChans];
+        filterSettingsWereModifiedFadeCounter = new int[numChans];
 
-        variableWidth = (headerObjWidth * numHeaderObjects) + sm_spacer*5 + lg_spacer*2;
-        maxHeight = headerHeight*3 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+2);
-        shortHeight = headerHeight*2 + sm_spacer*(1+4) + uiObjectHeight*(1+2) + lg_spacer;
+        fixedWidth = (headerObjWidth * 6) + sm_spacer*5;
+        maxHeight = headerHeight*3 + sm_spacer*(numChans+5) + uiObjectHeight*(numChans+2) + expanderH;
+        shortHeight = headerHeight*2 + sm_spacer*(1+5) + uiObjectHeight*(1+2) + lg_spacer + expanderH;
         variableHeight = shortHeight;
+        //Include spacer on the outside left and right of all columns. Used to draw visual feedback
+        widthOfAllChannelColumns = headerObjWidth*numColumns + lg_spacer*(numColumns-1) + lg_spacer*2;
     }
 
     @Override
@@ -98,7 +120,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void settings() {
-        size(variableWidth, variableHeight);
+        size(fixedWidth, variableHeight);
     }
 
     @Override
@@ -120,19 +142,14 @@ class FilterUIPopup extends PApplet implements Runnable {
         // Important: Reset the CP5 graphics reference points X,Y,W,H at the beginning of the next draw after screen has been resized.
         // Otherwise, the numbers are wrong.
         if (needToResetCp5Graphics) {
-            variableWidth = width;
             variableHeight = height;
             arrangeAllObjectsXY();
             cp5.setGraphics(this, 0, 0);
         }
 
         if (needToResizePopup) {
-            try {
-                // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
-                surface.setSize(variableWidth, newVariableHeight);
-            } catch (Exception e) {
-                println("WHY DID I CRASH HERE?");
-            }
+            // Resize the window. Reset the CP5 graphics at the beginning of the next draw().
+            surface.setSize(fixedWidth, newVariableHeight);
             needToResizePopup = false;
             needToResetCp5Graphics = true;
         }
@@ -140,7 +157,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         checkIfSessionWasClosed();
         checkIfSettingsWereLoaded();
 
-        final int w = variableWidth;
+        final int w = fixedWidth;
         final int h = variableHeight;
 
         pushStyle();
@@ -151,20 +168,64 @@ class FilterUIPopup extends PApplet implements Runnable {
         fill(238);
         rect(0, 0, width, height);
 
+        // Draw visual feedback that a channel was modified
+        // When a user interacts with an object for a channel, it will highlight blue and fade out
+        if (masterFilterSettingWasModified) {
+            // Fade out the color alpha value from 190 to 0 over time (ex. 1 second)
+            int timeDelta = millis() - masterFilterSettingWasModifiedFadeCounter;
+            int alphaFadeValue = (int)map(timeDelta, 0, filterSettingWasModifiedFadeTime, 190, 0);
+            fill(color(57, 128, 204, alphaFadeValue)); //light blue from TopNav
+            noStroke();
+            rect(columnObjX[0] - lg_spacer, (int)masterOnOffButton.getPosition()[1] - (int)sm_spacer/2, widthOfAllChannelColumns, uiObjectHeight + sm_spacer);
+            if (timeDelta > filterSettingWasModifiedFadeTime) {
+                masterFilterSettingWasModified = false;
+            }
+        }
+        
+        for (int i = 0; i < filterSettings.getChannelCount(); i++) {
+            if (filterSettingsWereModified[i]) {
+                int timeDelta = millis() - filterSettingsWereModifiedFadeCounter[i];
+                // Fade the color alpha value from 190 to 0
+                int alphaFadeValue = (int)map(timeDelta, 0, filterSettingWasModifiedFadeTime, 190, 0);
+                fill(color(57, 128, 204, alphaFadeValue)); //light blue from TopNav
+                noStroke();
+                rect(columnObjX[0] - lg_spacer, (int)onOffButtons[i].getPosition()[1] - (int)sm_spacer/2, widthOfAllChannelColumns, uiObjectHeight + sm_spacer);
+                if (timeDelta > filterSettingWasModifiedFadeTime) {
+                    filterSettingsWereModified[i] = false;
+                }
+            }
+        }
+        
         // Draw header
         noStroke();
         fill(headerColor);
         rect(0, 0, width, headerHeight);
+
+        // Draw Channel Expander
+        expanderIsHover = mouseY > expanderY - expanderH/2
+            && mouseX < expanderX + expanderW
+            && mouseY < expanderY + expanderH/2
+            && mouseX > expanderX;
+        color expanderColor = expanderIsHover ? OPENBCI_BLUE : color(102);
+        int[] triXY = filterSettings.values.filterChannelSelect == FilterChannelSelect.ALL_CHANNELS ?
+            expanderTriangleXYCollapsed :
+            expanderTriangleXYExpanded;
+        stroke(expanderColor);
+        fill(expanderColor);
+        line(expanderX, expanderY, triXY[0], expanderY);
+        line(triXY[4], expanderY, expanderX + expanderW - 1, expanderY);
+        noStroke();
+        triangle(triXY[0], triXY[1], triXY[2], triXY[3], triXY[4], triXY[5]);
         
         // Draw text labels
         textFont(p3, 16);
-        textAlign(CENTER, TOP);
+        textAlign(RIGHT, TOP);
         // Header labels
         fill(WHITE);
         text("Filter", headerObjX[0], headerObjY, headerObjWidth, uiObjectHeight);
-        text("Channels", headerObjX[2], headerObjY, headerObjWidth, uiObjectHeight);
-        text("Notch", headerObjX[4], headerObjY, headerObjWidth, uiObjectHeight);
+        text("Notch", headerObjX[2], headerObjY, headerObjWidth, uiObjectHeight);
         // Column labels
+        textAlign(CENTER, TOP);
         fill(102);
         text("Channel", columnObjX[0], headerHeight + sm_spacer, textfieldWidth, headerHeight);
         String firstColumnHeader = "";
@@ -197,7 +258,13 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     @Override
     void mousePressed() {
-
+        if (expanderIsHover) {
+            filterSettings.values.filterChannelSelect = 
+                filterSettings.values.filterChannelSelect == FilterChannelSelect.CUSTOM_CHANNELS ?
+                FilterChannelSelect.ALL_CHANNELS :
+                FilterChannelSelect.CUSTOM_CHANNELS;
+            setUItoChannelMode(filterSettings.values.filterChannelSelect);
+        }
     }
 
     @Override
@@ -208,6 +275,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     @Override
     void exit() {
         dispose();
+        filterUIPopupIsOpen = false;
     }
 
     private void checkIfSessionWasClosed() {
@@ -238,6 +306,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         
         createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", footerObjX[0], footerObjY, headerObjWidth, uiObjectHeight);
         createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", footerObjX[1], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Reset Settings", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
         
         createOnOffButtons();
         createTextfields();
@@ -246,8 +315,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         // Create header objects last so they always draw on top!
         bfGlobalFilterDropdown = createDropdown("filter", -1, headerObjX[1], headerObjY, headerObjWidth, filterSettings.values.brainFlowFilter, BFFilter.values());
-        bfFilterChannelSelect = createDropdown("channelSelect", -1, headerObjX[3], headerObjY, headerObjWidth, filterSettings.values.filterChannelSelect, FilterChannelSelect.values());
-        bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[5], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
+        bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[3], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
         
         updateChannelCp5Objects();
         arrangeAllObjectsXY();
@@ -256,19 +324,16 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private void updateHeaderCp5Objects() {
         bfGlobalFilterDropdown.getCaptionLabel().setText(filterSettings.values.brainFlowFilter.getString());
-        bfFilterChannelSelect.getCaptionLabel().setText(filterSettings.values.filterChannelSelect.getString());
         bfEnvironmentalNoiseDropdown.getCaptionLabel().setText(filterSettings.values.globalEnvFilter.getString());
     }
 
     private void calculateXYForHeaderColumnsAndFooter() {
         int middle = width / 2;
 
-        headerObjX[0] = middle - halfSmSpacer - sm_spacer*2 - headerObjWidth*3;
-        headerObjX[1] = middle - halfSmSpacer - sm_spacer - headerObjWidth*2;
-        headerObjX[2] = middle - halfSmSpacer - headerObjWidth;
-        headerObjX[3] = middle + halfSmSpacer;
-        headerObjX[4] = middle + halfSmSpacer + sm_spacer + headerObjWidth;
-        headerObjX[5] = middle + halfSmSpacer + sm_spacer*2 + headerObjWidth*2;
+        headerObjX[0] = middle - sm_spacer*2 - headerObjWidth*2;
+        headerObjX[1] = middle - sm_spacer - headerObjWidth;
+        headerObjX[2] = middle + sm_spacer - halfObjWidth;
+        headerObjX[3] = middle + sm_spacer*2 + headerObjWidth - halfObjWidth;
         
         columnObjX[0] = middle - halfObjWidth - lg_spacer*2 - headerObjWidth*2;
         columnObjX[1] = middle - halfObjWidth - lg_spacer - headerObjWidth;
@@ -276,8 +341,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         columnObjX[3] = middle + halfObjWidth + lg_spacer;
         columnObjX[4] = middle + halfObjWidth + lg_spacer*2 + headerObjWidth;
 
-        footerObjX[0] = middle - lg_spacer/2 - headerObjWidth;
-        footerObjX[1] = middle + lg_spacer/2;
+        footerObjX[0] = middle - halfObjWidth - lg_spacer - headerObjWidth;
+        footerObjX[1] = middle - halfObjWidth;
+        footerObjX[2] = middle + halfObjWidth + lg_spacer;
         setFooterObjYPosition(filterSettings.values.filterChannelSelect);
     }
 
@@ -285,8 +351,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         calculateXYForHeaderColumnsAndFooter();
 
         bfGlobalFilterDropdown.setPosition(headerObjX[1], headerObjY);
-        bfFilterChannelSelect.setPosition(headerObjX[3], headerObjY);
-        bfEnvironmentalNoiseDropdown.setPosition(headerObjX[5], headerObjY);
+        bfEnvironmentalNoiseDropdown.setPosition(headerObjX[3], headerObjY);
 
         int rowY = (int)masterOnOffButton.getPosition()[1];
         int onOffButtonNewX = columnObjX[0] + textfieldWidth/2 - onOff_diameter/2;
@@ -296,6 +361,24 @@ class FilterUIPopup extends PApplet implements Runnable {
         masterSecondColumnTextfield.setPosition(columnObjX[2], rowY);
         masterFilterTypeDropdown.setPosition(columnObjX[3], rowY);
         masterFilterOrderDropdown.setPosition(filterOrderDropdownNewX, rowY);
+
+        expanderX = columnObjX[0] - lg_spacer;
+        expanderY = (int)masterOnOffButton.getPosition()[1] + uiObjectHeight + sm_spacer + expanderH/2; 
+        expanderW = widthOfAllChannelColumns;
+
+        expanderTriangleXYCollapsed[0] = expanderX + expanderW/2 - expanderTriangleWidth/2;
+        expanderTriangleXYCollapsed[1] = expanderY - expanderTriangleHeight/2;
+        expanderTriangleXYCollapsed[2] = expanderX + expanderW/2;
+        expanderTriangleXYCollapsed[3] = expanderY + expanderH/2;
+        expanderTriangleXYCollapsed[4] = expanderX + expanderW/2 + expanderTriangleWidth/2;
+        expanderTriangleXYCollapsed[5] = expanderTriangleXYCollapsed[1];
+
+        expanderTriangleXYExpanded[0] = expanderTriangleXYCollapsed[0];
+        expanderTriangleXYExpanded[1] = expanderY + expanderTriangleHeight/2;
+        expanderTriangleXYExpanded[2] = expanderTriangleXYCollapsed[2];
+        expanderTriangleXYExpanded[3] = expanderY - expanderH/2;
+        expanderTriangleXYExpanded[4] = expanderTriangleXYCollapsed[4];
+        expanderTriangleXYExpanded[5] = expanderTriangleXYExpanded[1];
 
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
             rowY = (int)onOffButtons[chan].getPosition()[1];
@@ -308,6 +391,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
         saveButton.setPosition(footerObjX[0], footerObjY);
         loadButton.setPosition(footerObjX[1], footerObjY);
+        defaultButton.setPosition(footerObjX[2], footerObjY);
     }
 
     // Master method to update objects from the FilterSettings Class
@@ -395,10 +479,9 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void createOnOffButtons() {
-        //FIX ME: Master OnOff button needs to be made special
         createMasterOnOffButton("masterOnOffButton", "All", lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer, onOff_diameter, onOff_diameter);
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
-            createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+2) + onOff_diameter*(chan+1), onOff_diameter, onOff_diameter);
+            createOnOffButton("onOffButton"+chan, str(chan+1), chan, lg_spacer + textfieldWidth/2 - onOff_diameter/2, headerHeight*2 + sm_spacer*(chan+3) + onOff_diameter*(chan+1) + expanderH, onOff_diameter, onOff_diameter);
         }
     }
 
@@ -407,9 +490,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         onOffButtons[chan].setCircularButton(true);
         onOffButtons[chan].onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-
-                //boolean newState = !currentBoard.isEXGChannelActive(channelIndex);
-                println("[" + text + "] onOff released");
+                //println("[" + text + "] onOff released");
                 switch (filterSettings.values.brainFlowFilter) {
                     case BANDSTOP:
                         if (filterSettings.values.bandStopFilterActive[chan].isActive()) {
@@ -430,6 +511,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                         break;
                 }
+                filterSettingWasModifiedOnChannel(chan);
                 //printArray(filterSettings.values.bandStopFilterActive);
                 //printArray(filterSettings.values.bandPassFilterActive);
             }
@@ -515,6 +597,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     float myTextfieldValue = getDefaultMasterFilterValueAsInt(isFirstColumn);
                     String valToSet = df.format(myTextfieldValue);
                     myTextfield.setText(valToSet);
+                    setMasterFilterSettingWasModified();
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
@@ -575,6 +658,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                     float myTextfieldValue = getDefaultFilterValueAsInt(isFirstColumn, channel);
                     String valToSet = df.format(myTextfieldValue);
                     myTextfield.setText(valToSet);
+                    filterSettingWasModifiedOnChannel(channel);
                 } else {
                     /// If released outside textfield and a state change has occured, submit, clean, and set the value
                     if (isFirstColumn) {
@@ -639,6 +723,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 break;
         }
         updateChannelCp5Objects();
+        setMasterFilterSettingWasModified();
         //println(isFirstColumn, chan, val);
         //printArray(filterSettings.values.bandPassStartFreq);
         //printArray(filterSettings.values.bandPassStopFreq);
@@ -684,6 +769,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 break;
         }
+        filterSettingWasModifiedOnChannel(chan);
         //println(isFirstColumn, chan, val);
         //printArray(filterSettings.values.bandPassStartFreq);
         //printArray(filterSettings.values.bandPassStopFreq);
@@ -769,15 +855,13 @@ class FilterUIPopup extends PApplet implements Runnable {
                         }
                     }
                     updateChannelCp5Objects();
+                    setMasterFilterSettingWasModified();
                     return;
                 }
 
                 if (myEnum instanceof BFFilter) {
                     filterSettings.values.brainFlowFilter = (BFFilter)myEnum;
                     updateChannelCp5Objects();
-                } else if (myEnum instanceof FilterChannelSelect) {
-                    filterSettings.values.filterChannelSelect = (FilterChannelSelect)myEnum;
-                    setUItoChannelMode(filterSettings.values.filterChannelSelect);
                 } else if (myEnum instanceof GlobalEnvironmentalFilter) {
                     filterSettings.values.globalEnvFilter = (GlobalEnvironmentalFilter)myEnum;
                 } else if (myEnum instanceof BrainFlowFilterType) {
@@ -789,6 +873,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             filterSettings.values.bandPassFilterType[chan] = (BrainFlowFilterType)myEnum;
                             break;
                     }
+                    filterSettingWasModifiedOnChannel(chan);
                 } else if (myEnum instanceof BrainFlowFilterOrder) {
                     switch (filterSettings.values.brainFlowFilter) {
                         case BANDSTOP:
@@ -798,6 +883,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             filterSettings.values.bandPassFilterOrder[chan] = (BrainFlowFilterOrder)myEnum;
                             break;
                     }
+                    filterSettingWasModifiedOnChannel(chan);
                 }
             }
         }
@@ -838,6 +924,17 @@ class FilterUIPopup extends PApplet implements Runnable {
         });
     }
 
+    private void createFilterSettingsDefaultButton(String name, String text, int _x, int _y, int _w, int _h) {
+        defaultButton = createButton(cp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        defaultButton.setBorderColor(OBJECT_BORDER_GREY);
+        defaultButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                filterSettings.revertAllChannelsToDefaultValues();
+                filterSettingsWereLoadedFromFile = true;
+            }
+        });
+    }
+
     private void createMasterOnOffButton(String name, final String text, int _x, int _y, int _w, int _h) {
         masterOnOffButton = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, TURN_ON_GREEN, WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         masterOnOffButton.setCircularButton(true);
@@ -869,6 +966,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                 }
                 //Update all channel cp5 objects, including master "all" channel, with new values
                 updateChannelCp5Objects();
+                setMasterFilterSettingWasModified();
                 //printArray(filterSettings.values.bandStopFilterActive);
                 //printArray(filterSettings.values.bandPassFilterActive);
             }
@@ -898,8 +996,22 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void setFooterObjYPosition(FilterChannelSelect myEnum) {
         boolean showAllChannels = myEnum == FilterChannelSelect.CUSTOM_CHANNELS;
         int numChans = filterSettings.getChannelCount();
-        int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+3) + uiObjectHeight*(numChans+1) + lg_spacer*2;
-        int footerMinHeightY = headerHeight*2 + sm_spacer*3 + uiObjectHeight + lg_spacer;
+        int footerMaxHeightY = headerHeight*2 + sm_spacer*(numChans+4) + uiObjectHeight*(numChans+1) + lg_spacer*2 + expanderH;
+        int footerMinHeightY = headerHeight*2 + sm_spacer*4 + uiObjectHeight + lg_spacer + expanderH;
         footerObjY = showAllChannels ? footerMaxHeightY : footerMinHeightY;
-    } 
+    }
+
+    private void filterSettingWasModifiedOnChannel(int chan) {
+        filterSettingsWereModified[chan] = true;
+        filterSettingsWereModifiedFadeCounter[chan] = millis();
+    }
+
+    private void setMasterFilterSettingWasModified() {
+        masterFilterSettingWasModified = true;
+        masterFilterSettingWasModifiedFadeCounter = millis();
+    }
+
+    private void checkIfExpanderWasClicked() {
+        setUItoChannelMode(filterSettings.values.filterChannelSelect);
+    }
 }

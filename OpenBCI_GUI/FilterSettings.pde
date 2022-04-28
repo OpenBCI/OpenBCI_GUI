@@ -96,7 +96,7 @@ class FilterSettings {
         channelCount = board.getNumEXGChannels();
 
         values = new FilterSettingsValues(channelCount);
-        defaultValues = values;
+        defaultValues = new FilterSettingsValues(channelCount);
     }
 
     public boolean loadSettingsValues(String filename) {
@@ -143,9 +143,7 @@ class FilterSettings {
     }
 
     public void revertAllChannelsToDefaultValues() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        String defaultValsAsString = gson.toJson(defaultValues);
-        values = gson.fromJson(defaultValsAsString, FilterSettingsValues.class);
+        values = new FilterSettingsValues(channelCount);
     }
 
     //Called in UI to control number of channels. This is set from the board when this class is instantiated.

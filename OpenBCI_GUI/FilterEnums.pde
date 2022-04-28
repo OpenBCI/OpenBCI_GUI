@@ -27,7 +27,7 @@ public enum BFFilter implements FilterSettingsEnum
 public enum FilterChannelSelect implements FilterSettingsEnum
 {
     ALL_CHANNELS (0, "All Channels"),
-    CUSTOM_CHANNELS (1, "Custom");
+    CUSTOM_CHANNELS (1, "Per Channel");
 
     private int index;
     private String name;
