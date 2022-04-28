@@ -133,7 +133,7 @@ MIT
 
 ## Links
 
-- [OpenBCI Main Site](http://www.openbci.com)
+- [OpenBCI Main Site](https://www.openbci.com)
 - [Ganglion Board](https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board)
 - [Cyton Board](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel)
 - [Cyton+Daisy Boards](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel)
