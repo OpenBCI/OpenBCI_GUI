@@ -13,6 +13,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private boolean needToResizePopup = false;
     private boolean needToResetCp5Graphics = false;
 
+    private int middle;
     private final int sm_spacer = 6;
     private final int halfSmSpacer = sm_spacer/2;
     private final int lg_spacer = 12;
@@ -78,10 +79,13 @@ class FilterUIPopup extends PApplet implements Runnable {
     private int widthOfAllChannelColumns;
     
     private int expanderX, expanderY, expanderW;
-    private final int expanderH = 16;
+    private final int expanderH = 20;
     private boolean expanderIsHover = false;
-    private int expanderTriangleWidth = 22;
-    private int expanderTriangleHeight = 10;
+    private int expanderTriangleWidth = 12;
+    private int expanderTriangleHeight = 6;
+    private int expanderBreakMiddle = 90;
+    private int expanderLineOneEnd;
+    private int expanderLineTwoStart;
     private int[] expanderTriangleXYCollapsed = new int[6];
     private int[] expanderTriangleXYExpanded = new int[6];
 
@@ -212,8 +216,15 @@ class FilterUIPopup extends PApplet implements Runnable {
             expanderTriangleXYExpanded;
         stroke(expanderColor);
         fill(expanderColor);
-        line(expanderX, expanderY, triXY[0], expanderY);
-        line(triXY[4], expanderY, expanderX + expanderW - 1, expanderY);
+        line(expanderX, expanderY, expanderLineOneEnd, expanderY);
+        line(expanderLineTwoStart, expanderY, expanderX + expanderW - 1, expanderY);
+        textAlign(CENTER, TOP);
+        textFont(p6, 10);
+        StringBuilder expanderString = new StringBuilder();
+        expanderString.append(filterSettings.values.filterChannelSelect == FilterChannelSelect.ALL_CHANNELS ? "Show " : "Hide ");
+        expanderString.append("Channels");
+        int expanderTextWidth = (int)textWidth(expanderString.toString()) + 4;
+        text(expanderString.toString(), middle - expanderTextWidth/2, expanderY - expanderH/2 - 2, expanderTextWidth, expanderH);
         noStroke();
         triangle(triXY[0], triXY[1], triXY[2], triXY[3], triXY[4], triXY[5]);
         
@@ -328,7 +339,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void calculateXYForHeaderColumnsAndFooter() {
-        int middle = width / 2;
+        middle = width / 2;
 
         headerObjX[0] = middle - sm_spacer*2 - headerObjWidth*2;
         headerObjX[1] = middle - sm_spacer - headerObjWidth;
@@ -345,6 +356,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         footerObjX[1] = middle - halfObjWidth;
         footerObjX[2] = middle + halfObjWidth + lg_spacer;
         setFooterObjYPosition(filterSettings.values.filterChannelSelect);
+
+        expanderLineOneEnd = middle - expanderBreakMiddle/2;
+        expanderLineTwoStart = middle + expanderBreakMiddle/2;
     }
 
     public void arrangeAllObjectsXY() {
@@ -366,19 +380,19 @@ class FilterUIPopup extends PApplet implements Runnable {
         expanderY = (int)masterOnOffButton.getPosition()[1] + uiObjectHeight + sm_spacer + expanderH/2; 
         expanderW = widthOfAllChannelColumns;
 
-        expanderTriangleXYCollapsed[0] = expanderX + expanderW/2 - expanderTriangleWidth/2;
-        expanderTriangleXYCollapsed[1] = expanderY - expanderTriangleHeight/2;
-        expanderTriangleXYCollapsed[2] = expanderX + expanderW/2;
-        expanderTriangleXYCollapsed[3] = expanderY + expanderH/2;
-        expanderTriangleXYCollapsed[4] = expanderX + expanderW/2 + expanderTriangleWidth/2;
-        expanderTriangleXYCollapsed[5] = expanderTriangleXYCollapsed[1];
-
-        expanderTriangleXYExpanded[0] = expanderTriangleXYCollapsed[0];
-        expanderTriangleXYExpanded[1] = expanderY + expanderTriangleHeight/2;
-        expanderTriangleXYExpanded[2] = expanderTriangleXYCollapsed[2];
-        expanderTriangleXYExpanded[3] = expanderY - expanderH/2;
-        expanderTriangleXYExpanded[4] = expanderTriangleXYCollapsed[4];
+        expanderTriangleXYExpanded[0] = expanderX + expanderW/2 - expanderTriangleWidth/2;
+        expanderTriangleXYExpanded[1] = expanderY + 2;
+        expanderTriangleXYExpanded[2] = expanderX + expanderW/2;
+        expanderTriangleXYExpanded[3] = expanderY + 2 + expanderTriangleHeight;
+        expanderTriangleXYExpanded[4] = expanderX + expanderW/2 + expanderTriangleWidth/2;
         expanderTriangleXYExpanded[5] = expanderTriangleXYExpanded[1];
+
+        expanderTriangleXYCollapsed[0] = expanderTriangleXYExpanded[0];
+        expanderTriangleXYCollapsed[1] = expanderTriangleXYExpanded[3];
+        expanderTriangleXYCollapsed[2] = expanderTriangleXYExpanded[2];
+        expanderTriangleXYCollapsed[3] = expanderTriangleXYExpanded[1];
+        expanderTriangleXYCollapsed[4] = expanderTriangleXYExpanded[4];
+        expanderTriangleXYCollapsed[5] = expanderTriangleXYExpanded[3];
 
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
             rowY = (int)onOffButtons[chan].getPosition()[1];
