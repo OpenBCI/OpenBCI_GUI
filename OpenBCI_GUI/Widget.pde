@@ -449,9 +449,9 @@ class ChannelSelect {
 
             //draw triangle as pointing up or down, depending on if channel Select is active or closed
             if (!isVisible) {
-                triangle(tri_xpos, y - navH*0.65, tri_xpos + 5, y - navH*0.25, tri_xpos + 10, y - navH*0.65);
+                triangle(tri_xpos, y - 7, tri_xpos + 6, y - 13, tri_xpos + 12, y - 7);
             } else {
-                triangle(tri_xpos, y - navH*0.25, tri_xpos + 5, y - navH*0.65, tri_xpos + 10, y - navH*0.25);
+                triangle(tri_xpos, y - 13, tri_xpos + 6, y - 7, tri_xpos + 12, y - 13);
                 //if active, draw a grey background for the channel select checkboxes
                 fill(200);
                 rect(x,y,w,navH);
