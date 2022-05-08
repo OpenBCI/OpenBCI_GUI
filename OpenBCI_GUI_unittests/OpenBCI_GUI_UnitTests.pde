@@ -52,3 +52,11 @@ private void notifySuccess(boolean success) {
         output.close();
     }
 }
+
+private void outputWarn(String str) {
+    println("warn stub for tests");
+}
+
+private void outputInfo(String str) {
+    println("info stub for tests");
+}
