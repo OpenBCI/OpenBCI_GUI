@@ -46,6 +46,13 @@ class PacketLossTracker {
 
     protected ArrayList<Integer> sampleIndexArray = new ArrayList<Integer>();
 
+    // use these vars for notification at the bottom
+    private boolean notificationShown = false;
+    protected String lostPackagesMsg = "Lost packets detected, open packet loss widget for more info";
+    protected String noLostPackagesMsg = "Data streaming is running as usual";
+    protected int windowSizeNotificationMs = 5000;
+    protected double thresholdNotification = 1.0;
+
     PacketLossTracker(int _sampleIndexChannel, int _timestampChannel, int _minSampleIndex, int _maxSampleIndex) {        
         this(_sampleIndexChannel, _timestampChannel,  _minSampleIndex, _maxSampleIndex, new RealTimeProvider());
     }
@@ -153,6 +160,7 @@ class PacketLossTracker {
         }
 
         packetRecords.push(currentRecord);
+        checkCurrentStreamStatus();
     }
 
     private void incrementLastSampleIndexLocation() {
@@ -164,6 +172,22 @@ class PacketLossTracker {
 
     protected void reset() {
         lastSample = null;
+    }
+
+    protected void checkCurrentStreamStatus() {
+        PacketRecord lastMillisPacketRecord = getCumulativePacketRecordForLast(windowSizeNotificationMs);
+        if (lastMillisPacketRecord.getLostPercent() > thresholdNotification) {
+            if (!notificationShown) {
+                notificationShown = true;
+                outputWarn(lostPackagesMsg);
+            }
+        }
+        else {
+            if (notificationShown) {
+                notificationShown = false;
+                outputInfo(noLostPackagesMsg);
+            }
+        }
     }
 }
 
