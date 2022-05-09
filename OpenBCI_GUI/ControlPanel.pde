@@ -492,6 +492,7 @@ class SerialBox {
 
     private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h) {
         autoConnectButton = createSBButton(name, text, _x, _y, _w, _h);
+        autoConnectButton.setColorBackground(TURN_ON_GREEN);
         autoConnectButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.comPortBox.attemptAutoConnectCyton();
