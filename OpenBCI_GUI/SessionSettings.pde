@@ -159,7 +159,7 @@ class SessionSettings {
 
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
-    String[] spectSampleRateArray = {"1 Hz", "5 hz", "10 Hz", "20 Hz", "40 Hz"};
+    String[] spectSampleRateArray = {"30 Min.", "6 Min.", "3 Min.", "1.5 Min.", "1 Min."};
 
     //Load Accel. dropdown variables
     int loadAccelVertScale;
