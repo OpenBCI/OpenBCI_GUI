@@ -129,7 +129,7 @@ class SessionSettings {
     String[] fftMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz", "500 Hz", "800 Hz"};
     String[] fftVertScaleArray = {"10 uV", "50 uV", "100 uV", "1000 uV"};
     String[] fftLogLinArray = {"Log", "Linear"}; //share this with spectrogram also
-    String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
+    String[] fftSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98", "0.99", "0.999"};
     String[] fftFilterArray = {"Filtered", "Unfilt."};
 
     //Used to set text in dropdown menus when loading Accelerometer settings
