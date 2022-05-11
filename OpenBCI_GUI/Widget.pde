@@ -294,13 +294,9 @@ class Widget{
         if (topNav.getDropdownMenuIsOpen() != previousTopNavDropdownMenuIsOpen) {
             for (controlP5.Controller c : listOfControllers) {
                 if (c == null) {
-                    continue; //Gracefully skip over a controller if it is null or not visible
+                    continue; //Gracefully skip over a controller if it is null
                 }
-                if (c.isVisible() == false) {
-                    println(widgetTitle, " ", c, " is not visible. Skip over it!");
-                    continue;
-                }
-                println(widgetTitle, " ", c.getName(), " lock because of topnav == ", topNav.getDropdownMenuIsOpen());
+                //println(widgetTitle, " ", c.getName(), " lock because of topnav == ", topNav.getDropdownMenuIsOpen());
                 c.setLock(topNav.getDropdownMenuIsOpen());
             }
             previousTopNavDropdownMenuIsOpen = topNav.getDropdownMenuIsOpen();
@@ -311,11 +307,10 @@ class Widget{
         //Check against Widget Dropdowns
         if (dropdownIsActive != previousDropdownIsActive) {
             for (controlP5.Controller c : listOfControllers) {
-                if (c == null && !c.isVisible()) {
-                    println(widgetTitle, " ", c, " is not visible. Skip over it!");
-                    continue; //Gracefully skip over a controller if it is null or not visible
+                if (c == null) {
+                    continue; //Gracefully skip over a controller if it is null
                 }
-                println(widgetTitle, " ", c.getName(), " lock because of widget navbar dropdown == ", dropdownIsActive);
+                //println(widgetTitle, " ", c.getName(), " lock because of widget navbar dropdown == ", dropdownIsActive);
                 c.setLock(dropdownIsActive);
             } 
             previousDropdownIsActive = dropdownIsActive;
