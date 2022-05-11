@@ -97,7 +97,7 @@ class TopNav {
         if (needToMakeSmoothingButton) {
             int pos_x = (int)filtersButton.getPosition()[0] + filtersButton.getWidth() + PAD_3;
             //Make smoothing button wider than most other topnav buttons to fit text comfortably
-            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W + 40, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
+            createSmoothingButton(getSmoothingString(), pos_x, SUBNAV_BUT_Y, SUBNAV_BUT_W + 48, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
         }
         
         

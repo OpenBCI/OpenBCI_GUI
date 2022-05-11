@@ -14,6 +14,7 @@ class W_Spectrogram extends Widget {
     public ChannelSelect spectChanSelectTop;
     public ChannelSelect spectChanSelectBot;
     private boolean chanSelectWasOpen = false;
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
     int xPos = 0;
     int hueLimit = 160;
@@ -70,7 +71,11 @@ class W_Spectrogram extends Widget {
         spectChanSelectTop = new ChannelSelect(pApplet, this, x, y, w, navH, "Spectrogram_Channels_Top");
         spectChanSelectBot = new ChannelSelect(pApplet, this, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
         activateDefaultChannels();
-        spectChanSelectBot.hideChannelText();
+        spectChanSelectTop.setIsDualChannelSelect(true);
+        spectChanSelectBot.setIsDualChannelSelect(true);
+        spectChanSelectBot.setIsFirstRowChannelSelect(false);
+        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
+        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
 
         xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
@@ -93,7 +98,7 @@ class W_Spectrogram extends Widget {
         //Note that these 3 dropdowns correspond to the 3 global functions below
         //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
         addDropdown("SpectrogramMaxFreq", "Max Freq", Arrays.asList(settings.spectMaxFrqArray), settings.spectMaxFrqSave);
-        addDropdown("SpectrogramSampleRate", "Samples", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
+        addDropdown("SpectrogramSampleRate", "Window", Arrays.asList(settings.spectSampleRateArray), settings.spectSampleRateSave);
         addDropdown("SpectrogramLogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.spectLogLinSave);
 
         //Resize the height of the data image using default 
@@ -115,8 +120,10 @@ class W_Spectrogram extends Widget {
             //Allow spectrogram to flex size and position depending on if the channel select is open
             flexSpectrogramSizeAndPosition();
         }
-        
-        
+
+        if (spectChanSelectTop.isVisible()) {
+            lockElementsOnOverlapCheck(cp5ElementsToCheck);
+        }
         
         if (currentBoard.isStreaming()) {
             //Make sure we are always draw new pixels on the right
@@ -226,7 +233,6 @@ class W_Spectrogram extends Widget {
 
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
-        //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
         drawAxes(scaleW, scaleH);
         drawCenterLine();
     }
@@ -334,10 +340,17 @@ class W_Spectrogram extends Widget {
 
     void drawColorScaleReference() {
         int colorScaleHeight = 128;
+        //Dynamically scale the Log/Lin amplitude-to-color reference line. If it won't fit, don't draw it.
+        if (graphH < colorScaleHeight) {
+            colorScaleHeight = int(h * 1/2);
+            if (colorScaleHeight > graphH) {
+                return;
+            }
+        }
         pushStyle();
             //draw color scale reference to the right of the spectrogram
             for (int i = 0; i < colorScaleHeight; i++) {
-                float hueValue = hueLimit - map(i * 2, 0, 256, 0, hueLimit);
+                float hueValue = hueLimit - map(i * 2, 0, colorScaleHeight*2, 0, hueLimit);
                 if (settings.spectLogLinSave == 0) {
                     hueValue = map(log(hueValue) / log(10), 0, 2, 0, hueLimit);
                 }
@@ -345,9 +358,9 @@ class W_Spectrogram extends Widget {
                 // colorMode is HSB, the range for hue is 256, for saturation is 100, brightness is 100.
                 colorMode(HSB, 256, 100, 100);
                 // color for stroke is specified as hue, saturation, brightness.
-                stroke(int(hueValue), 100, 80);
+                stroke(ceil(hueValue), 100, 80);
                 strokeWeight(10);
-                point(x + w - paddingRight/2 + 1, y + paddingTop + midLineY - colorScaleHeight/3 - 14 - i);
+                point(x + w - paddingRight/2 + 1, midLineY + colorScaleHeight/2 - i);
             }
         popStyle();
     }

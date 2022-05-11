@@ -74,7 +74,9 @@ class PopupMessage extends PApplet implements Runnable {
             .setFont(p1)
             .toUpperCase(false)
             .setSize(20)
-            .setText(buttonMessage);
+            .setText(buttonMessage)
+            .getStyle()
+            .setMarginTop(-2);
     }
 
     @Override

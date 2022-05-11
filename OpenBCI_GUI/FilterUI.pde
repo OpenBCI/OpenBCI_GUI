@@ -315,9 +315,9 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void createAllCp5Objects() {
         calculateXYForHeaderColumnsAndFooter();
         
-        createFilterSettingsSaveButton("saveFilterSettingsButton", "Save Settings", footerObjX[0], footerObjY, headerObjWidth, uiObjectHeight);
-        createFilterSettingsLoadButton("loadFilterSettingsButton", "Load Settings", footerObjX[1], footerObjY, headerObjWidth, uiObjectHeight);
-        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Reset Settings", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsSaveButton("saveFilterSettingsButton", "Save", footerObjX[0], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsLoadButton("loadFilterSettingsButton", "Load", footerObjX[1], footerObjY, headerObjWidth, uiObjectHeight);
+        createFilterSettingsDefaultButton("defaultFilterSettingsButton", "Reset", footerObjX[2], footerObjY, headerObjWidth, uiObjectHeight);
         
         createOnOffButtons();
         createTextfields();

@@ -492,6 +492,7 @@ class SerialBox {
 
     private void createAutoConnectButton(String name, String text, int _x, int _y, int _w, int _h) {
         autoConnectButton = createSBButton(name, text, _x, _y, _w, _h);
+        autoConnectButton.setColorBackground(TURN_ON_GREEN);
         autoConnectButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 controlPanel.comPortBox.attemptAutoConnectCyton();
@@ -999,7 +1000,7 @@ class WifiBox {
             .setPosition(x + 90, y + 100)
             .setCaptionLabel("")
             .setSize(w - padding*2, 26)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -1295,7 +1296,7 @@ class SessionDataBox {
             .setPosition(x + 60, y + 32)
             .setCaptionLabel("")
             .setSize(187, 26)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -2097,7 +2098,7 @@ class GaleaBox {
             .setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2)
             .setCaptionLabel("")
             .setSize(120 + padding, 26)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -2296,7 +2297,7 @@ class BrainFlowStreamerBox {
             .setPosition(x + padding * 3, y + HEADER_H + padding*2)
             .setCaptionLabel("")
             .setSize(120, OBJECT_H)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -2327,7 +2328,7 @@ class BrainFlowStreamerBox {
             .setPosition(x + padding*5 + w/2, y + HEADER_H + padding*2)
             .setCaptionLabel("")
             .setSize(50, OBJECT_H)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -2527,7 +2528,7 @@ class StreamingBoardBox {
             .setPosition(x + padding * 3, y + headerH + padding*2)
             .setCaptionLabel("")
             .setSize(w / 3, objectH)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
@@ -2544,7 +2545,7 @@ class StreamingBoardBox {
             .setPosition(x + padding*5 + w/2, y + headerH + padding*2)
             .setCaptionLabel("")
             .setSize(w / 5 + padding, objectH)
-            .setFont(f2)
+            .setFont(createFont("Arial", 15, true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
