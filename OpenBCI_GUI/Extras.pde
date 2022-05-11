@@ -413,10 +413,17 @@ class DataStatus {
             int endPos = data.length;
             int startPos = Math.max(0, endPos - nPoints);
 
+            boolean is_straight_line = true;
+            if (!currentBoard.isStreaming()) {
+                is_straight_line = false;
+            }
             float max = Math.abs(data[startPos]);
-            for (int i = startPos; i < endPos; i++) {
+            for (int i = startPos + 1; i < endPos; i++) {
                 if (Math.abs(data[i]) > max) {
                     max = Math.abs(data[i]);
+                }
+                if ((Math.abs(data[i - 1] - data[i]) > 0.00001) && (Math.abs(data[i]) > 0.00001)) {
+                    is_straight_line = false;
                 }
             }
             percentage = (max / maxVal) * 100.0;
@@ -432,7 +439,14 @@ class DataStatus {
                 is_railed = true;
                 notificationString = "Railed " + String.format("%1$,.2f", percentage) + "% ";
                 colorIndicator = red;
+            } else {
+                if (is_straight_line) {
+                    is_railed = true;
+                    notificationString = "Data from the board doesn't change";
+                    colorIndicator = red;
+                }
             }
+
         }
     }
     public color getColor() {
