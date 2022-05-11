@@ -140,8 +140,8 @@ int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show f
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
 // thresholds are pecentages of max possible value
-final double threshold_railed = 90.0;
-final double threshold_railed_warn = 75.0;
+final double threshold_railed = 99.0;
+final double threshold_railed_warn = 90.0;
 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
