@@ -1007,7 +1007,7 @@ void introAnimation() {
     if ((millis() >= settings.introAnimationInit + settings.introAnimationDuration)
         && controlPanel != null) {
         systemMode = SYSTEMMODE_PREINIT;
-        controlPanel.isOpen = true;
+        controlPanel.open();
     }
     popStyle();
 }

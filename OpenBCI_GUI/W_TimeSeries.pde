@@ -133,6 +133,8 @@ class W_timeSeries extends Widget {
     private boolean allowSpillover = false;
     private boolean hasScrollbar = true; //used to turn playback scrollbar widget on/off
 
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+
     W_timeSeries(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -143,6 +145,7 @@ class W_timeSeries extends Widget {
         tsChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "TS_Channels");
         //activate all channels in channelSelect by default for this widget
         tsChanSelect.activateAllButtons();
+        cp5ElementsToCheck.addAll(tsChanSelect.getCp5ElementsForOverlapCheck());
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
         yF = float(y);
@@ -199,6 +202,7 @@ class W_timeSeries extends Widget {
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
             hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            cp5ElementsToCheck.add((controlP5.Controller)hwSettingsButton);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
     }
@@ -234,8 +238,6 @@ class W_timeSeries extends Widget {
             int h_hsc = channelBarHeight * tsChanSelect.activeChan.size();        
             adsSettingsController.resize((int)channelBars[0].plot.getPos()[0], (int)channelBars[0].plot.getPos()[1], (int)channelBars[0].plot.getOuterDim()[0], h_hsc, cb_h);
             adsSettingsController.update(); //update channel controller
-            //ignore top left button interaction when widgetSelector dropdown is active
-            lockElementOnOverlapCheck((controlP5.Controller)hwSettingsButton);
         }
         
         //Update Playback scrollbar and/or display time
@@ -245,6 +247,8 @@ class W_timeSeries extends Widget {
         } else {
             timeDisplay.update();
         }
+
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
     }
 
     void draw() {

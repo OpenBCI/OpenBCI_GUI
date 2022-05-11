@@ -24,6 +24,7 @@ class Widget{
 
     protected boolean dropdownIsActive = false;
     private boolean previousDropdownIsActive = false;
+    private boolean previousTopNavDropdownMenuIsOpen = false;
     private boolean widgetSelectorIsActive = false;
 
     private ArrayList<NavBarDropdown> dropdowns;
@@ -286,24 +287,35 @@ class Widget{
             return false;
         }
     }
-    
-    //For use with one Cp5 controller per class/widget. Can only be called once per widget during update loop.
-    protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        if (dropdownIsActive != previousDropdownIsActive) {
-            //println(c.getName(), " lock == ", dropdownIsActive);
-            c.setLock(dropdownIsActive);
-            previousDropdownIsActive = dropdownIsActive;
-        }
-    }
 
     //For use with multiple Cp5 controllers per class/widget. Can only be called once per widget during update loop.
     protected void lockElementsOnOverlapCheck(List<controlP5.Controller> listOfControllers) {
-        if (dropdownIsActive != previousDropdownIsActive) {
+        //Check against TopNav Menus
+        if (topNav.getDropdownMenuIsOpen() != previousTopNavDropdownMenuIsOpen) {
             for (controlP5.Controller c : listOfControllers) {
                 if (c == null) {
-                    continue; //Gracefully skip over a controller if it is null
+                    continue; //Gracefully skip over a controller if it is null or not visible
                 }
-                //println(c.getName(), " lock == ", dropdownIsActive);
+                if (c.isVisible() == false) {
+                    println(widgetTitle, " ", c, " is not visible. Skip over it!");
+                    continue;
+                }
+                println(widgetTitle, " ", c.getName(), " lock because of topnav == ", topNav.getDropdownMenuIsOpen());
+                c.setLock(topNav.getDropdownMenuIsOpen());
+            }
+            previousTopNavDropdownMenuIsOpen = topNav.getDropdownMenuIsOpen();
+            if (previousTopNavDropdownMenuIsOpen) {
+                return;
+            }
+        }
+        //Check against Widget Dropdowns
+        if (dropdownIsActive != previousDropdownIsActive) {
+            for (controlP5.Controller c : listOfControllers) {
+                if (c == null && !c.isVisible()) {
+                    println(widgetTitle, " ", c, " is not visible. Skip over it!");
+                    continue; //Gracefully skip over a controller if it is null or not visible
+                }
+                println(widgetTitle, " ", c.getName(), " lock because of widget navbar dropdown == ", dropdownIsActive);
                 c.setLock(dropdownIsActive);
             } 
             previousDropdownIsActive = dropdownIsActive;

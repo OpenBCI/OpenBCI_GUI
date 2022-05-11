@@ -142,11 +142,13 @@ class ControlPanel {
     public void open(){
         isOpen = true;
         topNav.controlPanelCollapser.setOn();
+        topNav.setDropdownMenuIsOpen(true);
     }
 
     public void close(){
         isOpen = false;
         topNav.controlPanelCollapser.setOff();
+        topNav.setDropdownMenuIsOpen(false);
     }
 
     public String getWifiSearchStyle() {

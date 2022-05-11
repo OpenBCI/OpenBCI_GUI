@@ -286,7 +286,7 @@ synchronized void mousePressed() {
             //if clicked out of panel
             else {
                 println("OpenBCI_GUI: mousePressed: outside of CP clicked");
-                controlPanel.isOpen = false;
+                controlPanel.close();
                 topNav.controlPanelCollapser.setOff();
             }
         }

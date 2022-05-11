@@ -32,12 +32,15 @@ class W_BandPower extends Widget {
     public ChannelSelect bpChanSelect;
     boolean prevChanSelectIsVisible = false;
 
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+
     W_BandPower(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
         bpChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
         bpChanSelect.activateAllButtons();
+        cp5ElementsToCheck.addAll(bpChanSelect.getCp5ElementsForOverlapCheck());
         
         //Add settings dropdowns
         addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
@@ -116,6 +119,10 @@ class W_BandPower extends Widget {
         bp_points.add(BETA + 0.5, activePower[BETA], "BETA\n13-32Hz");
         bp_points.add(GAMMA + 0.5, activePower[GAMMA], "GAMMA\n32-100Hz");
         bp_plot.setPoints(bp_points);
+
+        if (bpChanSelect.isVisible()) {
+            lockElementsOnOverlapCheck(cp5ElementsToCheck);
+        }
     } //end of update
 
     void draw() {
