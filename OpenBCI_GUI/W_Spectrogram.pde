@@ -14,6 +14,7 @@ class W_Spectrogram extends Widget {
     public ChannelSelect spectChanSelectTop;
     public ChannelSelect spectChanSelectBot;
     private boolean chanSelectWasOpen = false;
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
     int xPos = 0;
     int hueLimit = 160;
@@ -70,7 +71,11 @@ class W_Spectrogram extends Widget {
         spectChanSelectTop = new ChannelSelect(pApplet, this, x, y, w, navH, "Spectrogram_Channels_Top");
         spectChanSelectBot = new ChannelSelect(pApplet, this, x, y + navH, w, navH, "Spectrogram_Channels_Bot");
         activateDefaultChannels();
-        spectChanSelectBot.hideChannelText();
+        spectChanSelectTop.setIsDualChannelSelect(true);
+        spectChanSelectBot.setIsDualChannelSelect(true);
+        spectChanSelectBot.setIsFirstRowChannelSelect(false);
+        cp5ElementsToCheck.addAll(spectChanSelectTop.getCp5ElementsForOverlapCheck());
+        cp5ElementsToCheck.addAll(spectChanSelectBot.getCp5ElementsForOverlapCheck());
 
         xPos = w - 1; //draw on the right, and shift pixels to the left
         prevW = w;
@@ -115,8 +120,10 @@ class W_Spectrogram extends Widget {
             //Allow spectrogram to flex size and position depending on if the channel select is open
             flexSpectrogramSizeAndPosition();
         }
-        
-        
+
+        if (spectChanSelectTop.isVisible()) {
+            lockElementsOnOverlapCheck(cp5ElementsToCheck);
+        }
         
         if (currentBoard.isStreaming()) {
             //Make sure we are always draw new pixels on the right
@@ -226,7 +233,6 @@ class W_Spectrogram extends Widget {
 
         spectChanSelectTop.draw();
         spectChanSelectBot.draw();
-        //if (spectChanSelectTop.isVisible()) spectChanSelectBot.forceDrawChecklist(dropdownIsActive);
         drawAxes(scaleW, scaleH);
         drawCenterLine();
     }
