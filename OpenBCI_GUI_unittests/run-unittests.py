@@ -11,7 +11,7 @@ import traceback
 #           Once we get rid of globals we could copy all PDEs
 files_to_unittest = [
     "PacketLossTracker.pde",
-    "TimeTrackingQueue.pde",
+    "TimeTrackingQueue.pde"
 ]
 
 def main ():
