@@ -409,7 +409,7 @@ class ChannelSelect {
     private int labelWidth = 0;
     private int labelSpacer = 0;
     private String firstRowLabel = "Top";
-    private String secondRowLabel = "Bottom";
+    private String secondRowLabel = "Bot";
 
     ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
         widget = _widget;
@@ -579,7 +579,7 @@ class ChannelSelect {
     public void setIsDualChannelSelect(boolean b) {
         isDualChannelSelect = b;
         if (isDualChannelSelect) {
-            labelWidth = 36;
+            labelWidth = 28;
             labelSpacer = 4;
         }
     }
