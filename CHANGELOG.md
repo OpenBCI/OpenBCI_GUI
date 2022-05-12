@@ -17,6 +17,9 @@
 * Update Band Power widget and add Average Band Power data type to Networking Widget
 * Update ControlP5 Library to 2.3.3 and change ScrollableList behavior to be more consistent with other front-end libraries
 * Remove old multi-line filter buttons in TopNav that draw incorrectly on some PCs #1013
+* Minor UI/UX improvements to Spectrogram widget to increase clarity for all users
+* Add slower options for FFT data smoothing
+* Fix certain Textfield and TextArea fonts not drawing correctly on some Macs
 
 # v5.0.9
 

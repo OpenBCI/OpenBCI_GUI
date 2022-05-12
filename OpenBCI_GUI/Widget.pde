@@ -24,6 +24,7 @@ class Widget{
 
     protected boolean dropdownIsActive = false;
     private boolean previousDropdownIsActive = false;
+    private boolean previousTopNavDropdownMenuIsOpen = false;
     private boolean widgetSelectorIsActive = false;
 
     private ArrayList<NavBarDropdown> dropdowns;
@@ -286,24 +287,30 @@ class Widget{
             return false;
         }
     }
-    
-    //For use with one Cp5 controller per class/widget
-    protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        if (dropdownIsActive != previousDropdownIsActive) {
-            //println(c.getName(), " lock == ", dropdownIsActive);
-            c.setLock(dropdownIsActive);
-            previousDropdownIsActive = dropdownIsActive;
-        }
-    }
 
-    //For use with multiple Cp5 controllers per class/widget
+    //For use with multiple Cp5 controllers per class/widget. Can only be called once per widget during update loop.
     protected void lockElementsOnOverlapCheck(List<controlP5.Controller> listOfControllers) {
+        //Check against TopNav Menus
+        if (topNav.getDropdownMenuIsOpen() != previousTopNavDropdownMenuIsOpen) {
+            for (controlP5.Controller c : listOfControllers) {
+                if (c == null) {
+                    continue; //Gracefully skip over a controller if it is null
+                }
+                //println(widgetTitle, " ", c.getName(), " lock because of topnav == ", topNav.getDropdownMenuIsOpen());
+                c.setLock(topNav.getDropdownMenuIsOpen());
+            }
+            previousTopNavDropdownMenuIsOpen = topNav.getDropdownMenuIsOpen();
+            if (previousTopNavDropdownMenuIsOpen) {
+                return;
+            }
+        }
+        //Check against Widget Dropdowns
         if (dropdownIsActive != previousDropdownIsActive) {
             for (controlP5.Controller c : listOfControllers) {
                 if (c == null) {
                     continue; //Gracefully skip over a controller if it is null
                 }
-                //println(c.getName(), " lock == ", dropdownIsActive);
+                //println(widgetTitle, " ", c.getName(), " lock because of widget navbar dropdown == ", dropdownIsActive);
                 c.setLock(dropdownIsActive);
             } 
             previousDropdownIsActive = dropdownIsActive;
@@ -382,6 +389,7 @@ void WidgetSelector(int n){
 // This is a helpful class that will add a channel select feature to a Widget
 class ChannelSelect {
     protected Widget widget;
+    private List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
     protected int x, y, w, h, navH, butToggleY;
     public float tri_xpos = 0;
     protected float chanSelectXPos = 0;
@@ -395,7 +403,13 @@ class ChannelSelect {
     protected boolean isVisible;
     public List<Integer> activeChan;
     public String chanDropdownName;
-    protected boolean showChannelText = true;
+    protected boolean isFirstRowChannelSelect = true;
+    protected boolean isDualChannelSelect = false;
+
+    private int labelWidth = 0;
+    private int labelSpacer = 0;
+    private String firstRowLabel = "Top";
+    private String secondRowLabel = "Bot";
 
     ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
         widget = _widget;
@@ -427,15 +441,15 @@ class ChannelSelect {
         }
         //Update position of buttons on every update and check for UI overlap
         for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setPosition(x + (button_spacer*(i+1)) + (buttonW*i), y + offset);
-            widget.lockElementOnOverlapCheck(channelButtons.get(i));
+            channelButtons.get(i).setPosition(x + labelWidth + labelSpacer + (button_spacer*(i+1)) + (buttonW*i), y + offset);
         }
     }
 
     public void draw() {
+        chanSelectXPos = x + 2;
         pushStyle();
         noStroke();
-        if (showChannelText) {
+        if (isFirstRowChannelSelect) {
             //change "Channels" text color and triangle color on hover
             if (channelSelectHover) {
                 fill(OPENBCI_BLUE);
@@ -443,7 +457,7 @@ class ChannelSelect {
                 fill(0);
             }
             textFont(p5, 12);
-            chanSelectXPos = x + 2;
+            
             text("Channels", chanSelectXPos, y - 6);
             tri_xpos = x + textWidth("Channels") + 7;
 
@@ -468,10 +482,7 @@ class ChannelSelect {
         if (isVisible) {
             //Draw channel select buttons
             cp5_chanSelect.draw();
-        }
-        
-        //Draw a border around toggle buttons to indicate if channel is on or off
-        if (isVisible) {
+            //Draw a border around toggle buttons to indicate if channel is on or off
             pushStyle();
             int weight = 1;
             strokeWeight(weight);
@@ -479,9 +490,19 @@ class ChannelSelect {
             for (int i = 0; i < nchan; i++) {
                 color c = currentBoard.isEXGChannelActive(i) ? color(0,255,0,255) : color(255,0,0,255);
                 stroke(c);
-                rect(x + (button_spacer*(i+1)) + (buttonW*i) - weight, y + offset - weight, channelButtons.get(i).getWidth() + weight, channelButtons.get(i).getHeight() + weight);
+                rect(x + labelWidth + labelSpacer + (button_spacer*(i+1)) + (buttonW*i) - weight, y + offset - weight, channelButtons.get(i).getWidth() + weight, channelButtons.get(i).getHeight() + weight);
             }
             popStyle();
+            //Draw label 
+            if (isDualChannelSelect) {
+                pushStyle();
+                fill(0);
+                textFont(p5, 12);
+                textAlign(CENTER, TOP);
+                String label = isFirstRowChannelSelect ? firstRowLabel : secondRowLabel;
+                text(label, x + labelSpacer + labelWidth/2, y + offset);
+                popStyle();
+            }
         }
     }
 
@@ -514,6 +535,7 @@ class ChannelSelect {
             channelButtons.add(
                 createButton("ch"+(i+1), (i+1), true, x + (button_spacer*(i+2)) + (buttonW*i), y + offset, buttonW, buttonH)
             );
+            cp5ElementsToCheck.add((controlP5.Controller)channelButtons.get(i));
         }
     }
 
@@ -550,12 +572,28 @@ class ChannelSelect {
         return myButton;
     }
 
-    public void showChannelText() {
-        showChannelText = true;
+    public void setIsFirstRowChannelSelect(boolean b) {
+        isFirstRowChannelSelect = b;
     }
 
-    public void hideChannelText() {
-        showChannelText = false;
+    public void setIsDualChannelSelect(boolean b) {
+        isDualChannelSelect = b;
+        if (isDualChannelSelect) {
+            labelWidth = 28;
+            labelSpacer = 4;
+        }
+    }
+
+    public List<controlP5.Controller> getCp5ElementsForOverlapCheck() {
+        return cp5ElementsToCheck;
+    }
+
+    public void setFirstRowLabel(String s) {
+        firstRowLabel = s;
+    }
+
+    public void setSecondRowLabel(String s) {
+        secondRowLabel = s;
     }
 
     public boolean isVisible() {

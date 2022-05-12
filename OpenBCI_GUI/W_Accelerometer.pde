@@ -104,7 +104,9 @@ class W_Accelerometer extends Widget {
         }
         
         //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(accelModeButton);
+        List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller)accelModeButton);
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
         
         if(!accelBoard.canDeactivateAccelerometer() && !(currentBoard instanceof BoardCyton)) {
             accelModeButton.getCaptionLabel().setText("Accel. On");

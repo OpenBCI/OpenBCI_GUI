@@ -46,12 +46,15 @@ class W_fft extends Widget {
     int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/currentBoard.getSampleRate()));   // maxim value of FFT index
     int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
 
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+
     W_fft(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
         //Add channel select dropdown to this widget
         fftChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
         fftChanSelect.activateAllButtons();
+        cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
 
         //Default FFT plot settings
         settings.fftMaxFrqSave = 2;
@@ -130,6 +133,10 @@ class W_fft extends Widget {
         if (fftChanSelect.isVisible() != prevChanSelectIsVisible) {
             flexGPlotSizeAndPosition();
             prevChanSelectIsVisible = fftChanSelect.isVisible();
+        }
+
+        if (fftChanSelect.isVisible()) {
+            lockElementsOnOverlapCheck(cp5ElementsToCheck);
         }
     }
 

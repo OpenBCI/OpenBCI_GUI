@@ -93,7 +93,9 @@ class W_DigitalRead extends Widget {
         }
 
         //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(digitalModeButton);
+        List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller)digitalModeButton);
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
 
         if (!digitalBoard.canDeactivateDigital()) {
             digitalModeButton.setLock(true);

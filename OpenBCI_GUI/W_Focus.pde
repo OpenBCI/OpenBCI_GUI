@@ -66,14 +66,19 @@ class W_Focus extends Widget {
     private int graphPadding = 30;
     private color cBack, cDark, cMark, cFocus, cWave, cPanel;
 
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+
     W_Focus(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
          //Add channel select dropdown to this widget
         focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "FocusChannelSelect");
         focusChanSelect.activateAllButtons();
+        cp5ElementsToCheck.addAll(focusChanSelect.getCp5ElementsForOverlapCheck());
 
         auditoryNeurofeedback = new AuditoryNeurofeedback(x + PAD_FIVE, y + PAD_FIVE, w/2 - PAD_FIVE*2, navBarHeight/2);
+        cp5ElementsToCheck.add((controlP5.Controller)auditoryNeurofeedback.startStopButton);
+        cp5ElementsToCheck.add((controlP5.Controller)auditoryNeurofeedback.modeButton);
 
         exgChannels = currentBoard.getEXGChannels();
         channelCount = currentBoard.getNumEXGChannels();
@@ -132,10 +137,7 @@ class W_Focus extends Widget {
             predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
         }
 
-        //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(auditoryNeurofeedback.startStopButton);
-
-        //put your code here...
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
     }
 
     public void draw() {

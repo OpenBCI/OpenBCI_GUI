@@ -104,7 +104,9 @@ class W_AnalogRead extends Widget {
         }
 
         //ignore top left button interaction when widgetSelector dropdown is active
-        lockElementOnOverlapCheck(analogModeButton);
+        List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller)analogModeButton);
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
 
         if (!analogBoard.canDeactivateAnalog()) {
             analogModeButton.setLock(true);
