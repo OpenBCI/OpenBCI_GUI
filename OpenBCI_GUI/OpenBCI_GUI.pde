@@ -346,7 +346,12 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    if (isMac()) {
+        f2 = createFont("Arial", 15, true);
+    } else {
+        f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    }
+    
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 

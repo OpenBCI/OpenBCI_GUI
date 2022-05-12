@@ -502,7 +502,7 @@ class TextBox {
 
     TextBox(String s, int x1, int y1) {
         string = s; x = x1; y = y1;
-        textColor = color(0);
+        textColor = OPENBCI_DARKBLUE;
         backgroundColor = color(255);
         fontSize = 12;
         font = p5;

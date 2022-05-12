@@ -500,7 +500,7 @@ class W_Networking extends Widget {
             .setFocus(false)                        // Deselects textfield
             .setColor(color(26,26,26))
             .setColorBackground(color(255,255,255)) // text field bg color
-            .setColorValueLabel(color(0,0,0))       // text color
+            .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
             .setColorForeground(color(26,26,26))    // border color when not selected
             .setColorActive(isSelected_color)       // border color when selected
             .setColorCursor(color(26,26,26))
@@ -519,7 +519,7 @@ class W_Networking extends Widget {
                 .setColorForeground(color(120))
                 .setColorBackground(color(200,200,200)) // text field bg color
                 .setColorActive(TURN_ON_GREEN)
-                .setColorLabel(color(0))
+                .setColorLabel(OPENBCI_DARKBLUE)
                 .setVisible(false)
                 ;
         myToggle
@@ -535,7 +535,7 @@ class W_Networking extends Widget {
     }
 
     void createStartButton() {
-        startButton = createButton(cp5_networking, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, 0, p4, 14, TURN_ON_GREEN, BLACK, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
+        startButton = createButton(cp5_networking, "startStopNetworkStream", "Start "+protocolMode+" Stream", x + w/2 - 70, y+h-40, 200, 20, 0, p4, 14, TURN_ON_GREEN, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
         startButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 if (!networkActive) {
@@ -599,7 +599,7 @@ class W_Networking extends Widget {
 
         ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
-                .setOutlineColor(color(0))
+                .setOutlineColor(OPENBCI_DARKBLUE)
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -636,7 +636,7 @@ class W_Networking extends Widget {
     void createBaudDropdown(String name, List<String> _items) {
         ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name)
                 .setOpen(false)
-                .setOutlineColor(color(0))
+                .setOutlineColor(OPENBCI_DARKBLUE)
                 .setColorBackground(color(31,69,110)) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
@@ -674,7 +674,7 @@ class W_Networking extends Widget {
         if (isEmpty) _items.add("None"); // Fix #642 and #637
         ScrollableList scrollList = cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
-            .setOutlineColor(color(0))
+            .setOutlineColor(OPENBCI_DARKBLUE)
             .setColorBackground(color(31,69,110)) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))

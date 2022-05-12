@@ -15,7 +15,7 @@ class W_Accelerometer extends Widget {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
     color graphBG = color(245);
-    color textColor = color(0);
+    color textColor = OPENBCI_DARKBLUE;
     color strokeColor = color(138, 146, 153);
     color eggshell = color(255, 253, 248);
 

@@ -8,7 +8,7 @@ class SignalCheckThresholdUI {
     private int valuePercentage;
     private int valuekOhms;
     private CytonSignalCheckMode signalCheckMode;
-    private color textColor = color(0);
+    private color textColor = OPENBCI_DARKBLUE;
     private boolean hasUpdatedTextColor = false;
 
     SignalCheckThresholdUI(ControlP5 _cp5, String _name, int _x, int _y, int _w, int _h, color _textColor, CytonSignalCheckMode _mode) {

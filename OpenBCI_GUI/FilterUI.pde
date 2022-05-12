@@ -551,7 +551,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(BLACK)  // text color
+            .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
             .setColorForeground(color(210))  // border color when not selected - grey
             .setColorActive(isSelected_color)  // border color when selected - green
             .setColorCursor(color(26, 26, 26))
@@ -795,8 +795,8 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setPosition(_x, _y)
             .setOpen(false)
             .setColorBackground(WHITE) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(0))
+            .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
+            .setColorCaptionLabel(OPENBCI_DARKBLUE)
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setOutlineColor(OBJECT_BORDER_GREY)
