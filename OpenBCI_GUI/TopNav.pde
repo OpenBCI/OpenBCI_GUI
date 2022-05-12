@@ -52,6 +52,8 @@ class TopNav {
     private final int SUBNAV_BUT_H = 26;
     private final int TOPNAV_BUT_H = SUBNAV_BUT_H;
 
+    private boolean topNavDropdownMenuIsOpen = false;
+
     TopNav() {
         int controlPanel_W = 256;
 
@@ -469,7 +471,7 @@ class TopNav {
                 //make Help button and Settings button mutually exclusive
                 if (!tutorialSelector.isVisible) {
                     configSelector.toggleVisibility();
-                }   
+                }
             }
         });
         settingsButton.setDescription("Save and Load GUI Settings! Click Default to revert to factory settings.");
@@ -527,6 +529,14 @@ class TopNav {
     public void setLockTopLeftSubNavCp5Objects(boolean _b) {
         toggleDataStreamingButton.setLock(_b);
         filtersButton.setLock(_b);
+    }
+
+    public boolean getDropdownMenuIsOpen() {
+        return topNavDropdownMenuIsOpen;
+    }
+
+    public void setDropdownMenuIsOpen(boolean b) {
+        topNavDropdownMenuIsOpen = b;
     }
 }
 
@@ -621,6 +631,7 @@ class LayoutSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
+        topNav.setDropdownMenuIsOpen(isVisible);
         if (isVisible) {
             //the very convoluted way of locking all controllers of a single controlP5 instance...
             for (int i = 0; i < wm.widgets.size(); i++) {
@@ -804,6 +815,7 @@ class ConfigSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
+        topNav.setDropdownMenuIsOpen(isVisible);
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...
@@ -1049,6 +1061,7 @@ class TutorialSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
+        topNav.setDropdownMenuIsOpen(isVisible);
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...

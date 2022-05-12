@@ -24,6 +24,7 @@ class Widget{
 
     protected boolean dropdownIsActive = false;
     private boolean previousDropdownIsActive = false;
+    private boolean previousTopNavDropdownMenuIsOpen = false;
     private boolean widgetSelectorIsActive = false;
 
     private ArrayList<NavBarDropdown> dropdowns;
@@ -286,24 +287,30 @@ class Widget{
             return false;
         }
     }
-    
-    //For use with one Cp5 controller per class/widget. Can only be called once per widget during update loop.
-    protected void lockElementOnOverlapCheck(controlP5.Controller c) {
-        if (dropdownIsActive != previousDropdownIsActive) {
-            //println(c.getName(), " lock == ", dropdownIsActive);
-            c.setLock(dropdownIsActive);
-            previousDropdownIsActive = dropdownIsActive;
-        }
-    }
 
     //For use with multiple Cp5 controllers per class/widget. Can only be called once per widget during update loop.
     protected void lockElementsOnOverlapCheck(List<controlP5.Controller> listOfControllers) {
+        //Check against TopNav Menus
+        if (topNav.getDropdownMenuIsOpen() != previousTopNavDropdownMenuIsOpen) {
+            for (controlP5.Controller c : listOfControllers) {
+                if (c == null) {
+                    continue; //Gracefully skip over a controller if it is null
+                }
+                //println(widgetTitle, " ", c.getName(), " lock because of topnav == ", topNav.getDropdownMenuIsOpen());
+                c.setLock(topNav.getDropdownMenuIsOpen());
+            }
+            previousTopNavDropdownMenuIsOpen = topNav.getDropdownMenuIsOpen();
+            if (previousTopNavDropdownMenuIsOpen) {
+                return;
+            }
+        }
+        //Check against Widget Dropdowns
         if (dropdownIsActive != previousDropdownIsActive) {
             for (controlP5.Controller c : listOfControllers) {
                 if (c == null) {
                     continue; //Gracefully skip over a controller if it is null
                 }
-                //println(c.getName(), " lock == ", dropdownIsActive);
+                //println(widgetTitle, " ", c.getName(), " lock because of widget navbar dropdown == ", dropdownIsActive);
                 c.setLock(dropdownIsActive);
             } 
             previousDropdownIsActive = dropdownIsActive;
@@ -402,7 +409,7 @@ class ChannelSelect {
     private int labelWidth = 0;
     private int labelSpacer = 0;
     private String firstRowLabel = "Top";
-    private String secondRowLabel = "Bottom";
+    private String secondRowLabel = "Bot";
 
     ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
         widget = _widget;
@@ -572,7 +579,7 @@ class ChannelSelect {
     public void setIsDualChannelSelect(boolean b) {
         isDualChannelSelect = b;
         if (isDualChannelSelect) {
-            labelWidth = 36;
+            labelWidth = 28;
             labelSpacer = 4;
         }
     }
