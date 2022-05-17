@@ -324,7 +324,7 @@ class HeadPlot {
         //initialize the image
         for (int Iy=0; Iy < headImage.height; Iy++) {
             for (int Ix = 0; Ix < headImage.width; Ix++) {
-                headImage.set(Ix, Iy, color(0, 0, 0, 0));
+                headImage.set(Ix, Iy, OPENBCI_DARKBLUE);
             }
         }
 
@@ -992,7 +992,7 @@ class HeadPlot {
                     headImage.set(Ix, Iy, calcPixelColor(Ix, Iy));
                 } else {  //negative values are outside of the head
                     //pixel is outside the head.  set to black.
-                    headImage.set(Ix, Iy, color(0, 0, 0, 0));
+                    headImage.set(Ix, Iy, OPENBCI_DARKBLUE);
                 }
             }
         }
@@ -1007,7 +1007,7 @@ class HeadPlot {
                     headImage.set(Ix, Iy, calcPixelColor(headVoltage[Ix][Iy]));
                 } else {  //negative values are outside of the head
                     //pixel is outside the head.  set to black.
-                    headImage.set(Ix, Iy, color(0, 0, 0, 0));
+                    headImage.set(Ix, Iy, OPENBCI_DARKBLUE);
                 }
             }
         }
