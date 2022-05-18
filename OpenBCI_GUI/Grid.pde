@@ -41,7 +41,7 @@ class Grid {
     public void draw() {
         pushStyle();
         textAlign(LEFT);        
-        stroke(0);
+        stroke(OPENBCI_DARKBLUE);
         textFont(p5, 12);
 
         if (drawTableInnerLines) {
@@ -69,7 +69,7 @@ class Grid {
 
         if (drawTableBorder) {
             noFill();
-            stroke(0);
+            stroke(OPENBCI_DARKBLUE);
             rect(x, y, w, rowOffset[numRows - 1]);
         }
         

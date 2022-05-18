@@ -324,7 +324,7 @@ class W_Networking extends Widget {
         cp5_networking_dropdowns.draw();
 
         int headerFontSize = 18;
-        fill(0,0,0);// Background fill: white
+        fill(OPENBCI_DARKBLUE);
         textFont(h1, headerFontSize);
 
         if (!protocolMode.equals("Serial")) {
@@ -498,12 +498,12 @@ class W_Networking extends Widget {
             .setSize(120,20)                         // Size of textfield
             .setFont(createFont("Arial", 15, true))
             .setFocus(false)                        // Deselects textfield
-            .setColor(color(26,26,26))
+            .setColor(OPENBCI_DARKBLUE)
             .setColorBackground(color(255,255,255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
-            .setColorForeground(color(26,26,26))    // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)    // border color when not selected
             .setColorActive(isSelected_color)       // border color when selected
-            .setColorCursor(color(26,26,26))
+            .setColorCursor(OPENBCI_DARKBLUE)
             .setText(default_text)                  // Default text in the field
             .setCaptionLabel("")                    // Remove caption label
             .setVisible(false)                      // Initially hidden

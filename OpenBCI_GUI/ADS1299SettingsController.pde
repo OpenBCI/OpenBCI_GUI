@@ -104,14 +104,14 @@ class ADS1299SettingsController {
             pushStyle();
             //stroke(31,69,110, 50);
             stroke(OBJECT_BORDER_GREY);
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y - columnLabelH, w, columnLabelH);
             popStyle();
 
             //background
             pushStyle();
             noStroke();
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y, w + 1, h);
             popStyle();
 
@@ -142,7 +142,7 @@ class ADS1299SettingsController {
             
             //Draw background behind command buttons
             pushStyle();
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y + h, w + 1, commandBarH);
             if (showCustomCommandUI) {
                 rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons

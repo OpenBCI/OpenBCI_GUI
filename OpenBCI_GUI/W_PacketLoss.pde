@@ -134,7 +134,7 @@ class W_PacketLoss extends Widget {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
         pushStyle();
-        fill(0, 0, 0, 255);
+        fill(OPENBCI_DARKBLUE);
         textFont(p5, 12);
         text("Session length: " + sessionTimeElapsed.toString(), x + padding, y + 15);
         text("Stream length: " + streamTimeElapsed.toString(), x + padding, y + 35);

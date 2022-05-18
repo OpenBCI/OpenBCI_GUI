@@ -454,7 +454,7 @@ class ChannelSelect {
             if (channelSelectHover) {
                 fill(OPENBCI_BLUE);
             } else {
-                fill(0);
+                fill(OPENBCI_DARKBLUE);
             }
             textFont(p5, 12);
             

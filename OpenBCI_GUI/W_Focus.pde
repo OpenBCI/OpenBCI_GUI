@@ -152,7 +152,7 @@ class W_Focus extends Widget {
         if (false) {
             //Draw some guides to help develop this widget faster
             pushStyle();
-            stroke(0);
+            stroke(OPENBCI_DARKBLUE);
             //Main guides
             line(x, y+(h/2), x+w, y+(h/2));
             line(x+(w/2), y, x+(w/2), y+(h/2));

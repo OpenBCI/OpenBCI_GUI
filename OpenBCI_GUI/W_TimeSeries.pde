@@ -264,7 +264,7 @@ class W_timeSeries extends Widget {
         //Display playback scrollbar, timeDisplay, or ADSSettingsController depending on data source
         if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
             pushStyle();
-            fill(0,0,0,20);
+            fill(GREY_20);
             stroke(31,69,110);
             rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
             popStyle();
@@ -1023,7 +1023,7 @@ class PlaybackScrollbar {
 
         //select color for playback indicator
         if (over || locked) {
-            fill(0, 0, 0);
+            fill(OPENBCI_DARKBLUE);
         } else {
             fill(102, 102, 102);
         }
@@ -1033,7 +1033,7 @@ class PlaybackScrollbar {
         //draw current timestamp and X of Y Seconds above scrollbar
         int fontSize = 17;
         textFont(p2, fontSize);
-        fill(0);
+        fill(OPENBCI_DARKBLUE);
         float tw = textWidth(currentAbsoluteTimeToDisplay);
         text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos - fontSize - 4);
         text(currentTimeInSecondsToDisplay, xpos, ypos - fontSize - 4);
@@ -1105,7 +1105,7 @@ class TimeDisplay {
         if (!currentAbsoluteTimeToDisplay.equals(null)) {
             int fontSize = 17;
             textFont(p2, fontSize);
-            fill(0);
+            fill(OPENBCI_DARKBLUE);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
             text(streamTimeElapsed.toString(), xpos + 10, ypos);
