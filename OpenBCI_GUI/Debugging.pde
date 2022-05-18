@@ -47,7 +47,6 @@ void verbosePrint(String _string) {
 
 //this class is used to create the help widget that provides system feedback in response to interactivity
 //it is intended to serve as a pseudo-console, allowing us to print useful information to the interface as opposed to an IDE console
-
 class HelpWidget {
 
     public float x, y, w, h;
@@ -56,6 +55,9 @@ class HelpWidget {
     //current text shown in help widget, based on most recent command
     String currentOutput = "Learn how to use this application and more at docs.openbci.com";
     OutputLevel curOutputLevel = OutputLevel.INFO;
+    private int colorFadeCounter;
+    private int colorFadeTimeMillis = 1000;
+    private boolean outputWasTriggered = false;
 
     HelpWidget(float _xPos, float _yPos, float _width, float _height) {
         x = _xPos;
@@ -99,19 +101,25 @@ class HelpWidget {
 
             //draw bg of text field of widget
             strokeWeight(1);
-            stroke(getBackgroundColor());
-            // fill(200);
-            // fill(255);
-            fill(getBackgroundColor());
-            // fill(57,128,204);
+            int saturationFadeValue = 0;
+            if (outputWasTriggered) {
+                int timeDelta = millis() - colorFadeCounter;
+                saturationFadeValue = (int)map(timeDelta, 0, colorFadeTimeMillis, 100, 0);
+                if (timeDelta > colorFadeTimeMillis) {
+                    outputWasTriggered = false;
+                }
+            }
+            // Color mode is switched to Hue, Saturation, Brightness in the next line
+            color c = getBackgroundColor(saturationFadeValue);
+            stroke(c);
+            fill(c);
             rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+            // Revert color mode back to standard RGB here
+            colorMode(RGB, 255, 255, 255);
             textFont(p4);
             textSize(14);
-            // fill(OPENBCI_DARKBLUE);
             fill(getTextColor());
-            // fill(57,128,204);
-            // fill(OPENBCI_BLUE);
             textAlign(LEFT, TOP);
             text(currentOutput, padding*2, height - h + padding);
         }
@@ -135,19 +143,37 @@ class HelpWidget {
         }
     }
 
-    private color getBackgroundColor() {
+    private color getBackgroundColor(int fadeVal) {  
+        //Colors in this method are calculated using Hue, Saturation, Brightness
+        colorMode(HSB, 360, 100, 100);
+        int sat = 0;
+        int maxSat = 75;
         switch (curOutputLevel) {
             case INFO:
-                return #BDE5F8;
+                //base color - #BDE5F8;
+                sat = 25;
+                sat = (int)map(fadeVal, 0, 100, sat, maxSat);
+                return color(199, sat, 97);
             case SUCCESS:
-                return #DFF2BF;
+                //base color -  #DFF2BF;
+                sat = 25;
+                sat = (int)map(fadeVal, 0, 100, sat, maxSat);
+                return color(106, sat, 95);
             case WARN:
-                return #FEEFB3;
+                //base color -  #FEEFB3;
+                sat = 30;
+                sat = (int)map(fadeVal, 0, 100, sat, maxSat);
+                return color(48, sat, 100);
             case ERROR:
-                return #FFD2D2;
+                //base color -  #FFD2D2;
+                sat = 18;
+                sat = (int)map(fadeVal, 0, 100, sat, maxSat);
+                println("ERROR");
+                return color(0, sat, 100);
             case DEFAULT:
             default:
-                return color(255);
+                colorMode(RGB, 255, 255, 255);
+                return WHITE;
         }
     }
 
@@ -157,6 +183,8 @@ class HelpWidget {
 
         String outputWithPrefix = "[" + level.name() + "]: " + _output;
         println(outputWithPrefix); // add this output to the console log
+        outputWasTriggered = true;
+        colorFadeCounter = millis();
     }
 };
 
