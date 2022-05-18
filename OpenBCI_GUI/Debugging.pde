@@ -168,7 +168,6 @@ class HelpWidget {
                 //base color -  #FFD2D2;
                 sat = 18;
                 sat = (int)map(fadeVal, 0, 100, sat, maxSat);
-                println("ERROR");
                 return color(0, sat, 100);
             case DEFAULT:
             default:
