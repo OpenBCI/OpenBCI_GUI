@@ -522,6 +522,9 @@ class ChannelBar {
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
+        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
         if(channelIndex == nchan-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
             plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
@@ -627,7 +630,7 @@ class ChannelBar {
 
         plot.beginDraw();
         plot.drawBox();
-        plot.drawGridLines(0);
+        plot.drawGridLines(GPlot.VERTICAL);
         try {
             plot.drawLines();
         } catch (NullPointerException e) {

@@ -94,6 +94,12 @@ class W_fft extends Widget {
         fft_plot.getYAxis().setDrawTickLabels(true);
         fft_plot.setPointSize(2);
         fft_plot.setPointColor(0);
+        fft_plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        fft_plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        fft_plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        fft_plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
+        fft_plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
+        fft_plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
 
         //setup points of fft point arrays
         for (int i = 0; i < fft_points.length; i++) {
@@ -153,7 +159,7 @@ class W_fft extends Widget {
         fft_plot.drawBox();
         fft_plot.drawXAxis();
         fft_plot.drawYAxis();
-        fft_plot.drawGridLines(2);
+        fft_plot.drawGridLines(GPlot.BOTH);
         //Update and draw active channels that have been selected via channel select for this widget
         for (int j = 0; j < fftChanSelect.activeChan.size(); j++) {
             int chan = fftChanSelect.activeChan.get(j);

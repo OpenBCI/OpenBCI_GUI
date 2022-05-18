@@ -290,6 +290,9 @@ class AnalogReadBar{
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
+        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
         if (selectedProtocol == BoardProtocol.WIFI) {
             if(auxValuesPosition == 1) {
                 plot.getXAxis().setAxisLabelText("Time (s)");
@@ -397,7 +400,7 @@ class AnalogReadBar{
 
         plot.beginDraw();
         plot.drawBox(); // we won't draw this eventually ...
-        plot.drawGridLines(0);
+        plot.drawGridLines(GPlot.VERTICAL);
         plot.drawLines();
         if (selectedProtocol == BoardProtocol.WIFI) {
             if(auxValuesPosition == 1) { //only draw the x axis label on the bottom channel bar

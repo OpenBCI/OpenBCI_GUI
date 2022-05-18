@@ -63,22 +63,29 @@ class W_BandPower extends Widget {
         bp_plot.getXAxis().getAxisLabel().setOffset(42f);
         bp_plot.startHistograms(GPlot.VERTICAL);
         bp_plot.getHistogram().setDrawLabels(true);
+        bp_plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        bp_plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        bp_plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        bp_plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
+        bp_plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
+        bp_plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
 
         //setting border of histograms to match BG
         bp_plot.getHistogram().setLineColors(new color[]{
             color(245), color(245), color(245), color(245), color(245)
           }
         );
-
         //setting bg colors of histogram bars to match the color scheme of the channel colors w/ an opacity of 150/255
         bp_plot.getHistogram().setBgColors(new color[] {
-                color((int)channelColors[6], 150),
-                color((int)channelColors[4], 150),
-                color((int)channelColors[3], 150),
-                color((int)channelColors[2], 150), 
-                color((int)channelColors[1], 150),
+                color((int)channelColors[6], 200),
+                color((int)channelColors[4], 200),
+                color((int)channelColors[3], 200),
+                color((int)channelColors[2], 200), 
+                color((int)channelColors[1], 200),
             }
         );
+        //setting color of text label for each histogram bar on the x axis
+        bp_plot.getHistogram().setFontColor(OPENBCI_DARKBLUE);
     } //end of constructor
 
     void update() {
@@ -136,6 +143,7 @@ class W_BandPower extends Widget {
         bp_plot.drawBox();
         bp_plot.drawXAxis();
         bp_plot.drawYAxis();
+        bp_plot.drawGridLines(GPlot.HORIZONTAL);
         bp_plot.drawHistograms();
         bp_plot.endDraw();
 
