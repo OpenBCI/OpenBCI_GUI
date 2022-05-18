@@ -12,7 +12,8 @@ class W_DigitalRead extends Widget {
     private int numDigitalReadDots;
     float xF, yF, wF, hF;
     int dot_padding;
-    float dot_x, dot_y, dot_h, dot_w; //values for actual time series chart (rectangle encompassing all digitalReadDots)
+    //values for actual time series chart (rectangle encompassing all digitalReadDots)
+    float dot_x, dot_y, dot_h, dot_w;
     float plotBottomWell;
     float playbackWidgetHeight;
     int digitalReaddotHeight;
@@ -218,8 +219,8 @@ class DigitalReadDot{
     color dotStroke = #d2d2d2;
     color dot0Fill = #f5f5f5;
     color dot1Fill = #f5f5f5;
-    color val0Fill = #000000;
-    color val1Fill = #ffffff;
+    color val0Fill = OPENBCI_DARKBLUE;
+    color val1Fill = WHITE;
 
     int dotX;
     int dotY;
@@ -256,7 +257,7 @@ class DigitalReadDot{
         padding = _padding;
 
         digitalValue = new TextBox("", dotX, dotY);
-        digitalValue.textColor = color(val0Fill);
+        digitalValue.textColor = val0Fill;
         digitalValue.alignH = CENTER;
         digitalValue.alignV = CENTER;
         drawDigitalValue = true;

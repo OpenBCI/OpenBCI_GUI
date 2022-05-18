@@ -239,7 +239,7 @@ class W_emg extends Widget {
 
                 //draw channel number at upper left corner of row/column cell
                 pushStyle();
-                stroke(0);
+                stroke(OPENBCI_DARKBLUE);
                 fill(OPENBCI_DARKBLUE);
                 int _chan = index+1;
                 textFont(p5, 12);

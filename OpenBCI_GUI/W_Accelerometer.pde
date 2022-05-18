@@ -15,7 +15,7 @@ class W_Accelerometer extends Widget {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
     color graphBG = color(245);
-    color textColor = color(0);
+    color textColor = OPENBCI_DARKBLUE;
     color strokeColor = color(138, 146, 153);
     color eggshell = color(255, 253, 248);
 
@@ -355,9 +355,16 @@ class AccelerometerBar {
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
         plot.getYAxis().setAxisLabelText("Acceleration (g)");
+        plot.getYAxis().setNTicks(3);
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(accBarPadding));
         plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
+        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
 
         initArrays();
 
@@ -402,12 +409,11 @@ class AccelerometerBar {
         pushStyle();
         plot.beginDraw();
         plot.drawBox(); //we won't draw this eventually ...
-        plot.drawGridLines(2);
+        plot.drawGridLines(GPlot.BOTH);
         plot.drawLines(); //Draw a Line graph!
         //plot.drawPoints(); //Used to draw Points instead of Lines
         plot.drawYAxis();
         plot.drawXAxis();
-        plot.getXAxis().draw();
         plot.endDraw();
         popStyle();
     }

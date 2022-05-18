@@ -324,7 +324,7 @@ class HeadPlot {
         //initialize the image
         for (int Iy=0; Iy < headImage.height; Iy++) {
             for (int Ix = 0; Ix < headImage.width; Ix++) {
-                headImage.set(Ix, Iy, color(0, 0, 0, 0));
+                headImage.set(Ix, Iy, WHITE);
             }
         }
 
@@ -992,7 +992,7 @@ class HeadPlot {
                     headImage.set(Ix, Iy, calcPixelColor(Ix, Iy));
                 } else {  //negative values are outside of the head
                     //pixel is outside the head.  set to black.
-                    headImage.set(Ix, Iy, color(0, 0, 0, 0));
+                    headImage.set(Ix, Iy, WHITE);
                 }
             }
         }
@@ -1004,32 +1004,17 @@ class HeadPlot {
                 //is this pixel inside the head?
                 if (electrode_color_weightFac[0][Ix][Iy] >= 0.0) { //zero and positive values are inside the head
                     //it is inside the head.  set the color based on the electrodes
+                    headVoltage[Ix][Iy] = calcPixelVoltage(Ix, Iy, headVoltage[Ix][Iy]);
                     headImage.set(Ix, Iy, calcPixelColor(headVoltage[Ix][Iy]));
                 } else {  //negative values are outside of the head
                     //pixel is outside the head.  set to black.
-                    headImage.set(Ix, Iy, color(0, 0, 0, 0));
-                }
-            }
-        }
-    }
-
-
-    private void updateHeadVoltages() {
-        for (int Iy=0; Iy < headImage.height; Iy++) {
-            for (int Ix = 0; Ix < headImage.width; Ix++) {
-                //is this pixel inside the head?
-                if (electrode_color_weightFac[0][Ix][Iy] >= 0.0) { //zero and positive values are inside the head
-                    //it is inside the head.  set the voltage based on the electrodes
-                    headVoltage[Ix][Iy] = calcPixelVoltage(Ix, Iy, headVoltage[Ix][Iy]);
-                } else {  //negative values are outside of the head
-                    //pixel is outside the head.
                     headVoltage[Ix][Iy] = -1.0;
+                    headImage.set(Ix, Iy, WHITE);
                 }
             }
         }
     }
 
-    int count_call=0;
     private float calcPixelVoltage(int pixel_Ix, int pixel_Iy, float prev_val) {
         float weight, elec_volt;
         int n_elec = electrode_xy.length;
@@ -1225,7 +1210,6 @@ class HeadPlot {
         } else {
             //update head voltages
             if (!threadLock && hardCalcsDone) {
-                updateHeadVoltages();
                 convertVoltagesToHeadImage();
             }
         }
@@ -1240,14 +1224,14 @@ class HeadPlot {
         pushStyle();
         smooth();
         //draw head parts
-        fill(255, 255, 255);
-        stroke(125, 125, 125);
+        fill(WHITE);
+        stroke(GREY_125);
         triangle(nose_x[0], nose_y[0], nose_x[1], nose_y[1], nose_x[2], nose_y[2]);  //nose
         ellipse(earL_x, earL_y, ear_width, ear_height); //little circle for the ear
         ellipse(earR_x, earR_y, ear_width, ear_height); //little circle for the ear
 
         //draw head itself
-        fill(255, 255, 255, 255);  //fill in a white head
+        fill(WHITE);  //fill in a white head
         strokeWeight(1);
         ellipse(circ_x, circ_y, circ_diam, circ_diam); //big circle for the head
         if (drawHeadAsContours) {
@@ -1281,7 +1265,7 @@ class HeadPlot {
         }
 
         //add labels to electrodes
-        fill(0, 0, 0);
+        fill(OPENBCI_DARKBLUE);
         textFont(font);
         textAlign(CENTER, CENTER);
         for (int i=0; i < electrode_xy.length; i++) {

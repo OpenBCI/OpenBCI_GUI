@@ -8,14 +8,14 @@ class SignalCheckThresholdUI {
     private int valuePercentage;
     private int valuekOhms;
     private CytonSignalCheckMode signalCheckMode;
-    private color textColor = color(0);
+    private color textColor = OPENBCI_DARKBLUE;
     private boolean hasUpdatedTextColor = false;
 
     SignalCheckThresholdUI(ControlP5 _cp5, String _name, int _x, int _y, int _w, int _h, color _textColor, CytonSignalCheckMode _mode) {
         signalCheckMode = _mode;
         name = _name;
         textColor = _textColor;
-        defaultValue_Percentage = name.equals("errorThreshold") ? 90 : 75;
+        defaultValue_Percentage = name.equals("errorThreshold") ? (int)threshold_railed : (int)threshold_railed_warn;
         valuePercentage = defaultValue_Percentage;
         defaultValue_kOhms = name == "errorThreshold" ? 2500 : 750;
         valuekOhms = defaultValue_kOhms;

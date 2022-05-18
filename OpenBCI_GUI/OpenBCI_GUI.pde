@@ -226,16 +226,19 @@ PFont p6; //small Open Sans
 boolean setupComplete = false;
 
 //Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
+final color WHITE = color(255);
+final color BLACK = color(0);
 final color OPENBCI_DARKBLUE = color(1, 18, 41);
 final color OPENBCI_BLUE = color(31, 69, 110);
 final color boxColor = color(200);
 final color boxStrokeColor = OPENBCI_DARKBLUE;
 final color isSelected_color = color(184, 220, 105);
-final color colorNotPressed = color(255);
+final color colorNotPressed = WHITE;
 final color buttonsLightBlue = color(57,128,204);
+final color GREY_125 = color(125);
+final color GREY_100 = color(100);
+final color GREY_20 = color(20);
 final color TURN_ON_GREEN = color(184,220,105);
-final color WHITE = color(255);
-final color BLACK = color(0);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
 final color BUTTON_HOVER_LIGHT = color(211, 222, 232);
@@ -346,7 +349,12 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    if (isMac()) {
+        f2 = createFont("Arial", 15, true);
+    } else {
+        f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    }
+    
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 

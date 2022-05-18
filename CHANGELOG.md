@@ -20,6 +20,8 @@
 * Minor UI/UX improvements to Spectrogram widget to increase clarity for all users
 * Add slower options for FFT data smoothing
 * Fix certain Textfield and TextArea fonts not drawing correctly on some Macs
+* Update and enforce style guide throughout the GUI in preparation for multiple themes
+* Improve UI/UX for HelpWidget at the bottom of the GUI to make it more noticeable
 
 # v5.0.9
 

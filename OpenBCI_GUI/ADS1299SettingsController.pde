@@ -104,14 +104,14 @@ class ADS1299SettingsController {
             pushStyle();
             //stroke(31,69,110, 50);
             stroke(OBJECT_BORDER_GREY);
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y - columnLabelH, w, columnLabelH);
             popStyle();
 
             //background
             pushStyle();
             noStroke();
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y, w + 1, h);
             popStyle();
 
@@ -142,7 +142,7 @@ class ADS1299SettingsController {
             
             //Draw background behind command buttons
             pushStyle();
-            fill(0, 0, 0, 100);
+            fill(GREY_100);
             rect(x, y + h, w + 1, commandBarH);
             if (showCustomCommandUI) {
                 rect(customCmdUI_x, y + h + commandBarH, customCmdUI_w, commandBarH); //keep above style for other command buttons
@@ -314,8 +314,8 @@ class ADS1299SettingsController {
         ScrollableList list = hwsCp5.addScrollableList(name)
             .setOpen(false)
             .setColorBackground(_backgroundColor) // text field bg color
-            .setColorValueLabel(color(0))       // text color
-            .setColorCaptionLabel(color(0))
+            .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
+            .setColorCaptionLabel(OPENBCI_DARKBLUE)
             .setColorForeground(color(125))    // border color when not selected
             .setColorActive(BUTTON_PRESSED)       // border color when selected
             .setOutlineColor(OBJECT_BORDER_GREY)
@@ -391,7 +391,7 @@ class ADS1299SettingsController {
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(color(0, 0, 0))  // text color
+            .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
             .setColorForeground(OBJECT_BORDER_GREY)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))

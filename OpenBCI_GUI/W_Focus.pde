@@ -152,7 +152,7 @@ class W_Focus extends Widget {
         if (false) {
             //Draw some guides to help develop this widget faster
             pushStyle();
-            stroke(0);
+            stroke(OPENBCI_DARKBLUE);
             //Main guides
             line(x, y+(h/2), x+w, y+(h/2));
             line(x+(w/2), y, x+(w/2), y+(h/2));
@@ -471,6 +471,12 @@ class FocusBar {
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(22));
         plot.getYAxis().getAxisLabel().setOffset(float(focusBarPadding));
+        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
+        plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
 
         adjustTimeAxis(numSeconds);
 
@@ -497,7 +503,7 @@ class FocusBar {
     public void draw() {
         plot.beginDraw();
         plot.drawBox(); //we won't draw this eventually ...
-        plot.drawGridLines(2);
+        plot.drawGridLines(GPlot.BOTH);
         plot.drawLines(); //Draw a Line graph!
         //plot.drawPoints(); //Used to draw Points instead of Lines
         plot.drawYAxis();
