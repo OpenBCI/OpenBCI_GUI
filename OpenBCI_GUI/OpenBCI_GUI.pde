@@ -337,7 +337,7 @@ void settings() {
     globalScreenResolution.append(" X ");
     globalScreenResolution.append(displayHeight);
     //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
-    pixelDensity(displayDensity());
+    //pixelDensity(displayDensity());
     globalScreenDPI = new StringBuilder("High-DPI Screen Detected: ");
     globalScreenDPI.append(displayDensity() == 2);
 }
@@ -350,7 +350,7 @@ void setup() {
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
     if (isMac()) {
-        f2 = createFont("Helvetica", 15, true);
+        f2 = createFont("Arial", 15, true);
     } else {
         f2 = createFont("fonts/Raleway-Regular.otf", 15);
     }
