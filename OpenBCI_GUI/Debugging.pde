@@ -109,7 +109,8 @@ class HelpWidget {
                     outputWasTriggered = false;
                 }
             }
-            // Color mode is switched to Hue, Saturation, Brightness in the next line
+            //Colors in this method are calculated using Hue, Saturation, Brightness
+            colorMode(HSB, 360, 100, 100);
             color c = getBackgroundColor(saturationFadeValue);
             stroke(c);
             fill(c);
@@ -144,8 +145,6 @@ class HelpWidget {
     }
 
     private color getBackgroundColor(int fadeVal) {  
-        //Colors in this method are calculated using Hue, Saturation, Brightness
-        colorMode(HSB, 360, 100, 100);
         int sat = 0;
         int maxSat = 75;
         switch (curOutputLevel) {
