@@ -65,7 +65,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
         clipboardCopy = new ClipHelper();
         cp5 = new ControlP5(this);
-        PFont textAreaFont = createFont("Helvetica", 12, true);
+        PFont textAreaFont = createFont("Arial", 12, true);
         consoleTextArea = cp5.addTextarea("ConsoleWindow")
             .setPosition(0, headerHeight)
             .setSize(width, height - headerHeight)

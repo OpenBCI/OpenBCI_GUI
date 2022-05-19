@@ -216,9 +216,9 @@ public class MenuList extends controlP5.Controller {
                 menu.fill(127, 134, 143);
             }
             if (i == activeItem) {
-                menu.stroke(184, 220, 105, 255);
+                menu.stroke(TURN_ON_GREEN);
                 menu.strokeWeight(1);
-                menu.fill(184, 220, 105, 255);
+                menu.fill(TURN_ON_GREEN);
                 menu.rect(0, 0, getWidth()-1, itemHeight-1 );
                 menu.noStroke();
             } else {

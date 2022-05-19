@@ -547,7 +547,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(createFont("Helvetica",12,true))
+            .setFont(createFont("Arial",12,true))
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color

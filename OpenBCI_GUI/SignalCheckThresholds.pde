@@ -45,7 +45,7 @@ class SignalCheckThresholdUI {
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(createFont("Helvetica",12,true))
+            .setFont(p5)
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color

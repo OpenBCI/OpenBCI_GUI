@@ -238,7 +238,7 @@ final color buttonsLightBlue = color(57,128,204);
 final color GREY_125 = color(125);
 final color GREY_100 = color(100);
 final color GREY_20 = color(20);
-final color TURN_ON_GREEN = color(184,220,105);
+final color TURN_ON_GREEN = color(223, 242, 191);
 final color TURN_OFF_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
 final color BUTTON_HOVER_LIGHT = color(211, 222, 232);
@@ -337,6 +337,7 @@ void settings() {
     globalScreenResolution.append(" X ");
     globalScreenResolution.append(displayHeight);
     //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
+    if (isMac())
     //pixelDensity(displayDensity());
     globalScreenDPI = new StringBuilder("High-DPI Screen Detected: ");
     globalScreenDPI.append(displayDensity() == 2);
@@ -349,12 +350,7 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    if (isMac()) {
-        f2 = createFont("Arial", 15, true);
-    } else {
-        f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    }
-    
+    f2 = createFont("fonts/Raleway-Regular.otf", 15);
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 

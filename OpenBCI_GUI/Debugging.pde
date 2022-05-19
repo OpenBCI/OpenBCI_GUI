@@ -129,6 +129,7 @@ class HelpWidget {
     }
 
     private color getTextColor() {
+        /*
         switch (curOutputLevel) {
             case INFO:
                 return #00529B;
@@ -140,8 +141,10 @@ class HelpWidget {
                 return #D8000C;
             case DEFAULT:
             default:
-                return color(0, 5, 11);
+                return color(0, 5, 11); 
         }
+        */
+        return OPENBCI_DARKBLUE;
     }
 
     private color getBackgroundColor(int fadeVal) {  
@@ -155,6 +158,7 @@ class HelpWidget {
                 return color(199, sat, 97);
             case SUCCESS:
                 //base color -  #DFF2BF;
+                maxSat = 50;
                 sat = 25;
                 sat = (int)map(fadeVal, 0, 100, sat, maxSat);
                 return color(106, sat, 95);
