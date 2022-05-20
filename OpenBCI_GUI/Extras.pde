@@ -32,6 +32,20 @@ private boolean isMac() {
     return !isWindows() && !isLinux();
 }
 
+private void checkIsMacFullDetail() {
+    StringBuilder response = new StringBuilder("MacOS Details: ");
+    if (isMacOsLowerThanCatalina()) {
+        response.append("MacOS Mojave or earlier");
+    } else if (isMacOsBigSur()) {
+        response.append("MacOS Big Sur");
+    } else if (isMacOsMonterey()) {
+        response.append("MacOS Monterey");
+    } else {
+        response.append("MacOS Catalina");
+    }
+    println(response);
+}
+
 // For a full list of modern Mac OS versions, visit https://en.wikipedia.org/wiki/MacOS_version_history
 private boolean isMacOsLowerThanCatalina() {
     int[] versionInfo = fetchAndParseMacOsVersion();
@@ -40,7 +54,14 @@ private boolean isMacOsLowerThanCatalina() {
 
 private boolean isMacOsBigSur() {
     int[] versionInfo = fetchAndParseMacOsVersion();
-    return versionInfo[0] == 11;
+    //This should return 11, but there was a recently discovered bug in Java 8 -- https://bugs.openjdk.java.net/browse/JDK-8274907
+    int[] javaInfo = fetchAndParseJavaVersion();
+    boolean usingJava8_202 = javaInfo[0] == 1 && javaInfo[1] == 8 && javaInfo[2] == 202;
+    if (usingJava8_202) {
+        return versionInfo[0] == 10 && versionInfo[1] == 16;
+    } else {
+        return versionInfo[0] == 11;
+    }
 }
 
 private boolean isMacOsMonterey() {
@@ -57,13 +78,23 @@ private int[] fetchAndParseMacOsVersion() {
         println("Oops! Please only call this method on MacOS");
         return null;
     }
-
     final String version = getOperatingSystemVersion();
     final String[] splitStrings = split(version, '.');
     int[] versionVals = new int[splitStrings.length];
     for (int i = 0; i < splitStrings.length; i++) {
         versionVals[i] = Integer.valueOf(splitStrings[i]);
     }
+    return versionVals;
+}
+
+private int[] fetchAndParseJavaVersion() {
+    final String version = System.getProperty("java.version");
+    final String[] splitStrings = split(version, '.');
+    int[] versionVals = new int[splitStrings.length];
+    versionVals[0] = Integer.valueOf(splitStrings[0]);
+    versionVals[1] = Integer.valueOf(splitStrings[1]);
+    final String[] minorVersion = split(splitStrings[2], "_");
+    versionVals[2] = Integer.valueOf(minorVersion[minorVersion.length - 1]);
     return versionVals;
 }
 

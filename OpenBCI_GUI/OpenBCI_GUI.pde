@@ -416,6 +416,9 @@ void setup() {
     println(globalScreenResolution.toString());
     println(globalScreenDPI.toString());
     println(osName.toString());
+    if (isMac()) {
+        checkIsMacFullDetail();
+    }
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
