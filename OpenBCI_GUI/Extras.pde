@@ -32,6 +32,41 @@ private boolean isMac() {
     return !isWindows() && !isLinux();
 }
 
+// For a full list of modern Mac OS versions, visit https://en.wikipedia.org/wiki/MacOS_version_history
+private boolean isMacOsLowerThanCatalina() {
+    int[] versionInfo = fetchAndParseMacOsVersion();
+    return versionInfo[0] <= 10 && versionInfo[1] < 15;
+}
+
+private boolean isMacOsBigSur() {
+    int[] versionInfo = fetchAndParseMacOsVersion();
+    return versionInfo[0] == 11;
+}
+
+private boolean isMacOsMonterey() {
+    int[] versionInfo = fetchAndParseMacOsVersion();
+    return versionInfo[0] == 12;
+}
+
+private String getOperatingSystemVersion() {
+    return System.getProperty("os.version");
+}
+
+private int[] fetchAndParseMacOsVersion() {
+    if (!isMac()) {
+        println("Oops! Please only call this method on MacOS");
+        return null;
+    }
+
+    final String version = getOperatingSystemVersion();
+    final String[] splitStrings = split(version, '.');
+    int[] versionVals = new int[splitStrings.length];
+    for (int i = 0; i < splitStrings.length; i++) {
+        versionVals[i] = Integer.valueOf(splitStrings[i]);
+    }
+    return versionVals;
+}
+
 //BrainFlow only supports Windows 8 and 10. This will help with OpenBCI support tickets. #964
 private void checkIsOldVersionOfWindowsOS() {
     boolean isOld = SystemUtils.IS_OS_WINDOWS_7 || SystemUtils.IS_OS_WINDOWS_VISTA || SystemUtils.IS_OS_WINDOWS_XP;

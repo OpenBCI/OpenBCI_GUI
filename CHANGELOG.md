@@ -5,6 +5,7 @@
 * Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
 * Fix dropdown backgrounds in Networking Widget
 * Update priveleges for Windows users and check if GUI has been run as Administrator
+* Fix High DPI scaling on some Macs with Retina Display
 
 ### Improvements
 * Add new FilterUI to allow custom filters per channel #988
@@ -22,6 +23,7 @@
 * Fix certain Textfield and TextArea fonts not drawing correctly on some Macs
 * Update and enforce style guide throughout the GUI in preparation for multiple themes
 * Improve UI/UX for HelpWidget at the bottom of the GUI to make it more noticeable
+* Print OS Name and Version to Console Log on app start
 
 # v5.0.9
 

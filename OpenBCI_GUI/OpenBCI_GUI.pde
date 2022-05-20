@@ -337,8 +337,7 @@ void settings() {
     globalScreenResolution.append(" X ");
     globalScreenResolution.append(displayHeight);
     //Account for high-dpi displays on Mac, Windows, and Linux Machines Fixes #968
-    if (isMac())
-    //pixelDensity(displayDensity());
+    pixelDensity(displayDensity());
     globalScreenDPI = new StringBuilder("High-DPI Screen Detected: ");
     globalScreenDPI.append(displayDensity() == 2);
 }
@@ -350,7 +349,11 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    if (isMac() && isMacOsLowerThanCatalina() && (displayDensity() > 1)) {
+        f2 = createFont("fonts/Raleway-Regular.otf", 9);
+    } else {
+        f2 = createFont("fonts/Raleway-Regular.otf", 15);
+    }
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
 
@@ -391,7 +394,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    StringBuilder osName = new StringBuilder("Operating System: ");
+    StringBuilder osName = new StringBuilder("Operating System and Version: ");
     if (isLinux()) {
         osName.append("Linux");
     } else if (isWindows()) {
@@ -403,6 +406,9 @@ void setup() {
     } else if (isMac()) {
         osName.append("Mac");
     }
+
+    osName.append(" - ");
+    osName.append(getOperatingSystemVersion());
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println(globalScreenResolution.toString());
