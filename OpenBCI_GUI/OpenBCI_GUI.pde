@@ -206,6 +206,7 @@ PFont f1;
 PFont f2;
 PFont f3;
 PFont f4;
+PFont f5;
 
 PFont h1; //large Montserrat
 PFont h2; //large/medium Montserrat
@@ -349,13 +350,14 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    if (isMac() && isMacOsLowerThanCatalina() && (displayDensity() > 1)) {
-        f2 = createFont("fonts/Raleway-Regular.otf", 9);
-    } else {
-        f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    }
+    //Account for Macs with Retina Display and textfield text being too large
+    int f2FontSize = isMac() && (displayDensity() > 1) ? 8 : 15;
+    f2 = createFont("fonts/Raleway-Regular.otf", f2FontSize);
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+    //Account for Macs with Retina Display and textfield text being too large
+    int f5FontSize = isMac() && (displayDensity() > 1) ? 6 : 12;
+    f5 = createFont("fonts/Raleway-Regular.otf", f5FontSize);
 
     h1 = createFont("fonts/Montserrat-Regular.otf", 20);
     h2 = createFont("fonts/Montserrat-Regular.otf", 18);
