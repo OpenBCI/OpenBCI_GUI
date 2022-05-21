@@ -77,7 +77,7 @@ class W_PulseSensor extends Widget {
 
         // Pulse Sensor Stuff
         eggshell = color(255, 253, 248);
-        pulseWave = TURN_OFF_RED;
+        pulseWave = BOLD_RED;
 
         PulseWaveY = new int[PulseBuffSize];
         BPMwaveY = new int[BPMbuffSize];

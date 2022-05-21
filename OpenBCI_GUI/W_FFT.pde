@@ -24,17 +24,17 @@ class W_fft extends Widget {
         (int)color(124, 75, 141),
         (int)color(54, 87, 158),
         (int)color(49, 113, 89),
-        (int)color(221, 178, 13),
+        (int)SIGNAL_CHECK_YELLOW,
         (int)color(253, 94, 52),
-        (int)TURN_OFF_RED,
+        (int)BOLD_RED,
         (int)color(162, 82, 49),
         (int)color(129, 129, 129),
         (int)color(124, 75, 141),
         (int)color(54, 87, 158),
         (int)color(49, 113, 89),
-        (int)color(221, 178, 13),
+        (int)SIGNAL_CHECK_YELLOW,
         (int)color(253, 94, 52),
-        (int)TURN_OFF_RED,
+        (int)BOLD_RED,
         (int)color(162, 82, 49)
     };
 

@@ -1007,7 +1007,7 @@ class WifiBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(wifi_ipAddress)
@@ -1303,7 +1303,7 @@ class SessionDataBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(directoryManager.getFileNameDateTime())
@@ -2105,7 +2105,7 @@ class GaleaBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(ipAddress)
@@ -2304,7 +2304,7 @@ class BrainFlowStreamerBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(DEFAULT_IP_ADDRESS) //default ipAddress == ""
@@ -2335,7 +2335,7 @@ class BrainFlowStreamerBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(DEFAULT_PORT) //default port == 0
@@ -2535,7 +2535,7 @@ class StreamingBoardBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText("") //default ipAddress == ""
@@ -2552,7 +2552,7 @@ class StreamingBoardBox {
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(isSelected_color)  // border color when not selected
+            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText(Integer.toString(0)) //default port == 0
