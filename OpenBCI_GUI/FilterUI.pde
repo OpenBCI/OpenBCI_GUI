@@ -412,7 +412,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     private void updateChannelCp5Objects() {
 
         //Reusable variables to update UI objects
-        color onColor = TURN_ON_GREEN;
+        color onColor = SUBNAV_LIGHTBLUE;
         color offColor = BUTTON_PRESSED_DARKGREY;
         color updateColor = offColor;
         String firstColumnTFValue = "";
@@ -558,6 +558,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             .setText(Integer.toString(intValue)) //set the text
             .align(5, 10, 20, 40)
             .setAutoClear(false)
+            .setIsCentered(true)
             ; //Don't clear textfield when pressing Enter key
         myTextfield.getValueLabel().align(CENTER, CENTER);
         //Clear textfield on double click
@@ -950,7 +951,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void createMasterOnOffButton(String name, final String text, int _x, int _y, int _w, int _h) {
-        masterOnOffButton = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, TURN_ON_GREEN, WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
+        masterOnOffButton = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, SUBNAV_LIGHTBLUE, WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         masterOnOffButton.setCircularButton(true);
         masterOnOffButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
