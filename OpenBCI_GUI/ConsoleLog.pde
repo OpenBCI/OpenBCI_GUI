@@ -94,6 +94,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
     void createConsoleLogButton (String bName, String bText, int x) {
         int y = 4;  // vertical position for button
+        PFont buttonFont = createFont("Arial", 14, true);
         cp5.addButton(bName)
                 .setPosition(x, y)
                 .setSize(buttonWidth, buttonHeight)
@@ -102,7 +103,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
                 .setColorBackground(color(144, 100));
         cp5.getController(bName)
                 .getCaptionLabel()
-                .setFont(p4)
+                .setFont(buttonFont)
                 .toUpperCase(false)
                 .setText(bText);
     }

@@ -387,7 +387,7 @@ class ADS1299SettingsController {
             .setPosition(0, 0)
             .setCaptionLabel("")
             .setSize(120, 20)
-            .setFont(createFont("Arial", 15, true))
+            .setFont(f2)
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color

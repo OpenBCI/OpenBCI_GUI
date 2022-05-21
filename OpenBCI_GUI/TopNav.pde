@@ -88,7 +88,7 @@ class TopNav {
 
         if (!secondaryNavInit) {
             //Buttons on the left side of the GUI secondary nav bar
-            createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, isSelected_color, OPENBCI_DARKBLUE);
+            createToggleDataStreamButton(stopButton_pressToStart_txt, PAD_3, SUBNAV_BUT_Y, DATASTREAM_BUT_W, SUBNAV_BUT_H, h4, 14, TURN_ON_GREEN, OPENBCI_DARKBLUE);
             createFiltersButton("Filters", PAD_3*2 + toggleDataStreamingButton.getWidth(), SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
 
             //Appears at Top Right SubNav while in a Session
@@ -497,7 +497,7 @@ class TopNav {
             stopRunning();
             if (!currentBoard.isStreaming()) {
                 toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
-                toggleDataStreamingButton.setColorBackground(isSelected_color);
+                toggleDataStreamingButton.setColorBackground(TURN_ON_GREEN);
             }
         } else { //not running
             output("openBCI_GUI: startButton was pressed. Starting data transfer, wait a few seconds.");
@@ -517,7 +517,7 @@ class TopNav {
     public void resetStartStopButton() {
         if (toggleDataStreamingButton != null) {
             toggleDataStreamingButton.getCaptionLabel().setText(stopButton_pressToStart_txt);
-            toggleDataStreamingButton.setColorBackground(isSelected_color);
+            toggleDataStreamingButton.setColorBackground(TURN_ON_GREEN);
         }
     }
 

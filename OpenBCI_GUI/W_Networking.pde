@@ -496,7 +496,7 @@ class W_Networking extends Widget {
         cp5_networking.addTextfield(name)
             .align(10,100,10,100)                   // Alignment
             .setSize(120,20)                         // Size of textfield
-            .setFont(createFont("Arial", 15, true))
+            .setFont(f2)
             .setFocus(false)                        // Deselects textfield
             .setColor(OPENBCI_DARKBLUE)
             .setColorBackground(color(255,255,255)) // text field bg color

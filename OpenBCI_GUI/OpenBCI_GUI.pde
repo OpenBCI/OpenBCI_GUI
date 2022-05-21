@@ -206,6 +206,7 @@ PFont f1;
 PFont f2;
 PFont f3;
 PFont f4;
+PFont f5;
 
 PFont h1; //large Montserrat
 PFont h2; //large/medium Montserrat
@@ -232,14 +233,15 @@ final color OPENBCI_DARKBLUE = color(1, 18, 41);
 final color OPENBCI_BLUE = color(31, 69, 110);
 final color boxColor = color(200);
 final color boxStrokeColor = OPENBCI_DARKBLUE;
-final color isSelected_color = color(184, 220, 105);
+final color isSelected_color = color(184, 220, 105); //Used for textfield borders,
 final color colorNotPressed = WHITE;
 final color buttonsLightBlue = color(57,128,204);
 final color GREY_125 = color(125);
 final color GREY_100 = color(100);
 final color GREY_20 = color(20);
-final color TURN_ON_GREEN = color(184,220,105);
-final color TURN_OFF_RED = color(224, 56, 45);
+final color TURN_ON_GREEN = color(195, 242, 181);
+final color TURN_OFF_RED = color(255, 210, 210);
+final color BOLD_RED = color(224, 56, 45);
 final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
 final color BUTTON_HOVER_LIGHT = color(211, 222, 232);
 final color BUTTON_PRESSED = color(150, 170, 200); //OPENBCI_DARKBLUE;
@@ -253,13 +255,13 @@ final color OBJECT_BORDER_GREY = color(150);
 final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
 final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
 //Use the same colors for X,Y,Z throughout Accelerometer widget
-final color ACCEL_X_COLOR = TURN_OFF_RED;
+final color ACCEL_X_COLOR = BOLD_RED;
 final color ACCEL_Y_COLOR = color(49, 113, 89);
 final color ACCEL_Z_COLOR = color(54, 87, 158);
 //Signal check colors
 final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow channel color found below
 final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
-final color SIGNAL_CHECK_RED = TURN_OFF_RED;
+final color SIGNAL_CHECK_RED = BOLD_RED;
 final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
 
 
@@ -278,9 +280,9 @@ final color[] channelColors = {
     color(124, 75, 141),
     color(54, 87, 158),
     color(49, 113, 89),
-    color(221, 178, 13),
+    SIGNAL_CHECK_YELLOW,
     color(253, 94, 52),
-    TURN_OFF_RED,
+    BOLD_RED,
     color(162, 82, 49)
 };
 
@@ -349,14 +351,14 @@ void setup() {
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
-    if (isMac()) {
-        f2 = createFont("Arial", 15, true);
-    } else {
-        f2 = createFont("fonts/Raleway-Regular.otf", 15);
-    }
-    
+    //Account for Macs with Retina Display and textfield text being too large
+    int f2FontSize = isMac() && (displayDensity() > 1) ? 8 : 15;
+    f2 = createFont("fonts/Raleway-Regular.otf", f2FontSize);
     f3 = createFont("fonts/Raleway-SemiBold.otf", 15);
     f4 = createFont("fonts/Raleway-SemiBold.otf", 64);  // clear bigger fonts for widgets
+    //Account for Macs with Retina Display and textfield text being too large
+    int f5FontSize = isMac() && (displayDensity() > 1) ? 6 : 12;
+    f5 = createFont("fonts/Raleway-Regular.otf", f5FontSize);
 
     h1 = createFont("fonts/Montserrat-Regular.otf", 20);
     h2 = createFont("fonts/Montserrat-Regular.otf", 18);
@@ -395,7 +397,7 @@ void setup() {
     System.setOut(outputStream);
     System.setErr(outputStream);
 
-    StringBuilder osName = new StringBuilder("Operating System: ");
+    StringBuilder osName = new StringBuilder("Operating System and Version: ");
     if (isLinux()) {
         osName.append("Linux");
     } else if (isWindows()) {
@@ -408,10 +410,16 @@ void setup() {
         osName.append("Mac");
     }
 
+    osName.append(" - ");
+    osName.append(getOperatingSystemVersion());
+
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println(globalScreenResolution.toString());
     println(globalScreenDPI.toString());
     println(osName.toString());
+    if (isMac()) {
+        checkIsMacFullDetail();
+    }
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
