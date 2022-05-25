@@ -393,7 +393,7 @@ class AnalogReadBar{
         pushStyle();
 
         //draw plot
-        stroke(31,69,110, 50);
+        stroke(OPENBCI_BLUE_ALPHA50);
         fill(color(125,30,12,30));
 
         rect(x + 36 + 4, y, w - 36 - 4, h);

@@ -95,7 +95,7 @@ class HelpWidget {
         } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
             // draw background of widget
             stroke(OPENBCI_DARKBLUE);
-            fill(31,69,110);
+            fill(OPENBCI_BLUE);
             rect(-1, height-h, width+2, h);
             noStroke();
 

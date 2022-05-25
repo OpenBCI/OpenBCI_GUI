@@ -115,11 +115,11 @@ class ButtonHelpText{
             //if on left side of screen, draw box brightness to prevent box off screen
             if(x <= width/2){
                 rect(x, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110, masterOpacity); //text colof
+                fill(31,69,110, masterOpacity); //text color
                 text(myText, x + padding, y + padding, 180, (numLines*lineSpacing + 4));
             } else{ //if on right side of screen, draw box left to prevent box off screen
                 rect(x - 200, y, 200, 2*padding + numLines*lineSpacing + 4);
-                fill(31,69,110); //text colof
+                fill(OPENBCI_BLUE); //text color
                 text(myText, x + padding - 200, y + padding, 180, (numLines*lineSpacing + 4));
             }
             popStyle();

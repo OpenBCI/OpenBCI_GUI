@@ -1339,7 +1339,7 @@ class SessionDataBox {
             .setOpen(false)
             .setColor(settings.dropdownColors)
             .setOutlineColor(150)
-            //.setColorBackground(color(31,69,110)) // text field bg color
+            //.setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
             //.setColorCaptionLabel(color(255))
             //.setColorForeground(color(125))    // border color when not selected
@@ -1987,7 +1987,7 @@ class RecentPlaybackBox {
     void createRecentPlaybackFilesDropdown(String name, List<String> _items){
         recentPlaybackSL = rpb_cp5.addScrollableList(name)
             .setOpen(false)
-            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
@@ -2132,7 +2132,7 @@ class GaleaBox {
     private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
         ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
-            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
@@ -2598,7 +2598,7 @@ class StreamingBoardBox {
     private ScrollableList createDropdown(String name, BrainFlowStreaming_Boards[] enumValues){
         ScrollableList list = localCP5.addScrollableList(name)
             .setOpen(false)
-            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected

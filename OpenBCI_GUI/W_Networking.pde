@@ -600,7 +600,7 @@ class W_Networking extends Widget {
         ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
                 .setOutlineColor(OPENBCI_DARKBLUE)
-                .setColorBackground(color(31,69,110)) // text field bg color
+                .setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
                 .setColorForeground(color(125))    // border color when not selected
@@ -637,7 +637,7 @@ class W_Networking extends Widget {
         ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name)
                 .setOpen(false)
                 .setOutlineColor(OPENBCI_DARKBLUE)
-                .setColorBackground(color(31,69,110)) // text field bg color
+                .setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255))       // text color
                 .setColorCaptionLabel(color(255))
                 .setColorForeground(color(125))    // border color when not selected
@@ -675,7 +675,7 @@ class W_Networking extends Widget {
         ScrollableList scrollList = cp5_networking_portName.addScrollableList(name)
             .setOpen(false)
             .setOutlineColor(OPENBCI_DARKBLUE)
-            .setColorBackground(color(31,69,110)) // text field bg color
+            .setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(color(255))       // text color
             .setColorCaptionLabel(color(255))
             .setColorForeground(color(125))    // border color when not selected
