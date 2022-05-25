@@ -132,6 +132,9 @@ class TopNav {
             configSelector.update();
             previousSystemMode = systemMode;
         }
+        
+        boolean topNavSubClassIsOpen = layoutSelector.isVisible || configSelector.isVisible || tutorialSelector.isVisible;
+        setDropdownMenuIsOpen(topNavSubClassIsOpen);
     }
 
     void draw() {
@@ -631,7 +634,6 @@ class LayoutSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        topNav.setDropdownMenuIsOpen(isVisible);
         if (isVisible) {
             //the very convoluted way of locking all controllers of a single controlP5 instance...
             for (int i = 0; i < wm.widgets.size(); i++) {
@@ -815,7 +817,6 @@ class ConfigSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        topNav.setDropdownMenuIsOpen(isVisible);
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...
@@ -1061,7 +1062,6 @@ class TutorialSelector {
 
     void toggleVisibility() {
         isVisible = !isVisible;
-        topNav.setDropdownMenuIsOpen(isVisible);
         if (systemMode >= SYSTEMMODE_POSTINIT) {
             if (isVisible) {
                 //the very convoluted way of locking all controllers of a single controlP5 instance...

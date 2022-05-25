@@ -72,7 +72,7 @@ class W_Accelerometer extends Widget {
         accelerometerBar.adjustTimeAxis(xLimOptions[settings.accHorizScaleSave]);
         accelerometerBar.adjustVertScale(yLimOptions[settings.accVertScaleSave]);
 
-        createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 3), (int)(y + 3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 1), (int)(y0 + navHeight + 1), 120, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     float adjustYMaxMinBasedOnSource() {
@@ -175,7 +175,7 @@ class W_Accelerometer extends Widget {
         //resize the accelerometer line graph
         accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth-accPadding*2, accelGraphHeight); //bar x, bar y, bar w, bar h
         //update the position of the accel mode button
-        accelModeButton.setPosition((int)(x + 3), (int)(y + 3 - navHeight));
+        accelModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
     }
     
     void mousePressed() {

@@ -572,7 +572,7 @@ class W_Networking extends Widget {
     }
 
     void createGuideButton() {
-        guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", x0 + 2, y0 + navH + 2, 125, navH - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", (int)(x0 + 1), (int)(y0 + navH + 1), 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         guideButton.setBorderColor(OBJECT_BORDER_GREY);
         guideButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -584,7 +584,7 @@ class W_Networking extends Widget {
     }
 
     void createDataOutputsButton() {
-        dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 2*2 + guideButton.getWidth(), y0 + navH + 2, 100, navH - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs", x0 + 1 + 3 + guideButton.getWidth(), y0 + navH + 1, 100, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         dataOutputsButton.setBorderColor(OBJECT_BORDER_GREY);
         dataOutputsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -776,8 +776,8 @@ class W_Networking extends Widget {
 
         //reset the button positions using new x and y
         startButton.setPosition(x + w/2 - 70, y + h - 40 );
-        guideButton.setPosition(x0 + 2, y0 + navH + 2);
-        dataOutputsButton.setPosition(x0 + 2*2 + guideButton.getWidth() , y0 + navH + 2);
+        guideButton.setPosition(x0 + 1, y0 + navH + 1);
+        dataOutputsButton.setPosition(x0 + 1 + 2 + guideButton.getWidth() , y0 + navH + 1);
 
         int dropdownsItemsToShow = int((this.h0 * datatypeDropdownScaling) / (this.navH - 4));
         int dropdownHeight = (dropdownsItemsToShow) * (this.navH - 4);

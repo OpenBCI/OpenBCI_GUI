@@ -99,8 +99,8 @@ class W_CytonImpedance extends Widget {
         //Init the electrode map and fill and create signal check buttons
         initCytonImpedanceMap();
 
-        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x + padding_3), (int)(y + padding_3 - navHeight), 90, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
-        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x + padding_3*2 + 90), (int)(y + padding_3 - navHeight), 120, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonResetAllChannels = createCytonResetChannelsButton("cytonResetAllChannels", "Reset Channels", (int)(x0 + 1), (int)(y0 + navHeight + 1), 90, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        cytonImpedanceMasterCheck = createCytonImpMasterCheckButton("cytonImpedanceMasterCheck", "Check All Channels", (int)(x0 + 1 + padding_3 + 90), (int)(y0 + navHeight + 1), 120, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         errorThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "errorThreshold", x + tableWidth + padding, y + h - navH, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_RED, signalCheckMode);
         warningThreshold = new SignalCheckThresholdUI(threshold_ui_cp5, "warningThreshold", x + tableWidth + padding, y + h - navH/2, thresholdTFWidth, thresholdTFHeight, SIGNAL_CHECK_YELLOW, signalCheckMode);
     }
@@ -192,8 +192,8 @@ class W_CytonImpedance extends Widget {
         imp_buttons_cp5.setGraphics(pApplet, 0, 0);
         threshold_ui_cp5.setGraphics(pApplet, 0, 0);
 
-        cytonResetAllChannels.setPosition((int)(x + padding_3), (int)(y + padding_3 - navHeight));
-        cytonImpedanceMasterCheck.setPosition((int)(x + padding_3*2 + 90), (int)(y + padding_3 - navHeight));
+        cytonResetAllChannels.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
+        cytonImpedanceMasterCheck.setPosition((int)(x0 + 1 + padding_3 + 90), (int)(y0 + navHeight + 1));
 
         resizeTable();
 
@@ -431,6 +431,7 @@ class W_CytonImpedance extends Widget {
     private Button createCytonImpMasterCheckButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
         final Button myButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
         myButton.setSwitch(true);
+        myButton.setBorderColor(OBJECT_BORDER_GREY);
         myButton.setVisible(signalCheckMode == CytonSignalCheckMode.IMPEDANCE);
         myButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -462,6 +463,7 @@ class W_CytonImpedance extends Widget {
         final Button myButton = createButton(cp5_widget, name, text, _x, _y, _w, _h, _font, _fontSize, _bg, _textColor);
         //myButton.setSwitch(true);
         myButton.setVisible(signalCheckMode == CytonSignalCheckMode.IMPEDANCE);
+        myButton.setBorderColor(OBJECT_BORDER_GREY);
         myButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 println("Cyton Impedance Check: User clicked reset all channel settings.");

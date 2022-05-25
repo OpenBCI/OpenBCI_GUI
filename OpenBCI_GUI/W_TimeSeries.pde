@@ -205,7 +205,7 @@ class W_timeSeries extends Widget {
         int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y0 + navHeight + 1), 120, navHeight - 3);
             cp5ElementsToCheck.add((controlP5.Controller)hwSettingsButton);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
@@ -331,7 +331,7 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
+            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 1));
         }
         
     }
