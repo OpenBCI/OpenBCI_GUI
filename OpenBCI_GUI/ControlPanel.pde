@@ -3089,25 +3089,26 @@ class InitBox {
     public void initButtonPressed() {
         if (getInitSessionButtonText().equals("START SESSION")) {
             if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
-                output("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
+                outputWarn("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
-                output("No Serial/COM port selected. Please select your Serial/COM port and retry system initiation.");
+                outputWarn("No Serial/COM port selected. Attempting to AUTO-CONNECT to Cyton.");
+                controlPanel.comPortBox.attemptAutoConnectCyton();   
                 return;
             } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                outputWarn("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
-                output("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
+                outputWarn("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
                 return;
             } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
-                output("No BLE device selected. Please select your Ganglion device and retry system initiation.");
+                outputWarn("No BLE device selected. Please select your Ganglion device and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                output("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
+                outputWarn("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
                 return;
             } else if (eegDataSource == -1) {//if no data source selected
-                output("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
+                outputWarn("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
                 return;
             } else { //otherwise, initiate system!
                 //verbosePrint("ControlPanel: CPmouseReleased: init");
