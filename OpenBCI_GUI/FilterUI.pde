@@ -88,6 +88,8 @@ class FilterUIPopup extends PApplet implements Runnable {
     private int expanderLineTwoStart;
     private int[] expanderTriangleXYCollapsed = new int[6];
     private int[] expanderTriangleXYExpanded = new int[6];
+    private boolean ignoreExpanderInteraction = false;
+    List<controlP5.ScrollableList> cp5ElementsToCheck = new ArrayList<controlP5.ScrollableList>();
 
     DecimalFormat df = new DecimalFormat("#.0");
 
@@ -206,10 +208,12 @@ class FilterUIPopup extends PApplet implements Runnable {
         rect(0, 0, width, headerHeight);
 
         // Draw Channel Expander
+        lockExpanderOnOverlapCheck(cp5ElementsToCheck);
         expanderIsHover = mouseY > expanderY - expanderH/2
             && mouseX < expanderX + expanderW
             && mouseY < expanderY + expanderH/2
-            && mouseX > expanderX;
+            && mouseX > expanderX
+            && !ignoreExpanderInteraction;
         color expanderColor = expanderIsHover ? OPENBCI_BLUE : color(102);
         int[] triXY = filterSettings.values.filterChannelSelect == FilterChannelSelect.ALL_CHANNELS ?
             expanderTriangleXYCollapsed :
@@ -327,6 +331,8 @@ class FilterUIPopup extends PApplet implements Runnable {
         // Create header objects last so they always draw on top!
         bfGlobalFilterDropdown = createDropdown("filter", -1, headerObjX[1], headerObjY, headerObjWidth, filterSettings.values.brainFlowFilter, BFFilter.values());
         bfEnvironmentalNoiseDropdown = createDropdown("environmentalFilter", -1, headerObjX[3], headerObjY, headerObjWidth - 10, filterSettings.values.globalEnvFilter, GlobalEnvironmentalFilter.values());
+        cp5ElementsToCheck.add(bfGlobalFilterDropdown);
+        cp5ElementsToCheck.add(bfEnvironmentalNoiseDropdown);
         
         updateChannelCp5Objects();
         arrangeAllObjectsXY();
@@ -910,6 +916,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             filterTypeDropdowns[chan] = createDropdown("filterType"+chan, chan, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), typeDropdownWidth, filterSettings.values.masterBandPassFilterType, BrainFlowFilterType.values());
         }
         masterFilterTypeDropdown = createDropdown("masterFilterTypeDropdown", -1, lg_spacer*4 + textfieldWidth*3, headerHeight*2 + sm_spacer, typeDropdownWidth, filterSettings.values.masterBandPassFilterType, BrainFlowFilterType.values());
+        cp5ElementsToCheck.add(masterFilterTypeDropdown);
     }
 
     private void createOrderDropdowns() {
@@ -917,6 +924,7 @@ class FilterUIPopup extends PApplet implements Runnable {
             filterOrderDropdowns[chan] = createDropdown("filterOrder"+chan, chan, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer*(chan+2) + uiObjectHeight*(chan+1), orderDropdownWidth, filterSettings.values.masterBandPassFilterOrder, BrainFlowFilterOrder.values());
         }
         masterFilterOrderDropdown = createDropdown("masterFilterOrderDropdown", -1, lg_spacer*5 + textfieldWidth*3 + typeDropdownWidth, headerHeight*2 + sm_spacer, orderDropdownWidth, filterSettings.values.masterBandPassFilterOrder, BrainFlowFilterOrder.values());
+        cp5ElementsToCheck.add(masterFilterOrderDropdown);
     }
 
     private void createFilterSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -1028,5 +1036,19 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private void checkIfExpanderWasClicked() {
         setUItoChannelMode(filterSettings.values.filterChannelSelect);
+    }
+
+    private void lockExpanderOnOverlapCheck(List<controlP5.ScrollableList> listOfControllers) { 
+        for (controlP5.ScrollableList c : listOfControllers) {
+            if (c == null) {
+                continue; //Gracefully skip over a controller if it is null
+            }
+            if (c.isOpen()) {
+                ignoreExpanderInteraction = true;
+                return;
+            } else {
+                ignoreExpanderInteraction = false;
+            }
+        }
     }
 }
