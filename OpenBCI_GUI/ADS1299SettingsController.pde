@@ -300,7 +300,7 @@ class ADS1299SettingsController {
                 if (!atLeastOneChannelHasChanged) {
                     output("No new settings to send to board.");
                 } else if (noErrors) {
-                    output("Hardware Settings sent to board!");
+                    outputSuccess("Hardware Settings sent to board!");
                 } else {
                     PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
                 }         

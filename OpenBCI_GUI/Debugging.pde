@@ -158,8 +158,8 @@ class HelpWidget {
                 return color(199, sat, 97);
             case SUCCESS:
                 //base color -  #DFF2BF;
-                maxSat = 50;
-                sat = 25;
+                maxSat = 25;
+                sat = 0;
                 sat = (int)map(fadeVal, 0, 100, sat, maxSat);
                 return color(106, sat, 95);
             case WARN:
