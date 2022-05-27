@@ -58,15 +58,7 @@ void parseKey(char val) {
             drawContainers = !drawContainers;
             return;
         case '{':
-            if(colorScheme == COLOR_SCHEME_DEFAULT){
-                colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-            } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-                colorScheme = COLOR_SCHEME_DEFAULT;
-            }
-            //topNav.updateNavButtonsBasedOnColorScheme();
-            output("New Dark color scheme coming soon!");
-            return;
-
+            break;
         //deactivate channels 1-4
         case '1':
             currentBoard.setEXGChannelActive(1-1, false);

@@ -34,6 +34,7 @@ enum ExpertModeEnum implements GuiSettingsEnum {
 public class GuiSettingsValues {
     public ExpertModeEnum expertMode = ExpertModeEnum.OFF;
     public boolean showCytonSmoothingPopup = true;
+    public ThemeType themeType = DEFAULT_THEME;
 
     public GuiSettingsValues() {
     }
@@ -43,7 +44,7 @@ class GuiSettings {
 
     private GuiSettingsValues values;
     private String filename;
-    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup");
+    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup", "themeType");
 
     GuiSettings(String settingsDirectory) {
 

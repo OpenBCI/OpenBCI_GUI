@@ -99,6 +99,7 @@ final int DATASOURCE_GALEA = 4;
 final int DATASOURCE_STREAMING = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
+public ThemeType DEFAULT_THEME = ThemeType.LIGHT;
 
 enum BoardProtocol {
     NONE,
@@ -120,6 +121,8 @@ int nextPlayback_millis = -100; //any negative number
 DataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
+
+ThemeManager themeManager = new ThemeManager();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
@@ -226,6 +229,7 @@ PFont p6; //small Open Sans
 
 boolean setupComplete = false;
 
+// TODO[theme manager] remove all colors from this place
 //Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
 final color WHITE = color(255);
 final color BLACK = color(0);
@@ -263,12 +267,6 @@ final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow ch
 final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
 final color SIGNAL_CHECK_RED = BOLD_RED;
 final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
-
-
-final int COLOR_SCHEME_DEFAULT = 1;
-final int COLOR_SCHEME_ALTERNATIVE_A = 2;
-// int COLOR_SCHEME_ALTERNATIVE_B = 3;
-int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 WidgetManager wm;
 boolean wmVisible = true;
