@@ -173,7 +173,10 @@ public void output(String _output) {
 }
 
 public void output(String _output, OutputLevel level) {
-    helpWidget.output(_output, level);
+    if (helpWidget != null)
+        helpWidget.output(_output, level);
+    else
+        println(level + "::" + _output);
 }
 
 public void outputError(String _output) {

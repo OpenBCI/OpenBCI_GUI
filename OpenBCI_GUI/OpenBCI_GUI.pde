@@ -99,7 +99,6 @@ final int DATASOURCE_GALEA = 4;
 final int DATASOURCE_STREAMING = 5;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
-public ThemeType DEFAULT_THEME = ThemeType.LIGHT;
 
 enum BoardProtocol {
     NONE,
@@ -121,8 +120,6 @@ int nextPlayback_millis = -100; //any negative number
 DataSource currentBoard = new BoardNull();
 
 DataLogger dataLogger = new DataLogger();
-
-ThemeManager themeManager = new ThemeManager();
 
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial(); //This is messy, half-deprecated code. See comments in InterfaceSerial.pde - Nov. 2020
@@ -343,7 +340,11 @@ void settings() {
 }
 
 void setup() {
-    frameRate(120);
+    frameRate(120);    
+    directoryManager = new DirectoryManager();
+    directoryManager.init();
+    settings = new SessionSettings();
+    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
 
     copyPaste = new CopyPaste();
 
@@ -386,8 +387,6 @@ void setup() {
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
     }
-    
-    directoryManager = new DirectoryManager();
 
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
@@ -422,9 +421,6 @@ void setup() {
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
     // Copy sample data to the Users' Documents folder +  create Recordings folder
-    directoryManager.init();
-    settings = new SessionSettings();
-    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
@@ -492,7 +488,7 @@ void delayedSetup() {
     }
 
     //Apply GUI-wide settings to front end at the end of setup
-    guiSettings.applySettings();
+    guiSettings.applyExpertModeSettings();
 
     if (!isAdminUser() || isElevationNeeded()) {
         outputError("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
