@@ -226,6 +226,7 @@ PFont p6; //small Open Sans
 
 boolean setupComplete = false;
 
+// TODO[theme manager] remove all colors from this place
 //Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
 final color WHITE = color(255);
 final color BLACK = color(0);
@@ -263,12 +264,6 @@ final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow ch
 final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
 final color SIGNAL_CHECK_RED = BOLD_RED;
 final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
-
-
-final int COLOR_SCHEME_DEFAULT = 1;
-final int COLOR_SCHEME_ALTERNATIVE_A = 2;
-// int COLOR_SCHEME_ALTERNATIVE_B = 3;
-int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
 
 WidgetManager wm;
 boolean wmVisible = true;
@@ -345,7 +340,11 @@ void settings() {
 }
 
 void setup() {
-    frameRate(120);
+    frameRate(120);    
+    directoryManager = new DirectoryManager();
+    directoryManager.init();
+    settings = new SessionSettings();
+    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
 
     copyPaste = new CopyPaste();
 
@@ -388,8 +387,6 @@ void setup() {
             "If this error persists, contact the OpenBCI team for support.";
         return; // early exit
     }
-    
-    directoryManager = new DirectoryManager();
 
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
@@ -424,9 +421,6 @@ void setup() {
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
     // Copy sample data to the Users' Documents folder +  create Recordings folder
-    directoryManager.init();
-    settings = new SessionSettings();
-    guiSettings = new GuiSettings(directoryManager.getSettingsPath());
     userPlaybackHistoryFile = directoryManager.getSettingsPath()+"UserPlaybackHistory.json";
 
     //open window
@@ -494,7 +488,7 @@ void delayedSetup() {
     }
 
     //Apply GUI-wide settings to front end at the end of setup
-    guiSettings.applySettings();
+    guiSettings.applyExpertModeSettings();
 
     if (!isAdminUser() || isElevationNeeded()) {
         outputError("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");

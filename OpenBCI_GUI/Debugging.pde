@@ -73,58 +73,36 @@ class HelpWidget {
     public void draw() {
 
         pushStyle();
+        // draw background of widget
+        stroke(OPENBCI_DARKBLUE);
+        fill(31,69,110);
+        rect(-1, height-h, width+2, h);
+        noStroke();
 
-        if(colorScheme == COLOR_SCHEME_DEFAULT){
-            // draw background of widget
-            stroke(OPENBCI_DARKBLUE);
-            fill(255);
-            rect(-1, height-h, width+2, h);
-            noStroke();
-
-            //draw bg of text field of widget
-            strokeWeight(1);
-            stroke(color(0, 5, 11));
-            fill(color(0, 5, 11));
-            rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
-
-            textFont(p4);
-            textSize(14);
-            fill(255);
-            textAlign(LEFT, TOP);
-            text(currentOutput, padding*2, height - h + padding);
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
-            // draw background of widget
-            stroke(OPENBCI_DARKBLUE);
-            fill(31,69,110);
-            rect(-1, height-h, width+2, h);
-            noStroke();
-
-            //draw bg of text field of widget
-            strokeWeight(1);
-            int saturationFadeValue = 0;
-            if (outputWasTriggered) {
-                int timeDelta = millis() - colorFadeCounter;
-                saturationFadeValue = (int)map(timeDelta, 0, colorFadeTimeMillis, 100, 0);
-                if (timeDelta > colorFadeTimeMillis) {
-                    outputWasTriggered = false;
-                }
+        //draw bg of text field of widget
+        strokeWeight(1);
+        int saturationFadeValue = 0;
+        if (outputWasTriggered) {
+            int timeDelta = millis() - colorFadeCounter;
+            saturationFadeValue = (int)map(timeDelta, 0, colorFadeTimeMillis, 100, 0);
+            if (timeDelta > colorFadeTimeMillis) {
+                outputWasTriggered = false;
             }
-            //Colors in this method are calculated using Hue, Saturation, Brightness
-            colorMode(HSB, 360, 100, 100);
-            color c = getBackgroundColor(saturationFadeValue);
-            stroke(c);
-            fill(c);
-            rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
-
-            // Revert color mode back to standard RGB here
-            colorMode(RGB, 255, 255, 255);
-            textFont(p4);
-            textSize(14);
-            fill(getTextColor());
-            textAlign(LEFT, TOP);
-            text(currentOutput, padding*2, height - h + padding);
         }
+        //Colors in this method are calculated using Hue, Saturation, Brightness
+        colorMode(HSB, 360, 100, 100);
+        color c = getBackgroundColor(saturationFadeValue);
+        stroke(c);
+        fill(c);
+        rect(x + padding, height-h + padding, width - padding*2, h - padding *2);
 
+        // Revert color mode back to standard RGB here
+        colorMode(RGB, 255, 255, 255);
+        textFont(p4);
+        textSize(14);
+        fill(getTextColor());
+        textAlign(LEFT, TOP);
+        text(currentOutput, padding*2, height - h + padding);
         popStyle();
     }
 
@@ -195,7 +173,10 @@ public void output(String _output) {
 }
 
 public void output(String _output, OutputLevel level) {
-    helpWidget.output(_output, level);
+    if (helpWidget != null)
+        helpWidget.output(_output, level);
+    else
+        println(level + "::" + _output);
 }
 
 public void outputError(String _output) {

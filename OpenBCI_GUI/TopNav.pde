@@ -14,8 +14,6 @@ import java.nio.file.*;
 
 class TopNav {
 
-    private final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
-    private final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
     private color strokeColor = OPENBCI_DARKBLUE;
 
     private ControlP5 topNav_cp5;
@@ -55,6 +53,7 @@ class TopNav {
     private boolean topNavDropdownMenuIsOpen = false;
 
     TopNav() {
+        Theme theme = guiSettings.getTheme();
         int controlPanel_W = 256;
 
         //Instantiate local cp5 for this box
@@ -63,14 +62,14 @@ class TopNav {
         topNav_cp5.setAutoDraw(false);
 
         //TOP LEFT OF GUI
-        createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createControlPanelCollapser("System Control Panel", PAD_3, PAD_3, controlPanel_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
 
         //TOP RIGHT OF GUI, FROM LEFT<---Right
-        createDebugButton(" ", width - DEBUG_BUT_W - PAD_3, PAD_3, DEBUG_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-        createTutorialsButton("Help", (int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-        createIssuesButton("Issues", (int)tutorialsButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-        createShopButton("Shop", (int)issuesButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
-        createUpdateGuiButton("Update", (int)shopButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, TOPNAV_DARKBLUE, WHITE);
+        createDebugButton(" ", width - DEBUG_BUT_W - PAD_3, PAD_3, DEBUG_BUT_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
+        createTutorialsButton("Help", (int)debugButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
+        createIssuesButton("Issues", (int)tutorialsButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
+        createShopButton("Shop", (int)issuesButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
+        createUpdateGuiButton("Update", (int)shopButton.getPosition()[0] - TOPRIGHT_BUT_W - PAD_3, PAD_3, TOPRIGHT_BUT_W, TOPNAV_BUT_H, h3, 16, theme.getTopNavColor(), WHITE);
 
         //SUBNAV TOP RIGHT
         createTopNavSettingsButton("Settings", width - SUBNAV_BUT_W - PAD_3, SUBNAV_BUT_Y, SUBNAV_BUT_W, SUBNAV_BUT_H, h4, 14, SUBNAV_LIGHTBLUE, WHITE);
@@ -138,15 +137,9 @@ class TopNav {
         PImage logo;
         color topNavBg;
         color subNavBg;
-        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            topNavBg = OPENBCI_BLUE;
-            subNavBg = SUBNAV_LIGHTBLUE;
-            logo = logo_white;
-        } else {
-            topNavBg = color(255);
-            subNavBg = color(229);
-            logo = logo_black;
-        }
+        topNavBg = OPENBCI_BLUE;
+        subNavBg = SUBNAV_LIGHTBLUE;
+        logo = logo_white;
 
         if (eegDataSource == DATASOURCE_GALEA) {
             topNavBg = color(3, 10, 18);
@@ -191,7 +184,7 @@ class TopNav {
         configSelector.draw();
 
         //Draw Console Log Image on top of cp5 object
-        PImage _logo = (colorScheme == COLOR_SCHEME_DEFAULT) ? consoleImgBlue : consoleImgWhite;
+        PImage _logo = consoleImgWhite;
         image(_logo, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);        
         
 
@@ -678,6 +671,7 @@ class ConfigSelector {
     private boolean clearAllSettingsPressed;
     public boolean isVisible;
     private ControlP5 settings_cp5;
+    private Button switchTheme;
     private Button expertMode;
     private Button saveSessionSettings;
     private Button loadSessionSettings;
@@ -700,7 +694,7 @@ class ConfigSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*9 + b_h*8;
+        h = margin*10 + b_h*9;
         //makes the setting text "are you sure" display correctly on linux
         osPadding = isLinux() ? -3 : -2;
         osPadding2 = isLinux() ? 5 : 0;
@@ -713,6 +707,8 @@ class ConfigSelector {
         isVisible = false;
 
         int buttonNumber = 0;
+        createThemeSwitchButton("switchTheme", "SwitchTheme", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
         createExpertModeButton("expertMode", "Turn Expert Mode On", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createSaveSettingsButton("saveSessionSettings", "Save", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
@@ -794,7 +790,7 @@ class ConfigSelector {
         x = width - 70*multiplier - _padding;
         int dx = oldX - x;
 
-        h = !isSessionStarted ? margin*3 + b_h*2 : margin*6 + b_h*5;
+        h = !isSessionStarted ? margin*4 + b_h*3 : margin*7 + b_h*6;
 
         //Update the Y position for the clear settings buttons
         float clearSettingsButtonY = !isSessionStarted ? 
@@ -844,6 +840,16 @@ class ConfigSelector {
         }
 
         updateConfigButtonPositions();
+    }
+
+    private void createThemeSwitchButton(String name, String text, int _x, int _y, int _w, int _h) {
+        expertMode = createButton(settings_cp5, name, text, _x, _y, _w, _h);
+        expertMode.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                toggleVisibility();
+                guiSettings.nextTheme();
+            }
+        });
     }
 
     private void createExpertModeButton(String name, String text, int _x, int _y, int _w, int _h) {

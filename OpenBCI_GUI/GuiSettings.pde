@@ -34,6 +34,7 @@ enum ExpertModeEnum implements GuiSettingsEnum {
 public class GuiSettingsValues {
     public ExpertModeEnum expertMode = ExpertModeEnum.OFF;
     public boolean showCytonSmoothingPopup = true;
+    public ThemeType themeType = ThemeType.LIGHT;
 
     public GuiSettingsValues() {
     }
@@ -43,11 +44,12 @@ class GuiSettings {
 
     private GuiSettingsValues values;
     private String filename;
-    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup");
+    private Theme currentTheme;
+    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup", "themeType");
 
     GuiSettings(String settingsDirectory) {
-
         values = new GuiSettingsValues();
+        currentTheme = new OpenBCILightTheme();
         StringBuilder settingsFilename = new StringBuilder(settingsDirectory);
         settingsFilename.append("GuiWideSettings.json");
         filename = settingsFilename.toString();
@@ -81,7 +83,7 @@ class GuiSettings {
                 println("OpenBCI_GUI::Settings: Incompatible GUI-wide Settings found. Creating new file and resetting defaults.");
                 saveToFile();
             }
-            
+            setTheme(values.themeType);
             return true;
 
         } catch (IOException e) {
@@ -146,7 +148,7 @@ class GuiSettings {
 
     //Call this method at the end of GUI main Setup in OpenBCI_GUI.pde to make sure everything exists
     //Has to be in this class to make sure other classes exist
-    public void applySettings() {
+    public void applyExpertModeSettings () {
         topNav.configSelector.toggleExpertModeFrontEnd(getExpertModeBoolean());
     }
 
@@ -167,4 +169,42 @@ class GuiSettings {
     public boolean getShowCytonSmoothingPopup() {
         return values.showCytonSmoothingPopup;
     }
+
+    public void setTheme(ThemeType themeType) {
+        println("Setting theme to: " + themeType.getName());
+        boolean is_valid = true;
+        values.themeType = themeType;
+        switch (themeType) {
+            case LIGHT:
+                currentTheme = new OpenBCILightTheme();
+                break;
+            case DARK:
+                currentTheme = new OpenBCIDarkTheme();
+                break;
+            default:
+                is_valid = false;
+                break;
+        }
+        if (is_valid) {
+            saveToFile();
+            outputSuccess("Restart OpenBCI GUI to load new theme.");
+        }
+        else {
+            outputWarn("Unsupported theme.");
+        }
+    }
+
+    public Theme getTheme() {
+        return currentTheme;
+    }
+
+    public ThemeType getThemeType() {
+        return values.themeType;
+    }
+
+    public void nextTheme() {
+        ThemeType nextTheme = values.themeType.next();
+        setTheme(nextTheme); 
+    }
+
 }
