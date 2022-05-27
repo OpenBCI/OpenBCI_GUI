@@ -17,6 +17,7 @@ class W_playback extends Widget {
     MenuList playbackMenuList;
     //Used for spacing
     int padding = 10;
+    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
     private boolean menuHasUpdated = false;
 
@@ -39,7 +40,7 @@ class W_playback extends Widget {
             menuHasUpdated = true;
         }
         //Lock the MenuList if Widget selector is open, otherwise update
-        if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen()) {
+        if (cp5_widget.get(ScrollableList.class, "WidgetSelector").isOpen() || topNav.getDropdownMenuIsOpen()) {
             if (!playbackMenuList.isLock()) {
                 playbackMenuList.lock();
                 playbackMenuList.setUpdate(false);
@@ -51,6 +52,7 @@ class W_playback extends Widget {
             }
             playbackMenuList.updateMenu();
         }
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
     }
 
     void draw() {
@@ -61,7 +63,7 @@ class W_playback extends Widget {
         fill(boxColor);
         stroke(boxStrokeColor);
         strokeWeight(1);
-        rect(x, y, w, h);
+        rect(x-1, y, w+1, h);
         //Add text if needed
         /*
         fill(OPENBCI_DARKBLUE);
@@ -82,7 +84,7 @@ class W_playback extends Widget {
         cp5_playback.setGraphics(pApplet, 0, 0);
 
         //Resize and position cp5 objects within this widget
-        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - padding, y - navHeight + 2);
+        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - navHeight + 2);
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
@@ -131,6 +133,7 @@ class W_playback extends Widget {
             }
         });
         selectPlaybackFileButton.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
+        cp5ElementsToCheck.add((controlP5.Controller)selectPlaybackFileButton);
     }
 
     private void createPlaybackMenuList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {

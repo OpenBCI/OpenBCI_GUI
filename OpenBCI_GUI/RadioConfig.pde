@@ -333,7 +333,7 @@ class RadioConfig {
                 return false;
             }
         } else {
-            output("No Serial/COM port selected. Please select your Serial/COM port and retry");
+            outputWarn("No Serial/COM port selected. Please select your Serial/COM port and retry.");
             rcConfig.print_onscreen("Select a Serial/COM port, then try again.");
             return false;
         }
@@ -364,7 +364,7 @@ class RadioConfig {
                 return false;
             }
         } else {
-            output("No Serial/COM port selected. Please select your Serial/COM port and retry");
+            outputWarn("No Serial/COM port selected. Please select your Serial/COM port and retry.");
             return false;
         }
     }

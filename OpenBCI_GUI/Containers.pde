@@ -210,7 +210,7 @@ public class Container {
             //stroke(255, 0, 0);
             //rect(x0, y0, w0, h0);
 
-            fill(31, 69, 110, 100);
+            fill(OPENBCI_BLUE_ALPHA100);
             noStroke();
             rect(x, y, w, h);
 

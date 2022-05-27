@@ -102,7 +102,7 @@ class ADS1299SettingsController {
         if (isVisible) {
             //Control button space above channels
             pushStyle();
-            //stroke(31,69,110, 50);
+            //stroke(OPENBCI_BLUE_ALPHA50);
             stroke(OBJECT_BORDER_GREY);
             fill(GREY_100);
             rect(x, y - columnLabelH, w, columnLabelH);
@@ -300,7 +300,7 @@ class ADS1299SettingsController {
                 if (!atLeastOneChannelHasChanged) {
                     output("No new settings to send to board.");
                 } else if (noErrors) {
-                    output("Hardware Settings sent to board!");
+                    outputSuccess("Hardware Settings sent to board!");
                 } else {
                     PopupMessage msg = new PopupMessage("Error", "Failed to send one or more Hardware Settings to board. Check hardware and battery level. Cyton users, check that your dongle is connected with blue light shining.");
                 }         

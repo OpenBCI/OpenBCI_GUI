@@ -155,7 +155,7 @@ class W_timeSeries extends Widget {
         plotBottomWell = 45.0; //this appears to be an arbitrary vertical space adds GPlot leaves at bottom, I derived it through trial and error
         ts_padding = 10.0;
         ts_x = xF + ts_padding;
-        ts_y = yF + (ts_padding);
+        ts_y = yF + ts_padding;
         ts_w = wF - ts_padding*2;
         ts_h = hF - playbackWidgetHeight - plotBottomWell - (ts_padding*2);
         numChannelBars = nchan; //set number of channel bars = to current nchan of system (4, 8, or 16)
@@ -171,8 +171,12 @@ class W_timeSeries extends Widget {
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding * 3);
             pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
+            int _x = floor(xF) - 1;
+            int _y = int(ts_y + ts_h + playbackWidgetHeight + 5);
+            int _w = int(wF) + 1;
+            int _h = int(playbackWidgetHeight);
             //Make a new scrollbar
-            scrollbar = new PlaybackScrollbar(int(pb_x), int(pb_y), int(pb_w), int(pb_h));
+            scrollbar = new PlaybackScrollbar(_x, _y, _w, _h, int(pb_x), int(pb_y), int(pb_w), int(pb_h));
         } else {
             int td_h = 18;
             timeDisplay = new TimeDisplay(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
@@ -201,7 +205,7 @@ class W_timeSeries extends Widget {
         int h_hsc = channelBarHeight * numChannelBars;
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y + navHeight + 3), 120, navHeight - 6);
+            hwSettingsButton = createHSCButton("HardwareSettings", "Hardware Settings", (int)(x0 + 80), (int)(y0 + navHeight + 1), 120, navHeight - 3);
             cp5ElementsToCheck.add((controlP5.Controller)hwSettingsButton);
             adsSettingsController = new ADS1299SettingsController(_parent, tsChanSelect.activeChan, x_hsc, y_hsc, w_hsc, h_hsc, channelBarHeight);
         }
@@ -263,11 +267,6 @@ class W_timeSeries extends Widget {
 
         //Display playback scrollbar, timeDisplay, or ADSSettingsController depending on data source
         if ((currentBoard instanceof FileBoard) && hasScrollbar) { //you will only ever see the playback widget in Playback Mode ... otherwise not visible
-            pushStyle();
-            fill(GREY_20);
-            stroke(31,69,110);
-            rect(xF, ts_y + ts_h + playbackWidgetHeight + 5, wF, playbackWidgetHeight);
-            popStyle();
             scrollbar.draw();
         } else if (currentBoard instanceof ADS1299SettingsBoard) {
             //Hide time display when ADSSettingsController is open for compatible boards
@@ -301,11 +300,15 @@ class W_timeSeries extends Widget {
         
         ////Resize the playback slider if using playback mode, or resize timeDisplay div at the bottom of timeSeries
         if((currentBoard instanceof FileBoard) && hasScrollbar) {
+            int _x = floor(xF) - 1;
+            int _y = int(ts_y + ts_h + playbackWidgetHeight + 5);
+            int _w = int(wF) + 1;
+            int _h = int(playbackWidgetHeight);
             pb_x = ts_x - ts_padding/2;
             pb_y = ts_y + ts_h + playbackWidgetHeight + (ts_padding*3);
             pb_w = ts_w - ts_padding*4;
             pb_h = playbackWidgetHeight/2;
-            scrollbar.screenResized(pb_x, pb_y, pb_w, pb_h);
+            scrollbar.screenResized(_x, _y, _w, _h, pb_x, pb_y, pb_w, pb_h);
         } else {
             int td_h = 18;
             timeDisplay.screenResized(int(ts_x), int(ts_y + hF - td_h), int(ts_w), td_h);
@@ -328,7 +331,7 @@ class W_timeSeries extends Widget {
         }
         
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 3));
+            hwSettingsButton.setPosition(x0 + 80, (int)(y0 + navHeight + 1));
         }
         
     }
@@ -529,7 +532,7 @@ class ChannelBar {
             plot.getXAxis().setAxisLabelText("Time (s)");
             plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
         }
-        // plot.setBgColor(color(31,69,110));
+        // plot.setBgColor(OPENBCI_BLUE);
 
         //Fill the GPlot with initial data
         nPoints = nPointsBasedOnDataSource();
@@ -647,7 +650,7 @@ class ChannelBar {
 
         //draw channel holder background
         pushStyle();
-        stroke(31,69,110, 50);
+        stroke(OPENBCI_BLUE_ALPHA50);
         noFill();
         rect(x,y,w,h);
         popStyle();
@@ -862,6 +865,7 @@ class ChannelBar {
 //========================== PLAYBACKSLIDER ==========================
 class PlaybackScrollbar {
     private final float ps_Padding = 50.0; //used to make room for skip to start button
+    private int x, y, w, h;
     private int swidth, sheight;    // width and height of bar
     private float xpos, ypos;       // x and y position of bar
     private float spos;    // x position of slider
@@ -879,7 +883,11 @@ class PlaybackScrollbar {
     private final DateFormat currentTimeFormatLong = new SimpleDateFormat("HH:mm:ss");
     private final DateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    PlaybackScrollbar (float xp, float yp, int sw, int sh) {
+    PlaybackScrollbar (int _x, int _y, int _w, int _h, float xp, float yp, int sw, int sh) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
         swidth = sw;
         sheight = sh;
         //float widthtoheight = sw - sh;
@@ -902,7 +910,7 @@ class PlaybackScrollbar {
     }
 
     private void createSkipToStartButton(String name, String text, int _x, int _y, int _w, int _h) {
-        skipToStartButton = createButton(pbsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, color(235), OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, (Integer)null, 0);
+        skipToStartButton = createButton(pbsb_cp5, name, text, _x, _y, _w, _h, 0, p5, 12, GREY_235, OPENBCI_DARKBLUE, BUTTON_HOVER, BUTTON_PRESSED, (Integer)null, 0);
         PImage defaultImage = loadImage("skipToStart_default-30x26.png");
         skipToStartButton.setImage(defaultImage);
         skipToStartButton.setForceDrawBackground(true);
@@ -1019,9 +1027,13 @@ class PlaybackScrollbar {
     void draw() {
         pushStyle();
 
+        fill(GREY_235);
+        stroke(OPENBCI_BLUE);
+        rect(x, y, w, h);
+
         //draw the playback slider inside the playback sub-widget
         noStroke();
-        fill(204);
+        fill(GREY_200);
         rect(xpos, ypos, swidth, sheight);
 
         //select color for playback indicator
@@ -1046,11 +1058,15 @@ class PlaybackScrollbar {
         pbsb_cp5.draw();
     }
 
-    void screenResized(float _x, float _y, float _w, float _h) {
-        swidth = int(_w);
-        sheight = int(_h);
-        xpos = _x + ps_Padding; //add lots of padding for use
-        ypos = _y - sheight/2;
+    void screenResized(int _x, int _y, int _w, int _h, float _pbx, float _pby, float _pbw, float _pbh) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = _h;
+        swidth = int(_pbw);
+        sheight = int(_pbh);
+        xpos = _pbx + ps_Padding; //add lots of padding for use
+        ypos = _pby - sheight/2;
         sposMin = xpos;
         sposMax = xpos + swidth - sheight/2;
         //update the position of the playback indicator us
@@ -1059,8 +1075,8 @@ class PlaybackScrollbar {
         pbsb_cp5.setGraphics(ourApplet, 0, 0);
 
         skipToStartButton.setPosition(
-            int(_x) + int(skipToStart_diameter*.5),
-            int(_y) - int(skipToStart_diameter*.5)
+            int(_pbx) + int(skipToStart_diameter*.5),
+            int(_pby) - int(skipToStart_diameter*.5)
             );
     }
 

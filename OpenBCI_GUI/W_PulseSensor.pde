@@ -85,7 +85,7 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     void update(){
@@ -169,7 +169,7 @@ class W_PulseSensor extends Widget {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         setPulseWidgetVariables();
-        analogModeButton.setPosition((int)(x + 3), (int)(y + 3 - navHeight));
+        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
     }
 
     void mousePressed(){

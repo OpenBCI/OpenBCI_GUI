@@ -74,7 +74,7 @@ class W_DigitalRead extends Widget {
             digitalReadDots[i] = tempDot;
         }
 
-        createDigitalModeButton("digitalModeButton", "Turn Digital Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, buttonsLightBlue, WHITE);
+        createDigitalModeButton("digitalModeButton", "Turn Digital Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, buttonsLightBlue, WHITE);
     }
 
     public int getNumDigitalReads() {
@@ -144,7 +144,7 @@ class W_DigitalRead extends Widget {
 
         }
 
-        digitalModeButton.setPosition((int)(x + 3), (int)(y + 3 - navHeight));
+        digitalModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
     }
 
     public void mousePressed() {

@@ -84,7 +84,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
         }
 
-        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x + 3), (int)(y + 3 - navHeight), 128, navHeight - 6, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("analogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public int getNumAnalogReads() {
@@ -145,7 +145,7 @@ class W_AnalogRead extends Widget {
             analogReadBars[i].screenResized(int(ar_x), analogReadBarY, int(ar_w), analogReadBarHeight); //bar x, bar y, bar w, bar h
         }
 
-        analogModeButton.setPosition(x + 3, y + 3 - navHeight);
+        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
     }
 
     void mousePressed() {
@@ -393,7 +393,7 @@ class AnalogReadBar{
         pushStyle();
 
         //draw plot
-        stroke(31,69,110, 50);
+        stroke(OPENBCI_BLUE_ALPHA50);
         fill(color(125,30,12,30));
 
         rect(x + 36 + 4, y, w - 36 - 4, h);
