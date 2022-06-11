@@ -124,29 +124,26 @@ class DataProcessing {
             
             //Apply BandStop filter if the filter should be active on this channel
             if (filterSettings.values.bandStopFilterActive[Ichan].isActive()) {
-                double chebyshevRipple = filterSettings.values.bandStopFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandstop(
                     tempArray,
                     currentBoard.getSampleRate(),
-                    filterSettings.values.bandStopCenterFreq[Ichan],
-                    filterSettings.values.bandStopWidth[Ichan],
+                    filterSettings.values.bandStopStartFreq[Ichan],
+                    filterSettings.values.bandStopStopFreq[Ichan],
                     filterSettings.values.bandStopFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandStopFilterType[Ichan].getValue(),
-                    chebyshevRipple);
+                    1.0);
             }
 
             //Apply BandPass filter if the filter should be active on this channel
             if (filterSettings.values.bandPassFilterActive[Ichan].isActive()) {
-                Pair<Double, Double> centerAndWidth = filterSettings.values.getBandPassCenterAndWidth(Ichan);
-                double chebyshevRipple = filterSettings.values.bandPassFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandpass(
                     tempArray,
                     currentBoard.getSampleRate(),
-                    centerAndWidth.getLeft(),
-                    centerAndWidth.getRight(),
+                    filterSettings.values.bandPassStartFreq[Ichan],
+                    filterSettings.values.bandPassStopFreq[Ichan],
                     filterSettings.values.bandPassFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandPassFilterType[Ichan].getValue(),
-                    chebyshevRipple);
+                    1.0);
             }
 
             //Apply Environmental Noise filter on all channels. Do it like this since there are no codes for NONE or FIFTY_AND_SIXTY in BrainFlow
