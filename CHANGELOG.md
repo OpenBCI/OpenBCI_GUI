@@ -1,3 +1,10 @@
+# v5.1.1
+
+### Bug Fixes
+
+### Improvements
+* Update to BrainFlow 5.0.1
+
 # v5.1.0
 
 ### Bug Fixes

@@ -272,13 +272,13 @@ class W_Focus extends Widget {
 
             //Full Source Code for this method: https://github.com/brainflow-dev/brainflow/blob/c5f0ad86683e6eab556e30965befb7c93e389a3b/src/data_handler/data_handler.cpp#L1115
             Pair<double[], double[]> bands = DataFilter.get_avg_band_powers (dataArray, channelsInDataArray, currentBoard.getSampleRate(), true);
-            double[] featureVector = ArrayUtils.addAll (bands.getLeft (), bands.getRight ());
+            double[] featureVector = bands.getLeft ();
 
             //Left array is Averages, right array is Standard Deviations. Update values using Averages.
             updateBandPowerTableValues(bands.getLeft());
 
             //Keep this here
-            double prediction = mlModel.predict(featureVector);
+            double prediction = mlModel.predict(featureVector)[0];
             //println("Concentration: " + prediction);
 
             //Send band power and prediction data to AuditoryNeurofeedback class
