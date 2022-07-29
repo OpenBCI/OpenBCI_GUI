@@ -1923,7 +1923,7 @@ class Stream extends Thread {
     void sendAnalogReadData() {
         // this function is only called if the board is analog capable
         int[] analogChannels = ((AnalogCapableBoard)currentBoard).getAnalogChannels();
-        List<double[]> lastData = currentBoard.getData(1);
+        List<double[]> lastData = ((AnalogCapableBoard)currentBoard).getDataWithAnalog(1);
         double[] lastSample = lastData.get(0);
 
         final int NUM_ANALOG_READS = analogChannels.length;

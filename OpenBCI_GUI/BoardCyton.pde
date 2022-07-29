@@ -311,6 +311,21 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getAnalogSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getDigitalSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
     public boolean isAccelerometerActive() {
         return getBoardMode() == CytonBoardMode.DEFAULT;
     }
@@ -631,5 +646,20 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     @Override
     public void setUseDynamicScaler(boolean val) {
         useDynamicScaler = val;
+    }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithAnalog(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithDigital(int maxSamples) {
+        return getData(maxSamples);
     }
 };
