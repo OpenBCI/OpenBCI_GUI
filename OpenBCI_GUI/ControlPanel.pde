@@ -305,6 +305,26 @@ class ControlPanel {
         channelPopup.setClicked(false);
     }
 
+    public void fetchSessionNameTextfieldAllBoards() {
+        String s = "";
+        if (eegDataSource == DATASOURCE_CYTON) {
+            // Store the current text field value of "Session Name" to be passed along to dataFiles
+            s = dataLogBoxCyton.getSessionTextfieldString();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            s = dataLogBoxGanglion.getSessionTextfieldString();
+        } else if (eegDataSource == DATASOURCE_GALEA) {
+            s = dataLogBoxGalea.getSessionTextfieldString();
+        } else {
+            s = directoryManager.getFileNameDateTime();
+        }
+        dataLogger.setSessionName(s);
+        StringBuilder sb = new StringBuilder(directoryManager.getRecordingsPath());
+        sb.append("OpenBCISession_");
+        sb.append(dataLogger.getSessionName());
+        sb.append(File.separator);
+        settings.setSessionPath(sb.toString());
+    }
+
     public void setDataLoggerOutputs() {
         if (eegDataSource == DATASOURCE_CYTON) {
             // Store the current text field value of "Session Name" to be passed along to dataFiles

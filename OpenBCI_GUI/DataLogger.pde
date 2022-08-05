@@ -209,6 +209,10 @@ class DataLogger {
         sessionName = s;
     }
 
+    public final String getSessionName() {
+        return sessionName;
+    }
+    
     public void setBfWriterFolder(String _folderName, String _folderPath) {
         fileWriterBF.setBrainFlowStreamerFolderName(_folderName, _folderPath);
     }

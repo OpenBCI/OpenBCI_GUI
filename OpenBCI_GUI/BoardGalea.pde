@@ -78,44 +78,35 @@ class GaleaDefaultSettings extends ADS1299Settings {
 
         switch(mode) {
             case DEMO:
-                Arrays.fill(values.gain, 0, 8, Gain.X2);
-                Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X12;
-                values.gain[14] = Gain.X12;
+                Arrays.fill(values.gain, 0, 8, Gain.X4);  // emg scale
+                Arrays.fill(values.gain, 8, 16, Gain.X2);  // eeg scale main board
+                values.gain[6] = Gain.X12;  // eeg scale sister board(fp1)
+                values.gain[7] = Gain.X12;  // eeg scale sister board(fp2)
 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
                 Arrays.fill(values.bias, Bias.NO_INCLUDE);
 
-                Arrays.fill(values.srb2, Srb2.CONNECT);
-                values.srb2[8] = Srb2.DISCONNECT;
-                values.srb2[10] = Srb2.DISCONNECT;
-                values.srb2[11] = Srb2.DISCONNECT;
-                values.srb2[12] = Srb2.DISCONNECT;
-                values.srb2[13] = Srb2.DISCONNECT;
-                values.srb2[15] = Srb2.DISCONNECT;
+                Arrays.fill(values.srb2, 0, 6, Srb2.DISCONNECT);
+                Arrays.fill(values.srb2, 6, 16, Srb2.CONNECT);
 
                 Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
                 break;
 
             case DEFAULT:
-                Arrays.fill(values.gain, 0, 8, Gain.X8);
-                Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X12;
-                values.gain[14] = Gain.X12;
+                Arrays.fill(values.gain, 0, 8, Gain.X4);  // emg scale
+                Arrays.fill(values.gain, 8, 16, Gain.X2);  // eeg scale main board
+                values.gain[6] = Gain.X12;  // eeg scale sister board(fp1)
+                values.gain[7] = Gain.X12;  // eeg scale sister board(fp2)
                 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
-                Arrays.fill(values.bias, Bias.INCLUDE);
-                Arrays.fill(values.bias, 8, 16, Bias.NO_INCLUDE);
-                values.bias[9] = Bias.INCLUDE;
-                values.bias[14] = Bias.INCLUDE;
+                Arrays.fill(values.bias, 0, 6, Bias.NO_INCLUDE);
+                Arrays.fill(values.bias, 6, 16, Bias.INCLUDE);
 
-                Arrays.fill(values.srb2, Srb2.CONNECT);
-                Arrays.fill(values.srb2, 8, 16, Srb2.DISCONNECT);
-                values.srb2[9] = Srb2.CONNECT;
-                values.srb2[14] = Srb2.CONNECT;
+                Arrays.fill(values.srb2, 0, 6, Srb2.DISCONNECT);
+                Arrays.fill(values.srb2, 6, 16, Srb2.CONNECT);
 
                 Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
@@ -154,7 +145,7 @@ class GaleaDefaultSettings extends ADS1299Settings {
 class BoardGalea extends BoardBrainFlow
 implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard, AuxDataBoard{
 
-    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    protected final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     protected FixedStack<double[]> accumulatedAuxData = new FixedStack<double[]>();
     protected double[][] auxDataThisFrame;
@@ -165,18 +156,24 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
 
     protected ADS1299Settings currentADS1299Settings;
     protected boolean[] isCheckingImpedance;
+    protected boolean[] isCheckingImpedanceN;
+    protected boolean[] isCheckingImpedanceP;
 
-    private int[] edaChannelsCache = null;
-    private int[] ppgChannelsCache = null;
-    private Integer batteryChannelCache = null;
+    protected int[] edaChannelsCache = null;
+    protected int[] ppgChannelsCache = null;
+    protected Integer batteryChannelCache = null;
+    protected int[] eegChannelsCache = null;
+    protected int[] eogChannelsCache = null;
+    protected int[] emgChannelsCache = null;
 
-    private BoardIds boardId = BoardIds.GALEA_BOARD;
-    private GaleaMode initialSettingsMode;
-    private GaleaSR sampleRate;
-    private String ipAddress;
+    protected GaleaMode initialSettingsMode;
+    protected GaleaSR sampleRate;
+    protected String connectId; // ip address or serial port
 
-    private final GaleaDefaultSettings defaultSettings;
-    private boolean useDynamicScaler;
+    protected final GaleaDefaultSettings defaultSettings;
+    protected boolean useDynamicScaler;
+
+    protected String timestampFileName;
 
     // needed for playback
     public BoardGalea() {
@@ -185,13 +182,18 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         defaultSettings = new GaleaDefaultSettings(this, GaleaMode.DEFAULT);
     }
 
-    public BoardGalea(String _ip, GaleaMode mode, GaleaSR _sampleRate) {
+    public BoardGalea(String connectId, GaleaMode mode, GaleaSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
-        ipAddress = _ip;
+        isCheckingImpedanceN= new boolean[getNumEXGChannels()];
+        isCheckingImpedanceP= new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedanceN, false);
+        Arrays.fill(isCheckingImpedanceP, false);
+
+        this.connectId = connectId;
         initialSettingsMode = mode;
         println("Mode command: " + initialSettingsMode.getCommand());
         sampleRate = _sampleRate;
@@ -220,8 +222,9 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
             res = sendCommand(sampleRate.getCommand()).getKey().booleanValue();
         }
         if (res) {
-            println("Registers:");
-            println(sendCommand("F0").getValue());
+            StringBuilder registers = new StringBuilder("Galea Registers:\n");
+            registers.append(sendCommand("F0").getValue());
+            println(registers.toString());
         }
         if (res) {
             try {
@@ -246,13 +249,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.ip_address = ipAddress;
+        params.ip_address = connectId;
         return params;
     }
 
     @Override
     public BoardIds getBoardId() {
-        return boardId;
+        return BoardIds.GALEA_BOARD;
     }
 
     @Override
@@ -287,9 +290,87 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         isCheckingImpedance[channel] = active;
     }
 
+    //Use this method instead of the one above!
+    public boolean setCheckingImpedanceGalea(int channel, boolean active, boolean _isN) {
+
+        char p = '0';
+        char n = '0';
+        String command;
+
+        
+        if (active) {
+
+            currentADS1299Settings.saveLastValues(channel);
+            
+            currentADS1299Settings.values.gain[channel] = Gain.X1;
+            currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
+            currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
+            currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
+            currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
+
+            boolean response = currentADS1299Settings.commit(channel);
+            if (!response) {
+                currentADS1299Settings.revertToLastValues(channel);
+                outputWarn("Galea Impedance Check - Error sending channel settings to board.");
+                return response;
+            }
+            
+            if (_isN) {
+                n = '1';
+            } else {
+                p = '1';
+            }
+
+        } else {
+            //Revert ADS channel settings to what user had before checking impedance on this channel
+            currentADS1299Settings.revertToLastValues(channel);
+        }
+        
+        // for example: z 4 1 0 Z
+        command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        boolean response = sendCommand(command).getKey().booleanValue();
+        if (!response) {
+            outputWarn("Galea Impedance Check - Error sending impedance command to board.");
+            return response;
+        }
+
+        if (_isN) {
+            isCheckingImpedanceN[channel] = active;
+        } else {
+            isCheckingImpedanceP[channel] = active;
+        }
+
+        return response;
+    }
+
     @Override
+    //General check that is a method for all impedance boards
     public boolean isCheckingImpedance(int channel) {
-        return isCheckingImpedance[channel];
+        return isCheckingImpedanceN[channel] || isCheckingImpedanceP[channel];
+    }
+
+    //Specifically check the status of N or P pins
+    public boolean isCheckingImpedanceNorP(int channel, boolean _isN) {
+        if (_isN) {
+            return isCheckingImpedanceN[channel];
+        }
+        return isCheckingImpedanceP[channel];
+    }
+
+    //Returns <pin, channel> if found
+    //Return <null,null> if not checking on any channels
+    public Pair<Boolean, Integer> isCheckingImpedanceOnAnyChannelsNorP() {
+        Boolean is_n_pin = true;
+        for (int i = 0; i < isCheckingImpedanceN.length; i++) {
+            if (isCheckingImpedanceN[i]) {
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+            if (isCheckingImpedanceP[i]) {
+                is_n_pin = false;
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+        }
+        return new ImmutablePair<Boolean, Integer>(null, null);
     }
 
     //Returns the channel number where impedance check is currently active, otherwise return null
@@ -669,5 +750,4 @@ class BoardGaleaSerial extends BoardGalea {
         params.serial_port = connectId;
         return params;
     }
->>>>>>> data format change (#42)
 };
