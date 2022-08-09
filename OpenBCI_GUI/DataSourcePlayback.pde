@@ -175,6 +175,36 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getAnalogSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getDigitalSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getPPGSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getEDASampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getBatteryInfoSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         outputWarn("Deactivating channels is not possible for Playback board.");
     }
@@ -392,4 +422,35 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     public boolean endOfFileReached() {
         return currentSample >= getTotalSamples();
     }
+
+    @Override
+    public List<double[]> getDataWithBatteryInfo(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithAnalog(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithDigital(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithPPG(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithEDA(int maxSamples) {
+        return getData(maxSamples);
+    }
+
 }

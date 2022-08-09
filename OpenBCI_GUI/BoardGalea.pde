@@ -78,44 +78,35 @@ class GaleaDefaultSettings extends ADS1299Settings {
 
         switch(mode) {
             case DEMO:
-                Arrays.fill(values.gain, 0, 8, Gain.X2);
-                Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X12;
-                values.gain[14] = Gain.X12;
+                Arrays.fill(values.gain, 0, 8, Gain.X4);  // emg scale
+                Arrays.fill(values.gain, 8, 16, Gain.X2);  // eeg scale main board
+                values.gain[6] = Gain.X12;  // eeg scale sister board(fp1)
+                values.gain[7] = Gain.X12;  // eeg scale sister board(fp2)
 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
                 Arrays.fill(values.bias, Bias.NO_INCLUDE);
 
-                Arrays.fill(values.srb2, Srb2.CONNECT);
-                values.srb2[8] = Srb2.DISCONNECT;
-                values.srb2[10] = Srb2.DISCONNECT;
-                values.srb2[11] = Srb2.DISCONNECT;
-                values.srb2[12] = Srb2.DISCONNECT;
-                values.srb2[13] = Srb2.DISCONNECT;
-                values.srb2[15] = Srb2.DISCONNECT;
+                Arrays.fill(values.srb2, 0, 6, Srb2.DISCONNECT);
+                Arrays.fill(values.srb2, 6, 16, Srb2.CONNECT);
 
                 Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
                 break;
 
             case DEFAULT:
-                Arrays.fill(values.gain, 0, 8, Gain.X8);
-                Arrays.fill(values.gain, 8, 16, Gain.X4);
-                values.gain[9] = Gain.X12;
-                values.gain[14] = Gain.X12;
+                Arrays.fill(values.gain, 0, 8, Gain.X4);  // emg scale
+                Arrays.fill(values.gain, 8, 16, Gain.X2);  // eeg scale main board
+                values.gain[6] = Gain.X12;  // eeg scale sister board(fp1)
+                values.gain[7] = Gain.X12;  // eeg scale sister board(fp2)
                 
                 Arrays.fill(values.inputType, InputType.NORMAL);
 
-                Arrays.fill(values.bias, Bias.INCLUDE);
-                Arrays.fill(values.bias, 8, 16, Bias.NO_INCLUDE);
-                values.bias[9] = Bias.INCLUDE;
-                values.bias[14] = Bias.INCLUDE;
+                Arrays.fill(values.bias, 0, 6, Bias.NO_INCLUDE);
+                Arrays.fill(values.bias, 6, 16, Bias.INCLUDE);
 
-                Arrays.fill(values.srb2, Srb2.CONNECT);
-                Arrays.fill(values.srb2, 8, 16, Srb2.DISCONNECT);
-                values.srb2[9] = Srb2.CONNECT;
-                values.srb2[14] = Srb2.CONNECT;
+                Arrays.fill(values.srb2, 0, 6, Srb2.DISCONNECT);
+                Arrays.fill(values.srb2, 6, 16, Srb2.CONNECT);
 
                 Arrays.fill(values.srb1, Srb1.DISCONNECT);
 
@@ -152,24 +143,37 @@ class GaleaDefaultSettings extends ADS1299Settings {
 }
 
 class BoardGalea extends BoardBrainFlow
-implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard{
+implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, ADS1299SettingsBoard, AuxDataBoard{
 
-    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    protected final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
-    private ADS1299Settings currentADS1299Settings;
-    private boolean[] isCheckingImpedance;
+    protected FixedStack<double[]> accumulatedAuxData = new FixedStack<double[]>();
+    protected double[][] auxDataThisFrame;
+    protected int auxSamplingRate = -1;
+    protected int numAuxChannels = -1;
+    protected int auxTimestamp = -1;
+    protected double[][] emptyAuxData;
 
-    private int[] edaChannelsCache = null;
-    private int[] ppgChannelsCache = null;
-    private Integer batteryChannelCache = null;
+    protected ADS1299Settings currentADS1299Settings;
+    protected boolean[] isCheckingImpedance;
+    protected boolean[] isCheckingImpedanceN;
+    protected boolean[] isCheckingImpedanceP;
 
-    private BoardIds boardId = BoardIds.GALEA_BOARD;
-    private GaleaMode initialSettingsMode;
-    private GaleaSR sampleRate;
-    private String ipAddress;
+    protected int[] edaChannelsCache = null;
+    protected int[] ppgChannelsCache = null;
+    protected Integer batteryChannelCache = null;
+    protected int[] eegChannelsCache = null;
+    protected int[] eogChannelsCache = null;
+    protected int[] emgChannelsCache = null;
 
-    private final GaleaDefaultSettings defaultSettings;
-    private boolean useDynamicScaler;
+    protected GaleaMode initialSettingsMode;
+    protected GaleaSR sampleRate;
+    protected String connectId; // ip address or serial port
+
+    protected final GaleaDefaultSettings defaultSettings;
+    protected boolean useDynamicScaler;
+
+    protected String timestampFileName;
 
     // needed for playback
     public BoardGalea() {
@@ -178,13 +182,18 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         defaultSettings = new GaleaDefaultSettings(this, GaleaMode.DEFAULT);
     }
 
-    public BoardGalea(String _ip, GaleaMode mode, GaleaSR _sampleRate) {
+    public BoardGalea(String connectId, GaleaMode mode, GaleaSR _sampleRate) {
         super();
 
         isCheckingImpedance = new boolean[getNumEXGChannels()];
         Arrays.fill(isCheckingImpedance, false);
 
-        ipAddress = _ip;
+        isCheckingImpedanceN= new boolean[getNumEXGChannels()];
+        isCheckingImpedanceP= new boolean[getNumEXGChannels()];
+        Arrays.fill(isCheckingImpedanceN, false);
+        Arrays.fill(isCheckingImpedanceP, false);
+
+        this.connectId = connectId;
         initialSettingsMode = mode;
         println("Mode command: " + initialSettingsMode.getCommand());
         sampleRate = _sampleRate;
@@ -213,9 +222,25 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
             res = sendCommand(sampleRate.getCommand()).getKey().booleanValue();
         }
         if (res) {
-            println("Registers:");
-            println(sendCommand("F0").getValue());
+            StringBuilder registers = new StringBuilder("Galea Registers:\n");
+            registers.append(sendCommand("F0").getValue());
+            println(registers.toString());
         }
+        if (res) {
+            try {
+                auxSamplingRate = BoardShim.get_sampling_rate(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
+                numAuxChannels = BoardShim.get_num_rows(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
+                double[] fillAuxData = new double[numAuxChannels];
+                accumulatedAuxData.setSize(auxSamplingRate * dataBuff_len_sec);
+                accumulatedAuxData.fill(fillAuxData);
+            } catch (BrainFlowError e) {
+                res = false;
+                println("WARNING: could not get info about aux data.");
+                e.printStackTrace();
+            }
+        }
+
+        emptyAuxData = new double[getNumAuxChannels()][0];
 
         return res;
     }
@@ -224,13 +249,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.ip_address = ipAddress;
+        params.ip_address = connectId;
         return params;
     }
 
     @Override
     public BoardIds getBoardId() {
-        return boardId;
+        return BoardIds.GALEA_BOARD;
     }
 
     @Override
@@ -265,9 +290,87 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         isCheckingImpedance[channel] = active;
     }
 
+    //Use this method instead of the one above!
+    public boolean setCheckingImpedanceGalea(int channel, boolean active, boolean _isN) {
+
+        char p = '0';
+        char n = '0';
+        String command;
+
+        
+        if (active) {
+
+            currentADS1299Settings.saveLastValues(channel);
+            
+            currentADS1299Settings.values.gain[channel] = Gain.X1;
+            currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
+            currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
+            currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
+            currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
+
+            boolean response = currentADS1299Settings.commit(channel);
+            if (!response) {
+                currentADS1299Settings.revertToLastValues(channel);
+                outputWarn("Galea Impedance Check - Error sending channel settings to board.");
+                return response;
+            }
+            
+            if (_isN) {
+                n = '1';
+            } else {
+                p = '1';
+            }
+
+        } else {
+            //Revert ADS channel settings to what user had before checking impedance on this channel
+            currentADS1299Settings.revertToLastValues(channel);
+        }
+        
+        // for example: z 4 1 0 Z
+        command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        boolean response = sendCommand(command).getKey().booleanValue();
+        if (!response) {
+            outputWarn("Galea Impedance Check - Error sending impedance command to board.");
+            return response;
+        }
+
+        if (_isN) {
+            isCheckingImpedanceN[channel] = active;
+        } else {
+            isCheckingImpedanceP[channel] = active;
+        }
+
+        return response;
+    }
+
     @Override
+    //General check that is a method for all impedance boards
     public boolean isCheckingImpedance(int channel) {
-        return isCheckingImpedance[channel];
+        return isCheckingImpedanceN[channel] || isCheckingImpedanceP[channel];
+    }
+
+    //Specifically check the status of N or P pins
+    public boolean isCheckingImpedanceNorP(int channel, boolean _isN) {
+        if (_isN) {
+            return isCheckingImpedanceN[channel];
+        }
+        return isCheckingImpedanceP[channel];
+    }
+
+    //Returns <pin, channel> if found
+    //Return <null,null> if not checking on any channels
+    public Pair<Boolean, Integer> isCheckingImpedanceOnAnyChannelsNorP() {
+        Boolean is_n_pin = true;
+        for (int i = 0; i < isCheckingImpedanceN.length; i++) {
+            if (isCheckingImpedanceN[i]) {
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+            if (isCheckingImpedanceP[i]) {
+                is_n_pin = false;
+                return new ImmutablePair<Boolean, Integer>(is_n_pin, Integer.valueOf(i));
+            }
+        }
+        return new ImmutablePair<Boolean, Integer>(null, null);
     }
 
     //Returns the channel number where impedance check is currently active, otherwise return null
@@ -301,6 +404,30 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     }
 
     @Override
+    public void updateInternal() {
+        // get aux data in updateInternal to dont mess with getNewDataInternal
+        if(streaming) {
+            try {
+                double[][] data = boardShim.get_board_data(BrainFlowPresets.AUXILIARY_PRESET);
+                for (int i = 0; i < data[0].length; i++) {
+                    double[] newEntry = new double[numAuxChannels];
+                    for (int j = 0; j < numAuxChannels; j++) {
+                        newEntry[j] = data[j][i];
+                    }
+                    accumulatedAuxData.push(newEntry);
+                }
+                auxDataThisFrame = data;
+            } catch (BrainFlowError e) {
+                println("WARNING: could not get board data.");
+                e.printStackTrace();
+                auxDataThisFrame = emptyAuxData;
+            }
+        } else {
+            auxDataThisFrame = emptyAuxData;
+        }
+    }
+
+    @Override
     public ADS1299Settings getADS1299Settings() {
         return currentADS1299Settings;
     }
@@ -324,7 +451,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     public int[] getPPGChannels() {
         if (ppgChannelsCache == null) {
             try {
-                ppgChannelsCache = BoardShim.get_ppg_channels(getBoardIdInt());
+                ppgChannelsCache = BoardShim.get_ppg_channels(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
@@ -347,7 +474,7 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     public int[] getEDAChannels() {
         if (edaChannelsCache == null) {
             try {
-                edaChannelsCache = BoardShim.get_eda_channels(getBoardIdInt());
+                edaChannelsCache = BoardShim.get_eda_channels(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
@@ -360,23 +487,13 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
     public Integer getBatteryChannel() {
         if (batteryChannelCache == null) {
             try {
-                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
+                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
         }
 
         return batteryChannelCache;
-    }
-    
-    @Override
-    protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<getEDAChannels().length; i++) {
-            channelNames[getEDAChannels()[i]] = "EDA Channel " + i;
-        }
-        for (int i=0; i<getPPGChannels().length; i++) {
-            channelNames[getPPGChannels()[i]] = "PPG Channel " + i;
-        }
     }
 
     @Override
@@ -400,5 +517,237 @@ implements ImpedanceSettingsBoard, EDACapableBoard, PPGCapableBoard, BatteryInfo
         final int maxSampleIndex = 255;
         return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
                                     minSampleIndex, maxSampleIndex);
+    }
+
+    @Override
+    public String[] getChannelNames() {
+        String[] res = super.getChannelNames();
+        try {
+            if (res.length >= 22) {
+                int[] otherChannels = boardShim.get_other_channels(getBoardIdInt());
+                res[otherChannels[0]] = "Raw PC Timestamp";
+                res[otherChannels[1]] = "Raw Device Timestamp";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
+    @Override
+    public void startStreaming() {
+        //Check timestamps before start streaming
+        controlPanel.fetchSessionNameTextfieldAllBoards();
+        if (!streaming) {
+            timestampFileName = fetchTimestampFileLocation();
+            writeTimestampFile();
+        }
+        //Start streaming
+        super.startStreaming();
+    }
+
+    @Override
+    public void stopStreaming() {
+        super.stopStreaming();
+        //Check timestamps immediately after board stops streaming
+        //Ignore checking timestamps if GUI has thrown a popup for no data in last X seconds
+        if (!streaming && !data_popup_displayed) {
+            timestampFileName = fetchTimestampFileLocation();
+            writeTimestampFile();
+        }
+    }
+
+    protected void writeTimestampFile() {
+        try {
+            File file = new File(timestampFileName);
+            file.getParentFile().mkdirs(); // Will create parent directories if not exists
+            file.createNewFile();
+            FileOutputStream s = new FileOutputStream(file,false);
+        } catch (IOException e) {
+            println("Failed to create to timestamp file - checkpoint 1");
+            e.printStackTrace();
+        }
+        try {
+            FileWriter fw = new FileWriter(timestampFileName, false);
+            BufferedWriter bw = new BufferedWriter(fw);
+            for (int i = 0; i < 3; i++)
+            {
+                Pair<Boolean, String> res = sendCommand("calc_time");
+                if (res.getKey().booleanValue()) { 
+                    bw.write(res.getValue());
+                    bw.newLine();
+                } else {
+                    println("Failed to calc_time");
+                    bw.close();
+                    return;
+                }
+            }
+            bw.close();
+        } catch (IOException e) {
+            println("Failed to write to timestamp file - checkpoint 2");
+            e.printStackTrace();
+        }
+    }
+
+    protected String fetchTimestampFileLocation() {
+        StringBuilder timestampFileLoc = new StringBuilder();
+        timestampFileLoc.append(settings.getSessionPath());
+        timestampFileLoc.append("Timestamp_");
+        timestampFileLoc.append(directoryManager.getFileNameDateTime());
+        timestampFileLoc.append(".txt");
+        String result = timestampFileLoc.toString();
+
+        timestampFileLoc.insert(0, "OpenBCI_GUI: Created Galea timestamp file: ");
+        println(timestampFileLoc.toString());
+        return result;
+    }
+
+    public int[] getEEGChannels() {
+        if (eegChannelsCache == null) {
+            try {
+                eegChannelsCache = BoardShim.get_eeg_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eegChannelsCache;
+    }
+
+    public int[] getEOGChannels() {
+        if (eogChannelsCache == null) {
+            try {
+                eogChannelsCache = BoardShim.get_eog_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return eogChannelsCache;
+    }
+
+    public int[] getEMGChannels() {
+        if (emgChannelsCache == null) {
+            try {
+                emgChannelsCache = BoardShim.get_emg_channels(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return emgChannelsCache;
+    }
+
+    public List<double[]> getAuxData(int maxSamples) {
+        int endIndex = accumulatedAuxData.size();
+        int startIndex = max(0, endIndex - maxSamples);
+
+        return accumulatedAuxData.subList(startIndex, endIndex);
+    }
+
+    @Override
+    public List<double[]> getDataWithPPG(int maxSamples) {
+        return getAuxData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithBatteryInfo(int maxSamples) {
+        return getAuxData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithEDA(int maxSamples) {
+        return getAuxData(maxSamples);
+    }
+
+    @Override
+    protected void addChannelNamesInternal(String[] channelNames) {
+        // do nothing here
+    }
+
+    @Override
+    public int getEDASampleRate() {
+        return getAuxSampleRate();
+    }
+
+    @Override
+    public int getPPGSampleRate() {
+        return getAuxSampleRate();
+    }
+
+    @Override
+    public int getBatteryInfoSampleRate() {
+        return getAuxSampleRate();
+    }
+
+    public int getAuxSampleRate() {
+        if (auxSamplingRate == -1) {
+            try {
+                auxSamplingRate = BoardShim.get_sampling_rate(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return auxSamplingRate;
+    }
+
+    public int getNumAuxChannels() {
+        if (numAuxChannels == -1) {
+            try {
+                numAuxChannels = BoardShim.get_num_rows(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return numAuxChannels;
+    }
+
+    public int getAuxTimestampChannel() {
+        if (auxTimestamp == -1) {
+            try {
+                auxTimestamp = BoardShim.get_timestamp_channel(getBoardIdInt(), BrainFlowPresets.AUXILIARY_PRESET);
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return auxTimestamp;
+    }
+
+    // todo write actual names here
+    public String[] getAuxChannelNames() {
+        String[] names = new String[getNumAuxChannels()];
+        Arrays.fill(names, "Other");
+        return names;
+    }
+
+    public double[][] getAuxFrameData() {
+        return auxDataThisFrame;
+    }
+};
+
+
+class BoardGaleaSerial extends BoardGalea {
+
+    public BoardGaleaSerial() {
+        super();
+    }
+
+    public BoardGaleaSerial(String connectId, GaleaMode mode, GaleaSR _sampleRate) {
+        super(connectId, mode, _sampleRate);
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.GALEA_SERIAL_BOARD;
+    }
+
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_port = connectId;
+        return params;
     }
 };

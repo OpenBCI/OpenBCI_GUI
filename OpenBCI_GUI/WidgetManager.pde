@@ -37,6 +37,7 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     addWidget(w_timeSeries, w);
     // println("  setupWidgets time series -- " + millis());
 
+    //Widget_1
     w_fft = new W_fft(_this);
     w_fft.setTitle("FFT Plot");
     addWidget(w_fft, w);

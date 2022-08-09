@@ -8,4 +8,8 @@ interface AccelerometerCapableBoard {
     public boolean canDeactivateAccelerometer();
 
     public int[] getAccelerometerChannels();
+
+    public List<double[]> getDataWithAccel(int maxSamples);
+
+    public int getAccelSampleRate();
 };

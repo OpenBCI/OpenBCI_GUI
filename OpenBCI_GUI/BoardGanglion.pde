@@ -213,4 +213,14 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
     }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
+    }
 };

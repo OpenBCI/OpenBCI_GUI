@@ -180,4 +180,44 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
         return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
                                     minSampleIndex, maxSampleIndex);
     }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithPPG(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithEDA(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public List<double[]> getDataWithBatteryInfo(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getPPGSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getEDASampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
+    public int getBatteryInfoSampleRate() {
+        return getSampleRate();
+    }
 };
