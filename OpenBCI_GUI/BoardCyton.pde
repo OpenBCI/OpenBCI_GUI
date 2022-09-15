@@ -252,16 +252,12 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     protected boolean[] isCheckingImpedanceN;
     protected boolean[] isCheckingImpedanceP;
 
-    // same for all channels
-    private final double brainflowGain = 24.0;
-
     private int[] accelChannelsCache = null;
     private int[] analogChannelsCache = null;
 
     protected String serialPort = "";
     protected String ipAddress = "";
     private CytonBoardMode currentBoardMode = CytonBoardMode.DEFAULT;
-    private boolean useDynamicScaler;
 
     public BoardCyton() {
         super();
@@ -276,7 +272,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
         // The command 'd' is automatically sent by brainflow on prepare_session
         currentADS1299Settings = new CytonDefaultSettings(this);
-        useDynamicScaler = true;
     }
 
     // implement mandatory abstract functions
@@ -555,24 +550,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     }
 
     @Override
-    protected double[][] getNewDataInternal() {
-        double[][] data = super.getNewDataInternal();
-        int[] exgChannels = getEXGChannels();
-        for (int i = 0; i < exgChannels.length; i++) {
-            for (int j = 0; j < data[exgChannels[i]].length; j++) {
-                // brainflow assumes a fixed gain of 24. Undo brainflow's scaling and apply new scale.
-                double currentGain = 1.0;
-                if (useDynamicScaler) {
-                    currentGain = currentADS1299Settings.values.gain[i].getScalar();
-                }
-                double scalar = brainflowGain / currentGain;
-                data[exgChannels[i]][j] *= scalar;
-            }
-        }
-        return data;
-    }
-
-    @Override
     public ADS1299Settings getADS1299Settings() {
         return currentADS1299Settings;
     }
@@ -636,16 +613,6 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     @Override
     public double getGain(int channel) {
         return getADS1299Settings().values.gain[channel].getScalar();
-    }
-
-    @Override
-    public boolean getUseDynamicScaler() {
-        return useDynamicScaler;
-    }
-
-    @Override
-    public void setUseDynamicScaler(boolean val) {
-        useDynamicScaler = val;
     }
 
     @Override
