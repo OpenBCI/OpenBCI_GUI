@@ -331,7 +331,7 @@ void settings() {
         win_w = 980;
         win_h = 580;
     }
-    size(win_w, win_h, P2D);
+    size(win_w, win_h);
 
     globalScreenResolution = new StringBuilder("Screen Resolution: ");
     globalScreenResolution.append(displayWidth);
@@ -457,11 +457,13 @@ void delayedSetup() {
     
     //Print BrainFlow version
     StringBuilder brainflowVersion = new StringBuilder("BrainFlow Version: ");
+    /*
     try {
         brainflowVersion.append(BoardShim.get_version());
     } catch (BrainFlowError e) {
         e.printStackTrace();
     }
+    */
     println(brainflowVersion);
 
 
