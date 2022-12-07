@@ -1,3 +1,40 @@
+class BoardGanglionNative extends BoardGanglion {
+
+    private PacketLossTrackerGanglionBLE packetLossTrackerGanglionNative;
+
+    public BoardGanglionNative() {
+        super();
+    }
+
+    public BoardGanglionNative(String serialPort, String macAddress) {
+        super();
+        this.macAddress = macAddress;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.GANGLION_NATIVE_BOARD;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        super.setAccelerometerActive(active);
+
+        if (packetLossTrackerGanglionNative != null) {
+            // notify the packet loss tracker, because the sample indices change based
+            // on whether accel is active or not
+            packetLossTrackerGanglionNative.setAccelerometerActive(active);
+        }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        packetLossTrackerGanglionNative = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglionNative.setAccelerometerActive(isAccelerometerActive());
+        return packetLossTrackerGanglionNative;
+    }
+};
+
 class BoardGanglionBLE extends BoardGanglion {
 
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
