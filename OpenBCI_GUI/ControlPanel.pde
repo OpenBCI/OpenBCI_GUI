@@ -724,6 +724,47 @@ class BLEBox {
         bleBox_cp5.draw();
     }
 
+    private void refreshGanglionNativeList() {
+        if (bleIsRefreshing) {
+            output("BLE Devices Refreshing in progress");
+            return;
+        }
+        output("BLE Devices Refreshing");
+        bleList.items.clear();
+        
+        Thread thread = new Thread(){
+            public void run(){
+                refreshBLE.getCaptionLabel().setText("SEARCHING...");
+                bleIsRefreshing = true;
+
+                //TODO: Update this part of method using updated GUI Helper which includes Ganglion Native
+                /*
+                final String comPort = getBLED112Port();
+                if (comPort != null) {
+                    try {
+                        bleMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
+                        {
+                            bleList.addItem(entry.getKey(), comPort, "");
+                            bleList.updateMenu();
+                        }
+                    } catch (GanglionError e)
+                    {
+                        e.printStackTrace();
+                    }
+                } else {
+                    outputError("No BLED112 Dongle Found");
+                }
+                */
+                outputError("TODO: IMPLEMENT NEW GUI HELPER WITH GANGLION NATIVE");
+                refreshBLE.getCaptionLabel().setText("START SEARCH");
+                bleIsRefreshing = false;
+            }
+        };
+
+        thread.start();
+    }
+
     private void refreshGanglionBLEList() {
         if (bleIsRefreshing) {
             output("BLE Devices Refreshing in progress");
@@ -779,7 +820,11 @@ class BLEBox {
         refreshBLE = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
         refreshBLE.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                refreshGanglionBLEList();
+                if (selectedProtocol == BoardProtocol.BLED112) {
+                    refreshGanglionBLEList();
+                } else {
+                    refreshGanglionNativeList();
+                } 
             }
         });
     }
