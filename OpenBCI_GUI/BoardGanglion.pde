@@ -6,7 +6,7 @@ class BoardGanglionNative extends BoardGanglion {
         super();
     }
 
-    public BoardGanglionNative(String serialPort, String macAddress) {
+    public BoardGanglionNative(String macAddress) {
         super();
         this.macAddress = macAddress;
     }

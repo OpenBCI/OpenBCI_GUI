@@ -604,14 +604,17 @@ void initSystem() {
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
-            }
-            else {
-                // todo[brainflow] temp hardcode
+            } else if (selectedProtocol == BoardProtocol.BLED112) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
+            } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
+                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
+                println("MAC address for Ganglion is " + ganglionMac);
+                currentBoard = new BoardGanglionNative(ganglionMac);
             }
             break;
         case DATASOURCE_STREAMING:
