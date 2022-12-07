@@ -240,7 +240,7 @@ class ControlPanel {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
-                    if (selectedProtocol == BoardProtocol.BLED112) {
+                    if (selectedProtocol == BoardProtocol.BLED112 || selectedProtocol == BoardProtocol.NATIVE_BLE) {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
@@ -1114,6 +1114,7 @@ class InterfaceBoxCyton {
 class InterfaceBoxGanglion {
     public int x, y, w, h, padding; //size and position
     private ControlP5 ifbg_cp5;
+    private Button protocolGanglionNativeBLE;
     private Button protocolBLED112Ganglion;
     private Button protocolWifiGanglion;
 
@@ -1122,7 +1123,7 @@ class InterfaceBoxGanglion {
         y = _y;
         w = _w;
         padding = _padding;
-        h = (24 + _padding) * 3;
+        h = (24 + _padding) * 4;
         int buttonHeight = 24;
 
             //Instantiate local cp5 for this box
@@ -1130,8 +1131,9 @@ class InterfaceBoxGanglion {
         ifbg_cp5.setGraphics(ourApplet, 0,0);
         ifbg_cp5.setAutoDraw(false);
 
-        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
-        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
+        createGanglionNativeBLEButton("protocolNativeBLEGanglion", "Bluetooth (Native)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + (padding * 4) + 24 + 4, w - padding * 2, 24);
+        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + (padding * 5) + (24 * 2) + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1161,6 +1163,21 @@ class InterfaceBoxGanglion {
         return b;
     }
 
+    private void createGanglionNativeBLEButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolGanglionNativeBLE = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolGanglionNativeBLE.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.NATIVE_BLE;
+                //controlPanel.bleBox.refreshGanglionBLEList();
+                protocolGanglionNativeBLE.setOn();
+                protocolBLED112Ganglion.setOff();
+                protocolWifiGanglion.setOff();
+            }
+        });
+    }
+
     private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
         protocolBLED112Ganglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolBLED112Ganglion.onRelease(new CallbackListener() {
@@ -1169,6 +1186,7 @@ class InterfaceBoxGanglion {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.BLED112;
                 controlPanel.bleBox.refreshGanglionBLEList();
+                protocolGanglionNativeBLE.setOff();
                 protocolBLED112Ganglion.setOn();
                 protocolWifiGanglion.setOff();
             }
@@ -1182,6 +1200,7 @@ class InterfaceBoxGanglion {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.WIFI;
+                protocolGanglionNativeBLE.setOff();
                 protocolBLED112Ganglion.setOff();
                 protocolWifiGanglion.setOn();
             }
@@ -2913,7 +2932,7 @@ class InitBox {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
                 outputWarn("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
                 return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
+            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.NATIVE_BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
                 outputWarn("No BLE device selected. Please select your Ganglion device and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {

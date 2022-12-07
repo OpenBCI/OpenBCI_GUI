@@ -102,7 +102,7 @@ final static int NUM_ACCEL_DIMS = 3;
 enum BoardProtocol {
     NONE,
     SERIAL,
-    BLE,
+    NATIVE_BLE,
     WIFI,
     BLED112
 }
