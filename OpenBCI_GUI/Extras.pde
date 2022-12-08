@@ -469,10 +469,7 @@ class DataStatus {
         }
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            double scaler =  (4.5 / (pow (2, 23) - 1) / 1.0 * 1000000.);
-            if (((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler()) {
-                scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
-            }
+            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
             double maxVal = scaler * pow (2, 23);
             int numSeconds = 3;
             int nPoints = numSeconds * currentBoard.getSampleRate();
