@@ -613,8 +613,8 @@ void initSystem() {
             } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
-                println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionNative(ganglionMac);
+                println("MAC address for Ganglion is " + ganglionName);
+                currentBoard = new BoardGanglionNative(ganglionName);
             }
             break;
         case DATASOURCE_STREAMING:

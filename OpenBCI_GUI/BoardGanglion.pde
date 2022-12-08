@@ -1,14 +1,22 @@
 class BoardGanglionNative extends BoardGanglion {
 
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionNative;
+    private String boardName;
 
     public BoardGanglionNative() {
         super();
     }
 
-    public BoardGanglionNative(String macAddress) {
+    public BoardGanglionNative(String name) {
         super();
-        this.macAddress = macAddress;
+        this.boardName = name;
+    }
+
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_number = boardName;
+        return params;
     }
 
     @Override
