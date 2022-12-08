@@ -737,26 +737,19 @@ class BLEBox {
                 refreshBLE.getCaptionLabel().setText("SEARCHING...");
                 bleIsRefreshing = true;
 
-                //TODO: Update this part of method using updated GUI Helper which includes Ganglion Native
-                /*
-                final String comPort = getBLED112Port();
-                if (comPort != null) {
-                    try {
-                        bleMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
-                        {
-                            bleList.addItem(entry.getKey(), comPort, "");
-                            bleList.updateMenu();
-                        }
-                    } catch (GanglionError e)
+                try {
+                    bleMACAddrMap = GUIHelper.scan_for_ganglions (3);
+                    for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
                     {
-                        e.printStackTrace();
+                        bleList.addItem(entry.getKey(),  entry.getValue(), "");
+                        bleList.updateMenu();
+                        println("Found Ganglion Board: " + entry.getKey() + " " + entry.getValue());
                     }
-                } else {
-                    outputError("No BLED112 Dongle Found");
+                } catch (GanglionError e)
+                {
+                    e.printStackTrace();
                 }
-                */
-                outputError("TODO: IMPLEMENT NEW GUI HELPER WITH GANGLION NATIVE");
+
                 refreshBLE.getCaptionLabel().setText("START SEARCH");
                 bleIsRefreshing = false;
             }
