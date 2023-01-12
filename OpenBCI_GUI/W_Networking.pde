@@ -1070,7 +1070,7 @@ class W_Networking extends Widget {
         } else if (dataType.equals("EMG")) {
             return currentBoard.getNumEXGChannels();
         } else if (dataType.equals("AvgBandPower")) {
-            return 1;
+            return 5;
         } else if (dataType.equals("BandPower")) {
             return 5;
          } else if (dataType.equals("Pulse")) {
