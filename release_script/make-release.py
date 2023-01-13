@@ -224,7 +224,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
-        entitlements_dir = os.path.join(build_dir, "release_script/mac_only/OpenBCI_GUI.entitlements")
+        entitlements_dir = os.path.join(os.getcwd(), "release_script/mac_only/OpenBCI_GUI.entitlements")
         icon_dir = os.path.join(sketch_dir, "sketch.icns")
         icon_dest = os.path.join(app_dir, "Contents", "Resources", "sketch.icns")
         try:
