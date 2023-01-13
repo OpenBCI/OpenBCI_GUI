@@ -13,7 +13,7 @@ branches:
   only:
     - master
     - development
-    - ganglion-native-ble
+    - ganglion-native-ble-ci
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d; fi
