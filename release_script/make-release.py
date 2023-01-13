@@ -224,6 +224,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
+        entitlements_dir = os.path.join(build_dir, "release_script/mac_only/OpenBCI_GUI.entitlements")
         icon_dir = os.path.join(sketch_dir, "sketch.icns")
         icon_dest = os.path.join(app_dir, "Contents", "Resources", "sketch.icns")
         try:
@@ -235,8 +236,9 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # sign the app
         try:
-            subprocess.check_call(["codesign", "-f", "-v", "-s"\
-                "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", app_dir])
+            subprocess.check_call(["codesign", "-f", "-v", \
+                "--entitlements", entitlements_dir,
+                "-s", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", app_dir])
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to sign app.")
