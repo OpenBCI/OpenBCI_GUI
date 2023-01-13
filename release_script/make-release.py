@@ -236,7 +236,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # sign the app
         try:
-            subprocess.check_call(["codesign", "--force", "--verify", "--verbose", "--deep" \
+            subprocess.check_call(["codesign", "--force", "--verify", "--verbose", "--deep", \
                 "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
                 "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", app_dir])
         except subprocess.CalledProcessError as err:
