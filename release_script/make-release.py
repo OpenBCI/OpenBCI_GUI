@@ -14,12 +14,15 @@
 
 import sys
 import os
+import glob
 import shutil
 import platform
 import subprocess
 import argparse
 import requests
 import fileinput
+import zipfile
+from pathlib import Path
 from bs4 import  BeautifulSoup
 
 ### Define platform-specific strings
@@ -220,7 +223,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     else:
         print ("Successfully deleted source dir.")
 
-    ### On mac, copy the icon file and sign the app
+    ### On mac, copy the icon file and sign the app, jars, and native libraries
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
@@ -234,7 +237,43 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
         else:
             print ("Successfully copied sketch.icns")
 
-        # sign the app
+        # Sign all jar archives as well as any native libraries contained in them
+        java_dir = os.path.join(build_dir, "OpenBCI_GUI.app/Contents/Java")
+        for archive in glob.glob("*.jar"):
+            # Extract the jar archive
+            archive_dir = os.path.join(java_dir, archive.stem)
+            with zipfile.ZipFile(archive, 'r') as ref:
+                ref.extractall(archive_dir)
+            
+            # Sign any native libraries
+            for library in Path(archive_dir).rglob('*.dylib'):
+                try:
+                    subprocess.check_call(["codesign", "--force", "--verify", "--verbose", \
+                        "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
+                        "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", library])
+                except subprocess.CalledProcessError as err:
+                    print (err)
+                    print ("WARNING: Failed to sign " + library)
+                else:
+                    print ("Successfully signed " + library)
+            
+            # Repack the archive and remove working directory
+            os.remove(archive)
+            shutil.make_archive(archive, "jar", java_dir)
+            shutil.rmtree(archive)
+
+            # Sign the new jar archive
+            try:
+                subprocess.check_call(["codesign", "--force", "--verify", "--verbose", \
+                    "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
+                    "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", archive])
+            except subprocess.CalledProcessError as err:
+                print (err)
+                print ("WARNING: Failed to sign " + archive)
+            else:
+                print ("Successfully signed " + archive)
+
+        # Sign the app
         try:
             subprocess.check_call(["codesign", "--force", "--verify", "--verbose", "--deep", \
                 "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
