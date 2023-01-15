@@ -248,7 +248,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
             # Sign any native libraries
             for library in Path(archive_dir).rglob('*.dylib'):
                 try:
-                    subprocess.check_call(["codesign", "--force", "--verify", "--verbose", \
+                    subprocess.check_call(["codesign", "--force", "--verify", "--verbose" \
                         "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
                         "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", library])
                 except subprocess.CalledProcessError as err:
