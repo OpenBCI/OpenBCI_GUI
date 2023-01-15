@@ -239,28 +239,29 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # Sign all jar archives as well as any native libraries contained in them
         java_dir = os.path.join(build_dir, "OpenBCI_GUI.app/Contents/Java")
-        for archive in glob.glob("*.jar"):
+        for archive in glob.glob(java_dir + "/*.jar"):
             # Extract the jar archive
-            archive_dir = os.path.join(java_dir, archive.stem)
+            archive_dir = os.path.join(java_dir, os.path.splitext(archive)[0])
             with zipfile.ZipFile(archive, 'r') as ref:
                 ref.extractall(archive_dir)
             
             # Sign any native libraries
             for library in Path(archive_dir).rglob('*.dylib'):
                 try:
-                    subprocess.check_call(["codesign", "--force", "--verify", "--verbose" \
+                    subprocess.check_call(["codesign", "--force", "--verify", "--verbose", \
                         "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
                         "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", library])
                 except subprocess.CalledProcessError as err:
                     print (err)
-                    print ("WARNING: Failed to sign " + library)
+                    print ("WARNING: Failed to sign " + str(library))
                 else:
-                    print ("Successfully signed " + library)
+                    print ("Successfully signed " + str(library))
             
             # Repack the archive and remove working directory
             os.remove(archive)
-            shutil.make_archive(archive, "jar", java_dir)
-            shutil.rmtree(archive)
+            # Use OS zip utility because shutil is slow
+            os.system("(cd " + archive_dir + " && zip -r " + archive + " ./*)")
+            shutil.rmtree(archive_dir)
 
             # Sign the new jar archive
             try:
