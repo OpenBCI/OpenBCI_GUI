@@ -223,7 +223,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     else:
         print ("Successfully deleted source dir.")
 
-    ### On mac, copy the icon file and sign the app, jre, jars, and native libraries
+    ### On mac, copy the icon file and sign the app, jars, and native libraries
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
@@ -274,14 +274,14 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
             else:
                 print ("Successfully signed " + archive)
 
-        # Sign the JRE java executable
-        jre_path = os.path.join(build_dir, "OpenBCI_GUI.app/Contents/PlugIns/jdk1.8.0_202.jdk/Contents/Home/jre/bin/java")
+        # Sign the app binary
+        binary_path = os.path.join(build_dir, "OpenBCI_GUI.app/Contents/MacOS/OpenBCI_GUI")
 
-        # Sign the app
+        # Sign the app folder
         try:
             subprocess.check_call(["codesign", "--force", "--verify", "--verbose", "--deep", \
                 "--timestamp", "--options", "runtime", "--entitlements", entitlements_dir,
-                "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", jre_path])
+                "--sign", "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)", binary_path])
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to sign app.")
