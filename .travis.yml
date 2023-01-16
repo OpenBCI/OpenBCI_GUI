@@ -39,6 +39,10 @@ install:
   ### ### MAC ### ###
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/processing/processing/releases/download/processing-0269-3.5.3/processing-3.5.3-macosx.zip                   ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then unzip processing-3.5.3-macosx.zip                                                                   ;fi
+  # Update the JDK processing uses to one compliant with Apple notorization
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then curl -O -L --insecure https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u352-b08/OpenJDK8U-jdk_x64_mac_hotspot_8u352b08.tar.gz     ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then tar -xf OpenJDK8U-jdk_x64_mac_hotspot_8u352b08.tar.gz                                                ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv jdk8u352-b08 Processing.app/Contents/PlugIns/jdk1.8.0_202.jdk                                     ;fi
   # Processing.app must be in this location for processing-java to work
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mv Processing.app /Applications/Processing.app                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH=$TRAVIS_BUILD_DIR/release_script/mac_only:$PATH                                          ;fi
