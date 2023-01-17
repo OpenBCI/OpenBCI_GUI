@@ -9,7 +9,7 @@ assignees: ''
 
 ## Problem
 
-Explain the problem
+Explain the problem.
 
 ## Expected 
 
@@ -17,11 +17,11 @@ In a perfect world, what do you expect to happen.
 
 ## Operating System and Version
 
-macOS/Windows/Linux
+macOS/Windows/Linux - Example: MacOS 10.15.7
 
 ## GUI Version
 
-The version is displayed on startup.
+The version is displayed on startup and at the top of every Console Log.
 
 ## Are you running the downloaded app or from Processing/VSCode?
 
@@ -31,6 +31,6 @@ The downloaded app or compiling and running the code.
 
 Cyton/Cyton+Daisy/Ganglion
 
-## Console Log
+## Console Log and Screenshots
 
-Paste any relevant text from the console window here.
+Paste any relevant text from the console window here, as well as any helpful screenshots of the GUI.
