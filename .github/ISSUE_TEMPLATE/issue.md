@@ -23,18 +23,14 @@ macOS/Windows/Linux
 
 The version is displayed on startup.
 
-## Running standalone app
+## Are you running the downloaded app or from Processing/VSCode?
 
-Are you running the downloaded app or are you running from Processing or Visual Studio Code?
+The downloaded app or compiling and running the code.
 
 ## Type of OpenBCI Board
 
 Cyton/Cyton+Daisy/Ganglion
 
-## Are you using a WiFi Shield?
-
-Yes/No
-
 ## Console Log
 
-Paste any relevant text from the console window here
+Paste any relevant text from the console window here.
