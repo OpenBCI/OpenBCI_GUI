@@ -332,7 +332,7 @@ void settings() {
         win_w = 980;
         win_h = 580;
     }
-    size(win_w, win_h);
+    size(win_w, win_h, P2D);
 
     globalScreenResolution = new StringBuilder("Screen Resolution: ");
     globalScreenResolution.append(displayWidth);
