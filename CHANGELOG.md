@@ -1,11 +1,12 @@
 # v5.1.1
 
 ### Bug Fixes
+- Fix NullPointerException when no Audio Device is available from the OS (Windows and Linux) #1109 #1086
+- Fix LSL AvgBandPower data type only one value is sent #1098
 
 ### Improvements
-
-- Update to BrainFlow 5.1.0
-- Fix LSL AvgBandPower data type only one value is sent #1098
+- Update to BrainFlow 5.6.1
+- Add feature to connect to Ganglion using Native Bluetooth [#1080](https://github.com/OpenBCI/OpenBCI_GUI/issues/1080)
 
 # v5.1.0
 
