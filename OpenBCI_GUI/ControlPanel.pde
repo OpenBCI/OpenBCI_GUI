@@ -726,10 +726,10 @@ class BLEBox {
 
     private void refreshGanglionNativeList() {
         if (bleIsRefreshing) {
-            output("BLE Devices Refreshing in progress");
+            output("Search for Ganglions using Native Bluetooth is in progress.");
             return;
         }
-        output("BLE Devices Refreshing");
+        output("Refreshing available Ganglions using Native Bluetooth...");
         bleList.items.clear();
         
         Thread thread = new Thread(){
@@ -760,10 +760,10 @@ class BLEBox {
 
     private void refreshGanglionBLEList() {
         if (bleIsRefreshing) {
-            output("BLE Devices Refreshing in progress");
+            output("Search for Ganglions using BLED112 Dongle is in progress.");
             return;
         }
-        output("BLE Devices Refreshing");
+        output("Refreshing available Ganglions using BLED112 Dongle...");
         bleList.items.clear();
         
         Thread thread = new Thread(){
@@ -1208,7 +1208,7 @@ class InterfaceBoxGanglion {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.NATIVE_BLE;
-                //controlPanel.bleBox.refreshGanglionBLEList();
+                controlPanel.bleBox.refreshGanglionNativeList();
                 protocolGanglionNativeBLE.setOn();
                 protocolBLED112Ganglion.setOff();
                 protocolWifiGanglion.setOff();
@@ -1246,6 +1246,7 @@ class InterfaceBoxGanglion {
     }
 
     public void resetGanglionSelectedProtocol() {
+        protocolGanglionNativeBLE.setOff();
         protocolBLED112Ganglion.setOff();
         protocolWifiGanglion.setOff();
         selectedProtocol = BoardProtocol.NONE;
