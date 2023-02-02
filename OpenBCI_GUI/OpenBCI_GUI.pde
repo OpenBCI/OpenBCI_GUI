@@ -22,7 +22,8 @@
 import ddf.minim.*;  // To make sound.  Following minim example "frequencyModulation"
 import ddf.minim.ugens.*; // To make sound.  Following minim example "frequencyModulation"
 import java.lang.Math; //for exp, log, sqrt...they seem better than Processing's built-in
-import processing.core.PApplet;
+import processing.core.*;
+import processing.data.*;
 import java.util.*; //for Array.copyOfRange()
 import processing.serial.*; //for serial communication to Arduino/OpenBCI
 import java.awt.event.*; //to allow for event listener on screen resize
@@ -102,7 +103,7 @@ final static int NUM_ACCEL_DIMS = 3;
 enum BoardProtocol {
     NONE,
     SERIAL,
-    BLE,
+    NATIVE_BLE,
     WIFI,
     BLED112
 }
@@ -604,14 +605,17 @@ void initSystem() {
         case DATASOURCE_GANGLION:
             if (selectedProtocol == BoardProtocol.WIFI) {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
-            }
-            else {
-                // todo[brainflow] temp hardcode
+            } else if (selectedProtocol == BoardProtocol.BLED112) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
                 currentBoard = new BoardGanglionBLE(ganglionPort, ganglionMac);
+            } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
+                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
+                println("MAC address for Ganglion is " + ganglionName);
+                currentBoard = new BoardGanglionNative(ganglionName);
             }
             break;
         case DATASOURCE_STREAMING:
