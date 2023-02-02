@@ -1,6 +1,7 @@
 # v5.1.1
 
 ### Bug Fixes
+- Fix NullPointerException when no Audio Device is available from the OS (Windows and Linux) #1109 #1086
 - Fix LSL AvgBandPower data type only one value is sent #1098
 
 ### Improvements
