@@ -151,12 +151,6 @@ class TopNav {
             logo = logo_black;
         }
 
-        if (eegDataSource == DATASOURCE_GALEA) {
-            topNavBg = color(3, 10, 18);
-            subNavBg = color(33, 49, 65);
-            strokeColor = subNavBg;
-        }
-
         pushStyle();
         //stroke(OPENBCI_DARKBLUE);
         fill(topNavBg);

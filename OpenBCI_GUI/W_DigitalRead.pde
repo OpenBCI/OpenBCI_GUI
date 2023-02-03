@@ -268,7 +268,7 @@ class DigitalReadDot{
     }
 
     void update() {
-        List<double[]> lastData = currentBoard.getData(1);
+        List<double[]> lastData = digitalBoard.getDataWithDigital(1);
         double[] lastSample = lastData.get(0);
         int[] digitalChannels = digitalBoard.getDigitalChannels();
 

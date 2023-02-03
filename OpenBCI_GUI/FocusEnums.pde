@@ -47,8 +47,8 @@ public enum FocusXLim implements IndexingInterface
 
 public enum FocusMetric implements IndexingInterface
 {
-    CONCENTRATION (0, "Concentration", BrainFlowMetrics.CONCENTRATION, "Concentrating"),
-    RELAXATION (1, "Relaxation", BrainFlowMetrics.RELAXATION, "Relaxing");
+    CONCENTRATION (0, "Concentration", BrainFlowMetrics.MINDFULNESS, "Concentrating"),
+    RELAXATION (1, "Relaxation", BrainFlowMetrics.RESTFULNESS, "Relaxing");
 
     private int index;
     private String label;
@@ -92,10 +92,7 @@ public enum FocusMetric implements IndexingInterface
 
 public enum FocusClassifier implements IndexingInterface
 {
-    REGRESSION (0, "Regression", BrainFlowClassifiers.REGRESSION),
-    KNN (1, "KNN", BrainFlowClassifiers.KNN),
-    SVM (2, "SVM", BrainFlowClassifiers.SVM),
-    LDA (3, "LDA", BrainFlowClassifiers.LDA);
+    REGRESSION (0, "Regression", BrainFlowClassifiers.DEFAULT_CLASSIFIER);
 
     private int index;
     private int value;

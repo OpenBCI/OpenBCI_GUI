@@ -26,7 +26,7 @@ public enum BrainFlowStreaming_Boards
     }
 }
 
-class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCapableBoard {
+class BoardBrainFlowStreaming extends BoardBrainFlow {
 
     private BoardIds masterBoardId;
     private String ipAddress;
@@ -91,35 +91,6 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
         // do nothing here
-    }
-
-    @Override
-    public boolean isAccelerometerActive() {
-        if (getAccelerometerChannels().length != 0) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public void setAccelerometerActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public boolean canDeactivateAccelerometer() {
-        return false;
-    }
-
-    @Override
-    public int[] getAccelerometerChannels() {
-        try {
-            return BoardShim.get_accel_channels(masterBoardId.get_code());
-        } catch (BrainFlowError e) {
-            // nothing
-        }
-
-        return new int[0];
     }
 
     @Override

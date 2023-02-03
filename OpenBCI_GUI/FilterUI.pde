@@ -249,8 +249,8 @@ class FilterUIPopup extends PApplet implements Runnable {
             firstColumnHeader = "Start (Hz)";
             secondColumnHeader = "Stop (Hz)";
         } else if (filterSettings.values.brainFlowFilter == BFFilter.BANDSTOP) {
-            firstColumnHeader = "Center (Hz)";
-            secondColumnHeader = "Width (Hz)";
+            firstColumnHeader = "Start (Hz)";
+            secondColumnHeader = "Stop (Hz)";
         }
         text(firstColumnHeader, columnObjX[1], headerHeight + sm_spacer, textfieldWidth, headerHeight);
         text(secondColumnHeader, columnObjX[2], headerHeight + sm_spacer, textfieldWidth, headerHeight);
@@ -432,8 +432,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                 if (filterSettings.values.masterBandStopFilterActive == FilterActiveOnChannel.ON) {
                     updateColor = onColor;
                 }
-                firstColumnTFValue = df.format(filterSettings.values.masterBandStopCenterFreq);
-                secondColumnTFValue = df.format(filterSettings.values.masterBandStopWidth);
+                firstColumnTFValue = df.format(filterSettings.values.masterBandStopStartFreq);
+                secondColumnTFValue = df.format(filterSettings.values.masterBandStopStopFreq);
                 updateFilterType = filterSettings.values.masterBandStopFilterType;
                 updateFilterOrder = filterSettings.values.masterBandStopFilterOrder;
                 break;
@@ -466,8 +466,8 @@ class FilterUIPopup extends PApplet implements Runnable {
                         updateColor = offColor;
                     }
                     //Fetch filter values
-                    firstColumnTFValue = df.format(filterSettings.values.bandStopCenterFreq[chan]);
-                    secondColumnTFValue = df.format(filterSettings.values.bandStopWidth[chan]);
+                    firstColumnTFValue = df.format(filterSettings.values.bandStopStartFreq[chan]);
+                    secondColumnTFValue = df.format(filterSettings.values.bandStopStopFreq[chan]);
                     //Fetch filter type
                     updateFilterType = filterSettings.values.bandStopFilterType[chan];
                     //Fetch order
@@ -704,9 +704,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         switch (filterSettings.values.brainFlowFilter) {
             case BANDSTOP:
                 if (isFirstColumn) {
-                    val = filterSettings.defaultValues.masterBandStopCenterFreq;
+                    val = filterSettings.defaultValues.masterBandStopStartFreq;
                 } else {
-                    val = filterSettings.defaultValues.masterBandStopWidth;
+                    val = filterSettings.defaultValues.masterBandStopStopFreq;
                 }
                 break;
             case BANDPASS:
@@ -726,11 +726,11 @@ class FilterUIPopup extends PApplet implements Runnable {
         switch (filterSettings.values.brainFlowFilter) {
             case BANDSTOP:
                 if (isFirstColumn) {
-                    filterSettings.values.masterBandStopCenterFreq = valAsDouble;
-                    Arrays.fill(filterSettings.values.bandStopCenterFreq, filterSettings.values.masterBandStopCenterFreq);
+                    filterSettings.values.masterBandStopStartFreq = valAsDouble;
+                    Arrays.fill(filterSettings.values.bandStopStartFreq, filterSettings.values.masterBandStopStartFreq);
                 } else {
-                    filterSettings.values.masterBandStopWidth = valAsDouble;
-                    Arrays.fill(filterSettings.values.bandStopWidth, filterSettings.values.masterBandStopWidth);
+                    filterSettings.values.masterBandStopStopFreq = valAsDouble;
+                    Arrays.fill(filterSettings.values.bandStopStopFreq, filterSettings.values.masterBandStopStopFreq);
                 }
                 break;
             case BANDPASS:
@@ -755,9 +755,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         switch (filterSettings.values.brainFlowFilter) {
             case BANDSTOP:
                 if (isFirstColumn) {
-                    val = filterSettings.defaultValues.bandStopCenterFreq[chan];
+                    val = filterSettings.defaultValues.bandStopStartFreq[chan];
                 } else {
-                    val = filterSettings.defaultValues.bandStopWidth[chan];
+                    val = filterSettings.defaultValues.bandStopStopFreq[chan];
                 }
                 break;
             case BANDPASS:
@@ -777,9 +777,9 @@ class FilterUIPopup extends PApplet implements Runnable {
         switch (filterSettings.values.brainFlowFilter) {
             case BANDSTOP:
                 if (isFirstColumn) {
-                    filterSettings.values.bandStopCenterFreq[chan] = valAsDouble;
+                    filterSettings.values.bandStopStartFreq[chan] = valAsDouble;
                 } else {
-                    filterSettings.values.bandStopWidth[chan] = valAsDouble;
+                    filterSettings.values.bandStopStopFreq[chan] = valAsDouble;
                 }
                 break;
             case BANDPASS:

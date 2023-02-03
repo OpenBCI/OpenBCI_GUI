@@ -1,3 +1,48 @@
+class BoardGanglionNative extends BoardGanglion {
+
+    private PacketLossTrackerGanglionBLE packetLossTrackerGanglionNative;
+    private String boardName;
+
+    public BoardGanglionNative() {
+        super();
+    }
+
+    public BoardGanglionNative(String name) {
+        super();
+        this.boardName = name;
+    }
+
+    @Override
+    protected BrainFlowInputParams getParams() {
+        BrainFlowInputParams params = new BrainFlowInputParams();
+        params.serial_number = boardName;
+        return params;
+    }
+
+    @Override
+    public BoardIds getBoardId() {
+        return BoardIds.GANGLION_NATIVE_BOARD;
+    }
+
+    @Override
+    public void setAccelerometerActive(boolean active) {
+        super.setAccelerometerActive(active);
+
+        if (packetLossTrackerGanglionNative != null) {
+            // notify the packet loss tracker, because the sample indices change based
+            // on whether accel is active or not
+            packetLossTrackerGanglionNative.setAccelerometerActive(active);
+        }
+    }
+
+    @Override
+    protected PacketLossTracker setupPacketLossTracker() {
+        packetLossTrackerGanglionNative = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        packetLossTrackerGanglionNative.setAccelerometerActive(isAccelerometerActive());
+        return packetLossTrackerGanglionNative;
+    }
+};
+
 class BoardGanglionBLE extends BoardGanglion {
 
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
@@ -212,5 +257,15 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
+    }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
+    }
+
+    @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
     }
 };
