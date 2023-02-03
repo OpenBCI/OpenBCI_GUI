@@ -45,7 +45,7 @@ class BoardBrainFlowStreaming extends BoardBrainFlow {
         BrainFlowInputParams params = new BrainFlowInputParams();
         params.ip_address = ipAddress;
         params.ip_port = ipPort;
-        params.other_info = Integer.toString(masterBoardId.get_code(), 10);
+        params.master_board = masterBoardId.get_code();
         return params;
     }
 
