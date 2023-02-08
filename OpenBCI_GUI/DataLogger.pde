@@ -145,19 +145,15 @@ class DataLogger {
             closeLogFile();
         }
         //open the new file
-        try {
-            fileWriterODF = new DataWriterODF(sessionName, _fileName);
-            if (currentBoard instanceof AuxDataBoard) {
-                if (fileWriterAuxODF != null)
-                    fileWriterAuxODF.closeFile();
-                fileWriterAuxODF = new DataWriterAuxODF(sessionName, _fileName);
-            }
-
-            output_fname = fileWriterODF.fname;
-            println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
-        } catch (Exception e) {
-            e.printStackTrace();
+        fileWriterODF = new DataWriterODF(sessionName, _fileName);
+        if (currentBoard instanceof AuxDataBoard) {
+            if (fileWriterAuxODF != null)
+                fileWriterAuxODF.closeFile();
+            fileWriterAuxODF = new DataWriterAuxODF(sessionName, _fileName);
         }
+
+        output_fname = fileWriterODF.fname;
+        println("OpenBCI_GUI: openNewLogFile: opened ODF output file: " + output_fname); //Print filename of new ODF file to console
     }
 
     private void closeLogFile() {
