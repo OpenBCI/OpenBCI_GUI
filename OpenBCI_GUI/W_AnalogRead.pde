@@ -94,8 +94,11 @@ class W_AnalogRead extends Widget {
     void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
-        if(currentBoard instanceof DataSourcePlayback && !((DataSourcePlayback)currentBoard).isAnalogActive()) {
-            return;
+        if (currentBoard instanceof DataSourcePlayback) {
+            if (((DataSourcePlayback)currentBoard) instanceof AnalogCapableBoard
+                && (!((AnalogCapableBoard)currentBoard).isAnalogActive())) {
+                    return;
+            }
         }
 
         //update channel bars ... this means feeding new EEG data into plots

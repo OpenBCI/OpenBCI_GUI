@@ -1,19 +1,16 @@
-
-//write data to a text file
 public class DataWriterODF {
     private PrintWriter output;
     private String fname;
     private int rowsWritten;
     private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-
-    private Board streamingBoard;
+    protected String fileNamePrependString = "OpenBCI-RAW-";
+    protected String headerFirstLineString = "%OpenBCI Raw EXG Data";
 
     //variation on constructor to have custom name
     DataWriterODF(String _sessionName, String _fileName) {
-        streamingBoard = (Board)currentBoard;
         settings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + _sessionName + File.separator);
         fname = settings.getSessionPath();
-        fname += "OpenBCI-RAW-";
+        fname += fileNamePrependString;
         fname += _fileName;
         fname += ".txt";
         output = createWriter(fname);        //open the file
@@ -22,12 +19,12 @@ public class DataWriterODF {
     }
 
     public void writeHeader() {
-        output.println("%OpenBCI Raw EEG Data");
-        output.println("%Number of channels = " + nchan);
-        output.println("%Sample Rate = " + streamingBoard.getSampleRate() + " Hz");
-        output.println("%Board = " + streamingBoard.getClass().getName());
+        output.println(headerFirstLineString);
+        output.println("%Number of channels = " + getNumberOfChannels());
+        output.println("%Sample Rate = " + getSamplingRate() + " Hz");
+        output.println("%Board = " + getUnderlyingBoardClass());
 
-        String[] colNames = streamingBoard.getChannelNames();
+        String[] colNames = getChannelNames();
         
         for (int i=0; i<colNames.length; i++) {
             output.print(colNames[i]);
@@ -46,7 +43,7 @@ public class DataWriterODF {
                 output.print(", ");
             }
 
-            int timestampChan = streamingBoard.getTimestampChannel();
+            int timestampChan = getTimestampChannel();
             // *1000 to convert from seconds to milliserconds
             long timestampMS = (long)(data[timestampChan][iSample] * 1000.0);
 
@@ -64,4 +61,25 @@ public class DataWriterODF {
     public int getRowsWritten() {
         return rowsWritten;
     }
+
+    protected int getNumberOfChannels() {
+        return nchan;
+    }
+
+    protected int getSamplingRate() {
+        return ((Board)currentBoard).getSampleRate();
+    }
+
+    protected String getUnderlyingBoardClass() {
+        return ((Board)currentBoard).getClass().getName();
+    }
+
+    protected String[] getChannelNames() {
+        return ((Board)currentBoard).getChannelNames();
+    }
+
+    protected int getTimestampChannel() {
+        return ((Board)currentBoard).getTimestampChannel();
+    }
+    
 };
