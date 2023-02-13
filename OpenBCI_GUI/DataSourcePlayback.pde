@@ -303,7 +303,16 @@ public DataSourcePlayback getDataSourcePlaybackClassFromFile(String path) {
     
     switch (underlyingBoardClassName) {
         case ("BoardCytonSerial"):
+        case ("BoardCytonSerialDaisy"):
+        case ("BoardCytonWifi"):
+        case ("BoardCytonWifiDaisy"):
             return new DataSourcePlaybackCyton(path);
+        case ("BoardGanglionBLE"):
+        case ("BoardGanglionNative"):
+        case ("BoardGanglionWifi"):
+            return new DataSourcePlaybackGanglion(path);
+        case ("BoardBrainFlowSynthetic"):
+            return new DataSourcePlaybackSynthetic(path);
         default:
             return null;
     }

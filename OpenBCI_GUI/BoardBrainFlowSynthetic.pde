@@ -2,13 +2,9 @@ import brainflow.*;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-class BoardBrainFlowSynthetic extends BoardBrainFlow
-implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryInfoCapableBoard {
+class BoardBrainFlowSynthetic extends BoardBrainFlow implements AccelerometerCapableBoard {
 
     private int[] accelChannelsCache = null;
-    private int[] edaChannelsCache = null;
-    private int[] ppgChannelsCache = null;
-    private Integer batteryChannelCache = null;
     private int numChannels = 0;
     private volatile boolean[] activeChannels = null;
 
@@ -97,80 +93,12 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
         return accelChannelsCache;
     }
 
-    @Override
-    public boolean isPPGActive() {
-        return true;
-    }
-
-    @Override
-    public void setPPGActive(boolean active) {
-        outputWarn("PPG is always active for BrainflowSyntheticBoard");
-    }
-
-    @Override
-    public int[] getPPGChannels() {
-        if(ppgChannelsCache == null) {
-            try {
-                ppgChannelsCache = BoardShim.get_ppg_channels(getBoardIdInt());
-
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-            }
-        }
-
-        return ppgChannelsCache;
-    }
-
-    @Override
-    public boolean isEDAActive() {
-        return true;
-    }
-
-    @Override
-    public void setEDAActive(boolean active) {
-        outputWarn("EDA is always active for BrainflowSyntheticBoard");
-    }
-
-    @Override
-    public int[] getEDAChannels() {
-        if (edaChannelsCache == null) {
-            try {
-                edaChannelsCache = BoardShim.get_eda_channels(getBoardIdInt());
-
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-            }
-        }
-
-        return edaChannelsCache;
-    }
-
-    @Override
-    public Integer getBatteryChannel() {
-        if (batteryChannelCache == null) {
-            try {
-                batteryChannelCache = BoardShim.get_battery_channel(getBoardIdInt());
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-                
-            }
-        }
-
-        return batteryChannelCache;
-    }
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<getEDAChannels().length; i++) {
-            channelNames[getEDAChannels()[i]] = "EDA Channel " + i;
-        }
-        for (int i=0; i<getPPGChannels().length; i++) {
-            channelNames[getPPGChannels()[i]] = "PPG Channel " + i;
-        }
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-        channelNames[getBatteryChannel()] = "Battery Info Channel";
     }
 
     @Override
@@ -187,37 +115,7 @@ implements AccelerometerCapableBoard, PPGCapableBoard, EDACapableBoard, BatteryI
     }
 
     @Override
-    public List<double[]> getDataWithPPG(int maxSamples) {
-        return getData(maxSamples);
-    }
-
-    @Override
-    public List<double[]> getDataWithEDA(int maxSamples) {
-        return getData(maxSamples);
-    }
-
-    @Override
-    public List<double[]> getDataWithBatteryInfo(int maxSamples) {
-        return getData(maxSamples);
-    }
-
-    @Override
     public int getAccelSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getPPGSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getEDASampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getBatteryInfoSampleRate() {
         return getSampleRate();
     }
 };

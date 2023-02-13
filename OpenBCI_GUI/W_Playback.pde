@@ -224,7 +224,7 @@ boolean playbackFileSelected (String longName, String shortName) {
     try {
         BufferedReader brTest = new BufferedReader(new FileReader(longName));
         String line = brTest.readLine();
-        if (line.equals("%OpenBCI Raw EEG Data")) {
+        if (line.equals("%OpenBCI Raw EEG Data") || line.equals("%OpenBCI Raw EXG Data")) {
             verbosePrint("PLAYBACK: Found OpenBCI Header in File!");
             sdData_fname = "N/A";
             for (int i = 0; i < 3; i++) {
