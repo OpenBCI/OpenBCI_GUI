@@ -492,6 +492,8 @@ class ChannelBar {
 
     boolean drawVoltageValue;
 
+    private int indicatorPosition = 0;
+
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
         cbCp5 = new ControlP5(ourApplet);
@@ -688,6 +690,8 @@ class ChannelBar {
         yAxisMin.draw();
         yAxisMax.draw();
 
+        drawUpdateIndicator();
+
         try {
             cbCp5.draw();
         } catch (NullPointerException e) {
@@ -854,6 +858,29 @@ class ChannelBar {
             customYLim(yAxisMin, yAxisLowerLim);
             customYLim(yAxisMax, yAxisUpperLim);
         }
+    }
+
+    //For left-to-right EEG TimeSeries mode, draw a line that shows the part of the plot that is updating
+    private void drawUpdateIndicator() {
+        if (!currentBoard.isStreaming()) {
+            return;
+        }
+
+        double[][] frameData = currentBoard.getFrameData();
+        int numNewSamplesThisFrame = frameData[channelIndex].length;
+        int xMinimum = x + uiSpaceWidth;
+        int xMaximum = x + w;
+        indicatorPosition += numNewSamplesThisFrame;
+        indicatorPosition -= indicatorPosition > nPointsBasedOnDataSource() ? nPointsBasedOnDataSource() : 0;
+        float indicatorMappedPosition = map(indicatorPosition, 0, nPointsBasedOnDataSource(), xMinimum, xMaximum);
+        int indicatorYTop = y;
+        int indicatorYBottom = y + h;
+
+        pushStyle();
+        stroke(0, 255, 0);
+        line(indicatorMappedPosition, indicatorYTop, indicatorMappedPosition, indicatorYBottom);
+        popStyle();
+        
     }
 };
 
