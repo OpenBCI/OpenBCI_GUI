@@ -891,21 +891,11 @@ class ChannelBar {
     private void updatePlotPointsLeftToRightMode() {
         autoscaleMax = -Float.MAX_VALUE;
         autoscaleMin = Float.MAX_VALUE;
-        // update data in plot
         int dataBufferLength = dataProcessingFilteredBuffer[channelIndex].length;
         int dataBufferStart =  dataBufferLength - nPoints;
-        if (channelIndex == 0) {
-            //println(dataBufferLength);
-        }
         if (dataBufferLength >= nPoints) {
             for (int i = dataBufferStart; i < dataBufferLength; i++) {
                 int relativePosition = i - dataBufferStart;
-                
-                //i += min(indicatorPosition % nPoints, nPoints);
-                
-
-                //float time = -(float)numSeconds - ((float)relativePosition) * timeBetweenPoints;
-                //float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
                 int offset = min(indicatorPosition, nPoints);
                 int relativePositionWithOffset = (relativePosition + offset) % nPoints;
 
@@ -917,7 +907,6 @@ class ChannelBar {
                 channelPoints.set(relativePositionWithOffset, time, filt_uV_value, "");
 
                 // update channel point in place
-                //channelPoints.set(relativePosition, time, filt_uV_value, "");
                 autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
                 autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
             }
