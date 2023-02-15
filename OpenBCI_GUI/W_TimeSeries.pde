@@ -493,6 +493,7 @@ class ChannelBar {
     boolean drawVoltageValue;
 
     private int indicatorPosition = 0;
+    private boolean leftToRightMode = true;
 
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
@@ -590,7 +591,11 @@ class ChannelBar {
         impValue.setText(fmt);
 
         // update data in plot
-        updatePlotPoints();
+        if (leftToRightMode) {
+            updatePlotPointsLeftToRightMode();
+        } else {
+            updatePlotPoints();
+        }
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
             onOffButton.setColorBackground(channelColors[channelIndex%8]); // power down == false, set color to vibrant
@@ -881,6 +886,44 @@ class ChannelBar {
         line(indicatorMappedPosition, indicatorYTop, indicatorMappedPosition, indicatorYBottom);
         popStyle();
         
+    }
+
+    private void updatePlotPointsLeftToRightMode() {
+        autoscaleMax = -Float.MAX_VALUE;
+        autoscaleMin = Float.MAX_VALUE;
+        // update data in plot
+        int dataBufferLength = dataProcessingFilteredBuffer[channelIndex].length;
+        int dataBufferStart =  dataBufferLength - nPoints;
+        if (channelIndex == 0) {
+            //println(dataBufferLength);
+        }
+        if (dataBufferLength >= nPoints) {
+            for (int i = dataBufferStart; i < dataBufferLength; i++) {
+                int relativePosition = i - dataBufferStart;
+                
+                //i += min(indicatorPosition % nPoints, nPoints);
+                
+
+                //float time = -(float)numSeconds - ((float)relativePosition) * timeBetweenPoints;
+                //float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
+                int offset = min(indicatorPosition, nPoints);
+                int relativePositionWithOffset = (relativePosition + offset) % nPoints;
+
+
+                float time = -(float)numSeconds + (float)(relativePositionWithOffset)*timeBetweenPoints;
+                float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
+
+                // update channel point in place
+                channelPoints.set(relativePositionWithOffset, time, filt_uV_value, "");
+
+                // update channel point in place
+                //channelPoints.set(relativePosition, time, filt_uV_value, "");
+                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
+                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
+            }
+            applyAutoscale();
+            plot.setPoints(channelPoints); //reset the plot with updated channelPoints
+        }
     }
 };
 
