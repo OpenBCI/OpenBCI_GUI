@@ -492,6 +492,9 @@ class ChannelBar {
 
     boolean drawVoltageValue;
 
+    private int indicatorPosition = 0;
+    private boolean leftToRightMode = true;
+
     ChannelBar(PApplet _parent, int _channelIndex, int _x, int _y, int _w, int _h, PImage expand_default, PImage expand_hover, PImage expand_active, PImage contract_default, PImage contract_hover, PImage contract_active) {
         
         cbCp5 = new ControlP5(ourApplet);
@@ -588,7 +591,11 @@ class ChannelBar {
         impValue.setText(fmt);
 
         // update data in plot
-        updatePlotPoints();
+        if (leftToRightMode) {
+            updatePlotPointsLeftToRightMode();
+        } else {
+            updatePlotPoints();
+        }
 
         if(currentBoard.isEXGChannelActive(channelIndex)) {
             onOffButton.setColorBackground(channelColors[channelIndex%8]); // power down == false, set color to vibrant
@@ -687,6 +694,8 @@ class ChannelBar {
         yAxisMax.setVisible(b);
         yAxisMin.draw();
         yAxisMax.draw();
+
+        drawUpdateIndicator();
 
         try {
             cbCp5.draw();
@@ -853,6 +862,56 @@ class ChannelBar {
             //Update button text
             customYLim(yAxisMin, yAxisLowerLim);
             customYLim(yAxisMax, yAxisUpperLim);
+        }
+    }
+
+    //For left-to-right EEG TimeSeries mode, draw a line that shows the part of the plot that is updating
+    private void drawUpdateIndicator() {
+        if (!currentBoard.isStreaming()) {
+            return;
+        }
+
+        double[][] frameData = currentBoard.getFrameData();
+        int numNewSamplesThisFrame = frameData[channelIndex].length;
+        int xMinimum = x + uiSpaceWidth;
+        int xMaximum = x + w;
+        indicatorPosition += numNewSamplesThisFrame;
+        indicatorPosition -= indicatorPosition > nPointsBasedOnDataSource() ? nPointsBasedOnDataSource() : 0;
+        float indicatorMappedPosition = map(indicatorPosition, 0, nPointsBasedOnDataSource(), xMinimum, xMaximum);
+        int indicatorYTop = y;
+        int indicatorYBottom = y + h;
+
+        pushStyle();
+        stroke(0, 255, 0);
+        line(indicatorMappedPosition, indicatorYTop, indicatorMappedPosition, indicatorYBottom);
+        popStyle();
+        
+    }
+
+    private void updatePlotPointsLeftToRightMode() {
+        autoscaleMax = -Float.MAX_VALUE;
+        autoscaleMin = Float.MAX_VALUE;
+        int dataBufferLength = dataProcessingFilteredBuffer[channelIndex].length;
+        int dataBufferStart =  dataBufferLength - nPoints;
+        if (dataBufferLength >= nPoints) {
+            for (int i = dataBufferStart; i < dataBufferLength; i++) {
+                int relativePosition = i - dataBufferStart;
+                int offset = min(indicatorPosition, nPoints);
+                int relativePositionWithOffset = (relativePosition + offset) % nPoints;
+
+
+                float time = -(float)numSeconds + (float)(relativePositionWithOffset)*timeBetweenPoints;
+                float filt_uV_value = dataProcessingFilteredBuffer[channelIndex][i];
+
+                // update channel point in place
+                channelPoints.set(relativePositionWithOffset, time, filt_uV_value, "");
+
+                // update channel point in place
+                autoscaleMax = Math.max(filt_uV_value, autoscaleMax);
+                autoscaleMin = Math.min(filt_uV_value, autoscaleMin);
+            }
+            applyAutoscale();
+            plot.setPoints(channelPoints); //reset the plot with updated channelPoints
         }
     }
 };
