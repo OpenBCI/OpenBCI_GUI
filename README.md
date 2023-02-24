@@ -1,7 +1,7 @@
 # The OpenBCI GUI
 
 <p align="center">
-  <img alt="banner" src="/images/GUI-V4-Screenshot.jpg/" width="600">
+  <img alt="banner" src="images/GUI-V4-Screenshot.jpg" width="600">
 </p>
 <p align="center" href="">
   Provide a stable and powerful interface for any OpenBCI device
