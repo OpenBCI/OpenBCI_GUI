@@ -97,6 +97,7 @@ final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via 
 final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
 final int DATASOURCE_STREAMING = 5;
+final int DATASOURCE_BRAINFLOW_PLAYBACK = 6;
 public int eegDataSource = -1; //default to none of the options
 final static int NUM_ACCEL_DIMS = 3;
 
@@ -625,6 +626,13 @@ void initSystem() {
                     controlPanel.streamingBoardBox.getPort()
                     );
             println("OpenBCI_GUI: Init session using Streaming data source");
+        case DATASOURCE_BRAINFLOW_PLAYBACK:
+            currentBoard = new BoardBrainFlowPlayback(
+                    // todo get from UI
+                    BoardIds.SYNTHETIC_BOARD,
+                    "D:\\workspace\\brainflow\\python_package\\examples\\test.txt" 
+                    );
+            println("OpenBCI_GUI: Init session using BrainFlow Playback data source");
         default:
             break;
     }
