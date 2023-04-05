@@ -4,6 +4,7 @@
 - Fix NullPointerException when no Audio Device is available from the OS (Windows and Linux) #1109 #1086
 - Fix LSL AvgBandPower data type only one value is sent #1098
 - Fix error starting BrainFlow Streaming Board from external process #1102
+- Fix Hardware Settings button not clickable after resizing app #1132
 
 ### Improvements
 - Update to BrainFlow 5.6.1
