@@ -286,6 +286,9 @@ class W_timeSeries extends Widget {
     void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
+        //Very important to allow users to interact with objects after app resize
+        tscp5.setGraphics(ourApplet, 0,0);
+        
         tsChanSelect.screenResized(pApplet);
 
         xF = float(x); //float(int( ... is a shortcut for rounding the float down... so that it doesn't creep into the 1px margin
