@@ -787,7 +787,9 @@ class ChannelBar {
     }
 
     private boolean isBottomChannel() {
-        return channelIndex == nchan - 1;
+        int numActiveChannels = w_timeSeries.tsChanSelect.activeChan.size();
+        boolean isLastChannel = channelIndex ==  w_timeSeries.tsChanSelect.activeChan.get(numActiveChannels - 1);
+        return isLastChannel;
     }
 
     public void mousePressed() {

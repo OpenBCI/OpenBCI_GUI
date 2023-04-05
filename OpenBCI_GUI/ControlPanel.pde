@@ -47,8 +47,6 @@ class ControlPanel {
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
-    GaleaBox galeaBox;
-    public SessionDataBox dataLogBoxGalea;
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
     public SessionDataBox dataLogBoxGanglion;
@@ -60,7 +58,6 @@ class ControlPanel {
     SDBox sdBox;
     BrainFlowStreamerBox bfStreamerBoxCyton;
     BrainFlowStreamerBox bfStreamerBoxGanglion;
-    BrainFlowStreamerBox bfStreamerBoxGalea;
     BrainFlowStreamerBox bfStreamerBoxSynthetic;
 
     ChannelPopup channelPopup;
@@ -111,10 +108,6 @@ class ControlPanel {
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
-
-        galeaBox = new GaleaBox(x + w, dataSourceBox.y, w, h, globalPadding);
-        dataLogBoxGalea = new SessionDataBox(x + w, (galeaBox.y + galeaBox.h), w, h, globalPadding, DATASOURCE_GALEA, dataLogger.getDataLoggerOutputFormat(), "sessionNameGalea");
-        bfStreamerBoxGalea = new BrainFlowStreamerBox(x + w, (dataLogBoxGalea.y + dataLogBoxGalea.h), w, h, globalPadding, "bfStreamerGalea");
 
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         bfStreamerBoxSynthetic = new BrainFlowStreamerBox(x + w, (synthChannelCountBox.y + synthChannelCountBox.h), w, h, globalPadding, "bfStreamerSynthetic");
@@ -172,14 +165,10 @@ class ControlPanel {
         recentPlaybackBox.update();
         playbackFileBox.update();
 
-        dataLogBoxGalea.update();
-        galeaBox.update();
-
         streamingBoardBox.update();
 
         bfStreamerBoxCyton.update();
         bfStreamerBoxGanglion.update();
-        bfStreamerBoxGalea.update();
         bfStreamerBoxSynthetic.update();
 
         sdBox.update();
@@ -243,11 +232,6 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
-            } else if (eegDataSource == DATASOURCE_GALEA) {
-                dataLogBoxGalea.y = galeaBox.y + galeaBox.h;  
-                dataLogBoxGalea.draw();
-                bfStreamerBoxGalea.draw();
-                galeaBox.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 synthChannelCountBox.draw();
                 bfStreamerBoxSynthetic.draw();
@@ -256,7 +240,7 @@ class ControlPanel {
                     interfaceBoxGanglion.draw();
                 } else {
                     interfaceBoxGanglion.draw();
-                    if (selectedProtocol == BoardProtocol.BLED112) {
+                    if (selectedProtocol == BoardProtocol.BLED112 || selectedProtocol == BoardProtocol.NATIVE_BLE) {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
@@ -305,14 +289,30 @@ class ControlPanel {
         channelPopup.setClicked(false);
     }
 
+    public void fetchSessionNameTextfieldAllBoards() {
+        String s = "";
+        if (eegDataSource == DATASOURCE_CYTON) {
+            // Store the current text field value of "Session Name" to be passed along to dataFiles
+            s = dataLogBoxCyton.getSessionTextfieldString();
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
+            s = dataLogBoxGanglion.getSessionTextfieldString();
+        } else {
+            s = directoryManager.getFileNameDateTime();
+        }
+        dataLogger.setSessionName(s);
+        StringBuilder sb = new StringBuilder(directoryManager.getRecordingsPath());
+        sb.append("OpenBCISession_");
+        sb.append(dataLogger.getSessionName());
+        sb.append(File.separator);
+        settings.setSessionPath(sb.toString());
+    }
+
     public void setDataLoggerOutputs() {
         if (eegDataSource == DATASOURCE_CYTON) {
             // Store the current text field value of "Session Name" to be passed along to dataFiles
             dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
-        } else if (eegDataSource == DATASOURCE_GALEA) {
-            dataLogger.setSessionName(controlPanel.dataLogBoxGalea.getSessionTextfieldString());
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             dataLogger.setSessionName(directoryManager.getFileNameDateTime());
         }
@@ -327,8 +327,6 @@ class ControlPanel {
             brainflowStreamer = bfStreamerBoxCyton.getBrainFlowStreamerString();
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             brainflowStreamer = bfStreamerBoxGanglion.getBrainFlowStreamerString();
-        } else if (eegDataSource == DATASOURCE_GALEA) {
-            brainflowStreamer = bfStreamerBoxGalea.getBrainFlowStreamerString();
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             brainflowStreamer = bfStreamerBoxSynthetic.getBrainFlowStreamerString();
         }
@@ -340,8 +338,6 @@ class ControlPanel {
             b = bfStreamerBoxCyton.getIsBrainFlowStreamerDefaultLocation();
         } else if (eegDataSource == DATASOURCE_GANGLION) {
             b = bfStreamerBoxGanglion.getIsBrainFlowStreamerDefaultLocation();
-        } else if (eegDataSource == DATASOURCE_GALEA) {
-            b = bfStreamerBoxGalea.getIsBrainFlowStreamerDefaultLocation();
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
             b = bfStreamerBoxSynthetic.getIsBrainFlowStreamerDefaultLocation();
         }
@@ -364,7 +360,7 @@ class DataSourceBox {
     private MenuList sourceList;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = galeaEnabled ? 6 : 5;
+        numItems = 5;
         x = _x;
         y = _y;
         w = _w;
@@ -401,9 +397,6 @@ class DataSourceBox {
         sourceList.setPosition(_x, _y);
         // sourceList.itemHeight = 28;
         // sourceList.padding = 9;
-        if (galeaEnabled) {
-            sourceList.addItem("GALEA (live)", DATASOURCE_GALEA);
-        }
         sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
         sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
         sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
@@ -433,8 +426,6 @@ class DataSourceBox {
                         controlPanel.wifiBox.setDefaultToDynamicIP();
                     } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                         //GUI auto detects number of channels for playback when file is selected
-                    } else if (eegDataSource == DATASOURCE_GALEA) {
-                        selectedSamplingRate = 250; //default sampling rate
                     } else if (eegDataSource == DATASOURCE_STREAMING) {
                         //do nothing for now
                     } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
@@ -733,12 +724,46 @@ class BLEBox {
         bleBox_cp5.draw();
     }
 
-    private void refreshGanglionBLEList() {
+    private void refreshGanglionNativeList() {
         if (bleIsRefreshing) {
-            output("BLE Devices Refreshing in progress");
+            output("Search for Ganglions using Native Bluetooth is in progress.");
             return;
         }
-        output("BLE Devices Refreshing");
+        output("Refreshing available Ganglions using Native Bluetooth...");
+        bleList.items.clear();
+        
+        Thread thread = new Thread(){
+            public void run(){
+                refreshBLE.getCaptionLabel().setText("SEARCHING...");
+                bleIsRefreshing = true;
+
+                try {
+                    bleMACAddrMap = GUIHelper.scan_for_ganglions (3);
+                    for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
+                    {
+                        bleList.addItem(entry.getKey(),  entry.getValue(), "");
+                        bleList.updateMenu();
+                        println("Found Ganglion Board: " + entry.getKey() + " " + entry.getValue());
+                    }
+                } catch (GanglionError e)
+                {
+                    e.printStackTrace();
+                }
+
+                refreshBLE.getCaptionLabel().setText("START SEARCH");
+                bleIsRefreshing = false;
+            }
+        };
+
+        thread.start();
+    }
+
+    private void refreshGanglionBLEList() {
+        if (bleIsRefreshing) {
+            output("Search for Ganglions using BLED112 Dongle is in progress.");
+            return;
+        }
+        output("Refreshing available Ganglions using BLED112 Dongle...");
         bleList.items.clear();
         
         Thread thread = new Thread(){
@@ -788,7 +813,11 @@ class BLEBox {
         refreshBLE = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
         refreshBLE.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                refreshGanglionBLEList();
+                if (selectedProtocol == BoardProtocol.BLED112) {
+                    refreshGanglionBLEList();
+                } else {
+                    refreshGanglionNativeList();
+                } 
             }
         });
     }
@@ -1123,6 +1152,7 @@ class InterfaceBoxCyton {
 class InterfaceBoxGanglion {
     public int x, y, w, h, padding; //size and position
     private ControlP5 ifbg_cp5;
+    private Button protocolGanglionNativeBLE;
     private Button protocolBLED112Ganglion;
     private Button protocolWifiGanglion;
 
@@ -1131,7 +1161,7 @@ class InterfaceBoxGanglion {
         y = _y;
         w = _w;
         padding = _padding;
-        h = (24 + _padding) * 3;
+        h = (24 + _padding) * 4;
         int buttonHeight = 24;
 
             //Instantiate local cp5 for this box
@@ -1139,8 +1169,9 @@ class InterfaceBoxGanglion {
         ifbg_cp5.setGraphics(ourApplet, 0,0);
         ifbg_cp5.setAutoDraw(false);
 
-        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
-        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
+        createGanglionNativeBLEButton("protocolNativeBLEGanglion", "Bluetooth (Native)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
+        createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + (padding * 4) + 24 + 4, w - padding * 2, 24);
+        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + (padding * 5) + (24 * 2) + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1170,6 +1201,21 @@ class InterfaceBoxGanglion {
         return b;
     }
 
+    private void createGanglionNativeBLEButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
+        protocolGanglionNativeBLE = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
+        protocolGanglionNativeBLE.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                controlPanel.wifiBox.wifiList.items.clear();
+                controlPanel.bleBox.bleList.items.clear();
+                selectedProtocol = BoardProtocol.NATIVE_BLE;
+                controlPanel.bleBox.refreshGanglionNativeList();
+                protocolGanglionNativeBLE.setOn();
+                protocolBLED112Ganglion.setOff();
+                protocolWifiGanglion.setOff();
+            }
+        });
+    }
+
     private void createBLED112Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
         protocolBLED112Ganglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolBLED112Ganglion.onRelease(new CallbackListener() {
@@ -1178,6 +1224,7 @@ class InterfaceBoxGanglion {
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.BLED112;
                 controlPanel.bleBox.refreshGanglionBLEList();
+                protocolGanglionNativeBLE.setOff();
                 protocolBLED112Ganglion.setOn();
                 protocolWifiGanglion.setOff();
             }
@@ -1191,6 +1238,7 @@ class InterfaceBoxGanglion {
                 controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.WIFI;
+                protocolGanglionNativeBLE.setOff();
                 protocolBLED112Ganglion.setOff();
                 protocolWifiGanglion.setOn();
             }
@@ -1198,6 +1246,7 @@ class InterfaceBoxGanglion {
     }
 
     public void resetGanglionSelectedProtocol() {
+        protocolGanglionNativeBLE.setOff();
         protocolBLED112Ganglion.setOff();
         protocolWifiGanglion.setOff();
         selectedProtocol = BoardProtocol.NONE;
@@ -2035,185 +2084,6 @@ class RecentPlaybackBox {
                 }
             }
         });
-    }
-};
-
-class GaleaBox {
-    public int x, y, w, h, padding; //size and position
-    private final String boxLabel = "GALEA CONFIG";
-    private final String ipAddressLabel = "IP Address";
-    private final String sampleRateLabel = "Sample Rate";
-    //private String ipAddress = "192.168.4.1";
-    private String ipAddress = "127.0.0.1"; //For use with testing emulator
-    private ControlP5 localCP5;
-    private Textfield ipAddressTF;
-    private ScrollableList srList;
-    private ScrollableList modeList;
-    private final int titleH = 14;
-    private final int uiElementH = 24;
-
-    GaleaBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = titleH + uiElementH*3 + _padding*5;
-        padding = _padding;
-        localCP5 = new ControlP5(ourApplet);
-        localCP5.setGraphics(ourApplet, 0,0);
-        localCP5.setAutoDraw(false); //Setting this saves code as cp5 elements will only be drawn/visible when [cp5].draw() is called
-        createIPTextfield();
-        createModeListDropdown();
-        createSampleRateDropdown(); //Create this last so it draws on top of Mode List Dropdown
-    }
-
-    public void update() {
-        copyPaste.checkForCopyPaste(ipAddressTF);
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        //draw flexible grey background for this box
-        rect(x, y, w, h + modeList.getHeight() - padding*2);
-        popStyle();
-
-        pushStyle();
-        fill(OPENBCI_DARKBLUE);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        //draw text labels
-        text(boxLabel, x + padding, y + padding);
-        textAlign(LEFT, TOP);
-        textFont(p4, 14);
-        text(sampleRateLabel, x + padding, srList.getPosition()[1] + 2);
-        text(ipAddressLabel, x + padding, ipAddressTF.getPosition()[1] + 2);
-        popStyle();
-        
-        //draw cp5 last, on top of everything in this box
-        localCP5.draw();
-    }
-
-    private void createIPTextfield() {
-        ipAddressTF = localCP5.addTextfield("ipAddress")
-            .setPosition(x + w - padding*2 - 60*2, y + 16 + padding*2)
-            .setCaptionLabel("")
-            .setSize(120 + padding, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(ipAddress)
-            .align(5, 10, 20, 40)
-            .setAutoClear(false) //Don't clear textfield when pressing Enter key
-            ;
-        //Clear textfield on double click
-        ipAddressTF.onDoublePress(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                output("ControlPanel: Enter IP address of the Galea you wish to connect to.");
-                ipAddressTF.clear();
-            }
-        });
-        ipAddressTF.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if ((theEvent.getAction() == ControlP5.ACTION_BROADCAST) || (theEvent.getAction() == ControlP5.ACTION_LEAVE)) {
-                    ipAddress = ipAddressTF.getText();
-                    ipAddressTF.setFocus(false);
-                }
-            }
-        });
-    }
-
-    private ScrollableList createDropdown(String name, GaleaSettingsEnum[] enumValues){
-        ScrollableList list = localCP5.addScrollableList(name)
-            .setOpen(false)
-            .setColorBackground(OPENBCI_BLUE) // text field bg color
-            .setColorValueLabel(color(255))       // text color
-            .setColorCaptionLabel(color(255))
-            .setColorForeground(color(125))    // border color when not selected
-            .setColorActive(BUTTON_PRESSED)       // border color when selected
-            .setOutlineColor(150)
-            .setSize(w - padding*2, uiElementH)//temporary size
-            .setBarHeight(24) //height of top/primary bar
-            .setItemHeight(24) //height of all item/dropdown bars
-            .setVisible(true)
-            ;
-        // for each entry in the enum, add it to the dropdown.
-        for (GaleaSettingsEnum value : enumValues) {
-            // this will store the *actual* enum object inside the dropdown!
-            list.addItem(value.getName(), value);
-        }
-        //Style the text in the ScrollableList
-        list.getCaptionLabel() //the caption label is the text object in the primary bar
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].getName())
-            .setFont(h4)
-            .setSize(14)
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(4)
-            ;
-        list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
-            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(enumValues[0].getName())
-            .setFont(h5)
-            .setSize(12) //set the font size of the item bars to 14pt
-            .getStyle() //need to grab style before affecting the paddingTop
-            .setPaddingTop(3) //4-pixel vertical offset to center text
-            ;
-        return list;
-    }
-
-    private void createSampleRateDropdown() {
-        srList = createDropdown("galea_SampleRates", GaleaSR.values());
-        srList.setPosition(x + w - padding*2 - 60*2, y + titleH + uiElementH + padding*3);
-        srList.setSize(120 + padding,(srList.getItems().size()+1)*uiElementH);
-        srList.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                    int val = (int)srList.getValue();
-                    Map bob = srList.getItem(val);
-                    // this will retrieve the enum object stored in the dropdown!
-                    galea_sampleRate = (GaleaSR)bob.get("value");
-                    println("ControlPanel: User selected Galea Sample Rate: " + galea_sampleRate.getName());
-                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                    //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
-                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
-                }
-            }
-        });
-    }
-
-    private void createModeListDropdown() {
-        modeList = createDropdown("galea_Modes", GaleaMode.values());
-        modeList.setPosition(x + padding, y + titleH + uiElementH*2 + padding*4);
-        modeList.setSize(w - padding*2,(modeList.getItems().size()+1)*uiElementH);
-        modeList.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                    int val = (int)modeList.getValue();
-                    Map bob = modeList.getItem(val);
-                    // this will retrieve the enum object stored in the dropdown!
-                    galea_boardSetting = (GaleaMode)bob.get("value");
-                    println("ControlPanel: User selected Galea Mode: " + galea_boardSetting.getName());
-                } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
-                    //Lock the box below this one when user is interacting with this dropdown
-                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(true);
-                } else if (theEvent.getAction() == ControlP5.ACTION_LEAVE) {
-                    controlPanel.dataLogBoxGalea.lockSessionDataBoxCp5Elements(false);
-                }
-            }
-        });
-    }
-
-    public String getIPAddress() {
-        return ipAddress;
     }
 };
 
@@ -3101,7 +2971,7 @@ class InitBox {
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
                 outputWarn("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
                 return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
+            } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.NATIVE_BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
                 outputWarn("No BLE device selected. Please select your Ganglion device and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
@@ -3136,7 +3006,6 @@ class InitBox {
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            controlPanel.dataLogBoxGalea.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
             w_focus.killAuditoryFeedback();
             haltSystem();

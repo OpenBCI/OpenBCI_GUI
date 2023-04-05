@@ -37,6 +37,8 @@ abstract class BoardBrainFlow extends Board {
                 e.printStackTrace();
             }
             boardShim.prepare_session();
+            if (brainflowStreamer != "")
+                boardShim.add_streamer(brainflowStreamer);
             return true; 
 
         } catch (Exception e) {
@@ -75,7 +77,7 @@ abstract class BoardBrainFlow extends Board {
         }
 
         try {
-            boardShim.start_stream (450000, brainflowStreamer);
+            boardShim.start_stream (450000);
             streaming = true;
         }
         catch (BrainFlowError e) {

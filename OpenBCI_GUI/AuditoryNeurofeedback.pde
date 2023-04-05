@@ -5,6 +5,7 @@ Minim minim;
 FilePlayer[] auditoryNfbFilePlayers;
 ddf.minim.ugens.Gain[] auditoryNfbGains;
 AudioOutput audioOutput;
+boolean audioOutputIsAvailable;
 
 //Pre-load audio files into memory in delayedSetup for best app performance and no waiting
 void asyncLoadAudioFiles() {
@@ -16,11 +17,18 @@ void asyncLoadAudioFiles() {
     println("OpenBCI_GUI: AuditoryFeedback: Loading Audio...");
     for (int i = 0; i < _numSoundFiles; i++) {
         //Use large buffer size and cache files in memory
-        auditoryNfbFilePlayers[i] = new FilePlayer( minim.loadFileStream("bp" + (i+1) + ".mp3", 2048, true) );
-        auditoryNfbGains[i] = new ddf.minim.ugens.Gain(-15.0f);
-        auditoryNfbFilePlayers[i].patch(auditoryNfbGains[i]).patch(audioOutput);
+        try {
+            auditoryNfbFilePlayers[i] = new FilePlayer( minim.loadFileStream("bp" + (i+1) + ".mp3", 2048, true) );
+            auditoryNfbGains[i] = new ddf.minim.ugens.Gain(-15.0f);
+            auditoryNfbFilePlayers[i].patch(auditoryNfbGains[i]).patch(audioOutput);
+        } catch (Exception e) {
+            outputError("AuditoryFeedback: Unable to load audio files. To enable this feature, please connect or turn on an audio device and restart the GUI.");
+            audioOutputIsAvailable = false;
+            return;
+        }
     }
     println("OpenBCI_GUI: AuditoryFeedback: Done Loading Audio!");
+    audioOutputIsAvailable = true;
 }
 
 class AuditoryNeurofeedback {
@@ -91,6 +99,10 @@ class AuditoryNeurofeedback {
         //For this button, only call the callback listener on mouse release
         startStopButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
+                if (!audioOutputIsAvailable) {
+                    outputError("AuditoryFeedback: Unable to load audio files. To enable this feature, please connect or turn on an audio device and restart the GUI.");
+                    return;
+                }
                 //If using a TopNav object, ignore interaction with widget object (ex. widgetTemplateButton)
                 if (!topNav.configSelector.isVisible && !topNav.layoutSelector.isVisible) {
                     if (auditoryNfbFilePlayers[0].isPlaying()) {
