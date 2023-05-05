@@ -11,13 +11,11 @@ class W_PulseSensor extends Widget {
 
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
-
-
     color graphStroke = #d2d2d2;
     color graphBG = #f5f5f5;
     color textColor = #000000;
 
-// Pulse Sensor Visualizer Stuff
+    // Pulse Sensor Visualizer Stuff
     int count = 0;
     int heart = 0;
     int PulseBuffSize = 3*currentBoard.getSampleRate(); // Originally 400
