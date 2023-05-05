@@ -130,6 +130,7 @@ class ButtonHelpText{
 ////////////////////////////////////////////////////////////////////////////////////
 //                              MENULIST CLASS                                    //
 //   Based on ControlP5 Processing Library example, written by Andreas Schlegel   //
+//      WARNING: This class does not respond well to being resized -RW 5/5/23     //
 ////////////////////////////////////////////////////////////////////////////////////
 public class MenuList extends controlP5.Controller {
 
