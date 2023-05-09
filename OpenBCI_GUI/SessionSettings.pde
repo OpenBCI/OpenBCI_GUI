@@ -1027,14 +1027,14 @@ class SessionSettings {
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
             } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
-                filePath += fileNames[4];
+                filePath += fileNames[3];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
-                    filePath += fileNames[5];
+                    filePath += fileNames[4];
                 } else if (_nchan == NCHAN_CYTON) {
-                    filePath += fileNames[6];
+                    filePath += fileNames[5];
                 } else {
-                    filePath += fileNames[7];
+                    filePath += fileNames[6];
                 }
             }
         }
