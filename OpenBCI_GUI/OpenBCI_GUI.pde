@@ -61,8 +61,8 @@ import http.requests.*;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.1.1-alpha.2";
-String localGUIVersionDate = "February 2023";
+String localGUIVersionString = "v5.1.1-alpha.3";
+String localGUIVersionDate = "May 2023";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -139,9 +139,6 @@ int nchan = NCHAN_CYTON; //Normally, 8 or 16.  Choose a smaller number to show f
 
 //define variables related to warnings to the user about whether the EEG data is nearly railed (and, therefore, of dubious quality)
 DataStatus is_railed[];
-// thresholds are pecentages of max possible value
-final double threshold_railed = 99.0;
-final double threshold_railed_warn = 90.0;
 
 //Cyton SD Card setting
 CytonSDMode cyton_sdSetting = CytonSDMode.NO_WRITE;
@@ -589,7 +586,7 @@ void initSystem() {
             break;
         case DATASOURCE_PLAYBACKFILE:
             if (!playbackData_fname.equals("N/A")) {
-                currentBoard = new DataSourcePlayback(playbackData_fname);
+                currentBoard = getDataSourcePlaybackClassFromFile(playbackData_fname);
                 println("OpenBCI_GUI: Init session using Playback data source");
             } else {
                 if (!sdData_fname.equals("N/A")) {
@@ -757,7 +754,7 @@ void initCoreDataObjects() {
     data_elec_imp_ohm = new float[nchan];
     is_railed = new DataStatus[nchan];
     for (int i=0; i<nchan; i++) {
-        is_railed[i] = new DataStatus(threshold_railed, threshold_railed_warn);
+        is_railed[i] = new DataStatus();
     }
 
     dataProcessing = new DataProcessing(nchan, currentBoard.getSampleRate());

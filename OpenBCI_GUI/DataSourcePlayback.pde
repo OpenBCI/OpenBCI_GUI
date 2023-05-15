@@ -1,35 +1,34 @@
-class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, EDACapableBoard, PPGCapableBoard, BatteryInfoCapableBoard, FileBoard  {
-    private String playbackFilePath;
-    private ArrayList<double[]> rawData;
-    private int currentSample;
-    private int timeOfLastUpdateMS;
+abstract class DataSourcePlayback implements DataSource, FileBoard  {
+    private String playbackFilePathExg;
+    private ArrayList<double[]> rawDataExg;
+    private int currentSampleExg;
+    private int timeOfLastUpdateMSExg;
     private String underlyingClassName;
-    private Integer batteryChannelCache = null;
-    private int numNewSamplesThisFrame;
+    private int numNewSamplesThisFrameExg;
 
     private boolean initialized = false;
     private boolean streaming = false;
     
-    private Board underlyingBoard = null;
-    private int sampleRate = -1;
-    private int numChannels = 0;  // use it instead getTotalChannelCount() method for old playback files
+    public Board underlyingBoard = null;
+    private int sampleRateExg = -1;
+    private int numChannelsExg = 0;  // use it instead getTotalChannelCount() method for old playback files
 
     DataSourcePlayback(String filePath) {
-        playbackFilePath = filePath;
+        playbackFilePathExg = filePath;
     }
 
     @Override
     public boolean initialize() {
-        currentSample = 0;
-        String[] lines = loadStrings(playbackFilePath);
+        currentSampleExg = 0;
+        String[] lines = loadStrings(playbackFilePathExg);
         
-        if(!parseHeader(lines)) {
+        if(!parseExgHeader(lines)) {
             return false;
         }
         if(!instantiateUnderlyingBoard()) {
             return false;
         }
-        if(!parseData(lines)) {
+        if(!parseExgData(lines)) {
             return false;
         }
 
@@ -41,7 +40,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         initialized = false;
     }
 
-    protected boolean parseHeader(String[] lines) {
+    protected boolean parseExgHeader(String[] lines) {
         for (String line : lines) {
             if (!line.startsWith("%")) {
                 break; // reached end of header
@@ -61,7 +60,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
                 int endIndex = line.indexOf("Hz") - 1;
 
                 String hzString = line.substring(startIndex, endIndex);
-                sampleRate = Integer.parseInt(hzString);
+                sampleRateExg = Integer.parseInt(hzString);
             }
 
             // used to figure out the underlying board type
@@ -71,7 +70,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
             }
         }
 
-        boolean success = sampleRate > 0 && underlyingClassName != "";
+        boolean success = sampleRateExg > 0 && underlyingClassName != "";
         if(!success) {
             outputError("Playback file does not contain the required header data.");
         }
@@ -95,7 +94,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         return underlyingBoard != null;
     }
 
-    protected boolean parseData(String[] lines) {
+    protected boolean parseExgData(String[] lines) {
         int dataStart;
         // set data start to first line of data (skip header)
         for (dataStart = 0; dataStart < lines.length; dataStart++) {
@@ -107,21 +106,21 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
         }
 
         int dataLength = lines.length - dataStart;
-        rawData = new ArrayList<double[]>(dataLength);
+        rawDataExg = new ArrayList<double[]>(dataLength);
         
         for (int iData=0; iData<dataLength; iData++) {
             String line = lines[dataStart + iData];
             String[] valStrs = line.split(",");
-            if (((valStrs.length - 1) != getTotalChannelCount()) && (numChannels == 0)) {
+            if (((valStrs.length - 1) != getTotalChannelCount()) && (numChannelsExg == 0)) {
                 outputWarn("you are using old file for playback.");
             }
-            numChannels = valStrs.length - 1;  // -1 becaise of gui's timestamps
+            numChannelsExg = valStrs.length - 1;  // -1 becaise of gui's timestamps
 
-            double[] row = new double[numChannels];
-            for (int iCol = 0; iCol < numChannels; iCol++) {
+            double[] row = new double[numChannelsExg];
+            for (int iCol = 0; iCol < numChannelsExg; iCol++) {
                 row[iCol] = Double.parseDouble(valStrs[iCol]);
             }
-            rawData.add(row);
+            rawDataExg.add(row);
         }
 
         return true;
@@ -135,28 +134,28 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
         float sampleRateMS = getSampleRate() / 1000.f;
 
-        int timeElapsedMS = millis() - timeOfLastUpdateMS;
-        numNewSamplesThisFrame = floor(timeElapsedMS * sampleRateMS);
+        int timeElapsedMS = millis() - timeOfLastUpdateMSExg;
+        numNewSamplesThisFrameExg = floor(timeElapsedMS * sampleRateMS);
 
         // account for the fact that each update will not coincide with a sample exactly. 
         // to keep the streaming rate accurate, we increment the time of last update
         // based on how many samples we incremented this frame.
-        timeOfLastUpdateMS += numNewSamplesThisFrame / sampleRateMS;
+        timeOfLastUpdateMSExg += numNewSamplesThisFrameExg / sampleRateMS;
 
-        currentSample += numNewSamplesThisFrame;
+        currentSampleExg += numNewSamplesThisFrameExg;
         
         if (endOfFileReached()) {
             topNav.stopButtonWasPressed();
         }
 
         // don't go beyond raw data array size
-        currentSample = min(currentSample, getTotalSamples());
+        currentSampleExg = min(currentSampleExg, getTotalSamples());
     }
 
     @Override
     public void startStreaming() {
         streaming = true;
-        timeOfLastUpdateMS = millis();
+        timeOfLastUpdateMSExg = millis();
     }
 
     @Override
@@ -171,37 +170,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     @Override
     public int getSampleRate() {
-        return sampleRate;
-    }
-
-    @Override
-    public int getAccelSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getAnalogSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getDigitalSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getPPGSampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getEDASampleRate() {
-        return getSampleRate();
-    }
-
-    @Override
-    public int getBatteryInfoSampleRate() {
-        return getSampleRate();
+        return sampleRateExg;
     }
 
     @Override
@@ -235,7 +204,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     public int getTotalSamples() {
-        return rawData.size();
+        return rawDataExg.size();
     }
 
     public float getTotalTimeSeconds() {
@@ -243,7 +212,7 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     public int getCurrentSample() {
-        return currentSample;
+        return currentSampleExg;
     }
 
     public float getCurrentTimeSeconds() {
@@ -251,22 +220,22 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     public void goToIndex(int index) {
-        currentSample = index;
+        currentSampleExg = index;
     }
 
     @Override
     public int getTotalChannelCount() {
-        if (numChannels == 0)
+        if (numChannelsExg == 0)
             return underlyingBoard.getTotalChannelCount();
-        return numChannels;
+        return numChannelsExg;
     }
 
     @Override
     public double[][] getFrameData() {
-        double[][] array = new double[numChannels][numNewSamplesThisFrame];
-        List<double[]> list = getData(numNewSamplesThisFrame);
-        for (int i = 0; i < numNewSamplesThisFrame; i++) {
-            for (int j = 0; j < numChannels; j++) {
+        double[][] array = new double[numChannelsExg][numNewSamplesThisFrameExg];
+        List<double[]> list = getData(numNewSamplesThisFrameExg);
+        for (int i = 0; i < numNewSamplesThisFrameExg; i++) {
+            for (int j = 0; j < numChannelsExg; j++) {
                 array[j][i] = list.get(i)[j];
             }
         }
@@ -275,14 +244,14 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
 
     @Override
     public List<double[]> getData(int maxSamples) {
-        int firstSample = max(0, currentSample - maxSamples);
-        List<double[]> result = rawData.subList(firstSample, currentSample);
+        int firstSample = max(0, currentSampleExg - maxSamples);
+        List<double[]> result = rawDataExg.subList(firstSample, currentSampleExg);
 
         // if needed, pad the beginning of the array with empty data
-        if (maxSamples > currentSample) {
-            int sampleDiff = maxSamples - currentSample;
+        if (maxSamples > currentSampleExg) {
+            int sampleDiff = maxSamples - currentSampleExg;
 
-            double[] emptyData = new double[numChannels];
+            double[] emptyData = new double[numChannelsExg];
             ArrayList<double[]> newResult = new ArrayList(maxSamples);
             for (int i=0; i<sampleDiff; i++) {
                 newResult.add(emptyData);
@@ -296,161 +265,55 @@ class DataSourcePlayback implements DataSource, AccelerometerCapableBoard, Analo
     }
 
     @Override
-    public boolean isAccelerometerActive() { 
-        return underlyingBoard instanceof AccelerometerCapableBoard;
-    }
-
-    @Override
-    public void setAccelerometerActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public boolean canDeactivateAccelerometer() {
-        return false;
-    }
-
-    @Override
-    public int[] getAccelerometerChannels() {
-        if (underlyingBoard instanceof AccelerometerCapableBoard) {
-            return ((AccelerometerCapableBoard)underlyingBoard).getAccelerometerChannels();
-        }
-
-        return new int[0];
-    }
-
-    @Override
-    public boolean isAnalogActive() {
-        return underlyingBoard instanceof AnalogCapableBoard;
-    }
-
-    @Override
-    public void setAnalogActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public boolean canDeactivateAnalog() {
-        return false;
-    }
-
-    @Override
-    public int[] getAnalogChannels() {
-        if (underlyingBoard instanceof AnalogCapableBoard) {
-            return ((AnalogCapableBoard)underlyingBoard).getAnalogChannels();
-        }
-
-        return new int[0];
-    }
-
-    @Override
-    public boolean isDigitalActive() {
-        return underlyingBoard instanceof DigitalCapableBoard;
-    }
-
-    @Override
-    public void setDigitalActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public boolean canDeactivateDigital() {
-        return false;
-    }
-
-    @Override
-    public int[] getDigitalChannels() {
-        if (underlyingBoard instanceof DigitalCapableBoard) {
-            return ((DigitalCapableBoard)underlyingBoard).getDigitalChannels();
-        }
-
-        return new int[0];
-    }
-
-    @Override
-    public boolean isEDAActive() {
-        return underlyingBoard instanceof EDACapableBoard;
-    }
-
-    @Override
-    public void setEDAActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public int[] getEDAChannels() {
-        if (underlyingBoard instanceof EDACapableBoard) {
-            return ((EDACapableBoard)underlyingBoard).getEDAChannels();
-        }
-
-        return new int[0];
-    }
-
-    @Override
-    public boolean isPPGActive() {
-        return underlyingBoard instanceof PPGCapableBoard;
-    }
-
-    @Override
-    public void setPPGActive(boolean active) {
-        // nothing
-    }
-
-    @Override
-    public int[] getPPGChannels() {
-        if (underlyingBoard instanceof PPGCapableBoard) {
-            return ((PPGCapableBoard)underlyingBoard).getPPGChannels();
-        }
-
-        return new int[0];
-    }
-
-    @Override
-    public Integer getBatteryChannel() {
-        if (batteryChannelCache == null && underlyingBoard instanceof BatteryInfoCapableBoard) {
-            try {
-                batteryChannelCache = BoardShim.get_battery_channel(((BoardBrainFlow)underlyingBoard).getBoardIdInt());
-            } catch (BrainFlowError e) {
-                e.printStackTrace();
-            }
-        }
-
-        return batteryChannelCache;
-    }
-
-    @Override
     public boolean endOfFileReached() {
-        return currentSample >= getTotalSamples();
+        return currentSampleExg >= getTotalSamples();
     }
 
-    @Override
-    public List<double[]> getDataWithBatteryInfo(int maxSamples) {
-        return getData(maxSamples);
-    }
+}
 
-    @Override
-    public List<double[]> getDataWithAnalog(int maxSamples) {
-        return getData(maxSamples);
+public DataSourcePlayback getDataSourcePlaybackClassFromFile(String path) {
+    verbosePrint("Checking " + path + " for underlying board class.");
+    String strCurrentLine;
+    int lineCounter = 0;
+    int maxLinesToCheck = 4;
+    String infoToCheck = "%Board = ";
+    String underlyingBoardClassName = "";
+    BufferedReader reader = createBufferedReader(path);
+    try {
+        while (lineCounter < maxLinesToCheck) {
+            strCurrentLine = reader.readLine();
+            verbosePrint(strCurrentLine);
+            if (strCurrentLine.startsWith(infoToCheck)) {
+                String[] splitCurrentLine = split(strCurrentLine, "OpenBCI_GUI$");
+                underlyingBoardClassName = splitCurrentLine[1];
+            }
+            lineCounter++;
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
-
-    @Override
-    public List<double[]> getDataWithDigital(int maxSamples) {
-        return getData(maxSamples);
+    
+    switch (underlyingBoardClassName) {
+        case ("BoardCytonSerial"):
+        case ("BoardCytonSerialDaisy"):
+        case ("BoardCytonWifi"):
+        case ("BoardCytonWifiDaisy"):
+            return new DataSourcePlaybackCyton(path);
+        case ("BoardGanglionBLE"):
+        case ("BoardGanglionNative"):
+        case ("BoardGanglionWifi"):
+            return new DataSourcePlaybackGanglion(path);
+        case ("BoardBrainFlowSynthetic"):
+            return new DataSourcePlaybackSynthetic(path);
+        default:
+            return null;
     }
-
-    @Override
-    public List<double[]> getDataWithAccel(int maxSamples) {
-        return getData(maxSamples);
-    }
-
-    @Override
-    public List<double[]> getDataWithPPG(int maxSamples) {
-        return getData(maxSamples);
-    }
-
-    @Override
-    public List<double[]> getDataWithEDA(int maxSamples) {
-        return getData(maxSamples);
-    }
-
 }

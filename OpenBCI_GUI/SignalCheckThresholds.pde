@@ -15,7 +15,7 @@ class SignalCheckThresholdUI {
         signalCheckMode = _mode;
         name = _name;
         textColor = _textColor;
-        defaultValue_Percentage = name.equals("errorThreshold") ? (int)threshold_railed : (int)threshold_railed_warn;
+        defaultValue_Percentage = name.equals("errorThreshold") ? 90 : 75;
         valuePercentage = defaultValue_Percentage;
         defaultValue_kOhms = name == "errorThreshold" ? 2500 : 750;
         valuekOhms = defaultValue_kOhms;
