@@ -179,7 +179,7 @@ class W_Networking extends Widget {
     private LinkedList<String> getCuCommPorts() {
         final SerialPort[] allCommPorts = SerialPort.getCommPorts();        
         LinkedList<String> cuCommPorts = new LinkedList<String>();
-        for (String port : allCommPorts) {
+        for (SerialPort port : allCommPorts) {
             if (isMac() && port.getSystemPortName().startsWith("tty")) {
                         continue;
                     }
