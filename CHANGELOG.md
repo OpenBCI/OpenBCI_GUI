@@ -1,16 +1,18 @@
 # v5.1.1
 
 ### Bug Fixes
+
 - Fix NullPointerException when no Audio Device is available from the OS (Windows and Linux) #1109 #1086
 - Fix LSL AvgBandPower data type only one value is sent #1098
 - Fix error starting BrainFlow Streaming Board from external process #1102
 - Fix Hardware Settings button not clickable after resizing app #1132
 
 ### Improvements
+
 - Update to BrainFlow 5.6.1
 - Add feature to connect to Ganglion using Native Bluetooth #1080
 - Refactor the creation and playback of OpenBCI GUI CSV files #1119
-
+- Filter out .tty serial ports in Networking Widget Serial list #1097 - Thanks @kkashiva
 
 # v5.1.0
 
