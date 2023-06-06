@@ -154,7 +154,9 @@ class W_Networking extends Widget {
         protocolMode = "UDP"; //Set Default to UDP
         protocolIndex = 2; //Set Default to UDP 
         addDropdown("Protocol", "Protocol", Arrays.asList(settings.nwProtocolArray), protocolIndex);
-        comPorts = new ArrayList<String>(Arrays.asList(processing.serial.Serial.list()));
+        // comPorts = new ArrayList<String>(Arrays.asList(processing.serial.Serial.list()));
+        // calls the new method getCuCommPorts to store the list of only .cu serial ports for Mac users
+        comPorts = new ArrayList<String>(getCuCommPorts());
         verbosePrint("comPorts = " + comPorts);
         comPortToSave = 0;
 
@@ -171,6 +173,22 @@ class W_Networking extends Widget {
         cp5ElementsToCheck.add((controlP5.Controller)dataOutputsButton);
         cp5ElementsToCheck.add((controlP5.Controller)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1"));
         cp5ElementsToCheck.add((controlP5.Controller)cp5_networking_baudRate.get(ScrollableList.class, "baud_rate"));
+    }
+
+    // Filter out .tty ports for Mac users, to only show .cu addresses
+    private LinkedList<String> getCuCommPorts() {
+        final SerialPort[] allCommPorts = SerialPort.getCommPorts();        
+        LinkedList<String> cuCommPorts = new LinkedList<String>();
+        for (SerialPort port : allCommPorts) {
+            if (isMac() && port.getSystemPortName().startsWith("tty")) {
+                        continue;
+                    }
+            String found = "";
+            if (isMac() || isLinux()) found += "/dev/";
+            found += port.getSystemPortName();
+            cuCommPorts.add(found);
+        }
+        return cuCommPorts;
     }
 
     //Used to update the Hashmap
