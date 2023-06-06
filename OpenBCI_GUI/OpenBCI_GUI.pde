@@ -55,6 +55,7 @@ import edu.ucsd.sccn.LSL; //for LSL
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
 import http.requests.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 //------------------------------------------------------------------------
@@ -417,6 +418,7 @@ void setup() {
     if (isMac()) {
         checkIsMacFullDetail();
     }
+    println("JVM Version: " + System.getProperty("java.version"));
     println("Welcome to the Processing-based OpenBCI GUI!"); //Welcome line.
     println("For more information, please visit: https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/");
     
@@ -517,6 +519,9 @@ synchronized void draw() {
             haltSystem();
             initSystem();
             reinitRequested = false;
+        }
+        if (systemMode == SYSTEMMODE_POSTINIT) {
+            w_networking.networkingFrameLock.compareAndSet(false, true);
         }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
