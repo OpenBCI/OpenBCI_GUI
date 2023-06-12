@@ -6,6 +6,7 @@
 - Fix LSL AvgBandPower data type only one value is sent #1098
 - Fix error starting BrainFlow Streaming Board from external process #1102
 - Fix Hardware Settings button not clickable after resizing app #1132
+- Fix bug loading Session Settings related to Widget Layouts #1138
 
 ### Improvements
 

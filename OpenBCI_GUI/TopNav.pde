@@ -658,10 +658,10 @@ class LayoutSelector {
             tempLayoutButton.setForceDrawBackground(true);
             tempLayoutButton.onRelease(new CallbackListener() {
                 public void controlEvent(CallbackEvent theEvent) {
-                    output("Layout [" + (layoutNumber+1) + "] selected.");
+                    output("Layout [" + (layoutNumber) + "] selected.");
                     toggleVisibility(); //shut layoutSelector if something is selected
                     wm.setNewContainerLayout(layoutNumber); //have WidgetManager update Layout and active widgets
-                    settings.currentLayout = layoutNumber+1; //copy this value to be used when saving Layout setting
+                    settings.currentLayout = layoutNumber; //copy this value to be used when saving Layout setting
                 }
             });
             layoutOptions.add(tempLayoutButton);
