@@ -522,7 +522,7 @@ class SessionSettings {
         println("SessionSettings: " + numActiveWidgets + " active widgets saved!");
         //Print what widgets are in the containers used by current layout for only the number of active widgets
         //for (int i = 0; i < numActiveWidgets; i++) {
-            //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
+            //int containerCounter = wm.layouts.get(currentLayout).containerInts[i];
             //println("Container " + containerCounter + " is available"); //For debugging
         //}
         saveSettingsJSONData.setJSONObject(kJSONKeyWidget, saveWidgetSettings);
