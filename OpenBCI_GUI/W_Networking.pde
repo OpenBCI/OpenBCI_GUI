@@ -1921,69 +1921,65 @@ class Stream extends Thread {
 
 
     void sendAccelerometerData() {
-        // UNFILTERED & FILTERED, Accel data is not affected by filters anyways
-        if (this.filter==false || this.filter==true) {
-            // OSC
-            if (this.protocol.equals("OSC")) {
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    msg.clearArguments();
-                    msg.add(i+1);
-                    //ADD Accelerometer data
-                    msg.add(w_accelerometer.getLastAccelVal(i));
-                    // println(i + " | " + w_accelerometer.getLastAccelVal(i));
-                    try {
-                        this.osc.send(msg,this.netaddress);
-                    } catch (Exception e) {
-                        println(e.getMessage());
-                    }
+        //Accelerometer data is not affected by filters
+        // OSC
+        if (this.protocol.equals("OSC")) {
+            msg.clearArguments();
+            msg.setAddrPattern(address + "/accelerometer/");
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                msg.add(w_accelerometer.getLastAccelVal(i));
+            }
+            try {
+                this.osc.send(msg,this.netaddress);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        // UDP
+        } else if (this.protocol.equals("UDP")) {
+            String outputter = "{\"type\":\"accelerometer\",\"data\":[";
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                float accelData = w_accelerometer.getLastAccelVal(i);
+                String accelData_3dec = threeDecimalPlaces.format(accelData);
+                //String accelData_3dec = String.format("%.3f", accelData); //This does not work in all international settings
+                outputter += accelData_3dec;
+                if (i != NUM_ACCEL_DIMS - 1) {
+                    outputter += ",";
+                } else {
+                    outputter += "]}\r\n";
                 }
-            // UDP
-            } else if (this.protocol.equals("UDP")) {
-                String outputter = "{\"type\":\"accelerometer\",\"data\":[";
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    float accelData = w_accelerometer.getLastAccelVal(i);
-                    String accelData_3dec = threeDecimalPlaces.format(accelData);
-                    //String accelData_3dec = String.format("%.3f", accelData); //This does not work in all international settings
-                    outputter += accelData_3dec;
-                    if (i != NUM_ACCEL_DIMS - 1) {
-                        outputter += ",";
-                    } else {
-                        outputter += "]}\r\n";
-                    }
+            }
+            try {
+                this.udp.send(outputter, this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+            // LSL
+        } else if (this.protocol.equals("LSL")) {
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                dataToSend[i] = w_accelerometer.getLastAccelVal(i);
+            }
+            // Add timestamp to LSL Stream
+            outlet_data.push_sample(dataToSend);
+        } else if (this.protocol.equals("Serial")) {
+            // Data Format: +0.900,-0.042,+0.254\n
+            // 7 chars per axis, including \n char for Z
+            serialMessage = "";
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                float accelData = w_accelerometer.getLastAccelVal(i);
+                String accelData_3dec = String.format("%.3f", accelData);
+                if (accelData >= 0) serialMessage += "+";
+                serialMessage += accelData_3dec;
+                if (i != NUM_ACCEL_DIMS - 1) {
+                    serialMessage += ",";
+                } else {
+                    serialMessage += "\n";
                 }
-                try {
-                    this.udp.send(outputter, this.ip, this.port);
-                } catch (Exception e) {
-                    println(e.getMessage());
-                }
-                // LSL
-            } else if (this.protocol.equals("LSL")) {
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    dataToSend[i] = w_accelerometer.getLastAccelVal(i);
-                }
-                // Add timestamp to LSL Stream
-                outlet_data.push_sample(dataToSend);
-            } else if (this.protocol.equals("Serial")) {
-                // Data Format: +0.900,-0.042,+0.254\n
-                // 7 chars per axis, including \n char for Z
-                serialMessage = "";
-                for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                    float accelData = w_accelerometer.getLastAccelVal(i);
-                    String accelData_3dec = String.format("%.3f", accelData);
-                    if (accelData >= 0) serialMessage += "+";
-                    serialMessage += accelData_3dec;
-                    if (i != NUM_ACCEL_DIMS - 1) {
-                        serialMessage += ",";
-                    } else {
-                        serialMessage += "\n";
-                    }
-                }
-                try {
-                    //println(serialMessage);
-                    this.serial_networking.write(serialMessage);
-                } catch (Exception e) {
-                    println(e.getMessage());
-                }
+            }
+            try {
+                //println(serialMessage);
+                this.serial_networking.write(serialMessage);
+            } catch (Exception e) {
+                println(e.getMessage());
             }
         }
     }
