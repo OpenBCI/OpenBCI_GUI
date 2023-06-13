@@ -125,7 +125,7 @@ class W_Networking extends Widget {
     private LinkedList<float[]> dataAccumulationQueueFiltered;
     public float[][] dataBufferToSend;
     public float[][] dataBufferToSend_Filtered;
-    public AtomicBoolean networkingFrameLock = new AtomicBoolean(false);
+    public AtomicBoolean[] networkingFrameLocks = new AtomicBoolean[4];
     public AtomicBoolean newTimeSeriesDataToSend = new AtomicBoolean(false);
     public AtomicBoolean newTimeSeriesDataToSendFiltered = new AtomicBoolean(false);
 
@@ -142,6 +142,11 @@ class W_Networking extends Widget {
         stream2 = null;
         stream3 = null;
         stream4 = null;
+
+        networkingFrameLocks[0] = new AtomicBoolean(false);
+        networkingFrameLocks[1] = new AtomicBoolean(false);
+        networkingFrameLocks[2] = new AtomicBoolean(false);
+        networkingFrameLocks[3] = new AtomicBoolean(false);
 
         //default data types for streams 1-4 in Networking widget
         settings.nwDataType1 = 0;
@@ -232,13 +237,13 @@ class W_Networking extends Widget {
     void update() {
         super.update();
         if (protocolMode.equals("LSL")) {
-            if (stream1!=null) {
+            if (stream1 != null) {
                 stream1.run();
             }
-            if (stream2!=null) {
+            if (stream2 != null) {
                 stream2.run();
             }
-            if (stream3!=null) {
+            if (stream3 != null) {
                 stream3.run();
             }
         }
@@ -960,6 +965,7 @@ class W_Networking extends Widget {
         int nChanLSL;
         int baudRate;
         String type;
+        int streamNumber;
 
         String dt1 = dataTypes.get((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
         String dt2 = dataTypes.get((int)cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").getValue());
@@ -974,7 +980,8 @@ class W_Networking extends Widget {
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port1").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address1").getText();
                 filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
-                stream1 = new Stream(dt1, ip, port, address, filt_pos, nchan);
+                streamNumber = 0;
+                stream1 = new Stream(dt1, ip, port, address, filt_pos, nchan, streamNumber);
             } else {
                 stream1 = null;
             }
@@ -983,7 +990,8 @@ class W_Networking extends Widget {
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port2").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address2").getText();
                 filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
-                stream2 = new Stream(dt2, ip, port, address, filt_pos, nchan);
+                streamNumber = 1;
+                stream2 = new Stream(dt2, ip, port, address, filt_pos, nchan, streamNumber);
             } else {
                 stream2 = null;
             }
@@ -992,7 +1000,8 @@ class W_Networking extends Widget {
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port3").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address3").getText();
                 filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
-                stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan);
+                streamNumber = 2;
+                stream3 = new Stream(dt3, ip, port, address, filt_pos, nchan, streamNumber);
             } else {
                 stream3 = null;
             }
@@ -1001,7 +1010,8 @@ class W_Networking extends Widget {
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port4").getText());
                 address = cp5_networking.get(Textfield.class, "OSC_address4").getText();
                 filt_pos = cp5_networking.get(Toggle.class, "filter4").getBooleanValue();
-                stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan);
+                streamNumber = 3;
+                stream4 = new Stream(dt4, ip, port, address, filt_pos, nchan, streamNumber);
             } else {
                 stream4 = null;
             }
@@ -1012,7 +1022,8 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port1").getText());
                 filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
-                stream1 = new Stream(dt1, ip, port, filt_pos, nchan);
+                streamNumber = 0;
+                stream1 = new Stream(dt1, ip, port, filt_pos, nchan, streamNumber);
             } else {
                 stream1 = null;
             }
@@ -1020,7 +1031,8 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port2").getText());
                 filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
-                stream2 = new Stream(dt2, ip, port, filt_pos, nchan);
+                streamNumber = 1;
+                stream2 = new Stream(dt2, ip, port, filt_pos, nchan, streamNumber);
             } else {
                 stream2 = null;
             }
@@ -1028,21 +1040,21 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port3").getText());
                 filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
-                stream3 = new Stream(dt3, ip, port, filt_pos, nchan);
+                streamNumber = 2;
+                stream3 = new Stream(dt3, ip, port, filt_pos, nchan, streamNumber);
             } else {
                 stream3 = null;
             }
 
             // Establish LSL Streams
         } else if (protocolMode.equals("LSL")) {
-            
-
             if (!dt1.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name1").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type1").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt1);
                 filt_pos = cp5_networking.get(Toggle.class, "filter1").getBooleanValue();
-                stream1 = new Stream(dt1, name, type, nChanLSL, filt_pos, nchan);
+                streamNumber = 0;
+                stream1 = new Stream(dt1, name, type, nChanLSL, filt_pos, nchan, streamNumber);
             } else {
                 stream1 = null;
             }
@@ -1051,7 +1063,8 @@ class W_Networking extends Widget {
                 type = cp5_networking.get(Textfield.class, "LSL_type2").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt2);
                 filt_pos = cp5_networking.get(Toggle.class, "filter2").getBooleanValue();
-                stream2 = new Stream(dt2, name, type, nChanLSL, filt_pos, nchan);
+                streamNumber = 1;
+                stream2 = new Stream(dt2, name, type, nChanLSL, filt_pos, nchan, streamNumber);
             } else {
                 stream2 = null;
             }
@@ -1060,7 +1073,8 @@ class W_Networking extends Widget {
                 type = cp5_networking.get(Textfield.class, "LSL_type3").getText();
                 nChanLSL = getDataTypeNumChanLSL(dt3);
                 filt_pos = cp5_networking.get(Toggle.class, "filter3").getBooleanValue();
-                stream3 = new Stream(dt3, name, type, nChanLSL, filt_pos, nchan);
+                streamNumber = 2;
+                stream3 = new Stream(dt3, name, type, nChanLSL, filt_pos, nchan, streamNumber);
             } else {
                 stream3 = null;
             }
@@ -1080,16 +1094,16 @@ class W_Networking extends Widget {
 
     /* Start networking */
     void startNetwork() {
-        if (stream1!=null) {
+        if (stream1 != null) {
             stream1.start();
         }
-        if (stream2!=null) {
+        if (stream2 != null) {
             stream2.start();
         }
-        if (stream3!=null) {
+        if (stream3 != null) {
             stream3.start();
         }
-        if (stream4!=null) {
+        if (stream4 != null) {
             stream4.start();
         }
     }
@@ -1098,21 +1112,21 @@ class W_Networking extends Widget {
     void stopNetwork() {
         networkActive = false;
 
-        if (stream1!=null) {
+        if (stream1 != null) {
             stream1.quit();
-            stream1=null;
+            stream1 = null;
         }
-        if (stream2!=null) {
+        if (stream2 != null) {
             stream2.quit();
-            stream2=null;
+            stream2 = null;
         }
-        if (stream3!=null) {
+        if (stream3 != null) {
             stream3.quit();
-            stream3=null;
+            stream3 = null;
         }
-        if (stream4!=null) {
+        if (stream4 != null) {
             stream4.quit();
-            stream4=null;
+            stream4 = null;
         }
     }
 
@@ -1222,6 +1236,12 @@ class W_Networking extends Widget {
             };
         }
     }
+
+    public void compareAndSetNetworkingFrameLocks() {
+        for (int i = 0; i < networkingFrameLocks.length; i++) {
+            networkingFrameLocks[i].compareAndSet(false, true);
+        }  
+    }
 }; //End of w_networking class
 
 ////////////////////////////////////////////////////////////////
@@ -1229,6 +1249,7 @@ class W_Networking extends Widget {
 
 class Stream extends Thread {
     private String protocol;
+    private int streamNumber;
     private String dataType;
     private String ip;
     private int port;
@@ -1261,8 +1282,6 @@ class Stream extends Thread {
     // LSL objects
     private LSL.StreamInfo info_data;
     private LSL.StreamOutlet outlet_data;
-    private LSL.StreamInfo info_aux;
-    private LSL.StreamOutlet outlet_aux;
 
     // Serial objects %%%%%
     private processing.serial.Serial serial_networking;
@@ -1286,8 +1305,9 @@ class Stream extends Thread {
     }
 
     /* OSC Stream */
-    Stream(String dataType, String ip, int port, String address, boolean filter, int _nchan) {
+    Stream(String dataType, String ip, int port, String address, boolean filter, int _nchan, int _streamNumber) {
         this.protocol = "OSC";
+        this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.ip = ip;
         this.port = port;
@@ -1301,8 +1321,9 @@ class Stream extends Thread {
         }
     }
     /*UDP Stream */
-    Stream(String dataType, String ip, int port, boolean filter, int _nchan) {
+    Stream(String dataType, String ip, int port, boolean filter, int _nchan, int _streamNumber) {
         this.protocol = "UDP";
+        this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.ip = ip;
         this.port = port;
@@ -1329,8 +1350,9 @@ class Stream extends Thread {
         }
     }
     /* LSL Stream */
-    Stream(String dataType, String streamName, String streamType, int nChanLSL, boolean filter, int _nchan) {
+    Stream(String dataType, String streamName, String streamType, int nChanLSL, boolean filter, int _nchan, int _streamNumber) {
         this.protocol = "LSL";
+        this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.streamName = streamName;
         this.streamType = streamType;
@@ -1348,6 +1370,7 @@ class Stream extends Thread {
     Stream(String dataType, String portName, int baudRate, boolean filter, PApplet _this, int _nchan) {
         // %%%%%
         this.protocol = "Serial";
+        this.streamNumber = 0;
         this.dataType = dataType;
         this.portName = portName;
         this.baudRate = baudRate;
@@ -1425,8 +1448,7 @@ class Stream extends Thread {
             }
         }
         
-        if (w_networking.networkingFrameLock.get()) {
-            w_networking.networkingFrameLock.set(false);
+        if (w_networking.networkingFrameLocks[this.streamNumber].compareAndSet(true, false)) {
             return true;
         } else {
             return false;
@@ -1603,9 +1625,9 @@ class Stream extends Thread {
             }
         // LSL
         } else if (this.protocol.equals("LSL")) {
-            dataToSend[0] = (float)IS_METRIC;
+            float[] output = new float[]{(float)IS_METRIC};
             // Add timestamp to LSL Stream
-            outlet_data.push_sample(dataToSend, System.currentTimeMillis());
+            outlet_data.push_sample(output);
         // Serial
         } else if (this.protocol.equals("Serial")) {     // Send NORMALIZED EMG CHANNEL Data over Serial ... %%%%%
             StringBuilder sb = new StringBuilder();

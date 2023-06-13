@@ -521,7 +521,7 @@ synchronized void draw() {
             reinitRequested = false;
         }
         if (systemMode == SYSTEMMODE_POSTINIT) {
-            w_networking.networkingFrameLock.compareAndSet(false, true);
+            w_networking.compareAndSetNetworkingFrameLocks();
         }
     } else if (systemMode == SYSTEMMODE_INTROANIMATION) {
         if (settings.introAnimationInit == 0) {
