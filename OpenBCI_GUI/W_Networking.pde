@@ -21,57 +21,48 @@ import java.text.DecimalFormatSymbols;
 class W_Networking extends Widget {
 
     /* Variables for protocol selection */
-    int protocolIndex;
-    String protocolMode;
+    public int protocolIndex;
+    public String protocolMode;
 
     /* Widget CP5 */
-    ControlP5 cp5_networking;
-    ControlP5 cp5_networking_dropdowns;
-    ControlP5 cp5_networking_baudRate;
-    ControlP5 cp5_networking_portName;
+    public ControlP5 cp5_networking;
+    public ControlP5 cp5_networking_dropdowns;
+    public ControlP5 cp5_networking_baudRate;
+    public ControlP5 cp5_networking_portName;
 
     /* UI Organization */
     /* Widget grid */
-    int column0;
-    int column1;
-    int column2;
-    int column3;
-    int column4;
-    int fullColumnWidth;
-    int halfWidth;
-    int row0;
-    int row1;
-    int row2;
-    int row3;
-    int row4;
-    int row5;
-    int itemWidth = 96;
+    private int column0, column1, column2, column3, column4;
+    private int fullColumnWidth;
+    private int halfWidth;
+    private int row0, row1, row2, row3, row4, row5;
+    private int itemWidth = 96;
     private final float datatypeDropdownScaling = .45;
 
     /* UI */
-    Boolean osc_visible;
-    Boolean udp_visible;
-    Boolean lsl_visible;
-    Boolean serial_visible;
+    private Boolean osc_visible;
+    private Boolean udp_visible;
+    private Boolean lsl_visible;
+    private Boolean serial_visible;
 
-    Boolean cp5ElementsAreActive = false;
-    Boolean previousCP5State = false;
+    private Boolean cp5ElementsAreActive = false;
+    private Boolean previousCP5State = false;
     private Button startButton;
     private Button guideButton;
     private Button dataOutputsButton;
 
     /* Networking */
-    Boolean networkActive;
+    private Boolean networkActive;
 
     /* Streams Objects */
-    Stream stream1;
-    Stream stream2;
-    Stream stream3;
-    Stream stream4;
+    private Stream stream1;
+    private Stream stream2;
+    private Stream stream3;
+    private Stream stream4;
 
-    List<String> comPorts;
+    private List<String> serialNetworkingComPorts;
     private int comPortToSave;
-    String defaultBaud;
+    private String defaultBaud;
 
     public LinkedList<String> protocols = new LinkedList<String>(Arrays.asList("Serial", "LSL", "UDP", "OSC"));
     public LinkedList<String> dataTypes = new LinkedList<String>(Arrays.asList("None", "Focus", "EMG", "AvgBandPower",
@@ -80,19 +71,19 @@ class W_Networking extends Widget {
     public LinkedList<String> dataTypeNames = new LinkedList<String>(
             Arrays.asList("dataType1", "dataType2", "dataType3", "dataType4"));
 
-    String[] oscTextFieldNames = { "OSC_ip1", "OSC_port1", "OSC_address1", "OSC_ip2", "OSC_port2", "OSC_address2",
-            "OSC_ip3", "OSC_port3", "OSC_address3", "OSC_ip4", "OSC_port4", "OSC_address4" };
-    String[] oscTextDefaultVals = { "127.0.0.1", "12345", "/openbci", "127.0.0.1", "12346", "/openbci", "127.0.0.1",
-            "12347", "/openbci", "127.0.0.1", "12348", "/openbci" };
-    String[] udpTextFieldNames = { "UDP_ip1", "UDP_port1", "UDP_ip2", "UDP_port2", "UDP_ip3", "UDP_port3" };
-    String[] udpTextDefaultVals = { "127.0.0.1", "12345", "127.0.0.1", "12346", "127.0.0.1", "12347", "127.0.0.1",
+    private String[] oscTextFieldNames = { "OSC_ip1", "OSC_port1", "OSC_ip2", "OSC_port2",
+            "OSC_ip3", "OSC_port3", "OSC_ip4", "OSC_port4" };
+    private String[] oscTextDefaultVals = { "127.0.0.1", "12345", "127.0.0.1", "12346", "127.0.0.1",
+            "12347", "127.0.0.1", "12348" };
+    private String[] udpTextFieldNames = { "UDP_ip1", "UDP_port1", "UDP_ip2", "UDP_port2", "UDP_ip3", "UDP_port3" };
+    private String[] udpTextDefaultVals = { "127.0.0.1", "12345", "127.0.0.1", "12346", "127.0.0.1", "12347", "127.0.0.1",
             "12348" };
-    String[] lslTextFieldNames = { "LSL_name1", "LSL_type1", "LSL_name2", "LSL_type2", "LSL_name3", "LSL_type3" };
-    String[] lslTextDefaultVals = { "obci_eeg1", "EEG", "obci_eeg2", "EEG", "obci_eeg3", "EEG" };
-    String networkingGuideURL = "https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#networking";
-    String dataOutputsURL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
-    boolean configIsVisible = false;
-    boolean layoutIsVisible = false;
+    private String[] lslTextFieldNames = { "LSL_name1", "LSL_type1", "LSL_name2", "LSL_type2", "LSL_name3", "LSL_type3" };
+    private String[] lslTextDefaultVals = { "obci_eeg1", "EEG", "obci_eeg2", "EEG", "obci_eeg3", "EEG" };
+    private final String NETWORKING_GUIDE_URL = "https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#networking";
+    private final String NETWORKING_DATA_OUTPUTS_URL = "https://docs.google.com/document/d/e/2PACX-1vR_4DXPTh1nuiOwWKwIZN3NkGP3kRwpP4Hu6fQmy3jRAOaydOuEI1jket6V4V6PG4yIG15H1N7oFfdV/pub";
+    private boolean configIsVisible = false;
+    private boolean layoutIsVisible = false;
 
     private LinkedList<double[]> dataAccumulationQueue;
     private LinkedList<float[]> dataAccumulationQueueFiltered;
@@ -137,8 +128,8 @@ class W_Networking extends Widget {
         protocolMode = "UDP"; // Set Default to UDP
         protocolIndex = 2; // Set Default to UDP
         addDropdown("Protocol", "Protocol", protocols, protocolIndex);
-        comPorts = new ArrayList<String>(getComPorts());
-        verbosePrint("comPorts = " + comPorts);
+        serialNetworkingComPorts = new ArrayList<String>(getComPorts());
+        verbosePrint("serialNetworkingComPorts = " + serialNetworkingComPorts);
         comPortToSave = 0;
 
         initialize_UI();
@@ -203,9 +194,7 @@ class W_Networking extends Widget {
         return cp5Map;
     }
 
-    /* ----- USER INTERFACE ----- */
-
-    void update() {
+    public void update() {
         super.update();
         if (protocolMode.equals("LSL")) {
             if (stream1 != null) {
@@ -219,7 +208,7 @@ class W_Networking extends Widget {
             }
         }
 
-        checkTopNovEvents();
+        checkTopNavEvents();
 
         // ignore top left button interaction when widgetSelector dropdown is active
         List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
@@ -319,7 +308,7 @@ class W_Networking extends Widget {
         }
     }
 
-    Boolean textfieldsAreActive(String[] names) {
+    private Boolean textfieldsAreActive(String[] names) {
         boolean isActive = false;
         for (String name : names) {
             if (cp5_networking.get(Textfield.class, name).isFocus()) {
@@ -329,7 +318,7 @@ class W_Networking extends Widget {
         return isActive;
     }
 
-    void draw() {
+    public void draw() {
         super.draw();
         pushStyle();
 
@@ -376,7 +365,6 @@ class W_Networking extends Widget {
             textFont(h1, headerFontSize);
             text("IP", column0, row2);
             text("Port", column0, row3);
-            text("Address", column0, row4);
         } else if (protocolMode.equals("UDP")) {
             textFont(f4, 40);
             text("UDP", x + 20, y + h / 8 + 15);
@@ -400,7 +388,7 @@ class W_Networking extends Widget {
 
     }
 
-    void initialize_UI() {
+    private void initialize_UI() {
         cp5_networking = new ControlP5(pApplet);
         cp5_networking_dropdowns = new ControlP5(pApplet);
         cp5_networking_baudRate = new ControlP5(pApplet);
@@ -416,8 +404,8 @@ class W_Networking extends Widget {
         createTextFields(lslTextFieldNames, lslTextDefaultVals);
 
         // Serial
-        boolean noComPortsFound = comPorts.size() == 0 ? true : false;
-        createPortDropdown("port_name", comPorts, noComPortsFound);
+        boolean noComPortsFound = serialNetworkingComPorts.size() == 0 ? true : false;
+        createPortDropdown("port_name", serialNetworkingComPorts, noComPortsFound);
         createBaudDropdown("baud_rate", baudRates);
 
         for (int i = 0; i < dataTypeNames.size(); i++) {
@@ -429,8 +417,8 @@ class W_Networking extends Widget {
         createDataOutputsButton();
     }
 
-    /* Shows and Hides appropriate CP5 elements within widget */
-    void showCP5() {
+    // Shows and Hides appropriate CP5 elements within widget
+    public void showCP5() {
 
         osc_visible = false;
         udp_visible = false;
@@ -471,14 +459,14 @@ class W_Networking extends Widget {
         }
     }
 
-    void setTextFieldVisible(String[] textFieldNames, boolean isVisible) {
+    private void setTextFieldVisible(String[] textFieldNames, boolean isVisible) {
         for (int i = 0; i < textFieldNames.length; i++) {
             cp5_networking.get(Textfield.class, textFieldNames[i]).setVisible(isVisible);
         }
     }
 
     // Lock text fields by setting _lock = true, unlock using false
-    void lockTextFields(String[] textFieldNames, boolean _lock) {
+    private void lockTextFields(String[] textFieldNames, boolean _lock) {
         for (int i = 0; i < textFieldNames.length; i++) {
             if (_lock) {
                 cp5_networking.get(Textfield.class, textFieldNames[i]).lock();
@@ -488,14 +476,14 @@ class W_Networking extends Widget {
         }
     }
 
-    void createTextFields(String[] textFieldNames, String[] defaultValues) {
+    private void createTextFields(String[] textFieldNames, String[] defaultValues) {
         for (int i = 0; i < textFieldNames.length; i++) {
             createTextField(textFieldNames[i], defaultValues[i]);
         }
     }
 
     /* Create textfields for network parameters */
-    void createTextField(String name, String default_text) {
+    private void createTextField(String name, String default_text) {
         cp5_networking.addTextfield(name).align(10, 100, 10, 100) // Alignment
                 .setSize(120, 20) // Size of textfield
                 .setFont(f2)
@@ -513,7 +501,7 @@ class W_Networking extends Widget {
         ;
     }
 
-    void createStartButton() {
+    private void createStartButton() {
         startButton = createButton(cp5_networking, "startStopNetworkStream", "Start " + protocolMode + " Stream",
                 x + w / 2 - 70, y + h - 40, 200, 20, 0, p4, 14, TURN_ON_GREEN, OPENBCI_DARKBLUE, BUTTON_HOVER,
                 BUTTON_PRESSED, OBJECT_BORDER_GREY, 0);
@@ -547,32 +535,32 @@ class W_Networking extends Widget {
     }
 
     // Change appearance of networking start/stop button to Off
-    void turnOffButton() {
+    private void turnOffButton() {
         startButton.setColorBackground(TURN_ON_GREEN);
         startButton.getCaptionLabel().setText("Start " + protocolMode + " Stream");
     }
 
-    void createGuideButton() {
+    private void createGuideButton() {
         guideButton = createButton(cp5_networking, "networkingGuideButton", "Networking Guide", (int) (x0 + 1),
                 (int) (y0 + navH + 1), 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         guideButton.setBorderColor(OBJECT_BORDER_GREY);
         guideButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser(networkingGuideURL);
+                openURLInBrowser(NETWORKING_GUIDE_URL);
                 output("Opening Networking Widget Guide using default browser.");
             }
         });
         guideButton.setDescription("Click to open the Networking Widget Guide in your default browser.");
     }
 
-    void createDataOutputsButton() {
+    private void createDataOutputsButton() {
         dataOutputsButton = createButton(cp5_networking, "dataOutputsButton", "Data Outputs",
                 x0 + 1 + 3 + guideButton.getWidth(), y0 + navH + 1, 100, navH - 3, p5, 12, colorNotPressed,
                 OPENBCI_DARKBLUE);
         dataOutputsButton.setBorderColor(OBJECT_BORDER_GREY);
         dataOutputsButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                openURLInBrowser(dataOutputsURL);
+                openURLInBrowser(NETWORKING_DATA_OUTPUTS_URL);
                 output("Opening Networking Data Outputs Guide using default browser.");
             }
         });
@@ -580,7 +568,7 @@ class W_Networking extends Widget {
     }
 
     /* Creating DataType Dropdowns */
-    void createDropdown(String name, List<String> _items) {
+    private void createDropdown(String name, List<String> _items) {
 
         ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
                 .setOpen(false)
@@ -610,7 +598,7 @@ class W_Networking extends Widget {
         ;
     }
 
-    void createBaudDropdown(String name, List<String> _items) {
+    private void createBaudDropdown(String name, List<String> _items) {
         ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name).setOpen(false)
                 .setOutlineColor(OPENBCI_DARKBLUE).setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255)) // text color
@@ -638,7 +626,7 @@ class W_Networking extends Widget {
         ;
     }
 
-    void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
+    private void createPortDropdown(String name, List<String> _items, boolean isEmpty) {
         if (isEmpty)
             _items.add("None"); // Fix #642 and #637
         ScrollableList scrollList = cp5_networking_portName.addScrollableList(name).setOpen(false)
@@ -677,7 +665,7 @@ class W_Networking extends Widget {
         }
     }
 
-    void screenResized() {
+    public void screenResized() {
         super.screenResized();
 
         //Very important to allow users to interact with objects after app resize
@@ -732,16 +720,12 @@ class W_Networking extends Widget {
             }
             cp5_networking.get(Textfield.class, "OSC_ip1").setPosition(column1, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port1").setPosition(column1, row3 - offset);
-            cp5_networking.get(Textfield.class, "OSC_address1").setPosition(column1, row4 - offset);
             cp5_networking.get(Textfield.class, "OSC_ip2").setPosition(column2, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port2").setPosition(column2, row3 - offset);
-            cp5_networking.get(Textfield.class, "OSC_address2").setPosition(column2, row4 - offset);
             cp5_networking.get(Textfield.class, "OSC_ip3").setPosition(column3, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port3").setPosition(column3, row3 - offset);
-            cp5_networking.get(Textfield.class, "OSC_address3").setPosition(column3, row4 - offset);
             cp5_networking.get(Textfield.class, "OSC_ip4").setPosition(column4, row2 - offset);
             cp5_networking.get(Textfield.class, "OSC_port4").setPosition(column4, row3 - offset);
-            cp5_networking.get(Textfield.class, "OSC_address4").setPosition(column4, row4 - offset); //adding forth column only for OSC
         } else if (protocolMode.equals("UDP")) {
             for (String textField : udpTextFieldNames) {
                 cp5_networking.get(Textfield.class, textField).setWidth(itemWidth);
@@ -776,22 +760,14 @@ class W_Networking extends Widget {
         cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setPosition(column4, row1-offset);
     }
 
-    void mousePressed() {
-        super.mousePressed(); // calls the parent mousePressed() method of Widget (DON'T REMOVE)
-    }
-
-    void mouseReleased() {
-        super.mouseReleased(); // calls the parent mouseReleased() method of Widget (DON'T REMOVE)
-    }
-
-    void hideAllTextFields(String[] textFieldNames) {
+    private void hideAllTextFields(String[] textFieldNames) {
         for (int i = 0; i < textFieldNames.length; i++) {
             cp5_networking.get(Textfield.class, textFieldNames[i]).setVisible(false);
         }
     }
 
     /* Function call to hide all widget CP5 elements */
-    void hideElements() {
+    private void hideElements() {
         String[] allTextFields = concat(oscTextFieldNames, udpTextFieldNames);
         allTextFields = concat(allTextFields, lslTextFieldNames);
         hideAllTextFields(allTextFields);
@@ -804,7 +780,7 @@ class W_Networking extends Widget {
         cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setVisible(false);
     }
 
-    boolean getNetworkActive() {
+    public boolean getNetworkActive() {
         return networkActive;
     }
 
@@ -812,16 +788,15 @@ class W_Networking extends Widget {
      * Call to shutdown some UI stuff. Called from W_manager, maybe do this
      * differently..
      */
-    void shutDown() {
+    public void shutDown() {
         hideElements();
     }
 
-    void initializeStreams() {
+    private void initializeStreams() {
         String ip;
         int port;
-        String address;
         String name;
-        int nChanLSL;
+        int numLslDataPoints;
         int baudRate;
         String type;
         int streamNumber;
@@ -834,39 +809,36 @@ class W_Networking extends Widget {
 
         // Establish OSC Streams
         if (protocolMode.equals("OSC")) {
+            final String baseAddress = "/openbci";
             if (!dt1.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port1").getText());
-                address = cp5_networking.get(Textfield.class, "OSC_address1").getText();
                 streamNumber = 0;
-                stream1 = new Stream(dt1, ip, port, address, nchan, streamNumber);
+                stream1 = new Stream(dt1, ip, port, baseAddress, streamNumber);
             } else {
                 stream1 = null;
             }
             if (!dt2.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port2").getText());
-                address = cp5_networking.get(Textfield.class, "OSC_address2").getText();
                 streamNumber = 1;
-                stream2 = new Stream(dt2, ip, port, address, nchan, streamNumber);
+                stream2 = new Stream(dt2, ip, port, baseAddress, streamNumber);
             } else {
                 stream2 = null;
             }
             if (!dt3.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port3").getText());
-                address = cp5_networking.get(Textfield.class, "OSC_address3").getText();
                 streamNumber = 2;
-                stream3 = new Stream(dt3, ip, port, address, nchan, streamNumber);
+                stream3 = new Stream(dt3, ip, port, baseAddress, streamNumber);
             } else {
                 stream3 = null;
             }
             if (!dt4.equals("None")) {
                 ip = cp5_networking.get(Textfield.class, "OSC_ip4").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "OSC_port4").getText());
-                address = cp5_networking.get(Textfield.class, "OSC_address4").getText();
                 streamNumber = 3;
-                stream4 = new Stream(dt4, ip, port, address, nchan, streamNumber);
+                stream4 = new Stream(dt4, ip, port, baseAddress, streamNumber);
             } else {
                 stream4 = null;
             }
@@ -877,7 +849,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip1").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port1").getText());
                 streamNumber = 0;
-                stream1 = new Stream(dt1, ip, port, nchan, streamNumber);
+                stream1 = new Stream(dt1, ip, port, streamNumber);
             } else {
                 stream1 = null;
             }
@@ -885,7 +857,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip2").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port2").getText());
                 streamNumber = 1;
-                stream2 = new Stream(dt2, ip, port, nchan, streamNumber);
+                stream2 = new Stream(dt2, ip, port, streamNumber);
             } else {
                 stream2 = null;
             }
@@ -893,7 +865,7 @@ class W_Networking extends Widget {
                 ip = cp5_networking.get(Textfield.class, "UDP_ip3").getText();
                 port = Integer.parseInt(cp5_networking.get(Textfield.class, "UDP_port3").getText());
                 streamNumber = 2;
-                stream3 = new Stream(dt3, ip, port, nchan, streamNumber);
+                stream3 = new Stream(dt3, ip, port, streamNumber);
             } else {
                 stream3 = null;
             }
@@ -903,39 +875,40 @@ class W_Networking extends Widget {
             if (!dt1.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name1").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type1").getText();
-                nChanLSL = getDataTypeNumChanLSL(dt1);
+                numLslDataPoints = getDataTypeNumChanLSL(dt1);
                 streamNumber = 0;
-                stream1 = new Stream(dt1, name, type, nChanLSL, nchan, streamNumber);
+                stream1 = new Stream(dt1, name, type, numLslDataPoints, streamNumber);
             } else {
                 stream1 = null;
             }
             if (!dt2.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name2").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type2").getText();
-                nChanLSL = getDataTypeNumChanLSL(dt2);
+                numLslDataPoints = getDataTypeNumChanLSL(dt2);
                 streamNumber = 1;
-                stream2 = new Stream(dt2, name, type, nChanLSL, nchan, streamNumber);
+                stream2 = new Stream(dt2, name, type, numLslDataPoints, streamNumber);
             } else {
                 stream2 = null;
             }
             if (!dt3.equals("None")) {
                 name = cp5_networking.get(Textfield.class, "LSL_name3").getText();
                 type = cp5_networking.get(Textfield.class, "LSL_type3").getText();
-                nChanLSL = getDataTypeNumChanLSL(dt3);
+                numLslDataPoints = getDataTypeNumChanLSL(dt3);
                 streamNumber = 2;
-                stream3 = new Stream(dt3, name, type, nChanLSL, nchan, streamNumber);
+                stream3 = new Stream(dt3, name, type, numLslDataPoints, streamNumber);
             } else {
                 stream3 = null;
             }
         } else if (protocolMode.equals("Serial")) {
             if (!dt1.equals("None")) {
-                name = comPorts.get((int) (cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
+                name = serialNetworkingComPorts
+                        .get((int) (cp5_networking_portName.get(ScrollableList.class, "port_name").getValue()));
                 println("ComPort: " + name);
                 println("Baudrate: " + Integer.parseInt(baudRates
                         .get((int) (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue()))));
                 baudRate = Integer.parseInt(baudRates
                         .get((int) (cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").getValue())));
-                stream1 = new Stream(dt1, name, baudRate, pApplet, nchan);
+                stream1 = new Stream(dt1, name, baudRate, pApplet);
             } else {
                 stream1 = null;
             }
@@ -943,7 +916,7 @@ class W_Networking extends Widget {
     }
 
     /* Start networking */
-    void startNetwork() {
+    public void startNetwork() {
         if (stream1 != null) {
             stream1.start();
         }
@@ -959,7 +932,7 @@ class W_Networking extends Widget {
     }
 
     /* Stop networking */
-    void stopNetwork() {
+    public void stopNetwork() {
         networkActive = false;
 
         if (stream1 != null) {
@@ -1017,18 +990,11 @@ class W_Networking extends Widget {
                 }
             }
         }
-        outputError("Error detecting numChan for LSL stream... please fix!");
+        outputError("Error detecting number of channels for LSL stream data... please fix!");
         return 0;
     }
 
-    void clearCP5() {
-        // clears all controllers from ControlP5 instance...
-        w_networking.cp5_networking.dispose();
-        w_networking.cp5_networking_dropdowns.dispose();
-        println("clearing cp5_networking...");
-    }
-
-    void checkOverlappingSerialDropdown() {
+    private void checkOverlappingSerialDropdown() {
         // When using serial mode, lock baud rate dropdown when datatype dropdown is in
         // use
         if (protocolMode.equals("Serial")) {
@@ -1043,7 +1009,7 @@ class W_Networking extends Widget {
         }
     }
 
-    void checkTopNovEvents() {
+    private void checkTopNavEvents() {
         // Check if a change has occured in TopNav
         if ((topNav.configSelector.isVisible != configIsVisible)
                 || (topNav.layoutSelector.isVisible != layoutIsVisible)) {
@@ -1109,16 +1075,15 @@ class Stream extends Thread {
     private String dataType;
     private String ip;
     private int port;
-    private String address;
+    private String baseOscAddress;
     private String streamType;
     private String streamName;
-    private int nChanLSL;
-    private int numChan = 0;
+    private int numLslDataPoints;
+    private int numExgChannels;
     private DecimalFormat threeDecimalPlaces;
     private DecimalFormat fourLeadingPlaces;
 
     public Boolean isStreaming;
-    // Data buffers set dynamically in updateNumChan()
     private int start;
     private float[] dataToSend;
     private double[][] previousFrameData;
@@ -1129,7 +1094,7 @@ class Stream extends Thread {
 
     // OSC Objects
     private OscP5 osc;
-    private NetAddress netaddress;
+    private NetAddress oscNetAddress;
     private OscMessage msg;
     // UDP Objects
     private UDP udp;
@@ -1145,45 +1110,32 @@ class Stream extends Thread {
 
     private PApplet pApplet;
 
-    private void updateNumChan(int _numChan) {
-        numChan = _numChan;
-        println("Stream update numChan to " + numChan);
-        dataToSend = new float[numChan * nPointsPerUpdate];
-        println("nPointsPerUpdate " + nPointsPerUpdate);
-        println("dataToSend len: " + numChan * nPointsPerUpdate);
-
-        // Bug #638: ArrayOutOfBoundsException was thrown if
-        // nPointsPerUpdate was larger than 10, as start was
-        // set to dataProcessingFilteredBuffer[0].length - 10.
-        start = dataProcessingFilteredBuffer[0].length - nPointsPerUpdate;
-    }
-
-    /* OSC Stream */
-    Stream(String dataType, String ip, int port, String address, int _nchan, int _streamNumber) {
+    // OSC Stream
+    Stream(String dataType, String ip, int port, String baseAddress, int _streamNumber) {
         this.protocol = "OSC";
         this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.ip = ip;
         this.port = port;
-        this.address = address;
+        this.baseOscAddress = baseAddress;
         this.isStreaming = false;
-        updateNumChan(_nchan);
+        updateNumChan();
         try {
-            closeNetwork(); // make sure everything is closed!
+            closeNetwork();
         } catch (Exception e) {
             outputError("Error closing network while creating OSC Stream: " + e);
         }
     }
 
-    /* UDP Stream */
-    Stream(String dataType, String ip, int port, int _nchan, int _streamNumber) {
+    // UDP Stream
+    Stream(String dataType, String ip, int port, int _streamNumber) {
         this.protocol = "UDP";
         this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.ip = ip;
         this.port = port;
         this.isStreaming = false;
-        updateNumChan(_nchan);
+        updateNumChan();
 
         // Force decimal formatting for all Locales
         Locale currentLocale = Locale.getDefault();
@@ -1194,33 +1146,31 @@ class Stream extends Thread {
         fourLeadingPlaces = new DecimalFormat("####", otherSymbols);
 
         try {
-            closeNetwork(); // make sure everything is closed!
+            closeNetwork();
         } catch (Exception e) {
             outputError("Error closing network while creating UDP Stream: " + e);
         }
     }
 
-    /* LSL Stream */
-    Stream(String dataType, String streamName, String streamType, int nChanLSL, int _nchan,
-            int _streamNumber) {
+    // LSL Stream
+    Stream(String dataType, String streamName, String streamType, int numLslDataPoints, int _streamNumber) {
         this.protocol = "LSL";
         this.streamNumber = _streamNumber;
         this.dataType = dataType;
         this.streamName = streamName;
         this.streamType = streamType;
-        this.nChanLSL = nChanLSL;
+        this.numLslDataPoints = numLslDataPoints;
         this.isStreaming = false;
-        updateNumChan(_nchan);
+        updateNumChan();
         try {
-            closeNetwork(); // make sure everything is closed!
+            closeNetwork();
         } catch (Exception e) {
             outputError("Error closing network while creating LSL Stream: " + e);
         }
     }
 
-    // Serial Stream %%%%%
-    Stream(String dataType, String portName, int baudRate, PApplet _this, int _nchan) {
-        // %%%%%
+    // Serial Stream
+    Stream(String dataType, String portName, int baudRate, PApplet _this) {
         this.protocol = "Serial";
         this.streamNumber = 0;
         this.dataType = dataType;
@@ -1228,7 +1178,15 @@ class Stream extends Thread {
         this.baudRate = baudRate;
         this.isStreaming = false;
         this.pApplet = _this;
-        updateNumChan(_nchan);
+        updateNumChan();
+
+        // Force decimal formatting for all Locales
+        Locale currentLocale = Locale.getDefault();
+        DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols(currentLocale);
+        otherSymbols.setDecimalSeparator('.');
+        otherSymbols.setGroupingSeparator(',');
+        threeDecimalPlaces = new DecimalFormat("0.000", otherSymbols);
+        fourLeadingPlaces = new DecimalFormat("####", otherSymbols);
 
         try {
             closeNetwork();
@@ -1237,7 +1195,7 @@ class Stream extends Thread {
         }
     }
 
-    void start() {
+    public void start() {
         this.isStreaming = true;
         if (!this.protocol.equals("LSL")) {
             super.start();
@@ -1246,7 +1204,7 @@ class Stream extends Thread {
         }
     }
 
-    void run() {
+    public void run() {
         if (!this.protocol.equals("LSL")) {
             openNetwork();
             while (this.isStreaming) {
@@ -1284,8 +1242,17 @@ class Stream extends Thread {
         }
     }
 
+    private void updateNumChan() {
+        numExgChannels = currentBoard.getNumEXGChannels();
+        dataToSend = new float[numExgChannels * nPointsPerUpdate];
+        // Bug #638: ArrayOutOfBoundsException was thrown if
+        // nPointsPerUpdate was larger than 10, as start was
+        // set to dataProcessingFilteredBuffer[0].length - 10.
+        start = dataProcessingFilteredBuffer[0].length - nPointsPerUpdate;
+    }
+
     // This method has been updated to reduce duplicate packets - RW 3/15/23
-    synchronized Boolean checkForData() {
+    private synchronized Boolean checkForData() {
         if (this.dataType.equals("TimeSeriesRaw")) {
             return w_networking.newTimeSeriesDataToSend.compareAndSet(true, false);
         }
@@ -1301,7 +1268,7 @@ class Stream extends Thread {
         }
     }
 
-    void sendData() {
+    private void sendData() {
         if (this.dataType.equals("TimeSeriesFilt") || this.dataType.equals("TimeSeriesRaw")) {
             sendTimeSeriesData();
         } else if (this.dataType.equals("Focus")) {
@@ -1338,10 +1305,11 @@ class Stream extends Thread {
         }
     }
 
-    /* This method contains all of the policies for sending data types */
-    void sendTimeSeriesData() {
+    private void sendTimeSeriesData() {
 
         float[][] newDataFromBuffer = new float[currentBoard.getNumEXGChannels()][nPointsPerUpdate];
+        String udpDataTypeName = "timeSeriesRaw";
+        String oscDataTypeName = "time-series-raw";
 
         if (this.dataType.equals("TimeSeriesRaw")) {
             // Unfiltered
@@ -1350,6 +1318,8 @@ class Stream extends Thread {
             }
         } else {
             // Filtered
+            udpDataTypeName = "timeSeriesFilt";
+            oscDataTypeName = "time-series-filtered";
             for (int i = 0; i < newDataFromBuffer.length; i++) {
                 newDataFromBuffer[i] = w_networking.dataBufferToSend_Filtered[i];
             }
@@ -1370,7 +1340,10 @@ class Stream extends Thread {
 
         if (this.protocol.equals("UDP")) {
 
-            StringBuilder output = new StringBuilder("{\"type\":\"exg\",\"data\":[");
+            StringBuilder output = new StringBuilder();
+            output.append("{\"type\":\"");
+            output.append(udpDataTypeName);
+            output.append("\",\"data\":[");
 
             for (int i = 0; i < newDataFromBuffer.length; i++) {
                 output.append("[");
@@ -1397,12 +1370,12 @@ class Stream extends Thread {
 
             for (int i = 0; i < newDataFromBuffer.length; i++) {
                 msg.clearArguments();
-                msg.setAddrPattern(address + "/exg/" + i + "/");
-                for (int j = 0; j < numChan; j++) {
+                msg.setAddrPattern(baseOscAddress + "/" + oscDataTypeName + "/" + i);
+                for (int j = 0; j < numExgChannels; j++) {
                     msg.add(newDataFromBuffer[i][j]);
                 }
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
@@ -1412,7 +1385,7 @@ class Stream extends Thread {
 
             for (int i = 0; i < newDataFromBuffer.length; i++) {
                 for (int j = 0; j < newDataFromBuffer[i].length; j++) {
-                    dataToSend[j + numChan * i] = newDataFromBuffer[i][j];
+                    dataToSend[j + numExgChannels * i] = newDataFromBuffer[i][j];
                 }
             }
             // From LSLLink Library: The time stamps of other samples are automatically
@@ -1429,7 +1402,7 @@ class Stream extends Thread {
                     float chan_uV = newDataFromBuffer[i][j];
                     
                     serialMessage.append(threeDecimalPlaces.format(chan_uV));
-                    if (i < numChan - 1) {
+                    if (i < numExgChannels - 1) {
                         // add a comma to serialMessage to separate chan values, as long as it isn't last value...
                         serialMessage.append(","); 
                     }
@@ -1448,14 +1421,14 @@ class Stream extends Thread {
     }
 
     // Send out 1 or 0 as an integer over all networking data types for "Focus" data
-    void sendFocusData() {
+    private void sendFocusData() {
         final int IS_METRIC = w_focus.getMetricExceedsThreshold();
         if (this.protocol.equals("OSC")) {
             msg.clearArguments();
-            // ADD Focus Data
+            msg.setAddrPattern(baseOscAddress + "/focus");
             msg.add(IS_METRIC);
             try {
-                this.osc.send(msg, this.netaddress);
+                this.osc.send(msg, this.oscNetAddress);
             } catch (Exception e) {
                 println(e.getMessage());
             }
@@ -1486,34 +1459,34 @@ class Stream extends Thread {
         }
     }
 
-    void sendFFTData() {
+    private void sendFFTData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
         // EEG/FFT readings above 125Hz don't typically travel through the skull
         // So for now, only send out 0-125Hz with 1 bin per Hz
         // Bin 10 == 10Hz frequency range
         if (this.protocol.equals("OSC")) {
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
-                msg.add(i + 1);
+                msg.setAddrPattern(baseOscAddress + "/fft/" + i);
                 for (int j = 0; j < 125; j++) {
                     msg.add(fftBuff[i].getBand(j));
                 }
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
         } else if (this.protocol.equals("UDP")) {
             String outputter = "{\"type\":\"fft\",\"data\":[[";
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < 125; j++) {
                     outputter += str(fftBuff[i].getBand(j));
                     if (j != 125 - 1) {
                         outputter += ",";
                     }
                 }
-                if (i != numChan - 1) {
+                if (i != numExgChannels - 1) {
                     outputter += "],[";
                 } else {
                     outputter += "]]}\r\n";
@@ -1525,8 +1498,8 @@ class Stream extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
-            float[] _dataToSend = new float[numChan * 125];
-            for (int i = 0; i < numChan; i++) {
+            float[] _dataToSend = new float[numExgChannels * 125];
+            for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < 125; j++) {
                     _dataToSend[j + 125 * i] = fftBuff[i].getBand(j);
                 }
@@ -1538,7 +1511,7 @@ class Stream extends Thread {
             ///////////////////////////////// THIS OUTPUT IS DISABLED
             // Send FFT Data over Serial ...
             /*
-                * for (int i=0;i<numChan;i++) { serialMessage = "[" + (i+1) + ","; //clear
+                * for (int i=0;i<numExgChannels;i++) { serialMessage = "[" + (i+1) + ","; //clear
                 * message for (int j=0;j<125;j++) { float fft_band = fftBuff[i].getBand(j);
                 * String fft_band_3dec = threeDecimalPlaces.format(fft_band); serialMessage +=
                 * fft_band_3dec; if (j < 125-1) { serialMessage += ","; //add a comma to
@@ -1550,20 +1523,20 @@ class Stream extends Thread {
         }
     }
 
-    void sendPowerBandData() {
+    private void sendPowerBandData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
         // just like the FFT data
         int numBandPower = 5; // DELTA, THETA, ALPHA, BETA, GAMMA
 
         if (this.protocol.equals("OSC")) {
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
-                msg.add(i + 1);
+                msg.setAddrPattern(baseOscAddress + "/band-power/" + i);
                 for (int j = 0; j < numBandPower; j++) {
                     msg.add(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
                 }
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
@@ -1571,14 +1544,14 @@ class Stream extends Thread {
         } else if (this.protocol.equals("UDP")) {
             // DELTA, THETA, ALPHA, BETA, GAMMA
             String outputter = "{\"type\":\"bandPower\",\"data\":[[";
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < numBandPower; j++) {
                     outputter += str(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
                     if (j != numBandPower - 1) {
                         outputter += ",";
                     }
                 }
-                if (i != numChan - 1) {
+                if (i != numExgChannels - 1) {
                     outputter += "],[";
                 } else {
                     outputter += "]]}\r\n";
@@ -1591,15 +1564,15 @@ class Stream extends Thread {
             }
         } else if (this.protocol.equals("LSL")) {
             // DELTA, THETA, ALPHA, BETA, GAMMA
-            float[] avgPowerLSL = new float[numChan * numBandPower];
-            for (int i = 0; i < numChan; i++) {
+            float[] avgPowerLSL = new float[numExgChannels * numBandPower];
+            for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < numBandPower; j++) {
                     dataToSend[j + numBandPower * i] = dataProcessing.avgPowerInBins[i][j];
                 }
             }
             outlet_data.push_chunk(dataToSend);
         } else if (this.protocol.equals("Serial")) {
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 serialMessage = "[" + (i + 1) + ","; // clear message
                 for (int j = 0; j < numBandPower; j++) {
                     float power_band = dataProcessing.avgPowerInBins[i][j];
@@ -1621,23 +1594,27 @@ class Stream extends Thread {
         }
     }
 
-    void sendNormalizedPowerBandData() {
+    private void sendNormalizedPowerBandData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ...
         // just like the FFT data
         // Band Power order: DELTA, THETA, ALPHA, BETA, GAMMA
         int numBandPower = 5; 
 
         if (this.protocol.equals("OSC")) {
+
             msg.clearArguments();
             for (int i = 0; i < numBandPower; i++) {
+                msg.setAddrPattern(baseOscAddress + "/average-band-power/" + i);
                 msg.add(w_bandPower.getNormalizedBPSelectedChannels()[i]); // [CHAN][BAND]
+                try {
+                    this.osc.send(msg, this.oscNetAddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
             }
-            try {
-                this.osc.send(msg, this.netaddress);
-            } catch (Exception e) {
-                println(e.getMessage());
-            }
+            
         } else if (this.protocol.equals("UDP")) {
+
             StringBuilder outputter = new StringBuilder("{\"type\":\"averageBandPower\",\"data\":[");
             for (int i = 0; i < numBandPower; i++) {
                 outputter.append(str(w_bandPower.getNormalizedBPSelectedChannels()[i]));
@@ -1653,10 +1630,14 @@ class Stream extends Thread {
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         } else if (this.protocol.equals("LSL")) {
+
             float[] avgPowerLSL = w_bandPower.getNormalizedBPSelectedChannels();
             outlet_data.push_sample(avgPowerLSL);
+
         } else if (this.protocol.equals("Serial")) {
+
             serialMessage = "[";
             for (int i = 0; i < numBandPower; i++) {
                 float power_band = w_bandPower.getNormalizedBPSelectedChannels()[i];
@@ -1674,28 +1655,27 @@ class Stream extends Thread {
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         }
     }
 
-    void sendEMGData() {
+    private void sendEMGData() {
         if (this.protocol.equals("OSC")) {
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
-                msg.add(i + 1);
-                // ADD NORMALIZED EMG CHANNEL DATA
+                msg.setAddrPattern(baseOscAddress + "/emg/" + i);
                 msg.add(w_emg.motorWidgets[i].output_normalized);
-                // println(i + " | " + w_emg.motorWidgets[i].output_normalized);
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
         } else if (this.protocol.equals("UDP")) {
             String outputter = "{\"type\":\"emg\",\"data\":[";
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 outputter += str(w_emg.motorWidgets[i].output_normalized);
-                if (i != numChan - 1) {
+                if (i != numExgChannels - 1) {
                     outputter += ",";
                 } else {
                     outputter += "]}\r\n";
@@ -1707,17 +1687,17 @@ class Stream extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
-            for (int j = 0; j < numChan; j++) {
+            for (int j = 0; j < numExgChannels; j++) {
                 dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
             }
             outlet_data.push_sample(dataToSend);
         } else if (this.protocol.equals("Serial")) {
             serialMessage = "";
-            for (int i = 0; i < numChan; i++) {
+            for (int i = 0; i < numExgChannels; i++) {
                 float emg_normalized = w_emg.motorWidgets[i].output_normalized;
                 String emg_normalized_3dec = threeDecimalPlaces.format(emg_normalized);
                 serialMessage += emg_normalized_3dec;
-                if (i != numChan - 1) {
+                if (i != numExgChannels - 1) {
                     serialMessage += ",";
                 } else {
                     serialMessage += "\n";
@@ -1732,17 +1712,23 @@ class Stream extends Thread {
         }
     }
 
-    void sendAccelerometerData() {
+    private void sendAccelerometerData() {
         if (this.protocol.equals("OSC")) {
-            msg.clearArguments();
-            msg.setAddrPattern(address + "/accelerometer/");
             for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                msg.clearArguments();
+                if (i == 0) {
+                    msg.setAddrPattern(baseOscAddress + "/accelerometer/x");
+                } else if (i == 1) {
+                    msg.setAddrPattern(baseOscAddress + "/accelerometer/y");
+                } else if (i == 2) {
+                    msg.setAddrPattern(baseOscAddress + "/accelerometer/z");
+                }
                 msg.add(w_accelerometer.getLastAccelVal(i));
-            }
-            try {
-                this.osc.send(msg, this.netaddress);
-            } catch (Exception e) {
-                println(e.getMessage());
+                try {
+                    this.osc.send(msg, this.oscNetAddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
             }
         } else if (this.protocol.equals("UDP")) {
             String outputter = "{\"type\":\"accelerometer\",\"data\":[";
@@ -1792,7 +1778,7 @@ class Stream extends Thread {
         }
     }
 
-    void sendAnalogReadData() {
+    private void sendAnalogReadData() {
         // this function is only called if the board is analog capable
         int[] analogChannels = ((AnalogCapableBoard) currentBoard).getAnalogChannels();
         List<double[]> lastData = ((AnalogCapableBoard) currentBoard).getDataWithAnalog(1);
@@ -1803,16 +1789,16 @@ class Stream extends Thread {
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < NUM_ANALOG_READS; i++) {
                 msg.clearArguments();
-                msg.add(i + 1);
+                msg.setAddrPattern(baseOscAddress + "/analog/" + i);
                 msg.add((int) lastSample[analogChannels[i]]);
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
         } else if (this.protocol.equals("UDP")) {
-            String outputter = "{\"type\":\"auxiliary\",\"data\":[";
+            String outputter = "{\"type\":\"analog\",\"data\":[";
             for (int i = 0; i < NUM_ANALOG_READS; i++) {
                 int auxData = (int) lastSample[analogChannels[i]];
                 String auxData_formatted = fourLeadingPlaces.format(auxData);
@@ -1856,22 +1842,22 @@ class Stream extends Thread {
         }
     }
 
-    void sendDigitalReadData() {
+    private void sendDigitalReadData() {
         final int NUM_DIGITAL_READS = w_digitalRead.getNumDigitalReads();
 
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                 msg.clearArguments();
-                msg.add(i + 1);
+                msg.setAddrPattern(baseOscAddress + "/digital/" + i);
                 msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
                 try {
-                    this.osc.send(msg, this.netaddress);
+                    this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
         } else if (this.protocol.equals("UDP")) {
-            String outputter = "{\"type\":\"auxiliary\",\"data\":[";
+            String outputter = "{\"type\":\"digital\",\"data\":[";
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                 int auxData = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
                 String auxData_formatted = String.format("%d", auxData);
@@ -1915,99 +1901,76 @@ class Stream extends Thread {
         }
     }
 
-    ////////////////////////////////////// Stream pulse data from W_PulseSensor
-    // JAN 2021 - Using this method to test refactoring Networking streaming
-    void sendPulseData() {
+    private void sendPulseData() {
         // Get data from Board that
-        int numDataPoints = 3;
-        double[][] frameData = currentBoard.getFrameData();
-        int[] analogChannels = ((AnalogCapableBoard) currentBoard).getAnalogChannels();
+        int numDataPoints = 2;
 
-        // Check for state change in the available frameData. This works, but maybe
-        // checkIfEnoughDataToSend could be used instead and be more accurate...
-        if (!frameData.equals(previousFrameData)) {
+        if (this.protocol.equals("OSC")) {
 
-            previousFrameData = frameData;
-
-            if (this.protocol.equals("OSC")) {
-
-                for (int i = 0; i < frameData[0].length; i++) {
-                    int raw_signal = (int) (frameData[analogChannels[0]][i]);
-                    // ADD BPM Data (BPM, Signal, IBI)
-                    msg.clearArguments(); // This belongs here
-                    msg.add(w_pulsesensor.BPM); // Add BPM first
-                    msg.add(raw_signal); // Add Raw Signal second
-                    msg.add(w_pulsesensor.IBI); // Add IBI third
-                    // Message received in Max via OSC is a list of three integers without commas:
-                    // 75 512 600 : BPM Signal IBI
-                    // println(" " + this.port + " ~~~~ " + w_pulsesensor.BPM + "," +
-                    // w_pulsesensor.PulseWaveY[i] + "," + w_pulsesensor.IBI);
-                    try {
-                        this.osc.send(msg, this.netaddress);
-                    } catch (Exception e) {
-                        println(e.getMessage());
-                    }
-                }
-
-            } else if (this.protocol.equals("UDP")) { ////////////////// This needs to be checked
-
-                for (int i = 0; i < frameData[0].length; i++) {
-                    String outputter = "{\"type\":\"pulse\",\"data\":[";
-                    int raw_signal = (int) (frameData[analogChannels[0]][i]);
-                    outputter += str(w_pulsesensor.BPM) + ","; // Comma separated string output (BPM,Raw Signal,IBI)
-                    outputter += str(raw_signal) + ",";
-                    outputter += str(w_pulsesensor.IBI);
-                    outputter += "]}\r\n";
-                    try {
-                        this.udp.send(outputter, this.ip, this.port);
-                    } catch (Exception e) {
-                        println(e.getMessage());
-                    }
-                }
-
-            } else if (this.protocol.equals("LSL")) { /////////////////// This needs to be checked
-
-                float[] _dataToSend = new float[frameData[0].length * numDataPoints];
-                for (int i = 0; i < frameData[0].length; i++) {
-                    int raw_signal = (int) (frameData[analogChannels[0]][i]);
-                    _dataToSend[numDataPoints * i] = w_pulsesensor.BPM;
-                    _dataToSend[numDataPoints * i + 1] = raw_signal;
-                    _dataToSend[numDataPoints * i + 2] = w_pulsesensor.IBI;
-                }
-                // From LSLLink Library: The time stamps of other samples are automatically
-                // derived based on the sampling rate of the stream.
-                outlet_data.push_chunk(_dataToSend);
-
-                // Serial
-            } else if (this.protocol.equals("Serial")) { // Send Pulse Data (BPM,Signal,IBI) over Serial
-
-                for (int i = 0; i < frameData[0].length; i++) {
-                    serialMessage = ""; // clear message
-                    int raw_signal = (int) (frameData[analogChannels[0]][i]);
-                    serialMessage += w_pulsesensor.BPM + ","; // Comma separated string output (BPM,Raw Signal,IBI)
-                    serialMessage += raw_signal + ",";
-                    serialMessage += w_pulsesensor.IBI;
-                    try {
-                        println(serialMessage);
-                        this.serial_networking.write(serialMessage);
-                    } catch (Exception e) {
-                        println(e.getMessage());
-                    }
-                }
+            msg.clearArguments();
+            msg.setAddrPattern(baseOscAddress + "/pulse/bpm");
+            msg.add(w_pulsesensor.BPM);
+            try {
+                this.osc.send(msg, this.oscNetAddress);
+            } catch (Exception e) {
+                println(e.getMessage());
             }
+
+            msg.clearArguments();
+            msg.setAddrPattern(baseOscAddress + "/pulse/ibi");
+            msg.add(w_pulsesensor.IBI);
+            try {
+                this.osc.send(msg, this.oscNetAddress);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+
+        } else if (this.protocol.equals("UDP")) {
+
+            StringBuilder output = new StringBuilder("{\"type\":\"pulse\",\"data\":[");
+            output.append(str(w_pulsesensor.BPM));
+            output.append(",");
+            output.append(str(w_pulsesensor.IBI));
+            output.append("]}\r\n");
+            try {
+                this.udp.send(output.toString(), this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+
+        } else if (this.protocol.equals("LSL")) {
+
+            float[] _dataToSend = new float[2];
+            _dataToSend[0] = w_pulsesensor.BPM;
+            _dataToSend[1] = w_pulsesensor.IBI;
+            // From LSLLink Library: The time stamps of other samples are automatically
+            // derived based on the sampling rate of the stream.
+            outlet_data.push_chunk(_dataToSend);
+
+        } else if (this.protocol.equals("Serial")) {
+
+            serialMessage = ""; // clear message
+            serialMessage += w_pulsesensor.BPM + ",";
+            serialMessage += w_pulsesensor.IBI;
+            try {
+                this.serial_networking.write(serialMessage);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+
         }
     }// End sendPulseData
 
     //// Add new stream function here (ex. sendWidgetData) in the same format as
     //// above
 
-    void quit() {
+    public void quit() {
         this.isStreaming = false;
         closeNetwork();
         interrupt();
     }
 
-    void closeNetwork() {
+    private void closeNetwork() {
         if (this.protocol.equals("OSC")) {
             try {
                 this.osc.stop();
@@ -2030,14 +1993,14 @@ class Stream extends Thread {
         }
     }
 
-    void openNetwork() {
+    private void openNetwork() {
         println("Networking: " + getAttributes());
         if (this.protocol.equals("OSC")) {
             // Possibly enter a nice custom exception here
             // try {
             this.osc = new OscP5(this, this.port + 1000);
-            this.netaddress = new NetAddress(this.ip, this.port);
-            this.msg = new OscMessage(this.address);
+            this.oscNetAddress = new NetAddress(this.ip, this.port);
+            this.msg = new OscMessage(this.baseOscAddress);
             // } catch (Exception e) {
             // }
         } else if (this.protocol.equals("UDP")) {
@@ -2048,7 +2011,7 @@ class Stream extends Thread {
             output("UDP successfully connected");
         } else if (this.protocol.equals("LSL")) {
             String stream_id = "openbcigui";
-            info_data = new LSL.StreamInfo(this.streamName, this.streamType, this.nChanLSL,
+            info_data = new LSL.StreamInfo(this.streamName, this.streamType, this.numLslDataPoints,
                     currentBoard.getSampleRate(), LSL.ChannelFormat.float32, stream_id);
             outlet_data = new LSL.StreamOutlet(info_data);
         } else if (this.protocol.equals("Serial")) {
@@ -2065,14 +2028,14 @@ class Stream extends Thread {
         }
     }
 
-    // used only to print attributes to the screen
-    StringList getAttributes() {
+    // Used only to print attributes to the screen
+    private StringList getAttributes() {
         StringList attributes = new StringList();
         if (this.protocol.equals("OSC")) {
             attributes.append(this.dataType);
             attributes.append(this.ip);
             attributes.append(str(this.port));
-            attributes.append(this.address);
+            attributes.append(this.baseOscAddress);
         } else if (this.protocol.equals("UDP")) {
             attributes.append(this.dataType);
             attributes.append(this.ip);
@@ -2081,7 +2044,7 @@ class Stream extends Thread {
             attributes.append(this.dataType);
             attributes.append(this.streamName);
             attributes.append(this.streamType);
-            attributes.append(str(this.nChanLSL));
+            attributes.append(str(this.numLslDataPoints));
         } else if (this.protocol.equals("Serial")) {
             attributes.append(this.dataType);
             attributes.append(this.portName);
@@ -2097,7 +2060,7 @@ class Stream extends Thread {
  * @description Sets the selected protocol mode from the widget's dropdown menu
  * @param `n` {int} - Index of protocol item selected in menu
  */
-void Protocol(int protocolIndex) {
+public void Protocol(int protocolIndex) {
     settings.nwProtocolSave = protocolIndex;
     if (protocolIndex == 3) {
         w_networking.protocolMode = "OSC";
@@ -2113,32 +2076,32 @@ void Protocol(int protocolIndex) {
     println("Networking: Protocol mode set to " + w_networking.protocolMode + ". Stopping network");
     w_networking.screenResized();
     w_networking.showCP5();
-    if (!w_networking.networkActive) {
+    if (!w_networking.getNetworkActive()) {
         w_networking.turnOffButton();
     }
 }
 
-void dataType1(int n) {
+public void dataType1(int n) {
     w_networking.putCP5DataIntoMap();
 }
 
-void dataType2(int n) {
+public void dataType2(int n) {
     w_networking.putCP5DataIntoMap();
 }
 
-void dataType3(int n) {
+public void dataType3(int n) {
     w_networking.putCP5DataIntoMap();
 }
 
-void dataType4(int n) {
+public void dataType4(int n) {
     w_networking.putCP5DataIntoMap();
 }
 
-void port_name(int n) {
+public void port_name(int n) {
     w_networking.setComPortToSave(n);
     w_networking.putCP5DataIntoMap();
 }
 
-void baud_rate(int n) {
+public void baud_rate(int n) {
     w_networking.putCP5DataIntoMap();
 }

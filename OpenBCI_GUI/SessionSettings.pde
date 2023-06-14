@@ -198,7 +198,6 @@ class SessionSettings {
     //OSC load variables
     String nwOscIp1Load;  String nwOscIp2Load;  String nwOscIp3Load;  String nwOscIp4Load;
     String nwOscPort1Load;  String nwOscPort2Load;  String nwOscPort3Load;  String nwOscPort4Load;
-    String nwOscAddress1Load;  String nwOscAddress2Load; String nwOscAddress3Load; String nwOscAddress4Load;
     //UDP load variables
     String nwUdpIp1Load;  String nwUdpIp2Load;  String nwUdpIp3Load;
     String nwUdpPort1Load;  String nwUdpPort2Load;  String nwUdpPort3Load;
@@ -397,7 +396,6 @@ class SessionSettings {
                     saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
                     saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
-                    saveNetworkingSettings.setString("OSC_address"+i, (String) w_networking.getCP5Map().get("OSC_address"+i));
                 }
                 break;
             case 2:
@@ -593,10 +591,6 @@ class SessionSettings {
                 nwOscPort2Load = loadNetworkingSettings.getString("OSC_port2");
                 nwOscPort3Load = loadNetworkingSettings.getString("OSC_port3");
                 nwOscPort4Load = loadNetworkingSettings.getString("OSC_port4");
-                nwOscAddress1Load = loadNetworkingSettings.getString("OSC_address1");
-                nwOscAddress2Load = loadNetworkingSettings.getString("OSC_address2");
-                nwOscAddress3Load = loadNetworkingSettings.getString("OSC_address3");
-                nwOscAddress4Load = loadNetworkingSettings.getString("OSC_address4");
                 break;
             case 2:
                 nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
@@ -864,10 +858,6 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port2").setText(nwOscPort2Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port3").setText(nwOscPort3Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port4").setText(nwOscPort4Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address1").setText(nwOscAddress1Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
                 break;
             case 2:  //Apply UDP if loaded
                 println("Apply UDP Networking Mode");
