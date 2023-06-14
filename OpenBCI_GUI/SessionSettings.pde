@@ -199,18 +199,14 @@ class SessionSettings {
     String nwOscIp1Load;  String nwOscIp2Load;  String nwOscIp3Load;  String nwOscIp4Load;
     String nwOscPort1Load;  String nwOscPort2Load;  String nwOscPort3Load;  String nwOscPort4Load;
     String nwOscAddress1Load;  String nwOscAddress2Load; String nwOscAddress3Load; String nwOscAddress4Load;
-    boolean nwOscFilter1Load, nwOscFilter2Load, nwOscFilter3Load, nwOscFilter4Load;
     //UDP load variables
     String nwUdpIp1Load;  String nwUdpIp2Load;  String nwUdpIp3Load;
     String nwUdpPort1Load;  String nwUdpPort2Load;  String nwUdpPort3Load;
-    boolean nwUdpFilter1Load, nwUdpFilter2Load, nwUdpFilter3Load;
     //LSL load variables
     String nwLSLName1Load;  String nwLSLName2Load;  String nwLSLName3Load;
     String nwLSLType1Load;  String nwLSLType2Load;  String nwLSLType3Load;
-    boolean nwLSLFilter1Load, nwLSLFilter2Load, nwLSLFilter3Load;
     //Serial load variables
     int nwSerialBaudRateLoad;
-    boolean nwSerialFilter1Load;
 
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
@@ -402,7 +398,6 @@ class SessionSettings {
                     saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
                     saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
                     saveNetworkingSettings.setString("OSC_address"+i, (String) w_networking.getCP5Map().get("OSC_address"+i));
-                    saveNetworkingSettings.setBoolean("OSC_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 2:
@@ -410,7 +405,6 @@ class SessionSettings {
                     saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("UDP_ip"+i, (String) w_networking.getCP5Map().get("UDP_ip"+i));
                     saveNetworkingSettings.setString("UDP_port"+i, (String) w_networking.getCP5Map().get("UDP_port"+i));
-                    saveNetworkingSettings.setBoolean("UDP_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 1:
@@ -418,13 +412,11 @@ class SessionSettings {
                     saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("LSL_name"+i, (String) w_networking.getCP5Map().get("LSL_name"+i));
                     saveNetworkingSettings.setString("LSL_type"+i, (String) w_networking.getCP5Map().get("LSL_type"+i));
-                    saveNetworkingSettings.setBoolean("LSL_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 0:
                 saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
                 saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
-                saveNetworkingSettings.setBoolean("Serial_filter1", (boolean) w_networking.getCP5Map().get("filter1"));
                 saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
                 break;
         }//end of networking proctocol switch
@@ -605,10 +597,6 @@ class SessionSettings {
                 nwOscAddress2Load = loadNetworkingSettings.getString("OSC_address2");
                 nwOscAddress3Load = loadNetworkingSettings.getString("OSC_address3");
                 nwOscAddress4Load = loadNetworkingSettings.getString("OSC_address4");
-                nwOscFilter1Load = loadNetworkingSettings.getBoolean("OSC_filter1");
-                nwOscFilter2Load = loadNetworkingSettings.getBoolean("OSC_filter2");
-                nwOscFilter3Load = loadNetworkingSettings.getBoolean("OSC_filter3");
-                nwOscFilter4Load = loadNetworkingSettings.getBoolean("OSC_filter4");
                 break;
             case 2:
                 nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
@@ -620,9 +608,6 @@ class SessionSettings {
                 nwUdpPort1Load = loadNetworkingSettings.getString("UDP_port1");
                 nwUdpPort2Load = loadNetworkingSettings.getString("UDP_port2");
                 nwUdpPort3Load = loadNetworkingSettings.getString("UDP_port3");
-                nwUdpFilter1Load = loadNetworkingSettings.getBoolean("UDP_filter1");
-                nwUdpFilter2Load = loadNetworkingSettings.getBoolean("UDP_filter2");
-                nwUdpFilter3Load = loadNetworkingSettings.getBoolean("UDP_filter3");
                 break;
             case 1:
                 nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
@@ -634,14 +619,10 @@ class SessionSettings {
                 nwLSLType1Load = loadNetworkingSettings.getString("LSL_type1");
                 nwLSLType2Load = loadNetworkingSettings.getString("LSL_type2");
                 nwLSLType3Load = loadNetworkingSettings.getString("LSL_type3");
-                nwLSLFilter1Load = loadNetworkingSettings.getBoolean("LSL_filter1");
-                nwLSLFilter2Load = loadNetworkingSettings.getBoolean("LSL_filter2");
-                nwLSLFilter3Load = loadNetworkingSettings.getBoolean("LSL_filter3");
                 break;
             case 0:
                 nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
                 nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
-                nwSerialFilter1Load = loadNetworkingSettings.getBoolean("Serial_filter1");
                 nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
                 break;
         } //end switch case for all networking types
@@ -864,10 +845,6 @@ class SessionSettings {
         Protocol(nwProtocolLoad);
         //Update dropdowns and textfields in the Networking widget with loaded values
         w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(w_networking.protocols.get(nwProtocolLoad)); //Reference the dropdown from the appropriate widget
-        w_networking.cp5_networking.get(Toggle.class, "filter1").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter2").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter3").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter4").setState(false);
         switch (nwProtocolLoad) {
             case 3:  //Apply OSC if loaded
                 println("Apply OSC Networking Mode");
@@ -891,10 +868,6 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwOscFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwOscFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwOscFilter3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter4").setState(nwOscFilter4Load);
                 break;
             case 2:  //Apply UDP if loaded
                 println("Apply UDP Networking Mode");
@@ -910,9 +883,6 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwUdpFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwUdpFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwUdpFilter3Load);
                 break;
             case 1:  //Apply LSL if loaded
                 println("Apply LSL Networking Mode");
@@ -928,9 +898,6 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwLSLFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwLSLFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwLSLFilter3Load);
                 break;
             case 0:  //Apply Serial if loaded
                 println("Apply Serial Networking Mode");
@@ -938,7 +905,6 @@ class SessionSettings {
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
                 w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(w_networking.baudRates.get(nwSerialBaudRateLoad)); //Set text
                 w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwSerialFilter1Load);
 
                 //Look for the portName in the dropdown list
                 int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();

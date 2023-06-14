@@ -50,7 +50,7 @@ import java.awt.AWTException;
 import netP5.*; // for OSC
 import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
-import java.nio.ByteBuffer; //for UDP
+import java.nio.ByteBuffer; //for BDF file writing
 import edu.ucsd.sccn.LSL; //for LSL
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
