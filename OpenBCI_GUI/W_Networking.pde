@@ -127,9 +127,8 @@ class W_Networking extends Widget {
         settings.nwDataType3 = 0;
         settings.nwDataType4 = 0;
         settings.nwSerialPort = "None";
-        settings.nwProtocolSave = protocolIndex; // save default protocol index, or 0, updates in the Protocol()
-                                                 // function
-
+        settings.nwProtocolSave = protocolIndex;
+                                                 
         // Only show pulse data type when using Cyton in Live
         if (eegDataSource != DATASOURCE_CYTON) {
             dataTypes.remove("Pulse");
@@ -499,12 +498,15 @@ class W_Networking extends Widget {
     void createTextField(String name, String default_text) {
         cp5_networking.addTextfield(name).align(10, 100, 10, 100) // Alignment
                 .setSize(120, 20) // Size of textfield
-                .setFont(f2).setFocus(false) // Deselects textfield
-                .setColor(OPENBCI_DARKBLUE).setColorBackground(color(255, 255, 255)) // text field bg color
+                .setFont(f2)
+                .setFocus(false) // Deselects textfield
+                .setColor(OPENBCI_DARKBLUE)
+                .setColorBackground(color(255, 255, 255)) // text field bg color
                 .setColorValueLabel(OPENBCI_DARKBLUE) // text color
                 .setColorForeground(OPENBCI_DARKBLUE) // border color when not selected
                 .setColorActive(isSelected_color) // border color when selected
-                .setColorCursor(OPENBCI_DARKBLUE).setText(default_text) // Default text in the field
+                .setColorCursor(OPENBCI_DARKBLUE)
+                .setText(default_text) // Default text in the field
                 .setCaptionLabel("") // Remove caption label
                 .setVisible(false) // Initially hidden
                 .setAutoClear(true) // Autoclear
@@ -580,26 +582,27 @@ class W_Networking extends Widget {
     /* Creating DataType Dropdowns */
     void createDropdown(String name, List<String> _items) {
 
-        ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name).setOpen(false)
-                .setOutlineColor(OPENBCI_DARKBLUE).setColorBackground(OPENBCI_BLUE) // text field bg color
+        ScrollableList scrollList = cp5_networking_dropdowns.addScrollableList(name)
+                .setOpen(false)
+                .setOutlineColor(OPENBCI_DARKBLUE)
+                .setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255)) // text color
-                .setColorCaptionLabel(color(255)).setColorForeground(color(125)) // border color when not selected
+                .setColorCaptionLabel(color(255))
+                .setColorForeground(color(125)) // border color when not selected
                 .setColorActive(BUTTON_PRESSED) // border color when selected
                 // .setColorCursor(color(26,26,26))
-
                 .setSize(itemWidth, (_items.size() + 1) * (navH - 4))// + maxFreqList.size())
                 .setBarHeight(navH - 4) // height of top/primary bar
                 .setItemHeight(navH - 4) // height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
                 .setVisible(false);
-        cp5_networking_dropdowns.getController(name).getCaptionLabel() // the caption label is the text object in the
-                                                                       // primary bar
+        cp5_networking_dropdowns.getController(name)
+                .getCaptionLabel() // the caption label is the text object in the primary bar
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
-                .setText("None").setFont(h4).setSize(14).getStyle() // need to grab style before affecting the
-                                                                    // paddingTop
-                .setPaddingTop(4);
-        cp5_networking_dropdowns.getController(name).getValueLabel() // the value label is connected to the text objects
-                                                                     // in the dropdown item bars
+                .setText("None").setFont(h4).setSize(14)
+                .getStyle().setPaddingTop(4); // need to grab style before affecting the paddingTop                           
+        cp5_networking_dropdowns.getController(name)
+                .getValueLabel() // the value label is connected to the text objects in the dropdown item bars
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
                 .setText("None").setFont(h5).setSize(12) // set the font size of the item bars to 14pt
                 .getStyle() // need to grab style before affecting the paddingTop
@@ -611,23 +614,23 @@ class W_Networking extends Widget {
         ScrollableList scrollList = cp5_networking_baudRate.addScrollableList(name).setOpen(false)
                 .setOutlineColor(OPENBCI_DARKBLUE).setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255)) // text color
-                .setColorCaptionLabel(color(255)).setColorForeground(color(125)) // border color when not selected
+                .setColorCaptionLabel(color(255))
+                .setColorForeground(color(125)) // border color when not selected
                 .setColorActive(BUTTON_PRESSED) // border color when selected
                 // .setColorCursor(color(26,26,26))
-
                 .setSize(itemWidth, (_items.size() + 1) * (navH - 4))// + maxFreqList.size())
                 .setBarHeight(navH - 4) // height of top/primary bar
                 .setItemHeight(navH - 4) // height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
                 .setVisible(false);
-        cp5_networking_baudRate.getController(name).getCaptionLabel() // the caption label is the text object in the
-                                                                      // primary bar
+        cp5_networking_baudRate.getController(name)
+                .getCaptionLabel() // the caption label is the text object in the primary bar
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
-                .setText(defaultBaud).setFont(h4).setSize(14).getStyle() // need to grab style before affecting the
-                                                                         // paddingTop
+                .setText(defaultBaud).setFont(h4).setSize(14)
+                .getStyle() // need to grab style before affecting the paddingTop
                 .setPaddingTop(4);
-        cp5_networking_baudRate.getController(name).getValueLabel() // the value label is connected to the text objects
-                                                                    // in the dropdown item bars
+        cp5_networking_baudRate.getController(name)
+                .getValueLabel() // the value label is connected to the text objects in the dropdown item bars
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
                 .setText("None").setFont(h5).setSize(12) // set the font size of the item bars to 14pt
                 .getStyle() // need to grab style before affecting the paddingTop
@@ -639,9 +642,11 @@ class W_Networking extends Widget {
         if (isEmpty)
             _items.add("None"); // Fix #642 and #637
         ScrollableList scrollList = cp5_networking_portName.addScrollableList(name).setOpen(false)
-                .setOutlineColor(OPENBCI_DARKBLUE).setColorBackground(OPENBCI_BLUE) // text field bg color
+                .setOutlineColor(OPENBCI_DARKBLUE)
+                .setColorBackground(OPENBCI_BLUE) // text field bg color
                 .setColorValueLabel(color(255)) // text color
-                .setColorCaptionLabel(color(255)).setColorForeground(color(125)) // border color when not selected
+                .setColorCaptionLabel(color(255))
+                .setColorForeground(color(125)) // border color when not selected
                 .setColorActive(BUTTON_PRESSED) // border color when selected
                 // .setColorCursor(color(26,26,26))
                 .setSize(itemWidth, (_items.size() + 1) * (navH - 4))// + maxFreqList.size())
@@ -649,14 +654,14 @@ class W_Networking extends Widget {
                 .setItemHeight(navH - 4) // height of all item/dropdown bars
                 .addItems(_items) // used to be .addItems(maxFreqList)
                 .setVisible(false);
-        cp5_networking_portName.getController(name).getCaptionLabel() // the caption label is the text object in the
-                                                                      // primary bar
+        cp5_networking_portName.getController(name)
+                .getCaptionLabel() // the caption label is the text object in the primary bar
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
-                .setText("None").setFont(h4).setSize(14).getStyle() // need to grab style before affecting the
-                                                                    // paddingTop
+                .setText("None").setFont(h4).setSize(14)
+                .getStyle() // need to grab style before affecting the paddingTop
                 .setPaddingTop(4);
-        cp5_networking_portName.getController(name).getValueLabel() // the value label is connected to the text objects
-                                                                    // in the dropdown item bars
+        cp5_networking_portName.getController(name)
+                .getValueLabel() // the value label is connected to the text objects in the dropdown item bars
                 .toUpperCase(false) // DO NOT AUTOSET TO UPPERCASE!!!
                 .setText("None").setFont(h5).setSize(12) // set the font size of the item bars to 14pt
                 .getStyle() // need to grab style before affecting the paddingTop
