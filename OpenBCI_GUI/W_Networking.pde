@@ -64,7 +64,7 @@ class W_Networking extends Widget {
     private int comPortToSave;
     private String defaultBaud;
 
-    public LinkedList<String> protocols = new LinkedList<String>(Arrays.asList("Serial", "LSL", "UDP", "OSC"));
+    public LinkedList<String> protocols = new LinkedList<String>(Arrays.asList("UDP", "LSL", "OSC", "Serial"));
     public LinkedList<String> dataTypes = new LinkedList<String>(Arrays.asList("None", "Focus", "EMG", "AvgBandPower",
             "TimeSeriesFilt", "TimeSeriesRaw", "Accel/Aux", "Pulse", "BandPower", "FFT"));
     public LinkedList<String> baudRates = new LinkedList<String>(Arrays.asList("57600", "115200", "250000", "500000"));
@@ -124,11 +124,12 @@ class W_Networking extends Widget {
         if (eegDataSource != DATASOURCE_CYTON) {
             dataTypes.remove("Pulse");
         }
-        defaultBaud = "57600";
+        
         protocolMode = "UDP"; // Set Default to UDP
-        protocolIndex = 2; // Set Default to UDP
+        protocolIndex = 0; // Set Default to UDP
         addDropdown("Protocol", "Protocol", protocols, protocolIndex);
         serialNetworkingComPorts = new ArrayList<String>(getComPorts());
+        defaultBaud = "57600";
         verbosePrint("serialNetworkingComPorts = " + serialNetworkingComPorts);
         comPortToSave = 0;
 
@@ -2062,13 +2063,13 @@ class Stream extends Thread {
  */
 public void Protocol(int protocolIndex) {
     settings.nwProtocolSave = protocolIndex;
-    if (protocolIndex == 3) {
-        w_networking.protocolMode = "OSC";
-    } else if (protocolIndex == 2) {
+    if (protocolIndex == 0) {
         w_networking.protocolMode = "UDP";
     } else if (protocolIndex == 1) {
         w_networking.protocolMode = "LSL";
-    } else if (protocolIndex == 0) {
+    } else if (protocolIndex == 2) {
+        w_networking.protocolMode = "OSC";
+    } else if (protocolIndex == 3) {
         w_networking.protocolMode = "Serial";
         w_networking.disableCertainOutputs(
                 (int) w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").getValue());
