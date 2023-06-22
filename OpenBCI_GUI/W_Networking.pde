@@ -1470,7 +1470,7 @@ class Stream extends Thread {
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
-                msg.setAddrPattern(baseOscAddress + "/fft/" + i);
+                msg.setAddrPattern(baseOscAddress + "/fft/ch" + i);
                 for (int j = 0; j < 125; j++) {
                     msg.add(fftBuff[i].getBand(j));
                 }
