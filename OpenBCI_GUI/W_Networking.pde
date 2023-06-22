@@ -1469,9 +1469,9 @@ class Stream extends Thread {
         // Bin 10 == 10Hz frequency range
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < numExgChannels; i++) {
-                msg.clearArguments();
-                msg.setAddrPattern(baseOscAddress + "/fft/ch" + i);
                 for (int j = 0; j < 125; j++) {
+                    msg.clearArguments();
+                    msg.setAddrPattern(baseOscAddress + "/fft/ch" + i + "/bin" + j);
                     msg.add(fftBuff[i].getBand(j));
                 }
                 try {
