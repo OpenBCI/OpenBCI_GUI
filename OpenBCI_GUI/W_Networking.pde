@@ -1371,8 +1371,8 @@ class Stream extends Thread {
 
             for (int i = 0; i < newDataFromBuffer.length; i++) {
                 msg.clearArguments();
-                msg.setAddrPattern(baseOscAddress + "/" + oscDataTypeName + "/" + i);
-                for (int j = 0; j < numExgChannels; j++) {
+                msg.setAddrPattern(baseOscAddress + "/" + oscDataTypeName + "/ch" + i);
+                for (int j = 0; j < newDataFromBuffer[i].length; j++) {
                     msg.add(newDataFromBuffer[i][j]);
                 }
                 try {
