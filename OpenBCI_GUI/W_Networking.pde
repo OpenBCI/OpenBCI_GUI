@@ -957,7 +957,7 @@ class W_Networking extends Widget {
     // Fix #644 - Remove confusing #Chan textfield from Networking Widget and
     // account for this here
     private int getDataTypeNumChanLSL(String dataType) {
-        if (dataType.equals("TimeSeries")) {
+        if (dataType.equals("TimeSeriesFilt") || dataType.equals("TimeSeriesRaw")) {
             return currentBoard.getNumEXGChannels();
         } else if (dataType.equals("Focus")) {
             return 1;
@@ -1383,15 +1383,17 @@ class Stream extends Thread {
             }
 
         } else if (this.protocol.equals("LSL")) {
-
-            for (int i = 0; i < newDataFromBuffer.length; i++) {
-                for (int j = 0; j < newDataFromBuffer[i].length; j++) {
-                    dataToSend[j + numExgChannels * i] = newDataFromBuffer[i][j];
+            int numChannels = newDataFromBuffer.length;
+            int numSamples = newDataFromBuffer[0].length;
+            float[] _dataToSend = new float[numChannels * numSamples];
+            for (int sample = 0; sample < numSamples; sample++) {
+                for (int channel = 0; channel < numChannels; channel++) {
+                    _dataToSend[channel + sample * numChannels] = newDataFromBuffer[channel][sample];
                 }
             }
             // From LSLLink Library: The time stamps of other samples are automatically
             // derived based on the sampling rate of the stream.
-            outlet_data.push_chunk(dataToSend);
+            outlet_data.push_chunk(_dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
