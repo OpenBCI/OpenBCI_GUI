@@ -1570,10 +1570,10 @@ class Stream extends Thread {
             float[] avgPowerLSL = new float[numExgChannels * numBandPower];
             for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < numBandPower; j++) {
-                    dataToSend[j + numBandPower * i] = dataProcessing.avgPowerInBins[i][j];
+                    avgPowerLSL[j + numBandPower * i] = dataProcessing.avgPowerInBins[i][j];
                 }
             }
-            outlet_data.push_chunk(dataToSend);
+            outlet_data.push_chunk(avgPowerLSL);
         } else if (this.protocol.equals("Serial")) {
             for (int i = 0; i < numExgChannels; i++) {
                 serialMessage = "[" + (i + 1) + ","; // clear message
