@@ -10,6 +10,7 @@
 
 ### Improvements
 
+- Add EMG Joystick widget and EMG Settings UI from NeuroFly Project #1131
 - Update to BrainFlow 5.6.1
 - Add feature to connect to Ganglion using Native Bluetooth #1080
 - Refactor the creation and playback of OpenBCI GUI CSV files #1119

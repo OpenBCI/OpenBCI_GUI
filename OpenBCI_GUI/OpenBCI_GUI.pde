@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.1.1-alpha.5";
+String localGUIVersionString = "v5.2.0-alpha.0";
 String localGUIVersionDate = "June 2023";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
@@ -300,6 +300,7 @@ public final static String stopButton_pressToStart_txt = "Start Data Stream";
 DirectoryManager directoryManager;
 SessionSettings settings;
 GuiSettings guiSettings;
+DataProcessing dataProcessing;
 FilterSettings filterSettings;
 
 final int navBarHeight = 32;
