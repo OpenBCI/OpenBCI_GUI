@@ -11,6 +11,10 @@
 
 class W_EMGJoystick extends Widget {
 
+    private ControlP5 emgCp5;
+    private Button emgSettingsButton;
+    private List<controlP5.Controller> cp5ElementsToCheck;
+
     EmgValues emgValues;
 
     private final int NUM_EMG_CHANNELS = 4;
@@ -56,6 +60,15 @@ class W_EMGJoystick extends Widget {
     W_EMGJoystick(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
+        emgCp5 = new ControlP5(ourApplet);
+        emgCp5.setGraphics(ourApplet, 0,0);
+        emgCp5.setAutoDraw(false);
+
+        createEmgSettingsButton();
+        
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller) emgSettingsButton);
+
         emgValues = dataProcessing.emgValues;
 
         channelOneLabel = CHANNEL_ONE_LABEL_EN;
@@ -84,10 +97,15 @@ class W_EMGJoystick extends Widget {
         drawEmgVisualization(3, bottomPolarX, bottomPolarY);
         
         drawChannelLabels();
+
+        emgCp5.draw();
     }
 
     public void screenResized(){
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+
+        emgCp5.setGraphics(ourApplet, 0, 0);
+        emgSettingsButton.setPosition(x0 + 1, y0 + navH + 1);
 
         updateJoystickGraphSizeAndPosition();
     }
@@ -274,6 +292,20 @@ class W_EMGJoystick extends Widget {
 
     public void setJoystickSmoothing(int n) {
         joystickSmoothing = joystickSmoothing.values()[n];
+    }
+
+    private void createEmgSettingsButton() {
+        emgSettingsButton = createButton(emgCp5, "emgSettingsButton", "EMG Settings", (int) (x0 + 1),
+                (int) (y0 + navH + 1), 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        emgSettingsButton.setBorderColor(OBJECT_BORDER_GREY);
+        emgSettingsButton.onRelease(new CallbackListener() {
+            public synchronized void controlEvent(CallbackEvent theEvent) {
+                if (!emgSettingsPopupIsOpen) {
+                    EmgSettingsUI emgSettingsUI = new EmgSettingsUI();
+                }
+            }
+        });
+        emgSettingsButton.setDescription("Click to open the EMG Settings UI to adjust how this metric is calculated.");
     }
 
 };

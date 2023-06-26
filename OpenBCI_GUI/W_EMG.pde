@@ -16,19 +16,41 @@
 class W_emg extends Widget {
     PApplet parent;
 
+    private ControlP5 emgCp5;
+    private Button emgSettingsButton;
+    private List<controlP5.Controller> cp5ElementsToCheck;
+
     W_emg (PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-        parent = _parent;    
+        parent = _parent;
+
+        emgCp5 = new ControlP5(ourApplet);
+        emgCp5.setGraphics(ourApplet, 0,0);
+        emgCp5.setAutoDraw(false);
+
+        createEmgSettingsButton();
+        
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.add((controlP5.Controller) emgSettingsButton);
     }
 
-    void update() {
+    public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        lockElementsOnOverlapCheck(cp5ElementsToCheck);
     }
 
-    void draw() {
+    public void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
         drawEmgVisualizations();
+
+        emgCp5.draw();
+    }
+
+    public void screenResized() {
+        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        emgCp5.setGraphics(ourApplet, 0, 0);
+        emgSettingsButton.setPosition(x0 + 1, y0 + navH + 1);
     }
 
     private void drawEmgVisualizations() {
@@ -109,7 +131,17 @@ class W_emg extends Widget {
         popStyle();
     }
 
-    void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+    private void createEmgSettingsButton() {
+        emgSettingsButton = createButton(emgCp5, "emgSettingsButton", "EMG Settings", (int) (x0 + 1),
+                (int) (y0 + navH + 1), 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        emgSettingsButton.setBorderColor(OBJECT_BORDER_GREY);
+        emgSettingsButton.onRelease(new CallbackListener() {
+            public synchronized void controlEvent(CallbackEvent theEvent) {
+                if (!emgSettingsPopupIsOpen) {
+                    EmgSettingsUI emgSettingsUI = new EmgSettingsUI();
+                }
+            }
+        });
+        emgSettingsButton.setDescription("Click to open the EMG Settings UI to adjust how this metric is calculated.");
     }
 };
