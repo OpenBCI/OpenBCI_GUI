@@ -9,7 +9,7 @@ streams = resolve_stream('type', 'EEG')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])
-duration = 5
+duration = 10
 
 sleep(1)
 
@@ -24,12 +24,13 @@ def testLSLSamplingRate():
         # get chunks of samples
         chunk, timestamp = inlet.pull_chunk()
         if chunk:
+            print("\nNew chunk!")
             numChunks += 1
             # print( len(chunk) )
             totalNumSamples += len(chunk)
-            # print(chunk);
+            # print(chunk)
             for sample in chunk:
-                # print(sample)
+                print(sample)
                 validSamples += 1
 
     print( "Number of Chunks and Samples == {} , {}".format(numChunks, totalNumSamples) )

@@ -10,7 +10,7 @@ from pylsl import StreamInlet, resolve_stream
 import time
 
 numStreams = 3
-duration_seconds = 20
+duration_seconds = 10
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
 stream_1 = resolve_stream('type', 'EEG')
@@ -19,8 +19,8 @@ stream_3 = resolve_stream('type', 'FOCUS')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(stream_1[0])
-intlet_2 = StreamInlet(stream_2[0])
-intlet_3 = StreamInlet(stream_3[0])
+inlet_2 = StreamInlet(stream_2[0])
+inlet_3 = StreamInlet(stream_3[0])
 
 def testLSLSamplingRates():
     print( "Testing Sampling Rates for {} seconds".format(duration_seconds) )
@@ -40,13 +40,13 @@ def testLSLSamplingRates():
                             num_samples_1 += 1
                             #print(sample)
             elif i == 1:
-                chunk, timestamps_2 = intlet_2.pull_chunk()
+                chunk, timestamps_2 = inlet_2.pull_chunk()
                 if timestamps_2:
                     for sample in chunk:
                         num_samples_2 += 1
                         #print(sample)
             elif i == 2:
-                chunk, timestamps_3 = intlet_3.pull_chunk()
+                chunk, timestamps_3 = inlet_3.pull_chunk()
                 if timestamps_3:
                     for sample in chunk:
                         num_samples_3 += 1
