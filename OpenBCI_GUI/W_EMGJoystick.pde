@@ -114,7 +114,7 @@ class W_EMGJoystick extends Widget {
         //Make a unit circle constrained by the max height
         int _padding = 30;
         int distanceToUse = h > w ? w : h;
-        polarWindowDiameter = distanceToUse - _padding*2 - EMG_PLOT_OFFSET; //Shrink the X/Y plot so that the EMG displays fit on the outside
+        polarWindowDiameter = distanceToUse - _padding*2 - EMG_PLOT_OFFSET*2 - BAR_CIRCLE_SPACER*2; //Shrink the X/Y plot so that the EMG displays fit on the outside
         polarWindowHalfDiameter = polarWindowDiameter / 2;
         polarWindowX = x + w / 2;
         polarWindowY = y + h / 2;
