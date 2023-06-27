@@ -1673,7 +1673,7 @@ class Stream extends Thread {
             for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/emg/" + i);
-                msg.add(emgSettingsValues.outputNormalized[i]);
+                msg.add(emgSettingsValues.getOutputNormalized(i));
                 try {
                     this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
@@ -1683,7 +1683,7 @@ class Stream extends Thread {
         } else if (this.protocol.equals("UDP")) {
             String outputter = "{\"type\":\"emg\",\"data\":[";
             for (int i = 0; i < numExgChannels; i++) {
-                outputter += str(emgSettingsValues.outputNormalized[i]);
+                outputter += str(emgSettingsValues.getOutputNormalized(i));
                 if (i != numExgChannels - 1) {
                     outputter += ",";
                 } else {
@@ -1697,13 +1697,13 @@ class Stream extends Thread {
             }
         } else if (this.protocol.equals("LSL")) {
             for (int i = 0; i < numExgChannels; i++) {
-                dataToSend[i] = emgSettingsValues.outputNormalized[i];
+                dataToSend[i] = emgSettingsValues.getOutputNormalized(i);
             }
             outlet_data.push_sample(dataToSend);
         } else if (this.protocol.equals("Serial")) {
             serialMessage = "";
             for (int i = 0; i < numExgChannels; i++) {
-                float emg_normalized = emgSettingsValues.outputNormalized[i];
+                float emg_normalized = emgSettingsValues.getOutputNormalized(i);
                 String emg_normalized_3dec = threeDecimalPlaces.format(emg_normalized);
                 serialMessage += emg_normalized_3dec;
                 if (i != numExgChannels - 1) {

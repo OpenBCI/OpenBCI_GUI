@@ -25,7 +25,14 @@ class EmgSettings {
                 outputError("Emg Settings: Loaded EMG Settings file has different number of channels than the current board.");
                 return false;
             }
-            values = tempValues;
+            //Explicitely copy values over to avoid reference issues
+            //(e.g. values = tempValues "nukes" the old values object)
+            values.smoothing = tempValues.smoothing;
+            values.uvLimit = tempValues.uvLimit;
+            values.creepIncreasing = tempValues.creepIncreasing;
+            values.creepDecreasing = tempValues.creepDecreasing;
+            values.minimumDeltaUV = tempValues.minimumDeltaUV;
+            values.lowerThresholdMinimum = tempValues.lowerThresholdMinimum;
             return true;
         } catch (IOException e) {
             e.printStackTrace();    

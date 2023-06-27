@@ -122,17 +122,17 @@ class W_emg extends Widget {
                 //realtime
                 fill(channelColors[colorIndex], 200);
                 noStroke();
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.averageuV[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getAverageuV(channel));
 
                 //circle for outer threshold
                 noFill();
                 strokeWeight(1);
                 stroke(OPENBCI_DARKBLUE, 150);
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.upperThreshold[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getUpperThreshold(channel));
 
                 //circle for inner threshold
                 stroke(OPENBCI_DARKBLUE, 150);
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.lowerThreshold[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getLowerThreshold(channel));
 
                 int _x = int(5*colOffset/8);
                 int _y = int(2 * rowOffset / 8);
@@ -142,7 +142,7 @@ class W_emg extends Widget {
                 //draw normalized bar graph of uV w/ matching channel color
                 noStroke();
                 fill(channelColors[colorIndex], 200);
-                rect(_x, 3*_y + 1, _w, map(emgSettingsValues.outputNormalized[channel], 0, 1, 0, (-1) * int((4*rowOffset/8))));
+                rect(_x, 3*_y + 1, _w, map(emgSettingsValues.getOutputNormalized(channel), 0, 1, 0, (-1) * int((4*rowOffset/8))));
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);

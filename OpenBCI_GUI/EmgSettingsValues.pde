@@ -15,13 +15,13 @@ class EmgSettingsValues {
     public EmgMinimumDeltaUV[] minimumDeltaUV;
     public EmgLowerThresholdMinimum[] lowerThresholdMinimum;
     //Normalized output which is passed to Networking
-    float[] outputNormalized;
+    private transient float[] outputNormalized;
     //These values change during calculations
-    float[] upperThreshold;
-    float[] lowerThreshold;
-    float[] averageuV;
+    private transient float[] upperThreshold;
+    private transient float[] lowerThreshold;
+    private transient float[] averageuV;
 
-    private int channelCount;
+    private transient int channelCount;
 
     EmgSettingsValues() {
 
@@ -100,5 +100,21 @@ class EmgSettingsValues {
                 outputNormalized[i] = 0; //always make sure this value is >= 0
             }
         }
+    }
+
+    public float getOutputNormalized(int channel) {
+        return outputNormalized[channel];
+    }
+
+    public float getAverageuV(int channel) {
+        return averageuV[channel];
+    }
+
+    public float getUpperThreshold(int channel) {
+        return upperThreshold[channel];
+    }
+
+    public float getLowerThreshold(int channel) {
+        return lowerThreshold[channel];
     }
 }
