@@ -20,6 +20,7 @@ class PopupMessage extends PApplet implements Runnable {
 
     private color headerColor = OPENBCI_BLUE;
     private color buttonColor = OPENBCI_BLUE;
+    private color backgroundColor = GREY_235;
     
     private ControlP5 cp5;
 
@@ -58,8 +59,12 @@ class PopupMessage extends PApplet implements Runnable {
     @Override
     void setup() {
         surface.setTitle(headerMessage);
-        surface.setAlwaysOnTop(true);
+        surface.setAlwaysOnTop(false);
         surface.setResizable(false);
+
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        frame.toFront();
+        frame.requestFocus();
 
         cp5 = new ControlP5(this);
 
@@ -89,7 +94,7 @@ class PopupMessage extends PApplet implements Runnable {
         // draw bg
         background(OPENBCI_DARKBLUE);
         stroke(204);
-        fill(238);
+        fill(backgroundColor);
         rect((width - w)/2, (height - h)/2, w, h);
 
         // draw header
@@ -99,7 +104,7 @@ class PopupMessage extends PApplet implements Runnable {
 
         //draw header text
         textFont(p0, 24);
-        fill(255);
+        fill(WHITE);
         textAlign(LEFT, CENTER);
         text(headerMessage, (width - w)/2 + padding, (height - h)/2, w, headerHeight);
 

@@ -65,8 +65,8 @@ class W_Networking extends Widget {
     private String defaultBaud;
 
     public LinkedList<String> protocols = new LinkedList<String>(Arrays.asList("UDP", "LSL", "OSC", "Serial"));
-    public LinkedList<String> dataTypes = new LinkedList<String>(Arrays.asList("None", "Focus", "EMG", "AvgBandPower",
-            "TimeSeriesFilt", "TimeSeriesRaw", "Accel/Aux", "Pulse", "BandPower", "FFT"));
+    public LinkedList<String> dataTypes = new LinkedList<String>(Arrays.asList("None", "Focus", "EMGJoystick", "AvgBandPower",
+            "TimeSeriesFilt", "TimeSeriesRaw", "EMG", "Accel/Aux", "Pulse", "BandPower", "FFT"));
     public LinkedList<String> baudRates = new LinkedList<String>(Arrays.asList("57600", "115200", "250000", "500000"));
     public LinkedList<String> dataTypeNames = new LinkedList<String>(
             Arrays.asList("dataType1", "dataType2", "dataType3", "dataType4"));
@@ -516,12 +516,14 @@ class W_Networking extends Widget {
                         startNetwork(); // Begin streaming
                         output("Network Stream Started");
                     } catch (Exception e) {
-                        // e.printStackTrace();
+                        e.printStackTrace();
                         String exception = e.toString();
                         String[] nwError = split(exception, ':');
                         outputError("Networking Error - Port: " + nwError[2]);
                         shutDown();
                         networkActive = false;
+                        startButton.setColorBackground(TURN_ON_GREEN);
+                        startButton.getCaptionLabel().setText("Start " + protocolMode + " Stream");
                         return;
                     }
                 } else {
@@ -990,9 +992,10 @@ class W_Networking extends Widget {
                     return digitalBoard.getDigitalChannels().length;
                 }
             }
+        } else if (dataType.equals("EMGJoystick")) {
+            return 2;
         }
-        outputError("Error detecting number of channels for LSL stream data... please fix!");
-        return 0;
+        throw new IllegalArgumentException("IllegalArgumentException: Error detecting number of channels for LSL stream data... please fix!");
     }
 
     private void checkOverlappingSerialDropdown() {
@@ -1303,6 +1306,8 @@ class Stream extends Thread {
             }
         } else if (this.dataType.equals("Pulse")) {
             sendPulseData();
+        } else if (this.dataType.equals("EMGJoystick")) {
+            sendEMGJoystickData();
         }
     }
 
@@ -1663,11 +1668,12 @@ class Stream extends Thread {
     }
 
     private void sendEMGData() {
+        EmgSettingsValues emgSettingsValues = dataProcessing.emgSettings.values;
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/emg/" + i);
-                msg.add(w_emg.motorWidgets[i].output_normalized);
+                msg.add(emgSettingsValues.getOutputNormalized(i));
                 try {
                     this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
@@ -1677,7 +1683,7 @@ class Stream extends Thread {
         } else if (this.protocol.equals("UDP")) {
             String outputter = "{\"type\":\"emg\",\"data\":[";
             for (int i = 0; i < numExgChannels; i++) {
-                outputter += str(w_emg.motorWidgets[i].output_normalized);
+                outputter += str(emgSettingsValues.getOutputNormalized(i));
                 if (i != numExgChannels - 1) {
                     outputter += ",";
                 } else {
@@ -1690,14 +1696,14 @@ class Stream extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
-            for (int j = 0; j < numExgChannels; j++) {
-                dataToSend[j] = w_emg.motorWidgets[j].output_normalized;
+            for (int i = 0; i < numExgChannels; i++) {
+                dataToSend[i] = emgSettingsValues.getOutputNormalized(i);
             }
             outlet_data.push_sample(dataToSend);
         } else if (this.protocol.equals("Serial")) {
             serialMessage = "";
             for (int i = 0; i < numExgChannels; i++) {
-                float emg_normalized = w_emg.motorWidgets[i].output_normalized;
+                float emg_normalized = emgSettingsValues.getOutputNormalized(i);
                 String emg_normalized_3dec = threeDecimalPlaces.format(emg_normalized);
                 serialMessage += emg_normalized_3dec;
                 if (i != numExgChannels - 1) {
@@ -1963,6 +1969,72 @@ class Stream extends Thread {
 
         }
     }// End sendPulseData
+
+    private void sendEMGJoystickData() {
+
+        final float[] emgJoystickXY = w_emgJoystick.getJoystickXY();
+
+        if (this.protocol.equals("OSC")) {
+            for (int i = 0; i < emgJoystickXY.length; i++) {
+                msg.clearArguments();
+                if (i == 0) {
+                    msg.setAddrPattern(baseOscAddress + "/emg-joystick/x");
+                } else if (i == 1) {
+                    msg.setAddrPattern(baseOscAddress + "/emg-joystick/y");
+                }
+                msg.add(emgJoystickXY[i]);
+                try {
+                    this.osc.send(msg, this.oscNetAddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            }
+        } else if (this.protocol.equals("UDP")) {
+            StringBuilder output = new StringBuilder("{\"type\":\"emgJoystick\",\"data\":[");
+            for (int i = 0; i < emgJoystickXY.length; i++) {
+                // Formatting in this way is resilient to internationalization
+                String dataFormatted = threeDecimalPlaces.format(emgJoystickXY[i]);
+                output.append(dataFormatted);
+                if (i != emgJoystickXY.length - 1) {
+                    output.append(",");
+                } else {
+                    output.append("]}\r\n");
+                }
+            }
+            try {
+                this.udp.send(output.toString(), this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        } else if (this.protocol.equals("LSL")) {
+            for (int i = 0; i < emgJoystickXY.length; i++) {
+                dataToSend[i] = emgJoystickXY[i];
+            }
+            outlet_data.push_sample(dataToSend);
+        } else if (this.protocol.equals("Serial")) {
+            // Data Format: +0.900,-0.042\n
+            // 7 chars per axis, including \n char
+            StringBuilder output = new StringBuilder();
+            for (int i = 0; i < emgJoystickXY.length; i++) {
+                float data = emgJoystickXY[i];
+                String dataFormatted = threeDecimalPlaces.format(data);
+                if (data >= 0)
+                    output.append("+");
+                    output.append(dataFormatted);
+                if (i != emgJoystickXY.length - 1) {
+                    output.append(",");
+                } else {
+                    output.append("\n");
+                }
+            }
+            try {
+                // println(serialMessage);
+                this.serial_networking.write(output.toString());
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+        }
+    }
 
     //// Add new stream function here (ex. sendWidgetData) in the same format as
     //// above

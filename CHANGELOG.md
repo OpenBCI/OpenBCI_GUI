@@ -7,13 +7,16 @@
 - Fix error starting BrainFlow Streaming Board from external process #1102
 - Fix Hardware Settings button not clickable after resizing app #1132
 - Fix bug loading Session Settings related to Widget Layouts #1138
+- Fix bug caused by NullPointerException with ControlP5 Window on App Start #1150
 
 ### Improvements
 
+- Add EMG Joystick widget and EMG Settings UI from NeuroFly Project #1131
 - Update to BrainFlow 5.6.1
 - Add feature to connect to Ganglion using Native Bluetooth #1080
 - Refactor the creation and playback of OpenBCI GUI CSV files #1119
 - Filter out .tty serial ports in Networking Widget Serial list #1097 - Thanks @kkashiva
+- Add ChannelSelect Feature to EMG Widget #1149
 
 # v5.1.0
 
@@ -22,7 +25,7 @@
 - Stop data stream when no data received after 5 seconds #1011
 - Revisit Ganglion Impedance widget so it behaves like new Cyton Impedance Widget #1021
 - Fix dropdown backgrounds in Networking Widget
-- Update priveleges for Windows users and check if GUI has been run as Administrator
+- Update privileges for Windows users and check if GUI has been run as Administrator
 - Fix High DPI scaling on some Macs with Retina Display
 
 ### Improvements
@@ -84,7 +87,7 @@
 ### Bug Fixes
 
 - Fix drawing error in Control Panel WiFi Shield static IP Textfield
-- Accomodate high-dpi screens Fixes #968
+- Accommodate high-dpi screens Fixes #968
 - Add Arduino Focus Fan example to networking test kit on GitHub repo
 - Allow synthetic square wave expert mode keyboard shortcut for Cyton and Ganglion Fixes #976
 
@@ -149,7 +152,7 @@
 - Update ChannelSelect Feature in Widget Class to show what channels are on or off
 - Improve Time Series y-axis autoscale performance
 - Add channel select feature to FFT widget
-- Remove configurable gain behaviour and default to dynamic gain scaler
+- Remove configurable gain behavior and default to dynamic gain scaler
 
 ### Bug Fixes
 
@@ -166,7 +169,7 @@
 ### Improvements
 
 - Add ability to save and load hardware settings
-- Add configurable gain behaviour
+- Add configurable gain behavior
 - Add custom vertical scale UI to Time Series
 
 ### Bug Fixes
@@ -186,7 +189,7 @@
 - Use BrainFlow Java Binding to handle data acquisition (no need to run the Hub!)
 - Speed up entire GUI by plotting data more efficiently
 - Updated OpenBCI Data Format (CSV) Files, with more detailed information and data
-- Popup with link to GUI v4 file coverter script
+- Popup with link to GUI v4 file converter script
 - Improved Playback Mode and Time Series
 - Refactored GUI data flow
 - Add Travis and Appveyor CI tests and builds for all OS
@@ -248,7 +251,7 @@ Use OpenBCIHub v2.1.0 please.
 ### Improvements
 
 - Add prominent time display for all data modes #635
-- Add button for Networking Data Ouputs Guide #643
+- Add button for Networking Data Outputs Guide #643
 - Add button to open Sample Data file directory #645
 
 ### Bug Fixes

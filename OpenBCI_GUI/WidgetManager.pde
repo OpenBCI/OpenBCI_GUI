@@ -26,6 +26,7 @@ W_playback w_playback;
 W_Spectrogram w_spectrogram;
 W_PacketLoss w_packetLoss;
 W_Focus w_focus;
+W_EMGJoystick w_emgJoystick;
 
 //ADD YOUR WIDGET TO WIDGETS OF WIDGETMANAGER
 void setupWidgets(PApplet _this, ArrayList<Widget> w){
@@ -98,6 +99,10 @@ void setupWidgets(PApplet _this, ArrayList<Widget> w){
     w_emg.setTitle("EMG");
     addWidget(w_emg, w);
     // println("  setupWidgets emg -- " + millis());
+ 
+    w_emgJoystick = new W_EMGJoystick(_this);
+    w_emgJoystick.setTitle("EMG Joystick");
+    addWidget(w_emgJoystick, w);
 
     //Cyton/Synthetic Widget_7, Ganglion/Playback Widget_8
     w_spectrogram = new W_Spectrogram(_this);

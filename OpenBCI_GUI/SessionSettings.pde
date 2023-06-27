@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, Band Power, and Spectrogram
+//                       -- Accelerometer, Analog Read, Head Plot, Band Power, and Spectrogram
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -75,11 +75,6 @@ class SessionSettings {
     int hpPolaritySave;
     int hpContoursSave;
     int hpSmoothingSave;
-    //EMG settings
-    int emgSmoothingSave;
-    int emguVLimSave;
-    int emgCreepSave;
-    int emgMinDeltauVSave;
     //default data types for streams 1-4 in Networking widget
     int nwDataType1;
     int nwDataType2;
@@ -144,12 +139,6 @@ class SessionSettings {
     String[] hpContoursArray = {"ON", "OFF"};
     String[] hpSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
 
-    //Used to set text in dropdown menus when loading EMG settings
-    String[] emgSmoothingArray = {"0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"};
-    String[] emguVLimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
-    String[] emgCreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
-    String[] emgMinDeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
-
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
     String[] spectSampleRateArray = {"30 Min.", "6 Min.", "3 Min.", "1.5 Min.", "1 Min."};
@@ -174,13 +163,6 @@ class SessionSettings {
     int hpPolarityLoad;
     int hpContoursLoad;
     int hpSmoothingLoad;
-
-    //EMG settings
-    int emgSmoothingLoad;
-    int emguVLimLoad;
-    int emgCreepLoad;
-    int emgMinDeltauVLoad;
-
 
     //Band Power widget settings
     //smoothing and filter dropdowns are linked to FFT, so no need to save again
@@ -218,7 +200,6 @@ class SessionSettings {
     private final String kJSONKeyAccel = "accelerometer";
     private final String kJSONKeyNetworking = "networking";
     private final String kJSONKeyHeadplot = "headplot";
-    private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyBandPower = "bandPower";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
@@ -435,20 +416,6 @@ class SessionSettings {
         //Set the Headplot JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
 
-        ///////////////////////////////////////////////Setup new JSON object to save EMG settings
-        JSONObject saveEMGSettings = new JSONObject();
-
-        //Save EMG Smoothing
-        saveEMGSettings.setInt("EMG_smoothing", emgSmoothingSave);
-        //Save EMG uV limit
-        saveEMGSettings.setInt("EMG_uVlimit", emguVLimSave);
-        //Save EMG creep speed
-        saveEMGSettings.setInt("EMG_creepspeed", emgCreepSave);
-        //Save EMG min delta uV
-        saveEMGSettings.setInt("EMG_minuV", emgMinDeltauVSave);
-        //Set the EMG JSON Object
-        saveSettingsJSONData.setJSONObject(kJSONKeyEMG, saveEMGSettings);
-
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
 
@@ -628,13 +595,6 @@ class SessionSettings {
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
         hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
 
-        //get the EMG settings
-        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
-        emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
-        emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
-        emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
-        emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
-
         //Get Band Power widget settings
         loadBPActiveChans.clear();
         JSONObject loadBPSettings = loadSettingsJSONData.getJSONObject(kJSONKeyBandPower);
@@ -785,19 +745,6 @@ class SessionSettings {
 
         //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
         w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
-
-        ////////////////////////////Apply EMG settings
-        SmoothEMG(emgSmoothingLoad);
-            w_emg.cp5_widget.getController("SmoothEMG").getCaptionLabel().setText(emgSmoothingArray[emgSmoothingLoad]);
-
-        uVLimit(emguVLimLoad);
-            w_emg.cp5_widget.getController("uVLimit").getCaptionLabel().setText(emguVLimArray[emguVLimLoad]);
-
-        CreepSpeed(emgCreepLoad);
-            w_emg.cp5_widget.getController("CreepSpeed").getCaptionLabel().setText(emgCreepArray[emgCreepLoad]);
-
-        minUVRange(emgMinDeltauVLoad);
-            w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(emgMinDeltauVArray[emgMinDeltauVLoad]);
 
         ////////////////////////////Apply Band Power settings
         try {
