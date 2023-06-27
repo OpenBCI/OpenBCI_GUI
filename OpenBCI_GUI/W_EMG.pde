@@ -69,8 +69,7 @@ class W_emg extends Widget {
         int index = 0;
         float currentX, currentY;
         
-
-        EmgValues emgValues = dataProcessing.emgValues;
+        EmgSettingsValues emgSettingsValues = dataProcessing.emgSettings.values;
 
         for (int i = 0; i < rowNum; i++) {
             for (int j = 0; j < colNum; j++) {
@@ -86,17 +85,17 @@ class W_emg extends Widget {
                 //realtime
                 fill(channelColors[colorIndex], 200);
                 noStroke();
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgValues.averageuV[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.averageuV[channel]);
 
                 //circle for outer threshold
                 noFill();
                 strokeWeight(1);
                 stroke(OPENBCI_DARKBLUE, 150);
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgValues.upperThreshold[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.upperThreshold[channel]);
 
                 //circle for inner threshold
                 stroke(OPENBCI_DARKBLUE, 150);
-                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgValues.lowerThreshold[channel]);
+                circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.lowerThreshold[channel]);
 
                 int _x = int(5*colOffset/8);
                 int _y = int(2 * rowOffset / 8);
@@ -106,7 +105,7 @@ class W_emg extends Widget {
                 //draw normalized bar graph of uV w/ matching channel color
                 noStroke();
                 fill(channelColors[colorIndex], 200);
-                rect(_x, 3*_y + 1, _w, map(emgValues.outputNormalized[channel], 0, 1, 0, (-1) * int((4*rowOffset/8))));
+                rect(_x, 3*_y + 1, _w, map(emgSettingsValues.outputNormalized[channel], 0, 1, 0, (-1) * int((4*rowOffset/8))));
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);

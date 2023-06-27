@@ -16,6 +16,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private final int HEADER_PADDING = 22;
     private final int FOOTER_PADDING = 80;
     private final int PADDING_3 = 3;
+    private final int PADDING_12 = 12;
     private final int NUM_CONTROL_BUTTONS = 3;
     private final int ROW_HEIGHT = 40;
     private final int DROPDOWN_HEIGHT = 18; 
@@ -25,11 +26,16 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private boolean isFixedHeight;
     private int fixedHeight;
     private int[] dropdownYPositions;
+    private final int NUM_FOOTER_OBJECTS = 3;
+    private final int FOOTER_OBJECT_WIDTH = 45;
+    private final int FOOTER_OBJECT_HEIGHT = 26;
+    private int footerObjY = 0;
+    private int[] footerObjX = new int[NUM_FOOTER_OBJECTS];
 
     private final int defaultWidth = 600;
     private final int defaultHeight = 600;
 
-    public EmgValues emgValues;
+    public EmgSettingsValues emgSettingsValues;
 
     private TextBox channelColumnLabel;
     private TextBox smoothLabel;
@@ -50,6 +56,10 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private String[] channelLabels;
 
+    private Button saveButton;
+    private Button loadButton;
+    private Button defaultButton;
+
     @Override
     public void run() {
         PApplet.runSketch(new String[] {HEADER_MESSAGE}, this);
@@ -62,7 +72,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         Thread t = new Thread(this);
         t.start();
 
-        emgValues = dataProcessing.emgValues;
+        emgSettingsValues = dataProcessing.emgSettings.values;
 
         channelCount = currentBoard.getNumEXGChannels();
 
@@ -98,6 +108,11 @@ class EmgSettingsUI extends PApplet implements Runnable {
     public void draw() {
         clear();
         scene();
+
+        emgSettingsValues = dataProcessing.emgSettings.values;
+
+        checkIfSessionWasClosed();
+        checkIfSettingsWereLoaded();
 
         //Draw column labels
         channelColumnLabel.draw();
@@ -179,7 +194,82 @@ class EmgSettingsUI extends PApplet implements Runnable {
         }
     }
 
+    private void checkIfSettingsWereLoaded() {
+        if (dataProcessing.emgSettings.getSettingsWereLoaded()) {
+            try {
+                updateCp5Objects();
+            } catch (Exception e) {
+                e.printStackTrace();
+                outputError("EMG Settings UI: Unable to apply settings. Please save EMG Settings to a new file.");
+            }
+            dataProcessing.emgSettings.setSettingsWereLoaded(false);
+        }
+    }
+
+    private void drawChannelLabels() {
+        int colWidth = (w / NUM_COLUMNS);
+        int colOffset = colWidth / 2;
+        
+        pushStyle();
+
+        fill(OPENBCI_DARKBLUE);
+        textFont(p5, 12);
+        textLeading(12);
+        textAlign(CENTER, CENTER);
+
+        for (int i = 0; i < channelCount; i++) {
+            String channelLabel = channelCount > channelLabels.length ? "Channel " + Integer.toString(i + 1) : channelLabels[i];
+            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2));
+        }
+
+        popStyle();
+    }
+
+    private void resizeDropdowns() {
+        dropdownWidth = int((w - (DROPDOWN_SPACER * (NUM_COLUMNS + 1))) / NUM_COLUMNS);
+        final int MAX_HEIGHT_ITEMS = channelCount == 4 ? 8 : 5;
+
+        for (int i = 0; i < channelCount; i++) {
+            int dropdownX = x + DROPDOWN_SPACER * 2 + dropdownWidth;
+            dropdownYPositions[i] = HEADER_PADDING + int(y + ((ROW_HEIGHT) * i) + (((ROW_HEIGHT) - DROPDOWN_HEIGHT) / 2));
+            final int buttonXIncrement = DROPDOWN_SPACER + dropdownWidth;
+
+            smoothLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            smoothLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+            
+            dropdownX += buttonXIncrement;
+            uvLimitLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            uvLimitLists[i].setSize(dropdownWidth, (uvLimitLists[i].getItems().size()+1) * DROPDOWN_HEIGHT);
+
+            dropdownX += buttonXIncrement;
+            creepIncLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            creepIncLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+
+            dropdownX += buttonXIncrement;
+            creepDecLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            creepDecLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+
+            dropdownX += buttonXIncrement;
+            minDeltaUvLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            minDeltaUvLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+
+            dropdownX += buttonXIncrement;
+            lowLimitLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            lowLimitLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+        }
+    }
+
     private void createAllUIObjects() {
+        footerObjY = y + h - FOOTER_PADDING + PADDING_3;
+        int middle = x + w / 2;
+        int halfObjWidth = FOOTER_OBJECT_WIDTH / 2;
+        footerObjX[0] = middle - halfObjWidth - PADDING_12 - FOOTER_OBJECT_WIDTH;
+        footerObjX[1] = middle - halfObjWidth;
+        footerObjX[2] = middle + halfObjWidth + PADDING_12;
+        createEmgSettingsSaveButton("saveEmgSettingsButton", "Save", footerObjX[0], footerObjY, FOOTER_OBJECT_WIDTH, FOOTER_OBJECT_HEIGHT);
+        createEmgSettingsLoadButton("loadEmgSettingsButton", "Load", footerObjX[1], footerObjY, FOOTER_OBJECT_WIDTH, FOOTER_OBJECT_HEIGHT);
+        createEmgSettingsDefaultButton("defaultEmgSettingsButton", "Reset", footerObjX[2], footerObjY, FOOTER_OBJECT_WIDTH, FOOTER_OBJECT_HEIGHT);
+
         channelLabels = new String[channelCount];
         for (int i = 0; i < channelCount; i++) {
             channelLabels[i] = "Channel " + (i+1);
@@ -218,12 +308,12 @@ class EmgSettingsUI extends PApplet implements Runnable {
         //Init dropdowns in reverse so that chan 1 draws on top of chan 2, etc.
         for (int i = channelCount - 1; i >= 0; i--) {
             int exgChannel = i;
-            smoothLists[i] = createDropdown(exgChannel, "smooth_ch_"+(i+1), emgValues.smoothing[exgChannel].values(), emgValues.smoothing[exgChannel]);
-            uvLimitLists[i] = createDropdown(exgChannel, "uvLimit_ch_"+(i+1), emgValues.uvLimit[exgChannel].values(), emgValues.uvLimit[exgChannel]);
-            creepIncLists[i] = createDropdown(exgChannel, "creep_inc_ch_"+(i+1), emgValues.creepIncreasing[exgChannel].values(), emgValues.creepIncreasing[exgChannel]);   
-            creepDecLists[i] = createDropdown(exgChannel, "creep_dec_ch_"+(i+1), emgValues.creepDecreasing[exgChannel].values(), emgValues.creepDecreasing[exgChannel]);   
-            minDeltaUvLists[i] = createDropdown(exgChannel, "minDeltaUv_ch_"+(i+1), emgValues.minimumDeltaUV[exgChannel].values(), emgValues.minimumDeltaUV[exgChannel]);       
-            lowLimitLists[i] = createDropdown(exgChannel, "lowLimit_ch_"+(i+1), emgValues.lowerThresholdMinimum[exgChannel].values(), emgValues.lowerThresholdMinimum[exgChannel]);
+            smoothLists[i] = createDropdown(exgChannel, "smooth_ch_"+(i+1), emgSettingsValues.smoothing[exgChannel].values(), emgSettingsValues.smoothing[exgChannel]);
+            uvLimitLists[i] = createDropdown(exgChannel, "uvLimit_ch_"+(i+1), emgSettingsValues.uvLimit[exgChannel].values(), emgSettingsValues.uvLimit[exgChannel]);
+            creepIncLists[i] = createDropdown(exgChannel, "creep_inc_ch_"+(i+1), emgSettingsValues.creepIncreasing[exgChannel].values(), emgSettingsValues.creepIncreasing[exgChannel]);   
+            creepDecLists[i] = createDropdown(exgChannel, "creep_dec_ch_"+(i+1), emgSettingsValues.creepDecreasing[exgChannel].values(), emgSettingsValues.creepDecreasing[exgChannel]);   
+            minDeltaUvLists[i] = createDropdown(exgChannel, "minDeltaUv_ch_"+(i+1), emgSettingsValues.minimumDeltaUV[exgChannel].values(), emgSettingsValues.minimumDeltaUV[exgChannel]);       
+            lowLimitLists[i] = createDropdown(exgChannel, "lowLimit_ch_"+(i+1), emgSettingsValues.lowerThresholdMinimum[exgChannel].values(), emgSettingsValues.lowerThresholdMinimum[exgChannel]);
         }
 
         resizeDropdowns();
@@ -287,77 +377,74 @@ class EmgSettingsUI extends PApplet implements Runnable {
                 verbosePrint("EmgSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
 
                 if (myEnum instanceof EmgSmoothing) {
-                    //verbosePrint("HardwareSettings: previousVal == " + emgValues.previousValues.gain[channel]);
-                    emgValues.smoothing[channel] = (EmgSmoothing)myEnum;
+                    //verbosePrint("HardwareSettings: previousVal == " + emgSettingsValues.previousValues.gain[channel]);
+                    emgSettingsValues.smoothing[channel] = (EmgSmoothing)myEnum;
                 } else if (myEnum instanceof EmgUVLimit) {
-                    emgValues.uvLimit[channel] = (EmgUVLimit)myEnum;
+                    emgSettingsValues.uvLimit[channel] = (EmgUVLimit)myEnum;
                 } else if (myEnum instanceof EmgCreepIncreasing) {
-                    emgValues.creepIncreasing[channel] = (EmgCreepIncreasing)myEnum;
+                    emgSettingsValues.creepIncreasing[channel] = (EmgCreepIncreasing)myEnum;
                 } else if (myEnum instanceof EmgCreepDecreasing) {
-                    emgValues.creepDecreasing[channel] = (EmgCreepDecreasing)myEnum;
+                    emgSettingsValues.creepDecreasing[channel] = (EmgCreepDecreasing)myEnum;
                 } else if (myEnum instanceof EmgMinimumDeltaUV) {
-                    emgValues.minimumDeltaUV[channel] = (EmgMinimumDeltaUV)myEnum;
+                    emgSettingsValues.minimumDeltaUV[channel] = (EmgMinimumDeltaUV)myEnum;
                 } else if (myEnum instanceof EmgLowerThresholdMinimum) {
-                    emgValues.lowerThresholdMinimum[channel] = (EmgLowerThresholdMinimum)myEnum;
+                    emgSettingsValues.lowerThresholdMinimum[channel] = (EmgLowerThresholdMinimum)myEnum;
                 }
             }
         }
     }
 
-    private void resizeDropdowns() {
-        dropdownWidth = int((w - (DROPDOWN_SPACER * (NUM_COLUMNS + 1))) / NUM_COLUMNS);
-        final int MAX_HEIGHT_ITEMS = channelCount == 4 ? 8 : 5;
+    private void createEmgSettingsSaveButton(String name, String text, int _x, int _y, int _w, int _h) {
+        saveButton = createButton(emgCp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        saveButton.setBorderColor(OBJECT_BORDER_GREY);
+        saveButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                dataProcessing.emgSettings.storeSettings();
+            }
+        });
+    }
 
+    private void createEmgSettingsLoadButton(String name, String text, int _x, int _y, int _w, int _h) {
+        loadButton = createButton(emgCp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        loadButton.setBorderColor(OBJECT_BORDER_GREY);
+        loadButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                dataProcessing.emgSettings.loadSettings();
+            }
+        });
+    }
+
+    private void createEmgSettingsDefaultButton(String name, String text, int _x, int _y, int _w, int _h) {
+        defaultButton = createButton(emgCp5, name, text, _x, _y, _w, _h, h5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        defaultButton.setBorderColor(OBJECT_BORDER_GREY);
+        defaultButton.onClick(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                dataProcessing.emgSettings.revertAllChannelsToDefaultValues();
+            }
+        });
+    }
+
+    private void updateCp5Objects() {
         for (int i = 0; i < channelCount; i++) {
-            int dropdownX = x + DROPDOWN_SPACER * 2 + dropdownWidth;
-            dropdownYPositions[i] = HEADER_PADDING + int(y + ((ROW_HEIGHT) * i) + (((ROW_HEIGHT) - DROPDOWN_HEIGHT) / 2));
-            final int buttonXIncrement = DROPDOWN_SPACER + dropdownWidth;
+            //Fetch values from the EmgSettingsValues object
+            EmgSmoothing updateSmoothing = emgSettingsValues.smoothing[i];
+            EmgUVLimit updateUVLimit = emgSettingsValues.uvLimit[i];
+            EmgCreepIncreasing updateCreepIncreasing = emgSettingsValues.creepIncreasing[i];
+            EmgCreepDecreasing updateCreepDecreasing = emgSettingsValues.creepDecreasing[i];
+            EmgMinimumDeltaUV updateMinimumDeltaUV = emgSettingsValues.minimumDeltaUV[i];
+            EmgLowerThresholdMinimum updateLowerThresholdMinimum = emgSettingsValues.lowerThresholdMinimum[i];
 
-            smoothLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            smoothLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
-            
-            dropdownX += buttonXIncrement;
-            uvLimitLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            uvLimitLists[i].setSize(dropdownWidth, (uvLimitLists[i].getItems().size()+1) * DROPDOWN_HEIGHT);
-
-            dropdownX += buttonXIncrement;
-            creepIncLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            creepIncLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
-
-            dropdownX += buttonXIncrement;
-            creepDecLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            creepDecLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
-
-            dropdownX += buttonXIncrement;
-            minDeltaUvLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            minDeltaUvLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
-
-            dropdownX += buttonXIncrement;
-            lowLimitLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            lowLimitLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+            //Update the ScrollableLists
+            smoothLists[i].getCaptionLabel().setText(updateSmoothing.getString());
+            uvLimitLists[i].getCaptionLabel().setText(updateUVLimit.getString());
+            creepIncLists[i].getCaptionLabel().setText(updateCreepIncreasing.getString());
+            creepDecLists[i].getCaptionLabel().setText(updateCreepDecreasing.getString());
+            minDeltaUvLists[i].getCaptionLabel().setText(updateMinimumDeltaUV.getString());
+            lowLimitLists[i].getCaptionLabel().setText(updateLowerThresholdMinimum.getString());
         }
     }
 
-    private void drawChannelLabels() {
-        int colWidth = (w / NUM_COLUMNS);
-        int colOffset = colWidth / 2;
-        
-        pushStyle();
-
-        fill(OPENBCI_DARKBLUE);
-        textFont(p5, 12);
-        textLeading(12);
-        textAlign(CENTER, CENTER);
-
-        for (int i = 0; i < channelCount; i++) {
-            String channelLabel = channelCount > channelLabels.length ? "Channel " + Integer.toString(i + 1) : channelLabels[i];
-            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2));
-        }
-
-        popStyle();
-    }
-
-    //We have add an implementation of this class since this is a child instance of PApplet
+    //We have to add an implementation of this class since this is a child instance of PApplet.
     class TextBox {
         private int x, y;
         private int w, h;

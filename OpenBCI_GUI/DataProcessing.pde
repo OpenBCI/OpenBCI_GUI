@@ -93,7 +93,7 @@ class DataProcessing {
     float avgPowerInBins[][];
     float headWidePower[];
 
-    public EmgValues emgValues;
+    public EmgSettings emgSettings;
 
     DataProcessing(int NCHAN, float sample_rate_Hz) {
         nchan = NCHAN;
@@ -104,7 +104,7 @@ class DataProcessing {
         avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
 
-        emgValues = new EmgValues();
+        emgSettings = new EmgSettings();
     }
     
     //Process data on a channel-by-channel basis
@@ -297,6 +297,6 @@ class DataProcessing {
         }
 
         //Compute EMG values independent of widgets
-        emgValues.process(dataProcessingFilteredBuffer);
+        emgSettings.values.process(dataProcessingFilteredBuffer);
     }
 }

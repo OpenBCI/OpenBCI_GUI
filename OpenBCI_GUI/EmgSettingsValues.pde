@@ -5,7 +5,7 @@
 //  This supports having custom settings that can be easily modified on a per-channel basis.  //
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-class EmgValues {
+class EmgSettingsValues {
 
     //These values can be changed via dropdowns
     public EmgSmoothing[] smoothing;
@@ -21,9 +21,11 @@ class EmgValues {
     float[] lowerThreshold;
     float[] averageuV;
 
-    EmgValues() {
+    private int channelCount;
 
-        int channelCount = currentBoard.getNumEXGChannels();
+    EmgSettingsValues() {
+
+        channelCount = currentBoard.getNumEXGChannels();
 
         smoothing = new EmgSmoothing[channelCount];
         uvLimit = new EmgUVLimit[channelCount];
@@ -52,7 +54,7 @@ class EmgValues {
     //Pass filtered data into this method
     public void process(float[][] data_forDisplay_uV) {
         //looping over channels and analyzing input data
-        for (int i = 0; i < currentBoard.getNumEXGChannels(); i++) {
+        for (int i = 0; i < channelCount; i++) {
             float averagePeriod = currentBoard.getSampleRate() * smoothing[i].getValue();
             int _uvLimit = uvLimit[i].getValue();
             float creepSpeedIncreasing = creepIncreasing[i].getValue();

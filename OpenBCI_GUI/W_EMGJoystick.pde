@@ -15,7 +15,7 @@ class W_EMGJoystick extends Widget {
     private Button emgSettingsButton;
     private List<controlP5.Controller> cp5ElementsToCheck;
 
-    EmgValues emgValues;
+    EmgSettingsValues emgSettingsValues;
 
     private final int NUM_EMG_CHANNELS = 4;
 
@@ -69,7 +69,7 @@ class W_EMGJoystick extends Widget {
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
         cp5ElementsToCheck.add((controlP5.Controller) emgSettingsButton);
 
-        emgValues = dataProcessing.emgValues;
+        emgSettingsValues = dataProcessing.emgSettings.values;
 
         channelOneLabel = CHANNEL_ONE_LABEL_EN;
         channelTwoLabel = CHANNEL_TWO_LABEL_EN;
@@ -189,9 +189,9 @@ class W_EMGJoystick extends Widget {
         }
         
         //Here we subtract the values of the left and right channels to get the X axis
-        joystickRawX = emgValues.outputNormalized[1] - emgValues.outputNormalized[0];
+        joystickRawX = emgSettingsValues.outputNormalized[1] - emgSettingsValues.outputNormalized[0];
         //Here we subtract the values of the top and bottom channels to get the Y axis
-        joystickRawY = emgValues.outputNormalized[2] - emgValues.outputNormalized[3];
+        joystickRawY = emgSettingsValues.outputNormalized[2] - emgSettingsValues.outputNormalized[3];
 
         //Map the joystick values to a unit circle
         float[] unitCircleXY = mapToUnitCircle(joystickRawX, joystickRawY);
@@ -234,20 +234,20 @@ class W_EMGJoystick extends Widget {
         //Realtime
         fill(channelColors[colorIndex], 200);
         noStroke();
-        circle(circleX, circleY, scaleFactor * emgValues.averageuV[channel]);
+        circle(circleX, circleY, scaleFactor * emgSettingsValues.averageuV[channel]);
 
         //Circle for outer threshold
         noFill();
         strokeWeight(1);
         stroke(OPENBCI_DARKBLUE);
-        circle(circleX, circleY, scaleFactor * emgValues.upperThreshold[channel]);
+        circle(circleX, circleY, scaleFactor * emgSettingsValues.upperThreshold[channel]);
 
         //Circle for inner threshold
         stroke(OPENBCI_DARKBLUE);
-        circle(circleX, circleY, scaleFactor * emgValues.lowerThreshold[channel]);
+        circle(circleX, circleY, scaleFactor * emgSettingsValues.lowerThreshold[channel]);
 
         //Map value for height of bar graph
-        float normalizedBAR_HEIGHTeight = map(emgValues.outputNormalized[channel], 0, 1, 0, BAR_HEIGHT * -1);
+        float normalizedBAR_HEIGHTeight = map(emgSettingsValues.outputNormalized[channel], 0, 1, 0, BAR_HEIGHT * -1);
 
         //Draw normalized bar graph of uV w/ matching channel color
         noStroke();
