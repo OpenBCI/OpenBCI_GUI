@@ -7,16 +7,8 @@ import ddf.minim.analysis.*; //for FFT
 import brainflow.DataFilter;
 import brainflow.FilterTypes;
 
-DataProcessing dataProcessing;
 String curTimestamp;
 HashMap<Integer,String> index_of_times;
-
-// indexes
-final int DELTA = 0; // 1-4 Hz
-final int THETA = 1; // 4-8 Hz
-final int ALPHA = 2; // 8-13 Hz
-final int BETA = 3; // 13-30 Hz
-final int GAMMA = 4; // 30-55 Hz
 
 float playback_speed_fac = 1.0f;  //make 1.0 for real-time.  larger for faster playback
 
@@ -101,6 +93,8 @@ class DataProcessing {
     float avgPowerInBins[][];
     float headWidePower[];
 
+    public EmgSettings emgSettings;
+
     DataProcessing(int NCHAN, float sample_rate_Hz) {
         nchan = NCHAN;
         fs_Hz = sample_rate_Hz;
@@ -109,6 +103,8 @@ class DataProcessing {
         newDataToSend = false;
         avgPowerInBins = new float[nchan][processing_band_low_Hz.length];
         headWidePower = new float[processing_band_low_Hz.length];
+
+        emgSettings = new EmgSettings();
     }
     
     //Process data on a channel-by-channel basis
@@ -124,29 +120,26 @@ class DataProcessing {
             
             //Apply BandStop filter if the filter should be active on this channel
             if (filterSettings.values.bandStopFilterActive[Ichan].isActive()) {
-                double chebyshevRipple = filterSettings.values.bandStopFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandstop(
                     tempArray,
                     currentBoard.getSampleRate(),
-                    filterSettings.values.bandStopCenterFreq[Ichan],
-                    filterSettings.values.bandStopWidth[Ichan],
+                    filterSettings.values.bandStopStartFreq[Ichan],
+                    filterSettings.values.bandStopStopFreq[Ichan],
                     filterSettings.values.bandStopFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandStopFilterType[Ichan].getValue(),
-                    chebyshevRipple);
+                    1.0);
             }
 
             //Apply BandPass filter if the filter should be active on this channel
             if (filterSettings.values.bandPassFilterActive[Ichan].isActive()) {
-                Pair<Double, Double> centerAndWidth = filterSettings.values.getBandPassCenterAndWidth(Ichan);
-                double chebyshevRipple = filterSettings.values.bandPassFilterType[Ichan] == BrainFlowFilterType.CHEBYSHEV ? 1.0d : 0d;
                 DataFilter.perform_bandpass(
                     tempArray,
                     currentBoard.getSampleRate(),
-                    centerAndWidth.getLeft(),
-                    centerAndWidth.getRight(),
+                    filterSettings.values.bandPassStartFreq[Ichan],
+                    filterSettings.values.bandPassStopFreq[Ichan],
                     filterSettings.values.bandPassFilterOrder[Ichan].getValue(),
                     filterSettings.values.bandPassFilterType[Ichan].getValue(),
-                    chebyshevRipple);
+                    1.0);
             }
 
             //Apply Environmental Noise filter on all channels. Do it like this since there are no codes for NONE or FIFTY_AND_SIXTY in BrainFlow
@@ -284,9 +277,6 @@ class DataProcessing {
             headWidePower[i] = sum/nchan;   // averaging power over all channels
         }
 
-        //delta in channel 2 ... avgPowerInBins[1][DELTA];
-        //headwide beta ... headWidePower[BETA];
-
         //find strongest channel
         int refChanInd = findMax(data_std_uV);
         //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
@@ -305,5 +295,8 @@ class DataProcessing {
                 polarity[Ichan]=-1.0;
             }
         }
+
+        //Compute EMG values independent of widgets
+        emgSettings.values.process(dataProcessingFilteredBuffer);
     }
 }

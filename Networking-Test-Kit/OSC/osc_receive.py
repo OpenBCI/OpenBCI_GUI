@@ -56,7 +56,7 @@ if __name__ == "__main__":
   # Set up necessary parameters from command line
       dispatcher = dispatcher.Dispatcher()
       if args.option=="print":
-          dispatcher.map("/openbci", print_message)
+          dispatcher.map(args.address, print_message)
           signal.signal(signal.SIGINT, exit_print)
 
       elif args.option=="record":
@@ -68,7 +68,7 @@ if __name__ == "__main__":
           textfile.write("time,address,messages\n")
           textfile.write("-------------------------\n")
           print("Recording to %s" % filename)
-          dispatcher.map("/openbci", record_to_file)
+          dispatcher.map(args.address, record_to_file)
           signal.signal(signal.SIGINT, close_file)
 
       # Display server attributes

@@ -51,7 +51,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
             }
             else {
                 if (samplingRate == 0) {
-                    samplingRate = 125;
+                    samplingRate = 250;
                     exgChannels = new int[] {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
                     totalChannels = 21;
                 }
@@ -166,6 +166,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
     @Override
+    public int getAccelSampleRate() {
+        return getSampleRate();
+    }
+
+    @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         outputWarn("Deactivating channels is not possible for Playback board.");
     }
@@ -277,6 +282,11 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     @Override
     public int[] getAccelerometerChannels() {
         return new int[]{totalChannels - 4, totalChannels - 3, totalChannels - 2};
+    }
+
+    @Override
+    public List<double[]> getDataWithAccel(int maxSamples) {
+        return getData(maxSamples);
     }
 
     @Override

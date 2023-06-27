@@ -8,4 +8,8 @@ interface DigitalCapableBoard {
     public boolean canDeactivateDigital();
 
     public int[] getDigitalChannels();
+
+    public List<double[]> getDataWithDigital(int maxSamples);
+    
+    public int getDigitalSampleRate();
 };

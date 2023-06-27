@@ -8,4 +8,8 @@ interface AnalogCapableBoard {
     public boolean canDeactivateAnalog();
 
     public int[] getAnalogChannels();
+
+    public List<double[]> getDataWithAnalog(int maxSamples);
+
+    public int getAnalogSampleRate();
 };

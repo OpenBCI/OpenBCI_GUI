@@ -5,7 +5,7 @@
 //                       -- All FFT widget settings
 //                       -- Default Layout, Board Mode, and other Global Settings
 //                       -- Networking Mode and All settings for active networking protocol
-//                       -- Accelerometer, Analog Read, Head Plot, EMG, Band Power, and Spectrogram
+//                       -- Accelerometer, Analog Read, Head Plot, Band Power, and Spectrogram
 //                       -- Widget/Container Pairs
 //                       -- OpenBCI Data Format Settings (.txt and .csv)
 //                       Created: Richard Waltman - May/June 2018
@@ -75,11 +75,6 @@ class SessionSettings {
     int hpPolaritySave;
     int hpContoursSave;
     int hpSmoothingSave;
-    //EMG settings
-    int emgSmoothingSave;
-    int emguVLimSave;
-    int emgCreepSave;
-    int emgMinDeltauVSave;
     //default data types for streams 1-4 in Networking widget
     int nwDataType1;
     int nwDataType2;
@@ -100,7 +95,6 @@ class SessionSettings {
         "CytonUserSettings.json",
         "DaisyUserSettings.json",
         "GanglionUserSettings.json",
-        "GaleaUserSettings.json",
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
@@ -110,7 +104,6 @@ class SessionSettings {
         "CytonDefaultSettings.json",
         "DaisyDefaultSettings.json",
         "GanglionDefaultSettings.json",
-        "GaleaDefaultSettings.json",
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
@@ -136,11 +129,6 @@ class SessionSettings {
     String[] accVertScaleArray = {"Auto","1 g", "2 g", "4 g"};
     String[] accHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
 
-    //Used to set text in dropdown menus when loading Networking settings
-    String[] nwProtocolArray = {"Serial", "LSL", "UDP", "OSC"};
-    String[] nwDataTypesArray = {"None", "Focus", "EMG", "AvgBandPower", "BandPower", "TimeSeries", "Accel/Aux", "FFT", "Pulse"};
-    String[] nwBaudRatesArray = {"57600", "115200", "250000", "500000"};
-
     //Used to set text in dropdown menus when loading Analog Read settings
     String[] arVertScaleArray = {"Auto", "50", "100", "200", "400", "1000", "10000"};
     String[] arHorizScaleArray = {"Sync", "1 sec", "3 sec", "5 sec", "10 sec", "20 sec"};
@@ -150,12 +138,6 @@ class SessionSettings {
     String[] hpPolarityArray = {"+/-", " + "};
     String[] hpContoursArray = {"ON", "OFF"};
     String[] hpSmoothingArray = {"0.0", "0.5", "0.75", "0.9", "0.95", "0.98"};
-
-    //Used to set text in dropdown menus when loading EMG settings
-    String[] emgSmoothingArray = {"0.01 s", "0.1 s", "0.15 s", "0.25 s", "0.5 s", "0.75 s", "1.0 s", "2.0 s"};
-    String[] emguVLimArray = {"50 uV", "100 uV", "200 uV", "400 uV"};
-    String[] emgCreepArray = {"0.9", "0.95", "0.98", "0.99", "0.999"};
-    String[] emgMinDeltauVArray = {"10 uV", "20 uV", "40 uV", "80 uV"};
 
     //Used to set text in dropdown menus when loading Spectrogram Setings
     String[] spectMaxFrqArray = {"20 Hz", "40 Hz", "60 Hz", "100 Hz", "120 Hz", "250 Hz"};
@@ -182,13 +164,6 @@ class SessionSettings {
     int hpContoursLoad;
     int hpSmoothingLoad;
 
-    //EMG settings
-    int emgSmoothingLoad;
-    int emguVLimLoad;
-    int emgCreepLoad;
-    int emgMinDeltauVLoad;
-
-
     //Band Power widget settings
     //smoothing and filter dropdowns are linked to FFT, so no need to save again
     List<Integer> loadBPActiveChans = new ArrayList<Integer>();
@@ -205,19 +180,14 @@ class SessionSettings {
     //OSC load variables
     String nwOscIp1Load;  String nwOscIp2Load;  String nwOscIp3Load;  String nwOscIp4Load;
     String nwOscPort1Load;  String nwOscPort2Load;  String nwOscPort3Load;  String nwOscPort4Load;
-    String nwOscAddress1Load;  String nwOscAddress2Load; String nwOscAddress3Load; String nwOscAddress4Load;
-    boolean nwOscFilter1Load, nwOscFilter2Load, nwOscFilter3Load, nwOscFilter4Load;
     //UDP load variables
     String nwUdpIp1Load;  String nwUdpIp2Load;  String nwUdpIp3Load;
     String nwUdpPort1Load;  String nwUdpPort2Load;  String nwUdpPort3Load;
-    boolean nwUdpFilter1Load, nwUdpFilter2Load, nwUdpFilter3Load;
     //LSL load variables
     String nwLSLName1Load;  String nwLSLName2Load;  String nwLSLName3Load;
     String nwLSLType1Load;  String nwLSLType2Load;  String nwLSLType3Load;
-    boolean nwLSLFilter1Load, nwLSLFilter2Load, nwLSLFilter3Load;
     //Serial load variables
     int nwSerialBaudRateLoad;
-    boolean nwSerialFilter1Load;
 
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
@@ -230,7 +200,6 @@ class SessionSettings {
     private final String kJSONKeyAccel = "accelerometer";
     private final String kJSONKeyNetworking = "networking";
     private final String kJSONKeyHeadplot = "headplot";
-    private final String kJSONKeyEMG = "emg";
     private final String kJSONKeyBandPower = "bandPower";
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
@@ -405,33 +374,28 @@ class SessionSettings {
         switch(nwProtocolSave) {
             case 3:
                 for (int i = 1; i <= 4; i++) {
-                    saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setInt("OSC_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("OSC_ip"+i, (String) w_networking.getCP5Map().get("OSC_ip"+i));
                     saveNetworkingSettings.setString("OSC_port"+i, (String) w_networking.getCP5Map().get("OSC_port"+i));
-                    saveNetworkingSettings.setString("OSC_address"+i, (String) w_networking.getCP5Map().get("OSC_address"+i));
-                    saveNetworkingSettings.setBoolean("OSC_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 2:
                 for (int i = 1; i <= 3; i++) {
-                    saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setInt("UDP_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("UDP_ip"+i, (String) w_networking.getCP5Map().get("UDP_ip"+i));
                     saveNetworkingSettings.setString("UDP_port"+i, (String) w_networking.getCP5Map().get("UDP_port"+i));
-                    saveNetworkingSettings.setBoolean("UDP_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 1:
                 for (int i = 1; i <= 3; i++) {
-                    saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.datatypeNames[i-1]));
+                    saveNetworkingSettings.setInt("LSL_DataType"+i, (Integer) w_networking.getCP5Map().get(w_networking.dataTypeNames.get(i-1)));
                     saveNetworkingSettings.setString("LSL_name"+i, (String) w_networking.getCP5Map().get("LSL_name"+i));
                     saveNetworkingSettings.setString("LSL_type"+i, (String) w_networking.getCP5Map().get("LSL_type"+i));
-                    saveNetworkingSettings.setBoolean("LSL_filter"+i, (boolean) w_networking.getCP5Map().get("filter"+i));
                 }
                 break;
             case 0:
                 saveNetworkingSettings.setInt("Serial_DataType1", (Integer) w_networking.getCP5Map().get("dataType1"));
                 saveNetworkingSettings.setInt("Serial_baudrate", (Integer) w_networking.getCP5Map().get("baud_rate"));
-                saveNetworkingSettings.setBoolean("Serial_filter1", (boolean) w_networking.getCP5Map().get("filter1"));
                 saveNetworkingSettings.setString("Serial_portName", (String) w_networking.getCP5Map().get("port_name"));
                 break;
         }//end of networking proctocol switch
@@ -451,20 +415,6 @@ class SessionSettings {
         saveHeadplotSettings.setInt("HP_smoothing", hpSmoothingSave);
         //Set the Headplot JSON Object
         saveSettingsJSONData.setJSONObject(kJSONKeyHeadplot, saveHeadplotSettings);
-
-        ///////////////////////////////////////////////Setup new JSON object to save EMG settings
-        JSONObject saveEMGSettings = new JSONObject();
-
-        //Save EMG Smoothing
-        saveEMGSettings.setInt("EMG_smoothing", emgSmoothingSave);
-        //Save EMG uV limit
-        saveEMGSettings.setInt("EMG_uVlimit", emguVLimSave);
-        //Save EMG creep speed
-        saveEMGSettings.setInt("EMG_creepspeed", emgCreepSave);
-        //Save EMG min delta uV
-        saveEMGSettings.setInt("EMG_minuV", emgMinDeltauVSave);
-        //Set the EMG JSON Object
-        saveSettingsJSONData.setJSONObject(kJSONKeyEMG, saveEMGSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Band Power settings
         JSONObject saveBPSettings = new JSONObject();
@@ -524,7 +474,7 @@ class SessionSettings {
         println("SessionSettings: " + numActiveWidgets + " active widgets saved!");
         //Print what widgets are in the containers used by current layout for only the number of active widgets
         //for (int i = 0; i < numActiveWidgets; i++) {
-            //int containerCounter = wm.layouts.get(currentLayout-1).containerInts[i];
+            //int containerCounter = wm.layouts.get(currentLayout).containerInts[i];
             //println("Container " + containerCounter + " is available"); //For debugging
         //}
         saveSettingsJSONData.setJSONObject(kJSONKeyWidget, saveWidgetSettings);
@@ -608,14 +558,6 @@ class SessionSettings {
                 nwOscPort2Load = loadNetworkingSettings.getString("OSC_port2");
                 nwOscPort3Load = loadNetworkingSettings.getString("OSC_port3");
                 nwOscPort4Load = loadNetworkingSettings.getString("OSC_port4");
-                nwOscAddress1Load = loadNetworkingSettings.getString("OSC_address1");
-                nwOscAddress2Load = loadNetworkingSettings.getString("OSC_address2");
-                nwOscAddress3Load = loadNetworkingSettings.getString("OSC_address3");
-                nwOscAddress4Load = loadNetworkingSettings.getString("OSC_address4");
-                nwOscFilter1Load = loadNetworkingSettings.getBoolean("OSC_filter1");
-                nwOscFilter2Load = loadNetworkingSettings.getBoolean("OSC_filter2");
-                nwOscFilter3Load = loadNetworkingSettings.getBoolean("OSC_filter3");
-                nwOscFilter4Load = loadNetworkingSettings.getBoolean("OSC_filter4");
                 break;
             case 2:
                 nwDataType1 = loadNetworkingSettings.getInt("UDP_DataType1");
@@ -627,9 +569,6 @@ class SessionSettings {
                 nwUdpPort1Load = loadNetworkingSettings.getString("UDP_port1");
                 nwUdpPort2Load = loadNetworkingSettings.getString("UDP_port2");
                 nwUdpPort3Load = loadNetworkingSettings.getString("UDP_port3");
-                nwUdpFilter1Load = loadNetworkingSettings.getBoolean("UDP_filter1");
-                nwUdpFilter2Load = loadNetworkingSettings.getBoolean("UDP_filter2");
-                nwUdpFilter3Load = loadNetworkingSettings.getBoolean("UDP_filter3");
                 break;
             case 1:
                 nwDataType1 = loadNetworkingSettings.getInt("LSL_DataType1");
@@ -641,14 +580,10 @@ class SessionSettings {
                 nwLSLType1Load = loadNetworkingSettings.getString("LSL_type1");
                 nwLSLType2Load = loadNetworkingSettings.getString("LSL_type2");
                 nwLSLType3Load = loadNetworkingSettings.getString("LSL_type3");
-                nwLSLFilter1Load = loadNetworkingSettings.getBoolean("LSL_filter1");
-                nwLSLFilter2Load = loadNetworkingSettings.getBoolean("LSL_filter2");
-                nwLSLFilter3Load = loadNetworkingSettings.getBoolean("LSL_filter3");
                 break;
             case 0:
                 nwDataType1 = loadNetworkingSettings.getInt("Serial_DataType1");
                 nwSerialBaudRateLoad = loadNetworkingSettings.getInt("Serial_baudrate");
-                nwSerialFilter1Load = loadNetworkingSettings.getBoolean("Serial_filter1");
                 nwSerialPort = loadNetworkingSettings.getString("Serial_portName");
                 break;
         } //end switch case for all networking types
@@ -659,13 +594,6 @@ class SessionSettings {
         hpPolarityLoad = loadHeadplotSettings.getInt("HP_polarity");
         hpContoursLoad = loadHeadplotSettings.getInt("HP_contours");
         hpSmoothingLoad = loadHeadplotSettings.getInt("HP_smoothing");
-
-        //get the EMG settings
-        JSONObject loadEMGSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEMG);
-        emgSmoothingLoad = loadEMGSettings.getInt("EMG_smoothing");
-        emguVLimLoad = loadEMGSettings.getInt("EMG_uVlimit");
-        emgCreepLoad = loadEMGSettings.getInt("EMG_creepspeed");
-        emgMinDeltauVLoad = loadEMGSettings.getInt("EMG_minuV");
 
         //Get Band Power widget settings
         loadBPActiveChans.clear();
@@ -818,19 +746,6 @@ class SessionSettings {
         //Force redraw headplot on load. Fixes issue where heaplot draws outside of the widget.
         w_headPlot.headPlot.setPositionSize(w_headPlot.headPlot.hp_x, w_headPlot.headPlot.hp_y, w_headPlot.headPlot.hp_w, w_headPlot.headPlot.hp_h, w_headPlot.headPlot.hp_win_x, w_headPlot.headPlot.hp_win_y);
 
-        ////////////////////////////Apply EMG settings
-        SmoothEMG(emgSmoothingLoad);
-            w_emg.cp5_widget.getController("SmoothEMG").getCaptionLabel().setText(emgSmoothingArray[emgSmoothingLoad]);
-
-        uVLimit(emguVLimLoad);
-            w_emg.cp5_widget.getController("uVLimit").getCaptionLabel().setText(emguVLimArray[emguVLimLoad]);
-
-        CreepSpeed(emgCreepLoad);
-            w_emg.cp5_widget.getController("CreepSpeed").getCaptionLabel().setText(emgCreepArray[emgCreepLoad]);
-
-        minUVRange(emgMinDeltauVLoad);
-            w_emg.cp5_widget.getController("minUVRange").getCaptionLabel().setText(emgMinDeltauVArray[emgMinDeltauVLoad]);
-
         ////////////////////////////Apply Band Power settings
         try {
             //apply channel checkbox settings
@@ -870,21 +785,17 @@ class SessionSettings {
         //Update protocol with loaded value
         Protocol(nwProtocolLoad);
         //Update dropdowns and textfields in the Networking widget with loaded values
-        w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(nwProtocolArray[nwProtocolLoad]); //Reference the dropdown from the appropriate widget
-        w_networking.cp5_networking.get(Toggle.class, "filter1").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter2").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter3").setState(false);
-        w_networking.cp5_networking.get(Toggle.class, "filter4").setState(false);
+        w_networking.cp5_widget.getController("Protocol").getCaptionLabel().setText(w_networking.protocols.get(nwProtocolLoad)); //Reference the dropdown from the appropriate widget
         switch (nwProtocolLoad) {
             case 3:  //Apply OSC if loaded
                 println("Apply OSC Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
-                w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(nwDataTypesArray[nwDataType4]);
+                w_networking.cp5_networking_dropdowns.getController("dataType4").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType4));
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType4").setValue(nwDataType4);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_ip1").setText(nwOscIp1Load); //Simply set the text for text boxes
                 w_networking.cp5_networking.get(Textfield.class, "OSC_ip2").setText(nwOscIp2Load); //The strings are referenced on command
@@ -894,22 +805,14 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port2").setText(nwOscPort2Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port3").setText(nwOscPort3Load);
                 w_networking.cp5_networking.get(Textfield.class, "OSC_port4").setText(nwOscPort4Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address1").setText(nwOscAddress1Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address2").setText(nwOscAddress2Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address3").setText(nwOscAddress3Load);
-                w_networking.cp5_networking.get(Textfield.class, "OSC_address4").setText(nwOscAddress4Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwOscFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwOscFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwOscFilter3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter4").setState(nwOscFilter4Load);
                 break;
             case 2:  //Apply UDP if loaded
                 println("Apply UDP Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_ip1").setText(nwUdpIp1Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_ip2").setText(nwUdpIp2Load);
@@ -917,17 +820,14 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port1").setText(nwUdpPort1Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port2").setText(nwUdpPort2Load);
                 w_networking.cp5_networking.get(Textfield.class, "UDP_port3").setText(nwUdpPort3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwUdpFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwUdpFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwUdpFilter3Load);
                 break;
             case 1:  //Apply LSL if loaded
                 println("Apply LSL Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(nwDataTypesArray[nwDataType2]); //etc...
+                w_networking.cp5_networking_dropdowns.getController("dataType2").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType2)); //etc...
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType2").setValue(nwDataType2);
-                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(nwDataTypesArray[nwDataType3]);
+                w_networking.cp5_networking_dropdowns.getController("dataType3").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType3));
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType3").setValue(nwDataType3);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_name1").setText(nwLSLName1Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_name2").setText(nwLSLName2Load);
@@ -935,17 +835,13 @@ class SessionSettings {
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type1").setText(nwLSLType1Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type2").setText(nwLSLType2Load);
                 w_networking.cp5_networking.get(Textfield.class, "LSL_type3").setText(nwLSLType3Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwLSLFilter1Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter2").setState(nwLSLFilter2Load);
-                w_networking.cp5_networking.get(Toggle.class, "filter3").setState(nwLSLFilter3Load);
                 break;
             case 0:  //Apply Serial if loaded
                 println("Apply Serial Networking Mode");
-                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(nwDataTypesArray[nwDataType1]); //Set text on frontend
+                w_networking.cp5_networking_dropdowns.getController("dataType1").getCaptionLabel().setText(w_networking.dataTypes.get(nwDataType1)); //Set text on frontend
                 w_networking.cp5_networking_dropdowns.get(ScrollableList.class, "dataType1").setValue(nwDataType1); //Set value in backend
-                w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(nwBaudRatesArray[nwSerialBaudRateLoad]); //Set text
+                w_networking.cp5_networking_baudRate.getController("baud_rate").getCaptionLabel().setText(w_networking.baudRates.get(nwSerialBaudRateLoad)); //Set text
                 w_networking.cp5_networking_baudRate.get(ScrollableList.class, "baud_rate").setValue(nwSerialBaudRateLoad); //Set value in backend
-                w_networking.cp5_networking.get(Toggle.class, "filter1").setState(nwSerialFilter1Load);
 
                 //Look for the portName in the dropdown list
                 int listSize = w_networking.cp5_networking_portName.get(ScrollableList.class, "port_name").getItems().size();
@@ -1028,17 +924,15 @@ class SessionSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_GALEA) {
-                filePath += fileNames[3];
             } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
-                filePath += fileNames[4];
+                filePath += fileNames[3];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
-                    filePath += fileNames[5];
+                    filePath += fileNames[4];
                 } else if (_nchan == NCHAN_CYTON) {
-                    filePath += fileNames[6];
+                    filePath += fileNames[5];
                 } else {
-                    filePath += fileNames[7];
+                    filePath += fileNames[6];
                 }
             }
         }
@@ -1046,11 +940,7 @@ class SessionSettings {
     }
 
     void initCheckPointFive() {
-        if (eegDataSource == DATASOURCE_GALEA) {
-            outputSuccess("Galea Firmware == " + "WIP");
-        } else {
-            outputSuccess("Session started!");
-        }
+        outputSuccess("Session started!");
     }
 
     void loadKeyPressed() {

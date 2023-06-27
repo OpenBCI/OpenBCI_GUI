@@ -8,14 +8,14 @@ public class FilterSettingsValues {
     public GlobalEnvironmentalFilter globalEnvFilter;
 
     public FilterActiveOnChannel masterBandStopFilterActive;
-    public double masterBandStopCenterFreq;
-    public double masterBandStopWidth;
+    public double masterBandStopStartFreq;
+    public double masterBandStopStopFreq;
     public BrainFlowFilterType masterBandStopFilterType = BrainFlowFilterType.BUTTERWORTH;
     public BrainFlowFilterOrder masterBandStopFilterOrder = BrainFlowFilterOrder.TWO;
 
     public FilterActiveOnChannel[] bandStopFilterActive;
-    public double[] bandStopCenterFreq;
-    public double[] bandStopWidth;
+    public double[] bandStopStartFreq;
+    public double[] bandStopStopFreq;
     public BrainFlowFilterType[] bandStopFilterType;
     public BrainFlowFilterOrder[] bandStopFilterOrder;
     
@@ -38,19 +38,19 @@ public class FilterSettingsValues {
 
         //Set Master Values for all channels for BandStop Filter
         masterBandStopFilterActive = FilterActiveOnChannel.OFF;
-        masterBandStopCenterFreq = 60;
-        masterBandStopWidth = 4;
+        masterBandStopStartFreq = 58;
+        masterBandStopStopFreq = 62;
         masterBandStopFilterType = BrainFlowFilterType.BUTTERWORTH;
         masterBandStopFilterOrder = BrainFlowFilterOrder.FOUR;
         //Create and assign master value to all channels
         bandStopFilterActive = new FilterActiveOnChannel[channelCount];
-        bandStopCenterFreq = new double[channelCount];
-        bandStopWidth = new double[channelCount];
+        bandStopStartFreq = new double[channelCount];
+        bandStopStopFreq = new double[channelCount];
         bandStopFilterType = new BrainFlowFilterType[channelCount];
         bandStopFilterOrder = new BrainFlowFilterOrder[channelCount];
         Arrays.fill(bandStopFilterActive, masterBandStopFilterActive);
-        Arrays.fill(bandStopCenterFreq, masterBandStopCenterFreq);
-        Arrays.fill(bandStopWidth, masterBandStopWidth);
+        Arrays.fill(bandStopStartFreq, masterBandStopStartFreq);
+        Arrays.fill(bandStopStopFreq, masterBandStopStopFreq);
         Arrays.fill(bandStopFilterType, masterBandStopFilterType);
         Arrays.fill(bandStopFilterOrder, masterBandStopFilterOrder);
 
@@ -72,13 +72,6 @@ public class FilterSettingsValues {
         Arrays.fill(bandPassStopFreq, masterBandPassStopFreq);
         Arrays.fill(bandPassFilterType, masterBandPassFilterType);
         Arrays.fill(bandPassFilterOrder, masterBandPassFilterOrder);
-    }
-
-    //Called in data processing to convert start & stop frequencies to center & width frequencies. Makes it simpler for users on the front-end.
-    public Pair<Double, Double> getBandPassCenterAndWidth(int chan) {
-        double centerFreq = (bandPassStartFreq[chan] + bandPassStopFreq[chan]) / 2.0;
-        double bandWidth = bandPassStopFreq[chan] - bandPassStartFreq[chan];
-        return new ImmutablePair<Double, Double>(centerFreq, bandWidth);
     }
 }
 

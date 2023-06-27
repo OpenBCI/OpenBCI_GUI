@@ -8,6 +8,9 @@ import static java.util.prefs.Preferences.systemRoot;
 //                       Global Functions
 //------------------------------------------------------------------------
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
   * @description Helper function to determine if the system is linux or not.
   * @return {boolean} true if os is linux, false otherwise.
@@ -263,7 +266,26 @@ String dropNonPrintableChars(String myString)
                 break;
         }
     }
-    return newString.toString();
+    String res = newString.toString();
+    res = res.replace("\r", "");
+    res = res.replace("\n", "");
+    res = res.replace("\t", "");
+    return res;
+}
+
+String getIpAddrFromStr(String strWithIP) {
+    String temp = dropNonPrintableChars(strWithIP);
+    String IPADDRESS_PATTERN = 
+        "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)";
+    Pattern pattern = Pattern.compile(IPADDRESS_PATTERN);
+    Matcher matcher = pattern.matcher(temp);
+    if (matcher.find()) {
+        return matcher.group();
+    } else{
+        output("Invalid Ip address");
+        println("Provided Ip address doesn't match regexp");
+        return "";
+    }
 }
 
 float getFontStringHeight(PFont _font, String string) {
@@ -440,22 +462,21 @@ class RectDimensions {
 
 class DataStatus {
     public boolean is_railed;
-    private double threshold_railed;
     public boolean is_railed_warn;
-    private double threshold_railed_warn;
     private double percentage;
     public String notificationString;
     private final color default_color = OPENBCI_DARKBLUE;
     private final color yellow = SIGNAL_CHECK_YELLOW;
     private final color red = BOLD_RED;
     private color colorIndicator = default_color;
+    // thresholds are pecentages of max possible value
+    private double threshold_railed = 90.0;
+    private double threshold_railed_warn = 75.0;
 
-    DataStatus(double thresh_railed, double thresh_railed_warn) {
+    DataStatus() {
         notificationString = "";
         is_railed = false;
-        threshold_railed = thresh_railed;
         is_railed_warn = false;
-        threshold_railed_warn = thresh_railed_warn;
         percentage = 0.0;
     }
     // here data is a full range for 20sec of data and doesnt take in account window size
@@ -469,10 +490,7 @@ class DataStatus {
         }
 
         if (currentBoard instanceof ADS1299SettingsBoard) {
-            double scaler =  (4.5 / (pow (2, 23) - 1) / 1.0 * 1000000.);
-            if (((ADS1299SettingsBoard)currentBoard).getUseDynamicScaler()) {
-                scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
-            }
+            double scaler =  (4.5 / (pow (2, 23) - 1) / ((ADS1299SettingsBoard)currentBoard).getGain(channel) * 1000000.);
             double maxVal = scaler * pow (2, 23);
             int numSeconds = 3;
             int nPoints = numSeconds * currentBoard.getSampleRate();
@@ -656,6 +674,10 @@ class TextBox {
         textColor = c;
     }
 
+    public void setBackgroundColor(color c) {
+        backgroundColor = c;
+    }
+
     public int getWidth() {
         return w;
     }
@@ -688,4 +710,47 @@ public boolean pingWebsite(String url) {
         return false;
 
     }
+}
+
+public BufferedReader createBufferedReader(String filepath) {
+    File file;
+    BufferedReader reader;
+    try {
+        file = new File(filepath);
+        reader = new BufferedReader(new FileReader(file));
+        return reader;
+    } catch (IOException e) {
+        e.printStackTrace();
+        return null;
+    }
+}
+
+//Used to check for one string in a text file
+//Uses a buffered reader for this method so that we do not load entire file to memory
+boolean checkTextFileForInfo(String path, String infoToCheck, int maxLinesToCheck) {
+    verbosePrint("Checking " + path + " for " + infoToCheck);
+    String strCurrentLine;
+    int lineCounter = 0;
+    BufferedReader reader = createBufferedReader(path);
+    try {
+        while (lineCounter < maxLinesToCheck) {
+            strCurrentLine = reader.readLine();
+            verbosePrint(strCurrentLine);
+            if (strCurrentLine.equals(infoToCheck)) {
+                return true;
+            }
+            lineCounter++;
+        }
+    } catch (IOException e) {
+        e.printStackTrace();
+    } finally {
+        try {
+            if (reader != null) {
+                reader.close();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    return false;
 }
