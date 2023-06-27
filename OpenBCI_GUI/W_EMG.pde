@@ -18,25 +18,44 @@ class W_emg extends Widget {
 
     private ControlP5 emgCp5;
     private Button emgSettingsButton;
+    private final int EMG_SETTINGS_BUTTON_WIDTH = 125;
     private List<controlP5.Controller> cp5ElementsToCheck;
+
+    public ChannelSelect emgChannelSelect;
 
     W_emg (PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
         parent = _parent;
+
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+
+        //Add channel select dropdown to this widget
+        emgChannelSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "EMG_Channels");
+        emgChannelSelect.activateAllButtons();
+        cp5ElementsToCheck.addAll(emgChannelSelect.getCp5ElementsForOverlapCheck());
 
         emgCp5 = new ControlP5(ourApplet);
         emgCp5.setGraphics(ourApplet, 0,0);
         emgCp5.setAutoDraw(false);
 
         createEmgSettingsButton();
-        
-        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
         cp5ElementsToCheck.add((controlP5.Controller) emgSettingsButton);
     }
 
     public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
         lockElementsOnOverlapCheck(cp5ElementsToCheck);
+
+        //Update channel checkboxes and active channels
+        emgChannelSelect.update(x, y, w);
+        
+        /*
+        //Flex the Gplot graph when channel select dropdown is open/closed
+        if (bpChanSelect.isVisible() != prevChanSelectIsVisible) {
+            flexGPlotSizeAndPosition();
+            prevChanSelectIsVisible = bpChanSelect.isVisible();
+        }
+        */
     }
 
     public void draw() {
@@ -45,39 +64,57 @@ class W_emg extends Widget {
         drawEmgVisualizations();
 
         emgCp5.draw();
+
+        //Draw channel select dropdown
+        emgChannelSelect.draw();
     }
 
     public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
         emgCp5.setGraphics(ourApplet, 0, 0);
-        emgSettingsButton.setPosition(x0 + 1, y0 + navH + 1);
+        emgSettingsButton.setPosition(x0 + w - EMG_SETTINGS_BUTTON_WIDTH - 2, y0 + navH + 1);
+        emgChannelSelect.screenResized(pApplet);
+    }
+
+    public void mousePressed() {
+        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        //Calls channel select mousePressed and checks if clicked
+        emgChannelSelect.mousePressed(this.dropdownIsActive);
     }
 
     private void drawEmgVisualizations() {
         pushStyle();
-        noStroke();
-        fill(255);
-        rect(x, y, w, h);
 
         float rx = x, ry = y, rw = w, rh = h;
+        //Flex the EMG graph when channel select dropdown is open/closed
+        ry = emgChannelSelect.isVisible() ? y + emgChannelSelect.getHeight() : y;
+        rh = emgChannelSelect.isVisible() ? h - emgChannelSelect.getHeight() : h;
         float scaleFactor = 1.0;
         float scaleFactorJaw = 1.5;
-        int rowNum = 4;
-        int colNum = currentBoard.getNumEXGChannels() / rowNum;
-        float rowOffset = rh / rowNum;
-        float colOffset = rw / colNum;
-        int index = 0;
+        int rowCount = 4;
+        int columnCount = ceil(emgChannelSelect.activeChan.size() / (rowCount * 1f));
+        float rowOffset = rh / rowCount;
+        float colOffset = rw / columnCount;
         float currentX, currentY;
         
         EmgSettingsValues emgSettingsValues = dataProcessing.emgSettings.values;
 
-        for (int i = 0; i < rowNum; i++) {
-            for (int j = 0; j < colNum; j++) {
+        int channel = 0;
+        for (int i = 0; i < rowCount; i++) {
+            for (int j = 0; j < columnCount; j++) {
 
-                int channel = i * colNum + j;
+                int index = i * columnCount + j;
+
+                if (index > emgChannelSelect.activeChan.size() - 1) {
+                    continue;
+                }
+                
+                channel = emgChannelSelect.activeChan.get(index);
+
                 int colorIndex = channel % 8;
 
                 pushMatrix();
+
                 currentX = rx + j * colOffset;
                 currentY = ry + i * rowOffset; //never name variables on an empty stomach
                 translate(currentX, currentY);
@@ -117,12 +154,10 @@ class W_emg extends Widget {
                 pushStyle();
                 stroke(OPENBCI_DARKBLUE);
                 fill(OPENBCI_DARKBLUE);
-                int _chan = index+1;
-                textFont(p5, 12);
-                text(_chan + "", 10, 20);
+                textFont(h4, 14);
+                text((channel + 1), 10, 20);
                 popStyle();
 
-                index++;
                 popMatrix();
             }
         }
@@ -131,8 +166,9 @@ class W_emg extends Widget {
     }
 
     private void createEmgSettingsButton() {
-        emgSettingsButton = createButton(emgCp5, "emgSettingsButton", "EMG Settings", (int) (x0 + 1),
-                (int) (y0 + navH + 1), 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        emgSettingsButton = createButton(emgCp5, "emgSettingsButton", "EMG Settings", 
+                (int) (x0 + w - EMG_SETTINGS_BUTTON_WIDTH - 1), (int) (y0 + navH + 1), 
+                EMG_SETTINGS_BUTTON_WIDTH, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         emgSettingsButton.setBorderColor(OBJECT_BORDER_GREY);
         emgSettingsButton.onRelease(new CallbackListener() {
             public synchronized void controlEvent(CallbackEvent theEvent) {

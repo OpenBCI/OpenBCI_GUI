@@ -15,6 +15,7 @@
 - Add feature to connect to Ganglion using Native Bluetooth #1080
 - Refactor the creation and playback of OpenBCI GUI CSV files #1119
 - Filter out .tty serial ports in Networking Widget Serial list #1097 - Thanks @kkashiva
+- Add ChannelSelect Feature to EMG Widget #1149
 
 # v5.1.0
 
