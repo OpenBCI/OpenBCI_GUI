@@ -7,6 +7,7 @@
 - Fix error starting BrainFlow Streaming Board from external process #1102
 - Fix Hardware Settings button not clickable after resizing app #1132
 - Fix bug loading Session Settings related to Widget Layouts #1138
+- Fix bug caused by NullPointerException with ControlP5 Window on App Start #1150
 
 ### Improvements
 
