@@ -111,7 +111,6 @@ OpenBCI GUI has been tested on the following platforms:
 
 OpenGL acceleration is required.
 
-
 ## Troubleshooting
 - **When making an issue here on GitHub, please use an Issue or New Feature Template.** Otherwise, the issue will be closed and you will be asked to make a new issue using a template. This maintains a standard of communication and helps resolve issues in a timely manner.
 
