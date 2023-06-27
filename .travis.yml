@@ -46,7 +46,7 @@ install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then mkdir -p $HOME/Documents/Processing/libraries/                                                       ;fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then cp -a $TRAVIS_BUILD_DIR/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/                ;fi
   # used to create .dmg
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip install dmgbuild                                                                                 ;fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then pip3 install dmgbuild                                                                              ;fi
 
 script:
   - cd $TRAVIS_BUILD_DIR
