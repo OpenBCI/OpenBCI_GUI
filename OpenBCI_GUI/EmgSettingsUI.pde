@@ -93,7 +93,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         ourApplet = this;
 
         surface.setTitle(HEADER_MESSAGE);
-        surface.setAlwaysOnTop(true);
+        surface.setAlwaysOnTop(false);
         surface.setResizable(false);
 
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.

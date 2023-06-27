@@ -132,7 +132,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     @Override
     void setup() {
         surface.setTitle(headerMessage);
-        surface.setAlwaysOnTop(true);
+        surface.setAlwaysOnTop(false);
         surface.setResizable(false);
 
         cp5 = new ControlP5(this);
