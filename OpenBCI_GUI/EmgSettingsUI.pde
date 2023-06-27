@@ -13,7 +13,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private ControlP5 emgCp5;
     private int x, y, w, h;
-    private final int HEADER_PADDING = 22;
+    private final int HEADER_HEIGHT = 55;
     private final int FOOTER_PADDING = 80;
     private final int PADDING_3 = 3;
     private final int PADDING_12 = 12;
@@ -31,6 +31,10 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private final int FOOTER_OBJECT_HEIGHT = 26;
     private int footerObjY = 0;
     private int[] footerObjX = new int[NUM_FOOTER_OBJECTS];
+
+    private final color HEADER_COLOR = OPENBCI_BLUE;
+    private final color BACKGROUND_COLOR = GREY_235;
+    private final color LABEL_COLOR = WHITE;
 
     private final int defaultWidth = 600;
     private final int defaultHeight = 600;
@@ -79,7 +83,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         x = 0;
         y = 0;
         w = defaultWidth;
-        h = HEADER_PADDING + (channelCount * ROW_HEIGHT) + FOOTER_PADDING;
+        h = HEADER_HEIGHT + (channelCount * ROW_HEIGHT) + FOOTER_PADDING;
     }
 
     @Override
@@ -96,6 +100,10 @@ class EmgSettingsUI extends PApplet implements Runnable {
         surface.setAlwaysOnTop(false);
         surface.setResizable(false);
 
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        frame.toFront();
+        frame.requestFocus();
+
         //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
         emgCp5 = new ControlP5(ourApplet);
         emgCp5.setGraphics(ourApplet, 0,0);
@@ -108,6 +116,11 @@ class EmgSettingsUI extends PApplet implements Runnable {
     public void draw() {
         clear();
         scene();
+
+        // Draw header
+        noStroke();
+        fill(HEADER_COLOR);
+        rect(0, 0, width, HEADER_HEIGHT);
 
         emgSettingsValues = dataProcessing.emgSettings.values;
 
@@ -139,7 +152,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         int colWidth = (width / NUM_COLUMNS);
         int colOffset = colWidth / 2;
-        int labelY = y + HEADER_PADDING / 2;
+        int labelY = y + HEADER_HEIGHT / 2;
         channelColumnLabel.setPosition(x + colOffset, labelY);
         smoothLabel.setPosition(x + colOffset + colWidth, labelY);
         uvLimitLabel.setPosition(x + colOffset + colWidth*2, labelY);
@@ -153,10 +166,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private void scene() {
         // Draw background
-        background(OPENBCI_DARKBLUE);
-        stroke(204);
-        fill(238);
-        rect(0, 0, width, height);
+        background(BACKGROUND_COLOR);
     }
 
     @Override
@@ -231,7 +241,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         for (int i = 0; i < channelCount; i++) {
             int dropdownX = x + DROPDOWN_SPACER * 2 + dropdownWidth;
-            dropdownYPositions[i] = HEADER_PADDING + int(y + ((ROW_HEIGHT) * i) + (((ROW_HEIGHT) - DROPDOWN_HEIGHT) / 2));
+            dropdownYPositions[i] = HEADER_HEIGHT + int(y + ((ROW_HEIGHT) * i) + (((ROW_HEIGHT) - DROPDOWN_HEIGHT) / 2));
             final int buttonXIncrement = DROPDOWN_SPACER + dropdownWidth;
 
             smoothLists[i].setPosition(dropdownX, dropdownYPositions[i]);
@@ -277,17 +287,17 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         //Create column labels
         color labelBG = color(255,255,255,0);
-        color labelTxt = OPENBCI_DARKBLUE;
+        color labelTxt = WHITE;
         int colWidth = (w / NUM_COLUMNS);
         int colOffset = colWidth / 2;
-        int labelY = y + HEADER_PADDING / 2;
-        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        smoothLabel = new TextBox("Smooth", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
-        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h5, CENTER, TOP);
+        int labelY = y + HEADER_HEIGHT / 2;
+        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        smoothLabel = new TextBox("Smooth", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
 
         createAllDropdowns();
     }

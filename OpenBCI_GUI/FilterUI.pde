@@ -37,6 +37,7 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private color headerColor = OPENBCI_BLUE;
     private color buttonColor = OPENBCI_BLUE;
+    private color backgroundColor = GREY_235;
     
     private ControlP5 cp5;
 
@@ -135,6 +136,10 @@ class FilterUIPopup extends PApplet implements Runnable {
         surface.setAlwaysOnTop(false);
         surface.setResizable(false);
 
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        frame.toFront();
+        frame.requestFocus();
+
         cp5 = new ControlP5(this);
         cp5.setGraphics(this, 0, 0);
         cp5.setAutoDraw(false);
@@ -169,10 +174,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         pushStyle();
 
         // Draw background
-        background(OPENBCI_DARKBLUE);
-        stroke(204);
-        fill(238);
-        rect(0, 0, width, height);
+        background(backgroundColor);
 
         // Draw visual feedback that a channel was modified
         // When a user interacts with an object for a channel, it will highlight blue and fade out

@@ -1030,7 +1030,7 @@ void drawStartupError() {
     pushStyle();
     background(OPENBCI_DARKBLUE);
     stroke(204);
-    fill(238);
+    fill(GREY_235);
     rect((width - w)/2, (height - h)/2, w, h);
     noStroke();
     fill(217, 4, 4);

@@ -60,8 +60,12 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
         logApplet = this;
 
-        surface.setAlwaysOnTop(true);
+        surface.setAlwaysOnTop(false);
         surface.setResizable(true);
+
+        Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
+        frame.toFront();
+        frame.requestFocus();
 
         clipboardCopy = new ClipHelper();
         cp5 = new ControlP5(this);
