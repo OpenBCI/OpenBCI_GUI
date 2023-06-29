@@ -45,17 +45,26 @@ class W_EMGJoystick extends Widget {
     private float leftPolarX, leftPolarY;       //9:00
     private final int EMG_PLOT_OFFSET = 40;     //Used to arrange EMG displays outside of X/Y graph
 
-    private final String CHANNEL_ONE_LABEL_EN = "Channel 1";
-    private final String CHANNEL_TWO_LABEL_EN = "Channel 2";
-    private final String CHANNEL_THREE_LABEL_EN = "Channel 3";
-    private final String CHANNEL_FOUR_LABEL_EN = "Channel 4";
-
-    private String channelOneLabel;
-    private String channelTwoLabel;
-    private String channelThreeLabel;
-    private String channelFourLabel;
+    private String[] plotChannelLabels = new String[NUM_EMG_CHANNELS];
 
     EmgJoystickSmoothing joystickSmoothing = EmgJoystickSmoothing.POINT_9;
+
+    private int DROPDOWN_HEIGHT = navH - 4;
+    private int DROPDOWN_WIDTH = 80;
+    private int DROPDOWN_SPACER = 10;
+    private int DROPDOWN_LABEL_WIDTH = 24;
+
+    EmgJoystickInput[] emgJoystickInputs = new EmgJoystickInput[NUM_EMG_CHANNELS];
+
+    ScrollableList xNegativeInputDropdown;
+    ScrollableList xPositiveInputDropdown;
+    ScrollableList yPositiveInputDropdown;
+    ScrollableList yNegativeInputDropdown;
+
+    TextBox xNegativeInputDropdownLabel;
+    TextBox xPositiveInputDropdownLabel;
+    TextBox yPositiveInputDropdownLabel;
+    TextBox yNegativeInputDropdownLabel;
 
     W_EMGJoystick(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -71,13 +80,18 @@ class W_EMGJoystick extends Widget {
 
         emgSettingsValues = dataProcessing.emgSettings.values;
 
-        channelOneLabel = CHANNEL_ONE_LABEL_EN;
-        channelTwoLabel = CHANNEL_TWO_LABEL_EN;
-        channelThreeLabel = CHANNEL_THREE_LABEL_EN;
-        channelFourLabel = CHANNEL_FOUR_LABEL_EN;
+        emgJoystickInputs[0] = EmgJoystickInput.CHANNEL_1;
+        emgJoystickInputs[1] = EmgJoystickInput.CHANNEL_2;
+        emgJoystickInputs[2] = EmgJoystickInput.CHANNEL_3;
+        emgJoystickInputs[3] = EmgJoystickInput.CHANNEL_4;
+
+        for (int i = 0; i < NUM_EMG_CHANNELS; i++) {
+            plotChannelLabels[i] = Integer.toString(emgJoystickInputs[i].getIndex() + 1);
+        }
 
         addDropdown("emgJoystickSmoothingDropdown", "Smoothing", joystickSmoothing.getEnumStringsAsList(), joystickSmoothing.getIndex());
 
+        createInputDropdowns();
     }
 
     public void update(){
@@ -91,12 +105,14 @@ class W_EMGJoystick extends Widget {
 
         drawJoystickXYGraph();
 
-        drawEmgVisualization(0, leftPolarX, leftPolarY);
-        drawEmgVisualization(1, rightPolarX, rightPolarY);
-        drawEmgVisualization(2, topPolarX, topPolarY);
-        drawEmgVisualization(3, bottomPolarX, bottomPolarY);
+        drawEmgVisualization(emgJoystickInputs[0].getIndex(), leftPolarX, leftPolarY);
+        drawEmgVisualization(emgJoystickInputs[1].getIndex(), rightPolarX, rightPolarY);
+        drawEmgVisualization(emgJoystickInputs[2].getIndex(), topPolarX, topPolarY);
+        drawEmgVisualization(emgJoystickInputs[3].getIndex(), bottomPolarX, bottomPolarY);
         
-        drawChannelLabels();
+        //drawChannelLabels();
+
+        drawInputDropdownLabels();
 
         emgCp5.draw();
     }
@@ -108,6 +124,7 @@ class W_EMGJoystick extends Widget {
         emgSettingsButton.setPosition(x0 + 1, y0 + navH + 1);
 
         updateJoystickGraphSizeAndPosition();
+        updateInputDropdownPositions();
     }
 
     private void updateJoystickGraphSizeAndPosition() {
@@ -183,7 +200,8 @@ class W_EMGJoystick extends Widget {
 
         popStyle();
     }
-
+    
+    //This is the core method that updates the joystick input
     private void updateJoystickInput() {
         previousJoystickRawX = joystickRawX;
         previousJoystickRawY = joystickRawY;
@@ -193,11 +211,16 @@ class W_EMGJoystick extends Widget {
             joystickRawY = 0;
             return;
         }
+
+        float xNegativeValue = emgSettingsValues.outputNormalized[emgJoystickInputs[0].getIndex()];
+        float xPositiveValue = emgSettingsValues.outputNormalized[emgJoystickInputs[1].getIndex()];
+        float yPositiveValue = emgSettingsValues.outputNormalized[emgJoystickInputs[2].getIndex()];
+        float yNegativeValue = emgSettingsValues.outputNormalized[emgJoystickInputs[3].getIndex()];
         
-        //Here we subtract the values of the left and right channels to get the X axis
-        joystickRawX = emgSettingsValues.outputNormalized[1] - emgSettingsValues.outputNormalized[0];
-        //Here we subtract the values of the top and bottom channels to get the Y axis
-        joystickRawY = emgSettingsValues.outputNormalized[2] - emgSettingsValues.outputNormalized[3];
+        //Here we subtract the value of the right channel from the left channel to get the X axis
+        joystickRawX = xPositiveValue - xNegativeValue;
+        //Here we subtract the value of the top channel from the bottom channel to get the Y axis
+        joystickRawY = yPositiveValue - yNegativeValue;
 
         //Map the joystick values to a unit circle
         float[] unitCircleXY = mapToUnitCircle(joystickRawX, joystickRawY);
@@ -266,17 +289,6 @@ class W_EMGJoystick extends Widget {
         noFill();
         rect(barX, barY, BAR_WIDTH, BAR_HEIGHT * -1);
 
-        /*
-        //draw channel number at upper left corner of row/column cell
-        pushStyle();
-        stroke(OPENBCI_DARKBLUE);
-        fill(OPENBCI_DARKBLUE);
-        int _chan = index+1;
-        textFont(p5, 12);
-        text(_chan + "", 10, 20);
-        popStyle();
-        */
-
         popStyle();
     }
 
@@ -287,11 +299,11 @@ class W_EMGJoystick extends Widget {
         textFont(p4, 14);
         textLeading(14);
         textAlign(CENTER,CENTER);
-
-        text(channelOneLabel, leftPolarX, leftPolarY - BAR_CIRCLE_SPACER * 2);
-        text(channelTwoLabel, rightPolarX, rightPolarY - BAR_CIRCLE_SPACER *2);
-        text(channelThreeLabel, topPolarX + BAR_CIRCLE_SPACER * 4, topPolarY);
-        text(channelFourLabel, bottomPolarX + BAR_CIRCLE_SPACER * 4, bottomPolarY);
+        
+        text(plotChannelLabels[0], leftPolarX, leftPolarY - BAR_CIRCLE_SPACER * 2);
+        text(plotChannelLabels[1], rightPolarX, rightPolarY - BAR_CIRCLE_SPACER *2);
+        text(plotChannelLabels[2], topPolarX + BAR_CIRCLE_SPACER * 4, topPolarY);
+        text(plotChannelLabels[3], bottomPolarX + BAR_CIRCLE_SPACER * 4, bottomPolarY);
 
         popStyle();
     }
@@ -312,6 +324,104 @@ class W_EMGJoystick extends Widget {
             }
         });
         emgSettingsButton.setDescription("Click to open the EMG Settings UI to adjust how this metric is calculated.");
+    }
+
+    private ScrollableList createEmgJoystickInputDropdown(String name, EmgJoystickInput joystickInput, int inputNumber) {
+        ScrollableList list = emgCp5.addScrollableList(name)
+            .setOpen(false)
+            .setColorBackground(WHITE) // text field bg color
+            .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
+            .setColorCaptionLabel(OPENBCI_DARKBLUE)
+            .setColorForeground(color(125))    // border color when not selected
+            .setColorActive(BUTTON_PRESSED)       // border color when selected
+            .setOutlineColor(OBJECT_BORDER_GREY)
+            .setSize(DROPDOWN_WIDTH, DROPDOWN_HEIGHT * 6)//temporary size
+            .setBarHeight(DROPDOWN_HEIGHT) //height of top/primary bar
+            .setItemHeight(DROPDOWN_HEIGHT) //height of all item/dropdown bars
+            .setVisible(true)
+            ;
+        // this will store the *actual* enum object inside the dropdown!
+        for (EmgJoystickInput input : EmgJoystickInput.values()) {
+            if (input.getIndex() >= currentBoard.getNumEXGChannels()) {
+                continue;
+            }
+            list.addItem(input.getString(), input);
+        }
+        //Style the text in the ScrollableList
+        list.getCaptionLabel() //the caption label is the text object in the primary bar
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(joystickInput.getString())
+            .setFont(h5)
+            .setSize(12)
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(4)
+            ;
+        list.getValueLabel() //the value label is connected to the text objects in the dropdown item bars
+            .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
+            .setText(joystickInput.getString())
+            .setFont(p6)
+            .setSize(10) //set the font size of the item bars to 14pt
+            .getStyle() //need to grab style before affecting the paddingTop
+            .setPaddingTop(3) //4-pixel vertical offset to center text
+            ;
+        list.addCallback(new SLCallbackListener(inputNumber));
+        return list;
+    }
+
+    private class SLCallbackListener implements CallbackListener {
+        private int inputNumber;
+    
+        SLCallbackListener(int _i)  {
+            inputNumber = _i;
+        }
+        public void controlEvent(CallbackEvent theEvent) {
+            //Selecting an item from ScrollableList triggers Broadcast
+            if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) { 
+                int val = (int)(theEvent.getController()).getValue();
+                Map bob = ((ScrollableList)theEvent.getController()).getItem(val);
+                emgJoystickInputs[inputNumber] = (EmgJoystickInput)bob.get("value");
+                verbosePrint("EmgJoystickInput: " + (theEvent.getController()).getName() + " == " + emgJoystickInputs[inputNumber].getString());
+
+                plotChannelLabels[inputNumber] = Integer.toString(emgJoystickInputs[inputNumber].getIndex() + 1);
+            }
+        }
+    }
+
+    private void createInputDropdowns() {
+        //Create the dropdowns in reverse order so that top dropdown draws over bottom dropdown
+        yNegativeInputDropdown = createEmgJoystickInputDropdown("yNegativeDropdown", emgJoystickInputs[3], 3);
+        yPositiveInputDropdown = createEmgJoystickInputDropdown("yPositiveDropdown", emgJoystickInputs[2], 2);
+        xPositiveInputDropdown = createEmgJoystickInputDropdown("xPositiveDropdown", emgJoystickInputs[1], 1);
+        xNegativeInputDropdown = createEmgJoystickInputDropdown("xNegativeDropdown", emgJoystickInputs[0], 0);
+        //Add the dropdowns to the list of cp5 elements to check for mouseover
+        cp5ElementsToCheck.add(xNegativeInputDropdown);
+        cp5ElementsToCheck.add(xPositiveInputDropdown);
+        cp5ElementsToCheck.add(yPositiveInputDropdown);
+        cp5ElementsToCheck.add(yNegativeInputDropdown);
+        //Create labels for the dropdowns
+        color labelBG = color(255,255,255,0);
+        xNegativeInputDropdownLabel = new TextBox("X-", x, y, OPENBCI_DARKBLUE, WHITE, 12, h3, LEFT, TOP);
+        xPositiveInputDropdownLabel = new TextBox("X+", x, y, OPENBCI_DARKBLUE, WHITE, 12, h3, LEFT, TOP);
+        yPositiveInputDropdownLabel = new TextBox("Y+", x, y, OPENBCI_DARKBLUE, WHITE, 12, h3, LEFT, TOP);
+        yNegativeInputDropdownLabel = new TextBox("Y-", x, y, OPENBCI_DARKBLUE, WHITE, 12, h3, LEFT, TOP);
+    }
+
+    private void updateInputDropdownPositions(){
+        xNegativeInputDropdown.setPosition((int) (x + navH + DROPDOWN_LABEL_WIDTH), (int) (y + navH + 1));
+        xPositiveInputDropdown.setPosition((int) (x + navH + DROPDOWN_LABEL_WIDTH), (int) (y + navH + DROPDOWN_SPACER + DROPDOWN_HEIGHT));
+        yPositiveInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH), (int) (y + navH + 1));
+        yNegativeInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH), (int) (y + navH + DROPDOWN_SPACER + DROPDOWN_HEIGHT));
+        xNegativeInputDropdownLabel.setPosition((int) xNegativeInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) xNegativeInputDropdown.getPosition()[1]);
+        xPositiveInputDropdownLabel.setPosition((int) xPositiveInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) xPositiveInputDropdown.getPosition()[1]);
+        yPositiveInputDropdownLabel.setPosition((int) yPositiveInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) yPositiveInputDropdown.getPosition()[1]);
+        yNegativeInputDropdownLabel.setPosition((int) yNegativeInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) yNegativeInputDropdown.getPosition()[1]);
+    }
+
+    private void drawInputDropdownLabels() {
+        xNegativeInputDropdownLabel.draw();
+        xPositiveInputDropdownLabel.draw();
+        yPositiveInputDropdownLabel.draw();
+        yNegativeInputDropdownLabel.draw();
     }
 
 };
@@ -350,6 +460,57 @@ public enum EmgJoystickSmoothing implements IndexingInterface
     }
 
     public float getValue() {
+        return value;
+    }
+
+    private static List<String> getEnumStringsAsList() {
+        List<String> enumStrings = new ArrayList<String>();
+        for (IndexingInterface val : vals) {
+            enumStrings.add(val.getString());
+        }
+        return enumStrings;
+    }
+}
+
+public enum EmgJoystickInput implements IndexingInterface
+{
+    CHANNEL_1 (0, "Channel 1", 0),
+    CHANNEL_2 (1, "Channel 2", 1),
+    CHANNEL_3 (2, "Channel 3", 2),
+    CHANNEL_4 (3, "Channel 4", 3),
+    CHANNEL_5 (4, "Channel 5", 4),
+    CHANNEL_6 (5, "Channel 6", 5),
+    CHANNEL_7 (6, "Channel 7", 6),
+    CHANNEL_8 (7, "Channel 8", 7),
+    CHANNEL_9 (8, "Channel 9", 8),
+    CHANNEL_10 (9, "Channel 10", 9),
+    CHANNEL_11 (10, "Channel 11", 10),
+    CHANNEL_12 (11, "Channel 12", 11),
+    CHANNEL_13 (12, "Channel 13", 12),
+    CHANNEL_14 (13, "Channel 14", 13),
+    CHANNEL_15 (14, "Channel 15", 14),
+    CHANNEL_16 (15, "Channel 16", 15);
+
+    private int index;
+    private String name;
+    private int value;
+    private static EmgJoystickInput[] vals = values();
+ 
+    EmgJoystickInput(int index, String name, int value) {
+        this.index = index;
+        this.name = name;
+        this.value = value;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+    
+    public String getString() {
+        return name;
+    }
+
+    public int getValue() {
         return value;
     }
 

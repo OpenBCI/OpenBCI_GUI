@@ -911,8 +911,6 @@ class SessionSettings {
 
         ////////////////////////////Apply EMG Joystick settings
         w_emgJoystick.setJoystickSmoothing(loadEmgJoystickSmoothing);
-        println("Settings: EMG Joystick Smoothing: " + loadEmgJoystickSmoothing);
-        println(EmgJoystickSmoothing.getEnumStringsAsList().get(loadEmgJoystickSmoothing));
         w_emgJoystick.cp5_widget.getController("emgJoystickSmoothingDropdown").getCaptionLabel()
                 .setText(EmgJoystickSmoothing.getEnumStringsAsList().get(loadEmgJoystickSmoothing));
 
