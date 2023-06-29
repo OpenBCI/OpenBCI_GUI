@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
-//                 EmgSettingsUI.pde                   //
+//                 EmgSettingsUI.pde                      //
 //          Display the Emg Settings UI as a popup        //
+//            Note: This window is never resized.         //
 //                                                        //
 ////////////////////////////////////////////////////////////
 
@@ -14,7 +15,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private ControlP5 emgCp5;
     private int x, y, w, h;
     private final int HEADER_HEIGHT = 55;
-    private final int FOOTER_PADDING = 80;
+    private final int FOOTER_PADDING = 90;
     private final int PADDING_3 = 3;
     private final int PADDING_12 = 12;
     private final int NUM_CONTROL_BUTTONS = 3;
@@ -29,7 +30,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private final int NUM_FOOTER_OBJECTS = 3;
     private final int FOOTER_OBJECT_WIDTH = 45;
     private final int FOOTER_OBJECT_HEIGHT = 26;
-    private int footerObjY = 0;
+    private int footerObjY;
     private int[] footerObjX = new int[NUM_FOOTER_OBJECTS];
 
     private final color HEADER_COLOR = OPENBCI_BLUE;
@@ -142,28 +143,6 @@ class EmgSettingsUI extends PApplet implements Runnable {
         emgCp5.draw();
     }
 
-    private void screenResized() {
-        x = 0;
-        y = 0;
-        w = width;
-        h = height;
-
-        emgCp5.setGraphics(ourApplet, 0, 0);
-
-        int colWidth = (width / NUM_COLUMNS);
-        int colOffset = colWidth / 2;
-        int labelY = y + HEADER_HEIGHT / 2;
-        channelColumnLabel.setPosition(x + colOffset, labelY);
-        windowLabel.setPosition(x + colOffset + colWidth, labelY);
-        uvLimitLabel.setPosition(x + colOffset + colWidth*2, labelY);
-        creepIncLabel.setPosition(x + colOffset + colWidth*3, labelY);
-        creepDecLabel.setPosition(x + colOffset + colWidth*4, labelY);
-        minDeltaUvLabel.setPosition(x + colOffset + colWidth*5, labelY);
-        lowLimitLabel.setPosition(x + colOffset + colWidth*6, labelY);
-
-        resizeDropdowns();
-    }
-
     private void scene() {
         // Draw background
         background(BACKGROUND_COLOR);
@@ -229,7 +208,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         for (int i = 0; i < channelCount; i++) {
             String channelLabel = channelCount > channelLabels.length ? "Channel " + Integer.toString(i + 1) : channelLabels[i];
-            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2));
+            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2) - 2);
         }
 
         popStyle();
@@ -237,7 +216,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private void resizeDropdowns() {
         dropdownWidth = int((w - (DROPDOWN_SPACER * (NUM_COLUMNS + 1))) / NUM_COLUMNS);
-        final int MAX_HEIGHT_ITEMS = channelCount == 4 ? 8 : 5;
+        final int MAX_HEIGHT_ITEMS = 6;
 
         for (int i = 0; i < channelCount; i++) {
             int dropdownX = x + DROPDOWN_SPACER * 2 + dropdownWidth;
@@ -270,7 +249,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     }
 
     private void createAllUIObjects() {
-        footerObjY = y + h - FOOTER_PADDING + PADDING_3;
+        footerObjY = y + h - FOOTER_PADDING/2 - FOOTER_OBJECT_HEIGHT/2;
         int middle = x + w / 2;
         int halfObjWidth = FOOTER_OBJECT_WIDTH / 2;
         footerObjX[0] = middle - halfObjWidth - PADDING_12 - FOOTER_OBJECT_WIDTH;
@@ -291,13 +270,13 @@ class EmgSettingsUI extends PApplet implements Runnable {
         int colWidth = (w / NUM_COLUMNS);
         int colOffset = colWidth / 2;
         int labelY = y + HEADER_HEIGHT / 2;
-        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
 
         createAllDropdowns();
     }
