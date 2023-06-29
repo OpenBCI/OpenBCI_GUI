@@ -21,13 +21,13 @@ class EmgSettings {
             }
             Gson gson = new Gson();
             EmgSettingsValues tempValues = gson.fromJson(fileContents.toString(), EmgSettingsValues.class);
-            if (tempValues.smoothing.length != channelCount) {
+            if (tempValues.window.length != channelCount) {
                 outputError("Emg Settings: Loaded EMG Settings file has different number of channels than the current board.");
                 return false;
             }
             //Explicitely copy values over to avoid reference issues
             //(e.g. values = tempValues "nukes" the old values object)
-            values.smoothing = tempValues.smoothing;
+            values.window = tempValues.window;
             values.uvLimit = tempValues.uvLimit;
             values.creepIncreasing = tempValues.creepIncreasing;
             values.creepDecreasing = tempValues.creepDecreasing;
