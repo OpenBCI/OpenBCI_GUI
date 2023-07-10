@@ -47,24 +47,24 @@ class W_EMGJoystick extends Widget {
 
     private String[] plotChannelLabels = new String[NUM_EMG_CHANNELS];
 
-    EmgJoystickSmoothing joystickSmoothing = EmgJoystickSmoothing.POINT_9;
+    public EmgJoystickSmoothing joystickSmoothing = EmgJoystickSmoothing.POINT_9;
 
     private int DROPDOWN_HEIGHT = navH - 4;
     private int DROPDOWN_WIDTH = 80;
     private int DROPDOWN_SPACER = 10;
     private int DROPDOWN_LABEL_WIDTH = 24;
 
-    EmgJoystickInput[] emgJoystickInputs = new EmgJoystickInput[NUM_EMG_CHANNELS];
+    public EmgJoystickInput[] emgJoystickInputs = new EmgJoystickInput[NUM_EMG_CHANNELS];
 
-    ScrollableList xNegativeInputDropdown;
-    ScrollableList xPositiveInputDropdown;
-    ScrollableList yPositiveInputDropdown;
-    ScrollableList yNegativeInputDropdown;
+    private ScrollableList xNegativeInputDropdown;
+    private ScrollableList xPositiveInputDropdown;
+    private ScrollableList yPositiveInputDropdown;
+    private ScrollableList yNegativeInputDropdown;
 
-    TextBox xNegativeInputDropdownLabel;
-    TextBox xPositiveInputDropdownLabel;
-    TextBox yPositiveInputDropdownLabel;
-    TextBox yNegativeInputDropdownLabel;
+    private TextBox xNegativeInputDropdownLabel;
+    private TextBox xPositiveInputDropdownLabel;
+    private TextBox yPositiveInputDropdownLabel;
+    private TextBox yNegativeInputDropdownLabel;
 
     W_EMGJoystick(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -422,6 +422,28 @@ class W_EMGJoystick extends Widget {
         xPositiveInputDropdownLabel.draw();
         yPositiveInputDropdownLabel.draw();
         yNegativeInputDropdownLabel.draw();
+    }
+
+    public void updateJoystickInput(int inputNumber, Integer value) {
+        if (value == null) {
+            return;
+        }
+        emgJoystickInputs[inputNumber] = EmgJoystickInput.values()[value];
+        String inputName = emgJoystickInputs[inputNumber].getString();
+        switch (inputNumber) {
+            case 0:
+                xNegativeInputDropdown.getCaptionLabel().setText(inputName);
+                break;
+            case 1:
+                xPositiveInputDropdown.getCaptionLabel().setText(inputName);
+                break;
+            case 2:
+                yPositiveInputDropdown.getCaptionLabel().setText(inputName);
+                break;
+            case 3:
+                yNegativeInputDropdown.getCaptionLabel().setText(inputName);
+                break;
+        }
     }
 
 };

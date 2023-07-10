@@ -68,8 +68,8 @@ class SessionSettings {
     int fftSmoothingSave;
     int fftFilterSave;
     //Analog Read settings
-    int arVertScaleSave; //updates in VertScale_AR()
-    int arHorizScaleSave; //updates in Duration_AR()
+    int arVertScaleSave;
+    int arHorizScaleSave;
     //Headplot settings
     int hpIntensitySave;
     int hpPolaritySave;
@@ -194,6 +194,7 @@ class SessionSettings {
 
     //EMG Joystick Widget
     int loadEmgJoystickSmoothing;
+    List<Integer> loadEmgJoystickInputs = new ArrayList<Integer>();
 
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
@@ -477,6 +478,12 @@ class SessionSettings {
         ///////////////////////////////////////////////Setup new JSON object to save EMG Joystick Settings
         JSONObject saveEmgJoystickSettings = new JSONObject();
         saveEmgJoystickSettings.setInt("smoothing", w_emgJoystick.joystickSmoothing.getIndex());
+        JSONArray saveEmgJoystickInputs = new JSONArray();
+        int numEmgJoystickInputs = w_emgJoystick.emgJoystickInputs.length;
+        for (int i = 0; i < numEmgJoystickInputs; i++) {
+            saveEmgJoystickInputs.setInt(i, w_emgJoystick.emgJoystickInputs[i].getIndex());
+        }
+        saveEmgJoystickSettings.setJSONArray("joystickInputs", saveEmgJoystickInputs);
         saveSettingsJSONData.setJSONObject(kJSONKeyEmgJoystick, saveEmgJoystickSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
@@ -662,6 +669,11 @@ class SessionSettings {
         //Get EMG Joystick widget settings
         JSONObject loadEmgJoystickSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEmgJoystick);
         loadEmgJoystickSmoothing = loadEmgJoystickSettings.getInt("smoothing");
+        loadEmgJoystickInputs.clear();
+        JSONArray loadJoystickInputsJson = loadEmgJoystickSettings.getJSONArray("joystickInputs");
+        for (int i = 0; i < loadJoystickInputsJson.size(); i++) {
+            loadEmgJoystickInputs.add(loadJoystickInputsJson.getInt(i));
+        }
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
@@ -913,6 +925,13 @@ class SessionSettings {
         w_emgJoystick.setJoystickSmoothing(loadEmgJoystickSmoothing);
         w_emgJoystick.cp5_widget.getController("emgJoystickSmoothingDropdown").getCaptionLabel()
                 .setText(EmgJoystickSmoothing.getEnumStringsAsList().get(loadEmgJoystickSmoothing));
+        try {
+            for (int i = 0; i < loadEmgJoystickInputs.size(); i++) {
+                w_emgJoystick.updateJoystickInput(i, loadEmgJoystickInputs.get(i));
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying EMG Joystick settings " + e);
+        }
 
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //
