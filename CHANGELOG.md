@@ -1,3 +1,12 @@
+# v5.2.1
+
+### Improvements
+
+- Add ability to map channels to EMG Joystick Inputs #1156
+- Fix alignment of UI objects in popup windows and EMG settings UI #1157
+- Rename "smoothing" to "window" in EMG settings UI #1158
+- Add EMG Joystick settings to Session Settings #1159
+
 # v5.2.0
 
 ### Bug Fixes
