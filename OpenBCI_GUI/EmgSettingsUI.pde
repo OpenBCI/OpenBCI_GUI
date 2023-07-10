@@ -149,26 +149,6 @@ class EmgSettingsUI extends PApplet implements Runnable {
     }
 
     @Override
-    public void keyReleased() {
-        
-    }
-
-    @Override
-    public void keyPressed() {
-
-    }
-
-    @Override
-    public void mousePressed() {
-
-    }
-
-    @Override
-    public void mouseReleased() {
-
-    }
-
-    @Override
     public void exit() {
         dispose();
         emgSettingsPopupIsOpen = false;
@@ -249,7 +229,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     }
 
     private void createAllUIObjects() {
-        footerObjY = y + h - FOOTER_PADDING/2 - FOOTER_OBJECT_HEIGHT/2;
+        footerObjY = y + h - FOOTER_PADDING/2 - FOOTER_OBJECT_HEIGHT;
         int middle = x + w / 2;
         int halfObjWidth = FOOTER_OBJECT_WIDTH / 2;
         footerObjX[0] = middle - halfObjWidth - PADDING_12 - FOOTER_OBJECT_WIDTH;
@@ -270,13 +250,13 @@ class EmgSettingsUI extends PApplet implements Runnable {
         int colWidth = (w / NUM_COLUMNS);
         int colOffset = colWidth / 2;
         int labelY = y + HEADER_HEIGHT / 2;
-        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
-        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h3, CENTER, CENTER);
+        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
 
         createAllDropdowns();
     }
