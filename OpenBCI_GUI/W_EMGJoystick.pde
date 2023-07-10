@@ -66,6 +66,11 @@ class W_EMGJoystick extends Widget {
     private TextBox yPositiveInputDropdownLabel;
     private TextBox yNegativeInputDropdownLabel;
 
+    private PImage xNegativeInputLabelImage = loadImage("LEFT_100x100.png");
+    private PImage xPositiveInputLabelImage = loadImage("RIGHT_100x100.png");
+    private PImage yPositiveInputLabelImage = loadImage("UP_100x100.png");
+    private PImage yNegativeInputLabelImage = loadImage("DOWN_100x100.png");
+
     W_EMGJoystick(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
 
@@ -109,8 +114,6 @@ class W_EMGJoystick extends Widget {
         drawEmgVisualization(emgJoystickInputs[1].getIndex(), rightPolarX, rightPolarY);
         drawEmgVisualization(emgJoystickInputs[2].getIndex(), topPolarX, topPolarY);
         drawEmgVisualization(emgJoystickInputs[3].getIndex(), bottomPolarX, bottomPolarY);
-        
-        //drawChannelLabels();
 
         drawInputDropdownLabels();
 
@@ -407,10 +410,11 @@ class W_EMGJoystick extends Widget {
     }
 
     private void updateInputDropdownPositions(){
+        final int Y_AXIS_ARROW_LABEL_WIDTH = DROPDOWN_HEIGHT + DROPDOWN_SPACER;
         xNegativeInputDropdown.setPosition((int) (x + navH + DROPDOWN_LABEL_WIDTH), (int) (y + navH + 1));
         xPositiveInputDropdown.setPosition((int) (x + navH + DROPDOWN_LABEL_WIDTH), (int) (y + navH + DROPDOWN_SPACER + DROPDOWN_HEIGHT));
-        yPositiveInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH), (int) (y + navH + 1));
-        yNegativeInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH), (int) (y + navH + DROPDOWN_SPACER + DROPDOWN_HEIGHT));
+        yPositiveInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH - Y_AXIS_ARROW_LABEL_WIDTH), (int) (y + navH + 1));
+        yNegativeInputDropdown.setPosition((int) (x + w - navH - DROPDOWN_WIDTH - Y_AXIS_ARROW_LABEL_WIDTH), (int) (y + navH + DROPDOWN_SPACER + DROPDOWN_HEIGHT));
         xNegativeInputDropdownLabel.setPosition((int) xNegativeInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) xNegativeInputDropdown.getPosition()[1]);
         xPositiveInputDropdownLabel.setPosition((int) xPositiveInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) xPositiveInputDropdown.getPosition()[1]);
         yPositiveInputDropdownLabel.setPosition((int) yPositiveInputDropdown.getPosition()[0] - DROPDOWN_LABEL_WIDTH, (int) yPositiveInputDropdown.getPosition()[1]);
@@ -422,6 +426,13 @@ class W_EMGJoystick extends Widget {
         xPositiveInputDropdownLabel.draw();
         yPositiveInputDropdownLabel.draw();
         yNegativeInputDropdownLabel.draw();
+
+        pushStyle();
+        final int X_OFFSET = DROPDOWN_WIDTH + DROPDOWN_SPACER;
+        image(xNegativeInputLabelImage, xNegativeInputDropdown.getPosition()[0] + X_OFFSET, xNegativeInputDropdown.getPosition()[1] + 2, DROPDOWN_HEIGHT, DROPDOWN_HEIGHT);
+        image(xPositiveInputLabelImage, xPositiveInputDropdown.getPosition()[0] + X_OFFSET, xPositiveInputDropdown.getPosition()[1] + 2, DROPDOWN_HEIGHT, DROPDOWN_HEIGHT);
+        image(yPositiveInputLabelImage, yPositiveInputDropdown.getPosition()[0] + X_OFFSET, yPositiveInputDropdown.getPosition()[1] + 2, DROPDOWN_HEIGHT, DROPDOWN_HEIGHT);
+        image(yNegativeInputLabelImage, yNegativeInputDropdown.getPosition()[0] + X_OFFSET, yNegativeInputDropdown.getPosition()[1] + 2, DROPDOWN_HEIGHT, DROPDOWN_HEIGHT);
     }
 
     public void updateJoystickInput(int inputNumber, Integer value) {
