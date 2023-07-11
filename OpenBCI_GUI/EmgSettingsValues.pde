@@ -8,7 +8,7 @@
 class EmgSettingsValues {
 
     //These values can be changed via dropdowns
-    public EmgSmoothing[] smoothing;
+    public EmgWindow[] window;
     public EmgUVLimit[] uvLimit;
     public EmgCreepIncreasing[] creepIncreasing;
     public EmgCreepDecreasing[] creepDecreasing;
@@ -27,7 +27,7 @@ class EmgSettingsValues {
 
         channelCount = currentBoard.getNumEXGChannels();
 
-        smoothing = new EmgSmoothing[channelCount];
+        window = new EmgWindow[channelCount];
         uvLimit = new EmgUVLimit[channelCount];
         creepIncreasing = new EmgCreepIncreasing[channelCount];
         creepDecreasing = new EmgCreepDecreasing[channelCount];
@@ -39,7 +39,7 @@ class EmgSettingsValues {
         lowerThreshold = new float[channelCount];
         averageuV = new float[channelCount];
 
-        Arrays.fill(smoothing, EmgSmoothing.ONE_SECOND);
+        Arrays.fill(window, EmgWindow.ONE_SECOND);
         Arrays.fill(uvLimit, EmgUVLimit.TWO_HUNDRED_UV);
         Arrays.fill(creepIncreasing, EmgCreepIncreasing.POINT_9);
         Arrays.fill(creepDecreasing, EmgCreepDecreasing.POINT_99999);
@@ -55,7 +55,7 @@ class EmgSettingsValues {
     public void process(float[][] data_forDisplay_uV) {
         //looping over channels and analyzing input data
         for (int i = 0; i < channelCount; i++) {
-            float averagePeriod = currentBoard.getSampleRate() * smoothing[i].getValue();
+            float averagePeriod = currentBoard.getSampleRate() * window[i].getValue();
             int _uvLimit = uvLimit[i].getValue();
             float creepSpeedIncreasing = creepIncreasing[i].getValue();
             float creepSpeedDecreasing = creepDecreasing[i].getValue();

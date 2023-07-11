@@ -3,7 +3,7 @@ interface EmgSettingsEnum {
     public String getString();
 }
 
-public enum EmgSmoothing implements EmgSettingsEnum
+public enum EmgWindow implements EmgSettingsEnum
 {
     ONE_HUNDREDTH_SECOND (0, "0.01 s", .01f),
     ONE_TENTH_SECOND (1, "0.1 s", .1f),
@@ -18,7 +18,7 @@ public enum EmgSmoothing implements EmgSettingsEnum
     private String name;
     private float value;
  
-    EmgSmoothing(int index, String name, float value) {
+    EmgWindow(int index, String name, float value) {
         this.index = index;
         this.name = name;
         this.value = value;
