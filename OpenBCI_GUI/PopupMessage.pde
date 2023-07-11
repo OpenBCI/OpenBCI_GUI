@@ -106,7 +106,7 @@ class PopupMessage extends PApplet implements Runnable {
         textFont(p0, 24);
         fill(WHITE);
         textAlign(LEFT, CENTER);
-        text(headerMessage, (width - w)/2 + padding, (height - h)/2, w, headerHeight);
+        text(headerMessage, (width - w)/2 + padding, headerHeight/2);
 
         //draw message
         textFont(p3, 16);

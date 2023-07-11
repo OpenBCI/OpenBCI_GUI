@@ -68,8 +68,8 @@ class SessionSettings {
     int fftSmoothingSave;
     int fftFilterSave;
     //Analog Read settings
-    int arVertScaleSave; //updates in VertScale_AR()
-    int arHorizScaleSave; //updates in Duration_AR()
+    int arVertScaleSave;
+    int arHorizScaleSave;
     //Headplot settings
     int hpIntensitySave;
     int hpPolaritySave;
@@ -189,6 +189,13 @@ class SessionSettings {
     //Serial load variables
     int nwSerialBaudRateLoad;
 
+    //EMG Widget
+    List<Integer> loadEmgActiveChannels = new ArrayList<Integer>();
+
+    //EMG Joystick Widget
+    int loadEmgJoystickSmoothing;
+    List<Integer> loadEmgJoystickInputs = new ArrayList<Integer>();
+
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
     private JSONObject loadSettingsJSONData;
@@ -204,6 +211,8 @@ class SessionSettings {
     private final String kJSONKeyWidget = "widget";
     private final String kJSONKeyVersion = "version";
     private final String kJSONKeySpectrogram = "spectrogram";
+    private final String kJSONKeyEmg = "emg";
+    private final String kJSONKeyEmgJoystick = "emgJoystick";
 
     //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
@@ -453,6 +462,30 @@ class SessionSettings {
         saveSpectrogramSettings.setInt("Spectrogram_LogLin", spectLogLinSave);
         saveSettingsJSONData.setJSONObject(kJSONKeySpectrogram, saveSpectrogramSettings);
 
+        ///////////////////////////////////////////////Setup new JSON object to save EMG Settings
+        JSONObject saveEMGSettings = new JSONObject();
+
+        //Save data from the Active channel checkBoxes
+        JSONArray saveActiveChanEMG = new JSONArray();
+        int numActiveEMGChan = w_emg.emgChannelSelect.activeChan.size();
+        for (int i = 0; i < numActiveEMGChan; i++) {
+            int activeChan = w_emg.emgChannelSelect.activeChan.get(i);
+            saveActiveChanEMG.setInt(i, activeChan);
+        }
+        saveEMGSettings.setJSONArray("activeChannels", saveActiveChanEMG);
+        saveSettingsJSONData.setJSONObject(kJSONKeyEmg, saveEMGSettings);
+
+        ///////////////////////////////////////////////Setup new JSON object to save EMG Joystick Settings
+        JSONObject saveEmgJoystickSettings = new JSONObject();
+        saveEmgJoystickSettings.setInt("smoothing", w_emgJoystick.joystickSmoothing.getIndex());
+        JSONArray saveEmgJoystickInputs = new JSONArray();
+        int numEmgJoystickInputs = w_emgJoystick.emgJoystickInputs.length;
+        for (int i = 0; i < numEmgJoystickInputs; i++) {
+            saveEmgJoystickInputs.setInt(i, w_emgJoystick.emgJoystickInputs[i].getIndex());
+        }
+        saveEmgJoystickSettings.setJSONArray("joystickInputs", saveEmgJoystickInputs);
+        saveSettingsJSONData.setJSONObject(kJSONKeyEmgJoystick, saveEmgJoystickSettings);
+
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
 
@@ -623,6 +656,23 @@ class SessionSettings {
             //println(loadSpectActiveChanTop, loadSpectActiveChanBot);
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        //Get EMG widget settings
+        loadEmgActiveChannels.clear();
+        JSONObject loadEmgSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEmg);
+        JSONArray loadEmgChan = loadEmgSettings.getJSONArray("activeChannels");
+        for (int i = 0; i < loadEmgChan.size(); i++) {
+            loadEmgActiveChannels.add(loadEmgChan.getInt(i));
+        }
+
+        //Get EMG Joystick widget settings
+        JSONObject loadEmgJoystickSettings = loadSettingsJSONData.getJSONObject(kJSONKeyEmgJoystick);
+        loadEmgJoystickSmoothing = loadEmgJoystickSettings.getInt("smoothing");
+        loadEmgJoystickInputs.clear();
+        JSONArray loadJoystickInputsJson = loadEmgJoystickSettings.getJSONArray("joystickInputs");
+        for (int i = 0; i < loadJoystickInputsJson.size(); i++) {
+            loadEmgJoystickInputs.add(loadJoystickInputsJson.getInt(i));
         }
 
         //get the  Widget/Container settings
@@ -858,6 +908,30 @@ class SessionSettings {
                 }
                 break;
         }//end switch-case for networking settings for all networking protocols
+
+        ////////////////////////////Apply EMG widget settings
+        try {
+            //apply channel checkbox settings
+            w_emg.emgChannelSelect.deactivateAllButtons();;
+            for (int i = 0; i < loadEmgActiveChannels.size(); i++) {
+                w_emg.emgChannelSelect.setToggleState(loadEmgActiveChannels.get(i), true);
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying EMG widget settings " + e);
+        }
+        verbosePrint("Settings: EMG Widget Active Channels: " + loadEmgActiveChannels);
+
+        ////////////////////////////Apply EMG Joystick settings
+        w_emgJoystick.setJoystickSmoothing(loadEmgJoystickSmoothing);
+        w_emgJoystick.cp5_widget.getController("emgJoystickSmoothingDropdown").getCaptionLabel()
+                .setText(EmgJoystickSmoothing.getEnumStringsAsList().get(loadEmgJoystickSmoothing));
+        try {
+            for (int i = 0; i < loadEmgJoystickInputs.size(); i++) {
+                w_emgJoystick.updateJoystickInput(i, loadEmgJoystickInputs.get(i));
+            }
+        } catch (Exception e) {
+            println("Settings: Exception caught applying EMG Joystick settings " + e);
+        }
 
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //

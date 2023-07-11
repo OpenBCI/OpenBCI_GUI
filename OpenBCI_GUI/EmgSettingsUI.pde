@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
-//                 EmgSettingsUI.pde                   //
+//                 EmgSettingsUI.pde                      //
 //          Display the Emg Settings UI as a popup        //
+//            Note: This window is never resized.         //
 //                                                        //
 ////////////////////////////////////////////////////////////
 
@@ -14,7 +15,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private ControlP5 emgCp5;
     private int x, y, w, h;
     private final int HEADER_HEIGHT = 55;
-    private final int FOOTER_PADDING = 80;
+    private final int FOOTER_PADDING = 90;
     private final int PADDING_3 = 3;
     private final int PADDING_12 = 12;
     private final int NUM_CONTROL_BUTTONS = 3;
@@ -29,7 +30,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private final int NUM_FOOTER_OBJECTS = 3;
     private final int FOOTER_OBJECT_WIDTH = 45;
     private final int FOOTER_OBJECT_HEIGHT = 26;
-    private int footerObjY = 0;
+    private int footerObjY;
     private int[] footerObjX = new int[NUM_FOOTER_OBJECTS];
 
     private final color HEADER_COLOR = OPENBCI_BLUE;
@@ -42,14 +43,14 @@ class EmgSettingsUI extends PApplet implements Runnable {
     public EmgSettingsValues emgSettingsValues;
 
     private TextBox channelColumnLabel;
-    private TextBox smoothLabel;
+    private TextBox windowLabel;
     private TextBox uvLimitLabel;
     private TextBox creepIncLabel;
     private TextBox creepDecLabel;
     private TextBox minDeltaUvLabel;
     private TextBox lowLimitLabel;
 
-    private ScrollableList[] smoothLists;
+    private ScrollableList[] windowLists;
     private ScrollableList[] uvLimitLists;
     private ScrollableList[] creepIncLists;
     private ScrollableList[] creepDecLists;
@@ -118,9 +119,11 @@ class EmgSettingsUI extends PApplet implements Runnable {
         scene();
 
         // Draw header
+        pushStyle();
         noStroke();
         fill(HEADER_COLOR);
         rect(0, 0, width, HEADER_HEIGHT);
+        popStyle();
 
         emgSettingsValues = dataProcessing.emgSettings.values;
 
@@ -129,7 +132,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         //Draw column labels
         channelColumnLabel.draw();
-        smoothLabel.draw();
+        windowLabel.draw();
         uvLimitLabel.draw();
         creepIncLabel.draw();
         creepDecLabel.draw();
@@ -139,54 +142,17 @@ class EmgSettingsUI extends PApplet implements Runnable {
         drawChannelLabels();
 
         //Draw cp5 objects on top of everything
-        emgCp5.draw();
-    }
-
-    private void screenResized() {
-        x = 0;
-        y = 0;
-        w = width;
-        h = height;
-
-        emgCp5.setGraphics(ourApplet, 0, 0);
-
-        int colWidth = (width / NUM_COLUMNS);
-        int colOffset = colWidth / 2;
-        int labelY = y + HEADER_HEIGHT / 2;
-        channelColumnLabel.setPosition(x + colOffset, labelY);
-        smoothLabel.setPosition(x + colOffset + colWidth, labelY);
-        uvLimitLabel.setPosition(x + colOffset + colWidth*2, labelY);
-        creepIncLabel.setPosition(x + colOffset + colWidth*3, labelY);
-        creepDecLabel.setPosition(x + colOffset + colWidth*4, labelY);
-        minDeltaUvLabel.setPosition(x + colOffset + colWidth*5, labelY);
-        lowLimitLabel.setPosition(x + colOffset + colWidth*6, labelY);
-
-        resizeDropdowns();
+        try {
+            emgCp5.draw();
+        } catch (ConcurrentModificationException e) {
+            e.printStackTrace();
+            outputError("EMG Settings UI: Unable to draw cp5 objects.");
+        }
     }
 
     private void scene() {
         // Draw background
         background(BACKGROUND_COLOR);
-    }
-
-    @Override
-    public void keyReleased() {
-        
-    }
-
-    @Override
-    public void keyPressed() {
-
-    }
-
-    @Override
-    public void mousePressed() {
-
-    }
-
-    @Override
-    public void mouseReleased() {
-
     }
 
     @Override
@@ -229,7 +195,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
         for (int i = 0; i < channelCount; i++) {
             String channelLabel = channelCount > channelLabels.length ? "Channel " + Integer.toString(i + 1) : channelLabels[i];
-            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2));
+            text(channelLabel, x + colOffset, dropdownYPositions[i] + (DROPDOWN_HEIGHT / 2) - 2);
         }
 
         popStyle();
@@ -237,15 +203,15 @@ class EmgSettingsUI extends PApplet implements Runnable {
 
     private void resizeDropdowns() {
         dropdownWidth = int((w - (DROPDOWN_SPACER * (NUM_COLUMNS + 1))) / NUM_COLUMNS);
-        final int MAX_HEIGHT_ITEMS = channelCount == 4 ? 8 : 5;
+        final int MAX_HEIGHT_ITEMS = 6;
 
         for (int i = 0; i < channelCount; i++) {
             int dropdownX = x + DROPDOWN_SPACER * 2 + dropdownWidth;
             dropdownYPositions[i] = HEADER_HEIGHT + int(y + ((ROW_HEIGHT) * i) + (((ROW_HEIGHT) - DROPDOWN_HEIGHT) / 2));
             final int buttonXIncrement = DROPDOWN_SPACER + dropdownWidth;
 
-            smoothLists[i].setPosition(dropdownX, dropdownYPositions[i]);
-            smoothLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
+            windowLists[i].setPosition(dropdownX, dropdownYPositions[i]);
+            windowLists[i].setSize(dropdownWidth, MAX_HEIGHT_ITEMS * DROPDOWN_HEIGHT);
             
             dropdownX += buttonXIncrement;
             uvLimitLists[i].setPosition(dropdownX, dropdownYPositions[i]);
@@ -270,7 +236,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
     }
 
     private void createAllUIObjects() {
-        footerObjY = y + h - FOOTER_PADDING + PADDING_3;
+        final int HALF_FOOTER_HEIGHT = (FOOTER_PADDING + (DROPDOWN_SPACER * 2)) / 2;
+        footerObjY = y + h - HALF_FOOTER_HEIGHT - (FOOTER_OBJECT_HEIGHT / 2);
         int middle = x + w / 2;
         int halfObjWidth = FOOTER_OBJECT_WIDTH / 2;
         footerObjX[0] = middle - halfObjWidth - PADDING_12 - FOOTER_OBJECT_WIDTH;
@@ -291,13 +258,13 @@ class EmgSettingsUI extends PApplet implements Runnable {
         int colWidth = (w / NUM_COLUMNS);
         int colOffset = colWidth / 2;
         int labelY = y + HEADER_HEIGHT / 2;
-        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        smoothLabel = new TextBox("Smooth", x + colOffset + colWidth, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
-        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 12, h3, CENTER, TOP);
+        channelColumnLabel = new TextBox("Channel", x + colOffset, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        windowLabel = new TextBox("Window", x + colOffset + colWidth, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        uvLimitLabel = new TextBox("uV Limit", x + colOffset + colWidth*2, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepIncLabel = new TextBox("Creep +", x + colOffset + colWidth*3, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        creepDecLabel = new TextBox("Creep -", x + colOffset + colWidth*4, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        minDeltaUvLabel = new TextBox("Min \u0394uV", x + colOffset + colWidth*5, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
+        lowLimitLabel = new TextBox("Low Limit", x + colOffset + colWidth*6, labelY, labelTxt, labelBG, 14, h4, CENTER, CENTER);
 
         createAllDropdowns();
     }
@@ -306,7 +273,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         //the size and space of these buttons are dependendant on the size of the screen and full ChannelController
         verbosePrint("EmgChannelSettingsUI: Creating EMG channel setting UI objects...");
 
-        smoothLists = new ScrollableList[channelCount];
+        windowLists = new ScrollableList[channelCount];
         uvLimitLists = new ScrollableList[channelCount];
         creepIncLists = new ScrollableList[channelCount];
         creepDecLists = new ScrollableList[channelCount];
@@ -318,7 +285,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
         //Init dropdowns in reverse so that chan 1 draws on top of chan 2, etc.
         for (int i = channelCount - 1; i >= 0; i--) {
             int exgChannel = i;
-            smoothLists[i] = createDropdown(exgChannel, "smooth_ch_"+(i+1), emgSettingsValues.smoothing[exgChannel].values(), emgSettingsValues.smoothing[exgChannel]);
+            windowLists[i] = createDropdown(exgChannel, "smooth_ch_"+(i+1), emgSettingsValues.window[exgChannel].values(), emgSettingsValues.window[exgChannel]);
             uvLimitLists[i] = createDropdown(exgChannel, "uvLimit_ch_"+(i+1), emgSettingsValues.uvLimit[exgChannel].values(), emgSettingsValues.uvLimit[exgChannel]);
             creepIncLists[i] = createDropdown(exgChannel, "creep_inc_ch_"+(i+1), emgSettingsValues.creepIncreasing[exgChannel].values(), emgSettingsValues.creepIncreasing[exgChannel]);   
             creepDecLists[i] = createDropdown(exgChannel, "creep_dec_ch_"+(i+1), emgSettingsValues.creepDecreasing[exgChannel].values(), emgSettingsValues.creepDecreasing[exgChannel]);   
@@ -386,9 +353,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
                 EmgSettingsEnum myEnum = (EmgSettingsEnum)bob.get("value");
                 verbosePrint("EmgSettings: " + (theEvent.getController()).getName() + " == " + myEnum.getString());
 
-                if (myEnum instanceof EmgSmoothing) {
-                    //verbosePrint("HardwareSettings: previousVal == " + emgSettingsValues.previousValues.gain[channel]);
-                    emgSettingsValues.smoothing[channel] = (EmgSmoothing)myEnum;
+                if (myEnum instanceof EmgWindow) {
+                    emgSettingsValues.window[channel] = (EmgWindow)myEnum;
                 } else if (myEnum instanceof EmgUVLimit) {
                     emgSettingsValues.uvLimit[channel] = (EmgUVLimit)myEnum;
                 } else if (myEnum instanceof EmgCreepIncreasing) {
@@ -437,7 +403,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
     private void updateCp5Objects() {
         for (int i = 0; i < channelCount; i++) {
             //Fetch values from the EmgSettingsValues object
-            EmgSmoothing updateSmoothing = emgSettingsValues.smoothing[i];
+            EmgWindow updateSmoothing = emgSettingsValues.window[i];
             EmgUVLimit updateUVLimit = emgSettingsValues.uvLimit[i];
             EmgCreepIncreasing updateCreepIncreasing = emgSettingsValues.creepIncreasing[i];
             EmgCreepDecreasing updateCreepDecreasing = emgSettingsValues.creepDecreasing[i];
@@ -445,7 +411,7 @@ class EmgSettingsUI extends PApplet implements Runnable {
             EmgLowerThresholdMinimum updateLowerThresholdMinimum = emgSettingsValues.lowerThresholdMinimum[i];
 
             //Update the ScrollableLists
-            smoothLists[i].getCaptionLabel().setText(updateSmoothing.getString());
+            windowLists[i].getCaptionLabel().setText(updateSmoothing.getString());
             uvLimitLists[i].getCaptionLabel().setText(updateUVLimit.getString());
             creepIncLists[i].getCaptionLabel().setText(updateCreepIncreasing.getString());
             creepDecLists[i].getCaptionLabel().setText(updateCreepDecreasing.getString());
