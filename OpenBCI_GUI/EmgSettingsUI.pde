@@ -119,9 +119,11 @@ class EmgSettingsUI extends PApplet implements Runnable {
         scene();
 
         // Draw header
+        pushStyle();
         noStroke();
         fill(HEADER_COLOR);
         rect(0, 0, width, HEADER_HEIGHT);
+        popStyle();
 
         emgSettingsValues = dataProcessing.emgSettings.values;
 
@@ -140,7 +142,12 @@ class EmgSettingsUI extends PApplet implements Runnable {
         drawChannelLabels();
 
         //Draw cp5 objects on top of everything
-        emgCp5.draw();
+        try {
+            emgCp5.draw();
+        } catch (ConcurrentModificationException e) {
+            e.printStackTrace();
+            outputError("EMG Settings UI: Unable to draw cp5 objects.");
+        }
     }
 
     private void scene() {
@@ -229,7 +236,8 @@ class EmgSettingsUI extends PApplet implements Runnable {
     }
 
     private void createAllUIObjects() {
-        footerObjY = y + h - FOOTER_PADDING/2 - FOOTER_OBJECT_HEIGHT;
+        final int HALF_FOOTER_HEIGHT = (FOOTER_PADDING + (DROPDOWN_SPACER * 2)) / 2;
+        footerObjY = y + h - HALF_FOOTER_HEIGHT - (FOOTER_OBJECT_HEIGHT / 2);
         int middle = x + w / 2;
         int halfObjWidth = FOOTER_OBJECT_WIDTH / 2;
         footerObjX[0] = middle - halfObjWidth - PADDING_12 - FOOTER_OBJECT_WIDTH;
