@@ -21,7 +21,7 @@ build: off
 
 init:
   # add processing-java to the path as well as mt.exe (release script uses it to modify the manifest.xml)
-  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-3.5.3;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\;%PATH%
+  - cmd: set PATH=%APPVEYOR_BUILD_FOLDER%\temp\processing-4.2;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64\;%PATH%
 
 install:
   # used for getting commit timestamp
@@ -34,8 +34,8 @@ install:
 
   - mkdir %APPVEYOR_BUILD_FOLDER%\temp
   - cd %APPVEYOR_BUILD_FOLDER%\temp
-  - appveyor DownloadFile https://github.com/processing/processing/releases/download/processing-0269-3.5.3/processing-3.5.3-windows64.zip
-  - 7z x processing-3.5.3-windows64.zip -y -aoa
+  - appveyor DownloadFile https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
+  - 7z x processing-4.2-windows-x64.zip -y -aoa
   # cp libraries
   - mkdir %userprofile%\documents\processing\libraries
   - xcopy %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
