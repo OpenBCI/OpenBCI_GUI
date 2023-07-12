@@ -1,3 +1,8 @@
+# v6.0.0
+
+### Improvements
+- Update repository to Processing 4.2 #1111
+
 # v5.2.1
 
 ### Improvements
