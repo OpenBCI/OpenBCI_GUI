@@ -6,13 +6,13 @@ jobs:
       python: 3.7.4 # this works for Linux but is ignored on macOS or Windows
     - name: "Python 3.7.4 on macOS"
       os: osx
-      osx_image: xcode11.2 # Python 3.7.4 running on macOS 10.14.6
+      osx_image: xcode12.2 # Python 3.7.4 running on macOS 10.14.6
       language: shell # 'language: python' is an error on Travis CI macOS
 
 branches:
   only:
-    - master
-    - development
+    #- master
+    #- development
 
 before_install:
   - if [ "$TRAVIS_OS_NAME" = osx ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then openssl aes-256-cbc -K $encrypted_2f5d2771e3cb_key -iv $encrypted_2f5d2771e3cb_iv -in release_script/mac_only/Certificates.p12.enc -out release_script/mac_only/Certificates.p12 -d; fi

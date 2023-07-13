@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 import os
+import platform
 import traceback
 
 # add files here that need to be copied to the unit testing sketch
