@@ -1,0 +1,161 @@
+name: Build GUI for Windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master, development]
+  push:
+    branches: [master, development]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION : us-east-1
+
+jobs:
+  build:
+    name: Run Unit Tests and Build Windows GUI
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: windows-2019
+
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v3
+
+    - name: Install Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        architecture: 'x64'
+        cache: 'pip' # caching pip dependencies
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install requests
+        python -m pip install beautifulsoup4
+
+    - name: Install Processing
+      run: |
+        mkdir %GITHUB_WORKSPACE%\temp
+        cd %GITHUB_WORKSPACE%\temp
+        curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
+        ls -l %GITHUB_WORKSPACE%\temp
+        unzip processing-4.2-windows-x64.zip
+        ls -l %GITHUB_WORKSPACE%\temp\processing-4.2
+        mkdir %userprofile%\documents\processing\libraries
+        xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+        ls -l %userprofile%\documents\processing\libraries
+      shell: cmd
+    
+    - name: Set Path
+      run: |
+        echo %GITHUB_WORKSPACE%\temp\processing-4.2 >> %GITHUB_PATH%
+        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64 >> %GITHUB_PATH%
+        ls -l "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64"
+      shell: cmd
+
+    - name: Print Path
+      run: echo %PATH%
+      shell: cmd
+    
+    - name: Run Unit Tests
+      run: |
+        python %GITHUB_WORKSPACE%\OpenBCI_GUI_UnitTests\run-unittests.py
+      shell: cmd
+
+    - name: Build Script
+      run: |
+        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts
+      shell: cmd
+  
+  build_and_deploy:
+    name: Build, Sign, and Deploy Windows GUI
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: windows-2019
+
+    steps:
+      - name: Clone Repository
+        uses: actions/checkout@v3
+  
+      - name: Install Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
+          cache: 'pip' # caching pip dependencies
+  
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install requests
+          python -m pip install beautifulsoup4
+  
+      - name: Install Processing
+        run: |
+          mkdir %GITHUB_WORKSPACE%\temp
+          cd %GITHUB_WORKSPACE%\temp
+          curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
+          ls -l %GITHUB_WORKSPACE%\temp
+          unzip processing-4.2-windows-x64.zip
+          ls -l %GITHUB_WORKSPACE%\temp\processing-4.2
+          mkdir %userprofile%\documents\processing\libraries
+          xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+          ls -l %userprofile%\documents\processing\libraries
+        shell: cmd
+      
+      - name: Set Path
+        run: |
+          echo %GITHUB_WORKSPACE%\temp\processing-4.2 >> %GITHUB_PATH%
+          echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64 >> %GITHUB_PATH%
+          ls -l "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64"
+        shell: cmd
+  
+      - name: Print Path
+        run: echo %PATH%
+        shell: cmd
+  
+      - name: Decrypt pfx files
+        run: |
+          iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
+          appveyor-tools\secure-file -decrypt $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT -out $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
+          ls -l $env:GITHUB_WORKSPACE\release_script\windows_only
+        env:
+          PFX_PASS: ${{ secrets.PFX_PASS }}
+          PFX_SECRET: ${{ secrets.PFX_SECRET }}
+          PFX_SALT: ${{ secrets.PFX_SALT }}
+      
+      - name: Run Unit Tests
+        run: |
+          python %GITHUB_WORKSPACE%\OpenBCI_GUI_UnitTests\run-unittests.py
+        shell: cmd
+  
+      - name: Build Script
+        run: |
+          python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
+        env:
+          PFX_PASS: ${{ secrets.PFX_PASS }}
+          PFX_SECRET: ${{ secrets.PFX_SECRET }}
+          PFX_SALT: ${{ secrets.PFX_SALT }}
+        shell: cmd
+  
+      - name: Configure AWS credentials from Production account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+  
+      - name: Store Build on AWS
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls
+          export CURRENT_BRANCH=`git branch --show-current`
+          export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
+          export GUI_VERSION_STRING=`cat temp/versionstring.txt`
+          echo $GUI_COMMIT_TIME
+          echo $GUI_VERSION_STRING
+          echo $CURRENT_BRANCH
+          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+    
