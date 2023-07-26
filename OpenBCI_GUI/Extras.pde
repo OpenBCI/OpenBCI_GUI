@@ -76,6 +76,10 @@ private String getOperatingSystemVersion() {
     return System.getProperty("os.version");
 }
 
+private String getOperatingSystemName() {
+    return System.getProperty("os.name");
+}
+
 private int[] fetchAndParseMacOsVersion() {
     if (!isMac()) {
         println("Oops! Please only call this method on MacOS");

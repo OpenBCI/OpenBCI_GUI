@@ -399,18 +399,19 @@ void setup() {
     StringBuilder osName = new StringBuilder("Operating System and Version: ");
     if (isLinux()) {
         osName.append("Linux");
+        osName.append(" - ");
+        osName.append(getOperatingSystemVersion());
     } else if (isWindows()) {
-        osName.append("Windows");
+        osName.append(getOperatingSystemName());
         //Throw a popup if we detect an incompatible version of Windows. Fixes #964. Found in Extras.pde.
         checkIsOldVersionOfWindowsOS();
         //This is an edge case when using 32-bit Processing Java on Windows. Throw a popup if detected.
         checkIs64BitJava();
     } else if (isMac()) {
         osName.append("Mac");
+        osName.append(" - ");
+        osName.append(getOperatingSystemVersion());
     }
-
-    osName.append(" - ");
-    osName.append(getOperatingSystemVersion());
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println(globalScreenResolution.toString());
