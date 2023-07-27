@@ -43,7 +43,7 @@ install:
 
 build_script:
   - cd %APPVEYOR_BUILD_FOLDER%
-  - python %APPVEYOR_BUILD_FOLDER%\OpenBCI_GUI_UnitTests\run-unittests.py
+  - python %APPVEYOR_BUILD_FOLDER%\GUI_UnitTests\run-unittests.py
   - python %APPVEYOR_BUILD_FOLDER%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %APPVEYOR_BUILD_FOLDER%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
   - set /p GUI_COMMIT_TIME= < temp\timestamp.txt
   - set /p GUI_VERSION_STRING= < temp\versionstring.txt

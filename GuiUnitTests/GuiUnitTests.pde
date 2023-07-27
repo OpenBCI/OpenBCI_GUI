@@ -6,7 +6,7 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.RunWith;
 import org.hamcrest.SelfDescribing;
 
-static OpenBCI_GUI_UnitTests currentApplet;
+static GuiUnitTests currentApplet;
 final String failFileName = "UNITTEST_FAILURE";
 
 // define a test suite with all test classes
@@ -29,6 +29,7 @@ void setup() {
 
 private boolean runTests() {
 
+    println("Running Test Classes...");
     Result result = JUnitCore.runClasses(AllTests.class);
 
     int failureCount = result.getFailureCount();

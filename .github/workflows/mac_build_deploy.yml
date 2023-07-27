@@ -1,4 +1,4 @@
-name: Build and Deploy GUI for macOS
+name: Build GUI for macOS
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ env:
 
 jobs:
   build:
-    name: Run Unit Tests and Build macOS GUI
+    name: Test Build for macOS
     if: github.event_name != 'workflow_dispatch'
     runs-on: macos-latest
 
@@ -63,68 +63,10 @@ jobs:
       - name: Run Unit Tests
         run: |
           ls
-          python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py
+          python $GITHUB_WORKSPACE/GuiUnitTests/run-unittests.py
       
-      - name: Build GUI
-        run: |
-          mkdir $GITHUB_WORKSPACE/temp
-          touch temp/timestamp.txt
-          touch temp/versionstring.txt
-          python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
-          GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-          GUI_VERSION_STRING=`cat temp/versionstring.txt`
-  
-  build_and_deploy:
-    name: Build GUI on macOS
-    if: github.event_name == 'workflow_dispatch'
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
-          cache: 'pip' # caching pip dependencies
-      
-      - name: Install Python Dependencies
-        run: pip install -r release_script/requirements.txt
-      
-      - name: Download and Unzip Processing
-        run: |
-          curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-macos-x64.zip
-          unzip processing-4.2-macos-x64.zip
-          ls
-
-      - name: Move Processing.app to Applications
-        run: |
-          mv Processing.app /Applications/Processing.app
-
-      - name: Add Processing to PATH
-        run: |
-          echo "$GITHUB_WORKSPACE/release_script/mac_only/" >> $GITHUB_PATH
-          chmod +x $GITHUB_WORKSPACE/release_script/mac_only/processing-java
-
-      - name: Check GITHUB PATH
-        run: echo $GITHUB_PATH
-
-      - name: Test processing-java command
-        run: |
-          processing-java --help
-
-      - name: Copy libraries to Processing
-        run: |
-          mkdir -p $HOME/Documents/Processing/libraries/
-          cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/
-
-      - name: Run Unit Tests
-        run: |
-          ls
-          python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py
-
       - name: Decrypt Certificate
+        if: github.event_name == 'workflow_dispatch'
         run: |
           openssl version
           openssl enc -aes-256-cbc -a -d -pbkdf2 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -k "$OPENSSL_CERT_K"
@@ -133,6 +75,7 @@ jobs:
           OPENSSL_CERT_K: ${{ secrets.OPENSSL_CERT_K }}
 
       - name: Add OSX Signing Certificate
+        if: github.event_name == 'workflow_dispatch'
         uses: apple-actions/import-codesign-certs@v2
         with: 
           p12-filepath: ${{ github.workspace }}/release_script/mac_only/Certificates.p12
@@ -148,12 +91,14 @@ jobs:
           GUI_VERSION_STRING=`cat temp/versionstring.txt`
 
       - name: Configure AWS credentials from Production account
+        if: github.event_name == 'workflow_dispatch'
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
       
       - name: Store DMG on AWS
+        if: github.event_name == 'workflow_dispatch'
         run: |
           cd $GITHUB_WORKSPACE
           ls
