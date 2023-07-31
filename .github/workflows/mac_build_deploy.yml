@@ -64,6 +64,12 @@ jobs:
         run: |
           ls
           python $GITHUB_WORKSPACE/GuiUnitTests/run-unittests.py
+
+      - name: Save Encrypted Certificate to File
+        run: |
+          echo $MAC_CERTIFICATE_ENCRYPTED > $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc
+        env: 
+          MAC_CERTIFICATE_ENCRYPTED: ${{ secrets.MAC_CERTIFICATE_ENCRYPTED }}
       
       - name: Decrypt Certificate
         if: github.event_name == 'workflow_dispatch'
