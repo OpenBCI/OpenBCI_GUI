@@ -72,7 +72,6 @@ jobs:
           MAC_CERTIFICATE_ENCRYPTED: ${{ secrets.MAC_CERTIFICATE_ENCRYPTED }}
       
       - name: Decrypt Certificate
-        if: github.event_name == 'workflow_dispatch'
         run: |
           openssl version
           openssl enc -aes-256-cbc -a -d -pbkdf2 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -k "$OPENSSL_CERT_K"
@@ -80,8 +79,7 @@ jobs:
         env:
           OPENSSL_CERT_K: ${{ secrets.OPENSSL_CERT_K }}
 
-      - name: Add OSX Signing Certificate
-        if: github.event_name == 'workflow_dispatch'
+      - name: Add OSX Signing Certificate to Keychain
         uses: apple-actions/import-codesign-certs@v2
         with: 
           p12-filepath: ${{ github.workspace }}/release_script/mac_only/Certificates.p12
@@ -97,14 +95,12 @@ jobs:
           GUI_VERSION_STRING=`cat temp/versionstring.txt`
 
       - name: Configure AWS credentials from Production account
-        if: github.event_name == 'workflow_dispatch'
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
       
-      - name: Store DMG on AWS
-        if: github.event_name == 'workflow_dispatch'
+      - name: Store DMG on AWS S3
         run: |
           cd $GITHUB_WORKSPACE
           ls
