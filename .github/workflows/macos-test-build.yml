@@ -4,6 +4,13 @@ on:
     branches: [master, development]
   push:
     branches: [master, development]
+  
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION : us-east-1
 
 jobs:
   check:
@@ -57,6 +64,20 @@ jobs:
         run: |
           ls
           python $GITHUB_WORKSPACE/OpenBCI_GUI_UnitTests/run-unittests.py
+
+      - name: Decrypt Certificate
+        run: |
+          openssl version
+          openssl enc -aes-256-cbc -a -d -pbkdf2 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -k "$OPENSSL_CERT_K"
+          openssl base64 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.txt
+        env:
+          OPENSSL_CERT_K: ${{ secrets.OPENSSL_CERT_K }}
+
+      - name: Add OSX Signing Certificate
+        uses: apple-actions/import-codesign-certs@v2
+        with: 
+          p12-filepath: ${{ github.workspace }}/release_script/mac_only/Certificates.p12
+          p12-password: ${{ secrets.CERTIFICATE_P12_PASSWORD }}
       
       - name: Build GUI
         run: |
@@ -66,3 +87,19 @@ jobs:
           python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
           GUI_COMMIT_TIME=`cat temp/timestamp.txt`
           GUI_VERSION_STRING=`cat temp/versionstring.txt`
+      
+      - name: Store DMG on AWS
+        env:
+          AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_2023 }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_2023 }}
+        run: |
+          export CURRENT_BRANCH=`git branch --show-current`
+          export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
+          export GUI_VERSION_STRING=`cat temp/versionstring.txt`
+          cd $GITHUB_WORKSPACE
+          ls
+          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+

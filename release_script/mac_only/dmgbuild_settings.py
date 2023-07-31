@@ -1,34 +1,34 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
-import biplist
 import os.path
+import plistlib
 
 #
-# Settings file for dmgbuild
+# Example settings file for dmgbuild
 #
 
 # Use like this: dmgbuild -s settings.py "Test Volume" test.dmg
 
-# You can actually use this file for any application (not just TextEdit)
+# You can actually use this file for your own application (not just TextEdit)
 # by doing e.g.
 #
 #   dmgbuild -s settings.py -D app=/path/to/My.app "My Application" MyApp.dmg
 
 # .. Useful stuff ..............................................................
 
-application = defines.get('app', '/Applications/TextEdit.app') # default
+application = defines.get("app", "/System/Applications/TextEdit.app")  # noqa: F821
 appname = os.path.basename(application)
 
+
 def icon_from_app(app_path):
-    plist_path = os.path.join(app_path, 'Contents', 'Info.plist')
-    plist = biplist.readPlist(plist_path)
-    icon_name = plist['CFBundleIconFile']
-    icon_root,icon_ext = os.path.splitext(icon_name)
+    plist_path = os.path.join(app_path, "Contents", "Info.plist")
+    with open(plist_path, "rb") as f:
+        plist = plistlib.load(f)
+    icon_name = plist["CFBundleIconFile"]
+    icon_root, icon_ext = os.path.splitext(icon_name)
     if not icon_ext:
-        icon_ext = '.icns'
+        icon_ext = ".icns"
     icon_name = icon_root + icon_ext
-    return os.path.join(app_path, 'Contents', 'Resources', icon_name)
+    return os.path.join(app_path, "Contents", "Resources", icon_name)
+
 
 # .. Basics ....................................................................
 
@@ -39,31 +39,38 @@ def icon_from_app(app_path):
 # volume_name = 'Test'
 
 # Volume format (see hdiutil create -help)
-format = defines.get('format', 'UDBZ')
+format = defines.get("format", "UDBZ")  # noqa: F821
+
+# Compression level (if relevant)
+# compression_level = 9
 
 # Volume size
-size = defines.get('size', None)
+size = defines.get("size", None)  # noqa: F821
 
 # Files to include
-files = [ application ]
+files = [application]
 
 # Symlinks to create
-symlinks = { 'Applications': '/Applications' }
+symlinks = {"Applications": "/Applications"}
+
+# Files to hide
+# hide = [ 'Secret.data' ]
+
+# Files to hide the extension of
+# hide_extension = [ 'README.rst' ]
 
 # Volume icon
 #
 # You can either define icon, in which case that icon file will be copied to the
 # image, *or* you can define badge_icon, in which case the icon file you specify
-# will be used to badge the system's Removable Disk icon
+# will be used to badge the system's Removable Disk icon. Badge icons require
+# pyobjc-framework-Quartz.
 #
-#icon = '/path/to/icon.icns'
+# icon = '/path/to/icon.icns'
 badge_icon = icon_from_app(application)
 
 # Where to put the icons
-icon_locations = {
-    appname:        (140, 120),
-    'Applications': (500, 120)
-    }
+icon_locations = {appname: (140, 120), "Applications": (500, 120)}
 
 # .. Window configuration ......................................................
 
@@ -87,7 +94,7 @@ icon_locations = {
 #
 # Other color components may be expressed either in the range 0 to 1, or
 # as percentages (e.g. 60% is equivalent to 0.6).
-background = 'builtin-arrow'
+background = "builtin-arrow"
 
 show_status_bar = False
 show_tab_view = False
@@ -106,15 +113,15 @@ window_rect = ((100, 100), (640, 280))
 #    'column-view'
 #    'coverflow'
 #
-default_view = 'icon-view'
+default_view = "icon-view"
 
 # General view configuration
 show_icon_preview = False
 
 # Set these to True to force inclusion of icon/list view settings (otherwise
 # we only include settings for the default view)
-include_icon_view_settings = 'auto'
-include_list_view_settings = 'auto'
+include_icon_view_settings = "auto"
+include_list_view_settings = "auto"
 
 # .. Icon view configuration ...................................................
 
@@ -122,7 +129,7 @@ arrange_by = None
 grid_offset = (0, 0)
 grid_spacing = 100
 scroll_position = (0, 0)
-label_pos = 'bottom' # or 'right'
+label_pos = "bottom"  # or 'right'
 text_size = 16
 icon_size = 128
 
@@ -144,34 +151,34 @@ icon_size = 128
 list_icon_size = 16
 list_text_size = 12
 list_scroll_position = (0, 0)
-list_sort_by = 'name'
+list_sort_by = "name"
 list_use_relative_dates = True
-list_calculate_all_sizes = False,
-list_columns = ('name', 'date-modified', 'size', 'kind', 'date-added')
+list_calculate_all_sizes = (False,)
+list_columns = ("name", "date-modified", "size", "kind", "date-added")
 list_column_widths = {
-    'name': 300,
-    'date-modified': 181,
-    'date-created': 181,
-    'date-added': 181,
-    'date-last-opened': 181,
-    'size': 97,
-    'kind': 115,
-    'label': 100,
-    'version': 75,
-    'comments': 300,
-    }
+    "name": 300,
+    "date-modified": 181,
+    "date-created": 181,
+    "date-added": 181,
+    "date-last-opened": 181,
+    "size": 97,
+    "kind": 115,
+    "label": 100,
+    "version": 75,
+    "comments": 300,
+}
 list_column_sort_directions = {
-    'name': 'ascending',
-    'date-modified': 'descending',
-    'date-created': 'descending',
-    'date-added': 'descending',
-    'date-last-opened': 'descending',
-    'size': 'descending',
-    'kind': 'ascending',
-    'label': 'ascending',
-    'version': 'ascending',
-    'comments': 'ascending',
-    }
+    "name": "ascending",
+    "date-modified": "descending",
+    "date-created": "descending",
+    "date-added": "descending",
+    "date-last-opened": "descending",
+    "size": "descending",
+    "kind": "ascending",
+    "label": "ascending",
+    "version": "ascending",
+    "comments": "ascending",
+}
 
 # .. License configuration .....................................................
 
@@ -193,54 +200,67 @@ list_column_sort_directions = {
 #  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
 #  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
 
-# license = {
-#     'default-language': 'en_US',
-#     'licenses': {
-#         # For each language, the text of the license.  This can be plain text,
-#         # RTF (in which case it must start "{\rtf1"), or a path to a file
-#         # containing the license text.  If you're using RTF,
-#         # watch out for Python escaping (or read it from a file).
-#         'English': b'''{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
-# {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
-# {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
-# {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
-# \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
-# \\deftab720
-# \\pard\\pardeftab720\\sa160\\partightenfactor0
+license = {
+    "default-language": "en_US",
+    "licenses": {
+        # For each language, the text of the license.  This can be plain text,
+        # RTF (in which case it must start "{\rtf1"), or a path to a file
+        # containing the license text.  If you're using RTF,
+        # watch out for Python escaping (or read it from a file).
+        "en_GB": b"""{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
+ {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
+ {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
+ {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
+ \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
+ \\deftab720
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-# \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
-# \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
-# \\pard\\pardeftab720\\sa160\\partightenfactor0
+ \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
+ \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-# \\fs36 \\cf2 \\strokec2 What is this?\\
-# \\pard\\pardeftab720\\sa160\\partightenfactor0
+ \\fs36 \\cf2 \\strokec2 What is this?\\
+ \\pard\\pardeftab720\\sa160\\partightenfactor0
 
-# \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
-# \\
-# }''',
-#     },
-#     'buttons': {
-#         # For each language, text for the buttons on the licensing window.
-#         #
-#         # Default buttons and text are built-in for the following languages:
-#         #
-#         #   English (en_US), German (de_DE), Spanish (es_ES), French (fr_FR),
-#         #   Italian (it_IT), Japanese (ja_JP), Dutch (nl_NL), Swedish (sv_SE),
-#         #   Brazilian Portuguese (pt_BR), Simplified Chinese (zh_CN),
-#         #   Traditional Chinese (zh_TW), Danish (da_DK), Finnish (fi_FI),
-#         #   Korean (ko_KR), Norwegian (nb_NO)
-#         #
-#         # You don't need to specify them for those languages; if you fail to
-#         # specify them for some other language, English will be used instead.
-
-#         'en_US': (
-#             b'English',
-#             b'Agree',
-#             b'Disagree',
-#             b'Print',
-#             b'Save',
-#             b'If you agree with the terms of this license, press "Agree" to '
-#             b'install the software.  If you do not agree, press "Disagree".'
-#         ),
-#     },
-# }
+ \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
+ \\
+ }""",
+        "de_DE": "Ich bin ein Berliner. Bielefeld gibt's doch gar nicht.",
+    },
+    "buttons": {
+        # For each language, text for the buttons on the licensing window.
+        #
+        # Default buttons and text are built-in for the following languages:
+        #
+        #   da_DK: Danish
+        #   de_DE: German
+        #   en_AU: English (Australian)
+        #   en_GB: English (UK)
+        #   en_NZ: English (New Zealand)
+        #   en_US: English (US)
+        #   es_ES: Spanish
+        #   fr_CA: French (Canadian)
+        #   fr_FR: French
+        #   it_IT: Italian
+        #   ja_JP: Japanese
+        #   nb_NO: Norsk
+        #   nl_BE: Flemish
+        #   nl_NL: Dutch
+        #   pt_BR: Brazilian Portuguese
+        #   pt_PT: Portugese
+        #   sv_SE: Swedish
+        #   zh_CN: Simplified Chinese
+        #   zh_TW: Traditional Chinese
+        #
+        # You don't need to specify them for those languages; if you fail to
+        # specify them for some other language, English will be used instead.
+        "en_US": (
+            b"English",
+            b"Agree!",
+            b"Disagree!",
+            b"Print!",
+            b"Save!",
+            b'Do you agree or not? Press "Agree" or "Disagree".',
+        ),
+    },
+}
