@@ -88,6 +88,7 @@ jobs:
       shell: cmd
 
     - name: Decrypt pfx files
+      if: ${{ false }}
       run: |
         iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
         appveyor-tools\secure-file -decrypt $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT -out $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx

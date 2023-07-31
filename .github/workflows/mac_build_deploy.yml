@@ -67,7 +67,7 @@ jobs:
 
       - name: Save Encrypted Certificate to File
         run: |
-          echo $MAC_CERTIFICATE_ENCRYPTED > $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc
+          echo $MAC_CERTIFICATE_ENCRYPTED | base64 --decode > $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc
         env: 
           MAC_CERTIFICATE_ENCRYPTED: ${{ secrets.MAC_CERTIFICATE_ENCRYPTED }}
       
@@ -75,7 +75,6 @@ jobs:
         run: |
           openssl version
           openssl enc -aes-256-cbc -a -d -pbkdf2 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates_2023.p12.enc -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -k "$OPENSSL_CERT_K"
-          openssl base64 -in $GITHUB_WORKSPACE/release_script/mac_only/Certificates.p12 -out $GITHUB_WORKSPACE/release_script/mac_only/Certificates.txt
         env:
           OPENSSL_CERT_K: ${{ secrets.OPENSSL_CERT_K }}
 
