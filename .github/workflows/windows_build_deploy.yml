@@ -17,7 +17,6 @@ env:
 jobs:
   build:
     name: Test Build for Windows
-    if: github.event_name != 'workflow_dispatch'
     runs-on: windows-2019
 
     steps:
@@ -79,7 +78,7 @@ jobs:
       shell: cmd
 
     - name: Build without Signing
-      if: github.event_name != 'workflow_dispatch'
+      if: ${{ true }}
       run: |
         echo %cd%
         ls
@@ -89,7 +88,7 @@ jobs:
       shell: cmd
 
     - name: Decrypt pfx files
-      if: github.event_name == 'workflow_dispatch'
+      if: ${{ false }}
       run: |
         iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
         appveyor-tools\secure-file -decrypt $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT -out $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
@@ -100,7 +99,7 @@ jobs:
         PFX_SALT: ${{ secrets.PFX_SALT }}
 
     - name: Build and Sign
-      if: github.event_name == 'workflow_dispatch'
+      if: ${{ false }}
       run: |
         python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
       env:
@@ -110,14 +109,12 @@ jobs:
       shell: cmd
 
     - name: Configure AWS credentials from Production account
-      if: github.event_name == 'workflow_dispatch'
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Store Build on AWS
-      if: github.event_name == 'workflow_dispatch'
       run: |
         cd $GITHUB_WORKSPACE
         ls
@@ -127,6 +124,6 @@ jobs:
         echo $GUI_COMMIT_TIME
         echo $GUI_VERSION_STRING
         echo $CURRENT_BRANCH
-        aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+        aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
