@@ -116,6 +116,7 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         aws-region: ${{ env.AWS_REGION }}
 
+      #Do this last step in powershell because it's easier to get the current branch name
     - name: Store Build on AWS
       run: |
         cd ${{ github.workspace }}
