@@ -118,12 +118,8 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         ls
-        export CURRENT_BRANCH=`git branch --show-current`
-        export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-        export GUI_VERSION_STRING=`cat temp/versionstring.txt`
-        echo $GUI_COMMIT_TIME
-        echo $GUI_VERSION_STRING
-        echo $CURRENT_BRANCH
+        for /f "delims=" %a in ('git branch --show-current') do @set CURRENT_BRANCH=%a
+        for /f "delims=" %a in (`cat temp/versionstring.txt`) do @set GUI_VERSION_STRING=%a
         aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"

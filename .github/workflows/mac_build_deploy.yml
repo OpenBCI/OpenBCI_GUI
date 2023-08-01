@@ -103,9 +103,9 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE
           ls
-          export CURRENT_BRANCH=`git branch --show-current`
-          export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-          export GUI_VERSION_STRING=`cat temp/versionstring.txt`
+          CURRENT_BRANCH=`git branch --show-current`
+          GUI_COMMIT_TIME=`cat temp/timestamp.txt`
+          GUI_VERSION_STRING=`cat temp/versionstring.txt`
           echo $GUI_COMMIT_TIME
           echo $GUI_VERSION_STRING
           echo $CURRENT_BRANCH
