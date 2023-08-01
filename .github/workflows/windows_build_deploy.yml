@@ -16,7 +16,7 @@ env:
 
 jobs:
   build:
-    name: Test Build for Windows
+    name: Build for Windows
     runs-on: windows-2019
 
     steps:
@@ -84,6 +84,8 @@ jobs:
         ls
         set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
         set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
+        type nul > temp/versionstring.txt
+        type nul > temp/timestamp.txt
         python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts
       shell: cmd
 
@@ -114,16 +116,18 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         aws-region: ${{ env.AWS_REGION }}
 
+    - name: Get branch names
+      id: branch-name
+      uses: tj-actions/branch-names@v7
+
     - name: Store Build on AWS
       run: |
-        cd $GITHUB_WORKSPACE
+        cd ${{ github.workspace }}
         ls
-        export CURRENT_BRANCH=`git branch --show-current`
-        export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-        export GUI_VERSION_STRING=`cat temp/versionstring.txt`
-        echo $GUI_COMMIT_TIME
-        echo $GUI_VERSION_STRING
-        echo $CURRENT_BRANCH
+        echo "${{ steps.branch-name.outputs.head_ref_branch }}"
+        set S3_BRANCH_FOLDER=s3://openbci-public-gui-v6/${{ steps.branch-name.outputs.head_ref_branch }}
+        echo %S3_BRANCH_FOLDER%
         aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp ${{ github.workspace }}/. %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp ${{ github.workspace }}/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+      shell: cmd

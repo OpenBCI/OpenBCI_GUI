@@ -16,8 +16,7 @@ env:
 
 jobs:
   build:
-    name: Test Build for macOS
-    if: github.event_name != 'workflow_dispatch'
+    name: Build for macOS
     runs-on: macos-latest
 
     steps:
@@ -98,17 +97,17 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get branch names
+        id: branch-name
+        uses: tj-actions/branch-names@v7
       
       - name: Store DMG on AWS S3
         run: |
           cd $GITHUB_WORKSPACE
           ls
-          export CURRENT_BRANCH=`git branch --show-current`
-          export GUI_COMMIT_TIME=`cat temp/timestamp.txt`
-          export GUI_VERSION_STRING=`cat temp/versionstring.txt`
-          echo $GUI_COMMIT_TIME
-          echo $GUI_VERSION_STRING
+          CURRENT_BRANCH=${{ steps.branch-name.outputs.head_ref_branch }}
           echo $CURRENT_BRANCH
           aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
           aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
