@@ -118,7 +118,7 @@ jobs:
 
     - name: Store Build on AWS
       run: |
-        cd $GITHUB_WORKSPACE
+        cd $env:GITHUB_WORKSPACE
         ls
         $CURRENT_BRANCH = & git branch --show-current 2>&1
         $GUI_VERSION_STRING = & cat $env:GITHUB_WORKSPACE/temp/versionstring.txt 2>&1
