@@ -2,6 +2,7 @@ class BoardGanglionNative extends BoardGanglion {
 
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionNative;
     private String boardName;
+    private int firmwareVersion = 0;
 
     public BoardGanglionNative() {
         super();
@@ -10,6 +11,15 @@ class BoardGanglionNative extends BoardGanglion {
     public BoardGanglionNative(String name) {
         super();
         this.boardName = name;
+
+        if (name.indexOf("Ganglion 1.3") != -1) {
+            this.firmwareVersion = 3;
+            output("Detected Ganglion firmware version 3");
+        }
+        else {
+            this.firmwareVersion = 2;
+            output("Detected Ganglion firmware version 2");
+        }
     }
 
     @Override
@@ -37,7 +47,13 @@ class BoardGanglionNative extends BoardGanglion {
 
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
-        packetLossTrackerGanglionNative = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        if (firmwareVersion == 2) {
+            packetLossTrackerGanglionNative = new PacketLossTrackerGanglionBLE2(getSampleIndexChannel(), getTimestampChannel());
+        }
+        else if (firmwareVersion == 3) {
+            packetLossTrackerGanglionNative = new PacketLossTrackerGanglionBLE3(getSampleIndexChannel(), getTimestampChannel());
+        }
+
         packetLossTrackerGanglionNative.setAccelerometerActive(isAccelerometerActive());
         return packetLossTrackerGanglionNative;
     }
@@ -45,16 +61,26 @@ class BoardGanglionNative extends BoardGanglion {
 
 class BoardGanglionBLE extends BoardGanglion {
 
+    private int firmwareVersion = 0;
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
 
     public BoardGanglionBLE() {
         super();
     }
 
-    public BoardGanglionBLE(String serialPort, String macAddress) {
+    public BoardGanglionBLE(String deviceName, String serialPort, String macAddress) {
         super();
         this.serialPort = serialPort;
         this.macAddress = macAddress;
+
+        if (deviceName.indexOf("Ganglion 1.3") != -1) {
+            this.firmwareVersion = 3;
+            output("Detected Ganglion firmware version 3");
+        }
+        else {
+            this.firmwareVersion = 2;
+            output("Detected Ganglion firmware version 2");
+        }
     }
 
     @Override
@@ -75,7 +101,13 @@ class BoardGanglionBLE extends BoardGanglion {
 
     @Override
     protected PacketLossTracker setupPacketLossTracker() {
-        packetLossTrackerGanglionBLE = new PacketLossTrackerGanglionBLE(getSampleIndexChannel(), getTimestampChannel());
+        if (firmwareVersion == 2) {
+            packetLossTrackerGanglionBLE = new PacketLossTrackerGanglionBLE2(getSampleIndexChannel(), getTimestampChannel());
+        }
+        else if (firmwareVersion == 3) {
+            packetLossTrackerGanglionBLE = new PacketLossTrackerGanglionBLE3(getSampleIndexChannel(), getTimestampChannel());
+        }
+
         packetLossTrackerGanglionBLE.setAccelerometerActive(isAccelerometerActive());
         return packetLossTrackerGanglionBLE;
     }
@@ -141,6 +173,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
     protected String serialPort = "";
     protected String macAddress = "";
     protected String ipAddress = "";
+
     private boolean isCheckingImpedance = false;
     private boolean isGettingAccel = false;
 
