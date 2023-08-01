@@ -118,9 +118,9 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE
         ls
-        for /f "delims=" %a in ('git branch --show-current') do @set CURRENT_BRANCH=%a
-        for /f "delims=" %a in (`cat temp/versionstring.txt`) do @set GUI_VERSION_STRING=%a
+        $CURRENT_BRANCH = & git branch --show-current 2>&1
+        $GUI_VERSION_STRING = & cat temp/versionstring.txt 2>&1
         aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${GUI_VERSION_STRING}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-      shell: cmd
+      shell: pwsh
