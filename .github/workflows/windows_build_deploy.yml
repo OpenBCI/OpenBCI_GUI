@@ -121,7 +121,7 @@ jobs:
         cd $GITHUB_WORKSPACE
         ls
         $CURRENT_BRANCH = & git branch --show-current 2>&1
-        $GUI_VERSION_STRING = & cat temp/versionstring.txt 2>&1
+        $GUI_VERSION_STRING = & cat %GITHUB_WORKSPACE%/temp/versionstring.txt 2>&1
         aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
         aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
