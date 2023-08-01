@@ -249,21 +249,27 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
 
         # On Windows, set the application manifest
         ###########################################################
+        app_manifest_path = os.path.join(os.getcwd(), "release_script", "windows_only", "gui.manifest")
+        assert(os.path.isfile(app_manifest_path))
         try:
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/gui.manifest",
+            subprocess.check_call(["mt", "-manifest", app_manifest_path,
                 "-outputresource:" + exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)
             print ("WARNING: Failed to set manifest for OpenBCI_GUI.exe")
 
+        java_manifest_path = os.path.join(os.getcwd(), "release_script", "windows_only", "java.manifest")
+        javaw_manifest_path = os.path.join(os.getcwd(), "release_script", "windows_only", "javaw.manifest")
+        assert(os.path.isfile(java_manifest_path))
+        assert(os.path.isfile(javaw_manifest_path))
         java_exe_dir = os.path.join(build_dir, "java", "bin", "java.exe")
         javaw_exe_dir = os.path.join(build_dir, "java", "bin", "javaw.exe")
         assert (os.path.isfile(java_exe_dir))
         assert (os.path.isfile(javaw_exe_dir))
         try:
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+            subprocess.check_call(["mt", "-manifest", java_manifest_path,
                 "-outputresource:" + java_exe_dir + ";#1"])
-            subprocess.check_call(["mt", "-manifest", "release_script/windows_only/java.manifest",
+            subprocess.check_call(["mt", "-manifest", javaw_manifest_path,
                 "-outputresource:" + javaw_exe_dir + ";#1"])
         except subprocess.CalledProcessError as err:
             print (err)

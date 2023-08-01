@@ -1,0 +1,133 @@
+name: Build GUI for Windows
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master, development]
+  push:
+    branches: [master, development]
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION : us-east-1
+
+jobs:
+  build:
+    name: Build for Windows
+    runs-on: windows-2019
+
+    steps:
+    - name: Clone Repository
+      uses: actions/checkout@v3
+
+    - name: Install Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        architecture: 'x64'
+        cache: 'pip' # caching pip dependencies
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install requests
+        python -m pip install beautifulsoup4
+
+    - name: Install Processing
+      run: |
+        mkdir %GITHUB_WORKSPACE%\temp
+        cd %GITHUB_WORKSPACE%\temp
+        curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
+        ls -l %GITHUB_WORKSPACE%\temp
+        unzip processing-4.2-windows-x64.zip
+        ls -l %GITHUB_WORKSPACE%\temp\processing-4.2
+        mkdir %userprofile%\documents\processing\libraries
+        xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+        ls -l %userprofile%\documents\processing\libraries
+      shell: cmd
+    
+    - name: Set Path
+      run: |
+        echo %GITHUB_WORKSPACE%\temp\processing-4.2 >> %GITHUB_PATH%
+        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64 >> %GITHUB_PATH%
+        ls -l "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64"
+      shell: cmd
+
+    - name: Print Path
+      run: echo %GITHUB_PATH%
+      shell: cmd
+
+    - name: Explicitly run processing-java
+      run: |
+        %GITHUB_WORKSPACE%\temp\processing-4.2\processing-java.exe --help
+      shell: cmd
+
+    - name: Check processing-java command
+      run: |
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
+        processing-java --help
+      shell: cmd
+
+    - name: Run Unit Tests
+      run: |
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
+        ls -l
+        python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
+      shell: cmd
+
+    - name: Build without Signing
+      if: ${{ true }}
+      run: |
+        echo %cd%
+        ls
+        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
+        set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
+        type nul > temp/versionstring.txt
+        type nul > temp/timestamp.txt
+        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts
+      shell: cmd
+
+    - name: Decrypt pfx files
+      if: ${{ false }}
+      run: |
+        iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
+        appveyor-tools\secure-file -decrypt $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT -out $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
+        ls -l $env:GITHUB_WORKSPACE\release_script\windows_only
+      env:
+        PFX_PASS: ${{ secrets.PFX_PASS }}
+        PFX_SECRET: ${{ secrets.PFX_SECRET }}
+        PFX_SALT: ${{ secrets.PFX_SALT }}
+
+    - name: Build and Sign
+      if: ${{ false }}
+      run: |
+        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
+      env:
+        PFX_PASS: ${{ secrets.PFX_PASS }}
+        PFX_SECRET: ${{ secrets.PFX_SECRET }}
+        PFX_SALT: ${{ secrets.PFX_SALT }}
+      shell: cmd
+
+    - name: Configure AWS credentials from Production account
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Get branch names
+      id: branch-name
+      uses: tj-actions/branch-names@v7
+
+    - name: Store Build on AWS
+      run: |
+        cd ${{ github.workspace }}
+        ls
+        echo "${{ steps.branch-name.outputs.head_ref_branch }}"
+        set S3_BRANCH_FOLDER=s3://openbci-public-gui-v6/${{ steps.branch-name.outputs.head_ref_branch }}
+        echo %S3_BRANCH_FOLDER%
+        aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp ${{ github.workspace }}/. %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+        aws s3 cp ${{ github.workspace }}/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
+      shell: cmd

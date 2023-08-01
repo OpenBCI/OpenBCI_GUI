@@ -1,0 +1,87 @@
+name: Build GUI for Linux
+
+on:
+  workflow_dispatch: 
+  pull_request:
+    branches: [master, development]
+  push:
+    branches: [master, development]
+  
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION : us-east-1
+
+jobs:
+  build:
+    name: Build for Linux
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip' # caching pip dependencies
+      
+      - name: Install Python Dependencies
+        run: pip install -r release_script/requirements.txt
+      
+      - name: Download and Unzip Processing
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/temp
+          cd $GITHUB_WORKSPACE/temp
+          curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-linux-x64.tgz
+          tar -xzvf processing-4.2-linux-x64.tgz
+          ls
+
+      - name: Add Processing to PATH
+        run: |
+          sudo su -c "ln -s $GITHUB_WORKSPACE/temp/processing-4.2/processing-java /usr/local/bin/processing-java"
+
+      - name: Test processing-java command
+        run: |
+          processing-java --help
+
+      - name: Copy libraries to Processing
+        run: |
+          mkdir -p $HOME/sketchbook/libraries/
+          cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/sketchbook/libraries/
+
+      - name: Run Unit Tests
+        run: |
+          echo "Unit tests cannot be run on Linux without attached display."
+          echo "https://github.com/processing/processing/wiki/Running-without-a-Display"
+      
+      - name: Build GUI
+        run: |
+          touch temp/timestamp.txt
+          touch temp/versionstring.txt
+          python $GITHUB_WORKSPACE/release_script/make-release.py --no-prompts
+          GUI_COMMIT_TIME=`cat temp/timestamp.txt`
+          GUI_VERSION_STRING=`cat temp/versionstring.txt`
+
+      - name: Configure AWS credentials from Production account
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Get branch names
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+      
+      - name: Store DMG on AWS
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls
+          CURRENT_BRANCH=${{ steps.branch-name.outputs.head_ref_branch }}
+          echo $CURRENT_BRANCH
+          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_linux64.zip"
