@@ -12,6 +12,7 @@ abstract class BoardBrainFlow extends Board {
     protected int sampleIndexChannelCache = -1;
     protected int timeStampChannelCache = -1;
     protected int totalChannelsCache = -1;
+    protected int markerChannelCache = -1;
     protected int[] exgChannelsCache = null;
     protected int[] otherChannelsCache = null;
 
@@ -299,5 +300,31 @@ abstract class BoardBrainFlow extends Board {
         }
 
         return otherChannelsCache;
+    }
+
+    public int getMarkerChannel() {
+        if (markerChannelCache < 0) {
+            try {
+                markerChannelCache = BoardShim.get_marker_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return markerChannelCache;
+    }
+
+    public void insertMarker(double value) {
+        if (isConnected()) {
+            try {
+                boardShim.insert_marker(value);
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void insertMarker(int value) {
+        double dvalue = (double) value;
     }
 };

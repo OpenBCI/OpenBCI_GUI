@@ -236,6 +236,11 @@ void parseKey(char val) {
         }
     }
 
+    // Check for software marker keyboard shortcuts
+    if (w_marker.checkForMarkerKeyPress(val)) {
+        return;
+    }
+
     if (currentBoard instanceof Board) {
         output("Expert Mode: '" + key + "' pressed. This is not assigned or applicable to current setup.");
         //((Board)currentBoard).sendCommand(str(key));
