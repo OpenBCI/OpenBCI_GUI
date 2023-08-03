@@ -20,6 +20,8 @@ abstract class BoardBrainFlow extends Board {
     protected double time_last_datapoint = -1.0;
     protected boolean data_popup_displayed = false;
 
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+
     /* Abstract Functions.
      * Implement these in your board.
      */
@@ -302,6 +304,7 @@ abstract class BoardBrainFlow extends Board {
         return otherChannelsCache;
     }
 
+    @Override
     public int getMarkerChannel() {
         if (markerChannelCache < 0) {
             try {
@@ -314,17 +317,26 @@ abstract class BoardBrainFlow extends Board {
         return markerChannelCache;
     }
 
+    @Override
     public void insertMarker(double value) {
-        if (isConnected()) {
+        if (isConnected() && streaming) {
             try {
                 boardShim.insert_marker(value);
+                //long currentTime = (long)(System.currentTimeMillis() * 1000.0);
+                String currentTimeString = dateFormat.format(new Date());
+                StringBuilder markerNotification = new StringBuilder("Inserted marker ");
+                markerNotification.append(value);
+                markerNotification.append(" at approximately: ");
+                markerNotification.append(currentTimeString);
+                println(markerNotification.toString());
             } catch (BrainFlowError e) {
                 e.printStackTrace();
             }
         }
     }
 
+    @Override
     public void insertMarker(int value) {
-        double dvalue = (double) value;
+        insertMarker((double) value);
     }
 };

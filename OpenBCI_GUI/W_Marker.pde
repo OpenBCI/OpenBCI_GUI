@@ -55,7 +55,9 @@ class W_Marker extends Widget {
 
     private void createMarkerButtons() {
         for (int i = 0; i < NUMBER_OF_MARKER_BUTTONS; i++) {
-            markerButtons[i] = createMarkerButton(i, x + 10 + (i * MARKER_BUTTON_WIDTH), y + 10);
+            //Create marker buttons
+            //Marker number is i + 1 because marker numbers start at 1, not 0. Otherwise, will throw BrainFlow error.
+            markerButtons[i] = createMarkerButton(i + 1, x + 10 + (i * MARKER_BUTTON_WIDTH), y + 10);
         }
     }
 
@@ -64,7 +66,7 @@ class W_Marker extends Widget {
         newButton.setBorderColor(OBJECT_BORDER_GREY);
         newButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                insertMarker(markerNumber);
+                insertMarkerFromKeyboardOrButton(markerNumber);
             }
         });
         newButton.setDescription("Click to insert marker " + markerNumber + " into the data stream.");
@@ -72,31 +74,32 @@ class W_Marker extends Widget {
     }
 
     //Called in Interactivity.pde when a key is pressed
+    //Returns true if a marker key was pressed, false otherwise
+    //Can be used to check for marker key presses even when this widget is not active
     public boolean checkForMarkerKeyPress(char keyPress) {
         switch (keyPress) {
             case 'z':
-                insertMarker(0);
+                insertMarkerFromKeyboardOrButton(1);
                 return true;
             case 'x':
-                insertMarker(1);
+                insertMarkerFromKeyboardOrButton(2);
                 return true;
             case 'c':
-                insertMarker(2);
+                insertMarkerFromKeyboardOrButton(3);
                 return true;
             case 'v':
-                insertMarker(3);
+                insertMarkerFromKeyboardOrButton(4);
                 return true;
             default:
                 return false;
         }
     }
 
-    private void insertMarker(int markerNumber) {
-        int markerChannel = ((BoardBrainFlow)currentBoard).getMarkerChannel();
+    private void insertMarkerFromKeyboardOrButton(int markerNumber) {
+        int markerChannel = ((Board)currentBoard).getMarkerChannel();
         if (markerChannel != -1) {
-            ((BoardBrainFlow)currentBoard).insertMarker(markerNumber);
+            ((Board)currentBoard).insertMarker(markerNumber);
         }
-        println("Marker " + markerNumber + " inserted.");
     }
 
 };

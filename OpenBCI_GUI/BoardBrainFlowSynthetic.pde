@@ -96,9 +96,10 @@ class BoardBrainFlowSynthetic extends BoardBrainFlow implements AccelerometerCap
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<getAccelerometerChannels().length; i++) {
+        for (int i = 0; i < getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
+        channelNames[getMarkerChannel()] = "Marker Channel";
     }
 
     @Override

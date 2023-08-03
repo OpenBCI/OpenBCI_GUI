@@ -608,6 +608,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         for (int i=0; i<getAnalogChannels().length; i++) {
             channelNames[getAnalogChannels()[i]] = "Analog Channel " + i;
         }
+        channelNames[getMarkerChannel()] = "Marker Channel";
     }
 
     @Override

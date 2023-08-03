@@ -107,6 +107,10 @@ abstract class Board implements DataSource {
 
     public abstract Pair <Boolean, String> sendCommand(String command);
 
+    public abstract void insertMarker(int value);
+
+    public abstract void insertMarker(double value);
+
     // ***************************************
     // protected methods implemented by board
 
