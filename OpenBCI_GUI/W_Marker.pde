@@ -123,9 +123,12 @@ class W_Marker extends Widget {
     }
 
     private void insertMarkerFromKeyboardOrButton(int markerNumber) {
-        int markerChannel = ((Board)currentBoard).getMarkerChannel();
-        if (markerChannel != -1) {
-            ((Board)currentBoard).insertMarker(markerNumber);
+        int markerChannel = ((DataSource)currentBoard).getMarkerChannel();
+
+        if (currentBoard instanceof BoardBrainFlow) {
+            if (markerChannel != -1) {
+                ((Board)currentBoard).insertMarker(markerNumber);
+            }
         }
     }
 
@@ -207,14 +210,14 @@ class MarkerBar {
 
     private int lastProcessedDataPacketInd = 0;
     
-    private Board markerBoard;
+    private DataSource markerBoard;
 
     MarkerBar(PApplet _parent, int _numMarkers, int xLimit, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         numMarkers = _numMarkers;
 
         // This widget is only instantiated when the board is accel capable, so we don't need to check
-        markerBoard = (Board)currentBoard;
+        markerBoard = (DataSource)currentBoard;
 
         x = _x;
         y = _y;
