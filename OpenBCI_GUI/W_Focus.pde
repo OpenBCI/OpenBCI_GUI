@@ -47,23 +47,23 @@ class W_Focus extends Widget {
 
     private FocusBar focusBar;
     private float focusBarHardYAxisLimit = 1.05f; //Provide slight "breathing room" to avoid GPlot error when metric value == 1.0
-    FocusXLim xLimit = FocusXLim.TEN;
-    FocusMetric focusMetric = FocusMetric.RELAXATION;
-    FocusClassifier focusClassifier = FocusClassifier.REGRESSION;
-    FocusThreshold focusThreshold = FocusThreshold.EIGHT_TENTHS;
+    private FocusXLim xLimit = FocusXLim.TEN;
+    private FocusMetric focusMetric = FocusMetric.RELAXATION;
+    private FocusClassifier focusClassifier = FocusClassifier.REGRESSION;
+    private FocusThreshold focusThreshold = FocusThreshold.EIGHT_TENTHS;
     private FocusColors focusColors = FocusColors.GREEN;
 
-    int[] exgChannels;
-    int channelCount;
-    double[][] dataArray;
+    private int[] exgChannels;
+    private int channelCount;
+    private double[][] dataArray;
 
-    MLModel mlModel;
+    private MLModel mlModel;
     private double metricPrediction = 0d;
     private boolean predictionExceedsThreshold = false;
 
     private float xc, yc, wc, hc; // status circle center xy, width and height
     private int graphX, graphY, graphW, graphH;
-    private int graphPadding = 30;
+    private final int GRAPH_PADDING = 30;
     private color cBack, cDark, cMark, cFocus, cWave, cPanel;
 
     List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
@@ -241,7 +241,7 @@ class W_Focus extends Widget {
 
     private void updateGraphDims() {
         graphW = int(w - PAD_FIVE*4);
-        graphH = int(h/2 - graphPadding - PAD_FIVE*2);
+        graphH = int(h/2 - GRAPH_PADDING - PAD_FIVE*2);
         graphX = x + PAD_FIVE*2;
         graphY = int(y + h/2);
     }
