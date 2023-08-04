@@ -117,6 +117,18 @@ class W_Marker extends Widget {
             case 'v':
                 insertMarkerFromKeyboardOrButton(4);
                 return true;
+            case 'Z':
+                insertMarkerFromKeyboardOrButton(5);
+                return true;
+            case 'X':
+                insertMarkerFromKeyboardOrButton(6);
+                return true;
+            case 'C':
+                insertMarkerFromKeyboardOrButton(7);
+                return true;
+            case 'V':
+                insertMarkerFromKeyboardOrButton(8);
+                return true;
             default:
                 return false;
         }
