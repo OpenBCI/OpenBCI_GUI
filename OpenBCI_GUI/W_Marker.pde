@@ -88,7 +88,7 @@ class W_Marker extends Widget {
         }
     }
 
-    private Button createMarkerButton(int markerNumber, int _x, int _y) {
+    private Button createMarkerButton(final int markerNumber, int _x, int _y) {
         Button newButton = createButton(localCP5, "markerButton" + markerNumber, "Insert Marker " + markerNumber, _x, _y, 125, navH - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         newButton.setBorderColor(OBJECT_BORDER_GREY);
         newButton.onRelease(new CallbackListener() {
