@@ -220,7 +220,7 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
     else:
         print ("Successfully deleted source dir.")
 
-    ### On mac, copy the icon file and sign the app
+    ### On mac, copy the icon file, libs and sign the app
     ###########################################################
     if LOCAL_OS == MAC:
         app_dir = os.path.join(build_dir, "OpenBCI_GUI.app")
@@ -232,6 +232,15 @@ def package_app(sketch_dir, flavor, timestamp, windows_signing=False, windows_pf
             print ("WARNING: Failed to copy sketch.icns")
         else:
             print ("Successfully copied sketch.icns")
+
+        # copy brainflow libs
+        brainflow_libs_dir = os.path.join(sketch_dir, "libraries", "brainflow")
+        try:
+            shutil.copy2(brainflow_libs_dir, app_dir)
+        except IOError:
+            print ("WARNING: Failed to copy brainflow libs")
+        else:
+            print ("Successfully copied brainflow libs")
 
         # sign the app
         try:
