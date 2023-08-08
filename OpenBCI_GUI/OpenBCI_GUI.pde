@@ -606,6 +606,13 @@ void initSystem() {
             }
             break;
         case DATASOURCE_GANGLION:
+            boolean showUpgradePopup = false;
+            if (guiSettings.getShowGanglionUpgradePopup())
+            {
+                showUpgradePopup = true;
+                guiSettings.setShowGanglionUpgradePopup(false);
+            }
+
             if (selectedProtocol == BoardProtocol.WIFI) {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
             } else if (selectedProtocol == BoardProtocol.BLED112) {
@@ -613,12 +620,12 @@ void initSystem() {
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac);
+                currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac, showUpgradePopup);
             } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionNative(ganglionName);
+                currentBoard = new BoardGanglionNative(ganglionName, showUpgradePopup);
             }
             break;
         case DATASOURCE_STREAMING:
@@ -641,7 +648,7 @@ void initSystem() {
         println("OpenBCI_GUI: Configuring Cyton Channel Count...");
         if (currentBoard instanceof BoardCytonSerial) {
             Pair<Boolean, String> res = ((BoardBrainFlow)currentBoard).sendCommand("c");
-            //println(res.getKey().booleanValue(), res.getValue());
+            //println(res.getKey().booleanValue(), res.getValue());guiSettings
             if (res.getValue().startsWith("daisy removed")) {
                 println("OpenBCI_GUI: Daisy is physically attached, using Cyton 8 Channels instead.");
             }
