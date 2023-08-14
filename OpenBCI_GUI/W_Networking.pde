@@ -2070,7 +2070,8 @@ class Stream extends Thread {
             newDataFromBuffer[i] = w_networking.markerDataBufferToSend[i];
         }
 
-        
+        /*
+        // Check sampling rate for every networking protocol for this data type
         if (sampleRateClock == 0) sampleRateClock = millis(); 
         samplesSent = samplesSent + nPointsPerUpdate;
         if (millis() > sampleRateClock + sampleRateClockInterval) { 
@@ -2084,6 +2085,7 @@ class Stream extends Thread {
             sampleRateClock = 0;
             samplesSent = 0;
         }
+        */
 
         if (this.protocol.equals("UDP")) {
 
