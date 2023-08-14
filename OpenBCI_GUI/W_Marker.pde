@@ -17,8 +17,19 @@ class W_Marker extends Widget {
     private final int MARKER_BUTTON_HEIGHT = 20;
     private final int MARKER_BUTTON_GRID_CELL_HEIGHT = 30;
     private final int MAX_NUMBER_OF_MARKER_BUTTONS = 8;
+    private final int MARKER_BUTTON_GRID_EXTERIOR_PADDING = 10;
     private Button[] markerButtons = new Button[MAX_NUMBER_OF_MARKER_BUTTONS];
     private Grid markerButtonGrid;
+
+    private Textfield markerReceiveIPTextfield;
+    private Textfield markerReceivePortTextfield;
+    private String markerReceiveIP = "127.0.0.1";
+    private int markerReceivePort = 12350;
+    private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 100;
+    private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 20;
+    private int markerReceiveX, markerReceiveY, markerReceiveW, markerReceiveH;
+
+    private hypermedia.net.UDP udpReceiver;
 
     private MarkerBar markerBar;
     private int graphX, graphY, graphW, graphH;
@@ -47,11 +58,20 @@ class W_Marker extends Widget {
         markerButtonGrid.setDrawTableBorder(true);
         markerButtonGrid.setDrawTableInnerLines(true);
 
+        udpReceiver = new UDP(_parent, markerReceivePort);
+        udpReceiver.listen(true);
+        udpReceiver.log(true);
+        udpReceiver.setReceiveHandler("receiveMarkerViaUdp");
+
+        createMarkerReceiveUI();
+
         //Add all cp5 elements to a list so that they can be checked for overlap
         cp5ElementsToCheckForOverlap = new ArrayList<controlP5.Controller>();
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
             cp5ElementsToCheckForOverlap.add(markerButtons[i]);
         }
+        cp5ElementsToCheckForOverlap.add(markerReceiveIPTextfield);
+        cp5ElementsToCheckForOverlap.add(markerReceivePortTextfield);
     }
 
     public void update(){
@@ -83,6 +103,8 @@ class W_Marker extends Widget {
 
         resizeMarkerButtonGrid();
 
+        updateMarkerReceiveUIPosition();
+
         updateGraphDims();
         markerBar.screenResized(graphX, graphY, graphW, graphH);
 
@@ -97,7 +119,7 @@ class W_Marker extends Widget {
 
     private void resizeMarkerButtonGrid() {
         int tableX = x + GRAPH_PADDING;
-        int tableY = y + GRAPH_PADDING;
+        int tableY = y + MARKER_BUTTON_GRID_EXTERIOR_PADDING;
         int tableW = w - GRAPH_PADDING * 2;
         int tableH = y - graphY - GRAPH_PADDING * 2;
         markerButtonGrid.setDim(tableX, tableY, tableW);
@@ -117,6 +139,20 @@ class W_Marker extends Widget {
         }
     }
 
+    private void updateMarkerReceiveUIPosition() {
+        final int MARKER_UI_PADDING_Y = 10;
+        markerReceiveX = x + GRAPH_PADDING;
+        markerReceiveY = y + MARKER_BUTTON_GRID_EXTERIOR_PADDING * 2 + MARKER_BUTTON_GRID_CELL_HEIGHT * 2;
+        println(markerReceiveY);
+        markerReceiveW = w - GRAPH_PADDING * 2;
+        markerReceiveH = MARKER_RECEIVE_TEXTFIELD_HEIGHT + MARKER_UI_PADDING_Y;
+        int halfMarkerReceiveW = markerReceiveW / 2;
+        int markerReceiveUIMiddle = markerReceiveX + halfMarkerReceiveW;
+
+        markerReceiveIPTextfield.setPosition(markerReceiveX, markerReceiveY + MARKER_UI_PADDING_Y / 2);
+        markerReceivePortTextfield.setPosition(markerReceiveUIMiddle, markerReceiveY + MARKER_UI_PADDING_Y / 2);
+    }
+
     private void createMarkerButtons() {
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
             //Create marker buttons
@@ -131,7 +167,7 @@ class W_Marker extends Widget {
         newButton.setBorderColor(OBJECT_BORDER_GREY);
         newButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                insertMarkerFromKeyboardOrButton(markerNumber);
+                insertMarker(markerNumber);
             }
         });
         newButton.setDescription("Click to insert marker " + markerNumber + " into the data stream.");
@@ -144,40 +180,76 @@ class W_Marker extends Widget {
     public boolean checkForMarkerKeyPress(char keyPress) {
         switch (keyPress) {
             case 'z':
-                insertMarkerFromKeyboardOrButton(1);
+                insertMarker(1);
                 return true;
             case 'x':
-                insertMarkerFromKeyboardOrButton(2);
+                insertMarker(2);
                 return true;
             case 'c':
-                insertMarkerFromKeyboardOrButton(3);
+                insertMarker(3);
                 return true;
             case 'v':
-                insertMarkerFromKeyboardOrButton(4);
+                insertMarker(4);
                 return true;
             case 'Z':
-                insertMarkerFromKeyboardOrButton(5);
+                insertMarker(5);
                 return true;
             case 'X':
-                insertMarkerFromKeyboardOrButton(6);
+                insertMarker(6);
                 return true;
             case 'C':
-                insertMarkerFromKeyboardOrButton(7);
+                insertMarker(7);
                 return true;
             case 'V':
-                insertMarkerFromKeyboardOrButton(8);
+                insertMarker(8);
                 return true;
             default:
                 return false;
         }
     }
 
-    private void insertMarkerFromKeyboardOrButton(int markerNumber) {
+    private void createMarkerReceiveUI() {
+        markerReceiveIPTextfield = createTextfield("markerReceiveIPTextfield", markerReceiveIP);
+        markerReceivePortTextfield = createTextfield("markerReceivePortTextfield", Integer.toString(markerReceivePort));
+        updateMarkerReceiveUIPosition();
+    }
+
+    /* Create textfields for network parameters */
+    private Textfield createTextfield(String name, String default_text) {
+        Textfield myTextfield = localCP5.addTextfield(name).align(10, 100, 10, 100) // Alignment
+                .setSize(MARKER_RECEIVE_TEXTFIELD_WIDTH, MARKER_RECEIVE_TEXTFIELD_HEIGHT) // Size of textfield
+                .setFont(f2)
+                .setFocus(false) // Deselects textfield
+                .setColor(OPENBCI_DARKBLUE)
+                .setColorBackground(color(255, 255, 255)) // text field bg color
+                .setColorValueLabel(OPENBCI_DARKBLUE) // text color
+                .setColorForeground(OPENBCI_DARKBLUE) // border color when not selected
+                .setColorActive(isSelected_color) // border color when selected
+                .setColorCursor(OPENBCI_DARKBLUE)
+                .setText(default_text) // Default text in the field
+                .setCaptionLabel("") // Remove caption label
+                .setVisible(true) // Initially visible
+                .setAutoClear(true) // Autoclear
+        ;
+        return myTextfield;
+    }
+
+    private void insertMarker(int markerNumber) {
         int markerChannel = ((DataSource)currentBoard).getMarkerChannel();
 
         if (currentBoard instanceof BoardBrainFlow) {
             if (markerChannel != -1) {
                 ((Board)currentBoard).insertMarker(markerNumber);
+            }
+        }
+    }
+
+    public void insertMarkerFromExternal(float markerValue) {
+        int markerChannel = ((DataSource)currentBoard).getMarkerChannel();
+
+        if (currentBoard instanceof BoardBrainFlow) {
+            if (markerChannel != -1) {
+                ((Board)currentBoard).insertMarker(markerValue);
             }
         }
     }
@@ -207,16 +279,15 @@ class W_Marker extends Widget {
         return markerCount;
     }
 
-};
+    public String getMarkerReceiveIP() {
+        return getIpAddrFromStr(markerReceiveIPTextfield.getText());
+    }
 
-//The following global functions are used by the Marker widget dropdowns. This method is the least amount of code.
-public void markerWindowDropdown(int n) {
-    w_marker.setMarkerWindow(n);
-}
+    public String getMarkerReceivePort() {
+        return dropNonPrintableChars(markerReceivePortTextfield.getText());
+    }
 
-public void markerCountDropdown(int n) {
-    w_marker.setMarkerCount(n);
-}
+}; //end class W_Marker
 
 //This class contains the time series plot for displaying the markers over time
 class MarkerBar {
@@ -373,8 +444,7 @@ class MarkerBar {
     }
 }; //end of class
 
-
-
+//Enum for the Marker Window in W_Marker class
 public enum MarkerWindow implements IndexingInterface
 {
     FIVE (0, 5, "5 sec"),
@@ -415,6 +485,7 @@ public enum MarkerWindow implements IndexingInterface
     }
 }
 
+//Enum for the Marker Count in W_Marker class
 public enum MarkerCount implements IndexingInterface
 {
     FOUR (0, 4, "4"),
@@ -452,4 +523,27 @@ public enum MarkerCount implements IndexingInterface
         }
         return enumStrings;
     }
+}
+
+//The following global functions are used by the Marker widget dropdowns. This method is the least amount of code.
+public void markerWindowDropdown(int n) {
+    w_marker.setMarkerWindow(n);
+}
+
+public void markerCountDropdown(int n) {
+    w_marker.setMarkerCount(n);
+}
+
+//Custom UDP receive handler for receiving markers from external sources
+public void receiveMarkerViaUdp( byte[] data, String ip, int port ) {
+    float markerValue = convertByteArrayToFloat(data);
+    String message = Float.toString(markerValue);
+    
+    //println( "received: \""+message+"\" from "+ip+" on port "+port );
+    w_marker.insertMarkerFromExternal(markerValue);
+}
+
+public float convertByteArrayToFloat(byte[] array) {
+    ByteBuffer buffer = ByteBuffer.wrap(array);
+    return buffer.getFloat();
 }

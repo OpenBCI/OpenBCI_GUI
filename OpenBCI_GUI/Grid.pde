@@ -145,4 +145,8 @@ class Grid {
     public void setDrawTableInnerLines(boolean b) {
         drawTableInnerLines = b;
     }
+
+    public int getHeight() {
+        return rowHeight * numRows;
+    }
 }
