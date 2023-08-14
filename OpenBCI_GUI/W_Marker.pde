@@ -4,27 +4,29 @@
 //                                                  //
 //    Created by: Richard Waltman, August 2023      //
 //    Purpose: Add software markers to data         //
-//    Marker Shortcuts: z x c v                     //
+//    Marker Shortcuts: z x c v Z X C V             //
 //                                                  //
 //////////////////////////////////////////////////////
 
 class W_Marker extends Widget {
 
     private ControlP5 localCP5;
+    private List<controlP5.Controller> cp5ElementsToCheckForOverlap;
 
     private final int MARKER_BUTTON_WIDTH = 125;
     private final int MARKER_BUTTON_HEIGHT = 20;
     private final int MARKER_BUTTON_GRID_CELL_HEIGHT = 30;
     private final int MAX_NUMBER_OF_MARKER_BUTTONS = 8;
     private Button[] markerButtons = new Button[MAX_NUMBER_OF_MARKER_BUTTONS];
-    private MarkerCount markerCount = MarkerCount.FOUR; //Default number of markers to display
     private Grid markerButtonGrid;
 
     private MarkerBar markerBar;
     private int graphX, graphY, graphW, graphH;
     private int PAD_FIVE = 5;
     private int GRAPH_PADDING = 30;
-    private MarkerXLim xLimit = MarkerXLim.TEN;
+
+    private MarkerCount markerCount = MarkerCount.FOUR; //Default number of markers to display
+    private MarkerWindow markerWindow = MarkerWindow.TEN;
 
     W_Marker(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -37,17 +39,25 @@ class W_Marker extends Widget {
         createMarkerButtons();
 
         updateGraphDims();
-        addDropdown("markerWindowDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
+        addDropdown("markerWindowDropdown", "Window", markerWindow.getEnumStringsAsList(), markerWindow.getIndex());
         addDropdown("markerCountDropdown", "Count", markerCount.getEnumStringsAsList(), markerCount.getIndex());
-        markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, xLimit.getValue(), markerCount.getValue(), graphX, graphY, graphW, graphH);
+        markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerCount.getValue(), graphX, graphY, graphW, graphH);
 
         markerButtonGrid = new Grid(2, 4, MARKER_BUTTON_GRID_CELL_HEIGHT);
         markerButtonGrid.setDrawTableBorder(true);
         markerButtonGrid.setDrawTableInnerLines(true);
+
+        //Add all cp5 elements to a list so that they can be checked for overlap
+        cp5ElementsToCheckForOverlap = new ArrayList<controlP5.Controller>();
+        for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
+            cp5ElementsToCheckForOverlap.add(markerButtons[i]);
+        }
     }
 
     public void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+
+        lockElementsOnOverlapCheck(cp5ElementsToCheckForOverlap);
 
         if (currentBoard.isStreaming()) {
             markerBar.update();
@@ -172,9 +182,9 @@ class W_Marker extends Widget {
         }
     }
 
-    public void setMarkerHorizScale(int n) {
-        xLimit = xLimit.values()[n];
-        markerBar.adjustTimeAxis(xLimit.getValue());
+    public void setMarkerWindow(int n) {
+        markerWindow = markerWindow.values()[n];
+        markerBar.adjustTimeAxis(markerWindow.getValue());
     }
 
     public void setMarkerCount(int n) {
@@ -189,11 +199,19 @@ class W_Marker extends Widget {
         }
     }
 
+    public MarkerWindow getMarkerWindow() {
+        return markerWindow;
+    }
+
+    public MarkerCount getMarkerCount() {
+        return markerCount;
+    }
+
 };
 
 //The following global functions are used by the Marker widget dropdowns. This method is the least amount of code.
 public void markerWindowDropdown(int n) {
-    w_marker.setMarkerHorizScale(n);
+    w_marker.setMarkerWindow(n);
 }
 
 public void markerCountDropdown(int n) {
@@ -227,10 +245,10 @@ class MarkerBar {
     
     private DataSource markerBoard;
 
-    MarkerBar(PApplet _parent, int _numMarkers, int xLimit, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    MarkerBar(PApplet _parent, int _numMarkers, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         numMarkers = _numMarkers;
-        numSeconds = xLimit;
+        numSeconds = markerWindow;
 
         // This widget is only instantiated when the board is accel capable, so we don't need to check
         markerBoard = (DataSource)currentBoard;
@@ -357,7 +375,7 @@ class MarkerBar {
 
 
 
-public enum MarkerXLim implements IndexingInterface
+public enum MarkerWindow implements IndexingInterface
 {
     FIVE (0, 5, "5 sec"),
     TEN (1, 10, "10 sec"),
@@ -366,9 +384,9 @@ public enum MarkerXLim implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static MarkerXLim[] vals = values();
+    private static MarkerWindow[] vals = values();
 
-    MarkerXLim(int _index, int _value, String _label) {
+    MarkerWindow(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;
