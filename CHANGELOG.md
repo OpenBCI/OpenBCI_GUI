@@ -2,6 +2,7 @@
 
 ### Improvements
 - Update repository to Processing 4.2 #1111
+- Add Software Marker Widget #1091
 
 # v5.2.1
 
