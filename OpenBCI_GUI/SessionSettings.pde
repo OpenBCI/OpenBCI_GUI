@@ -198,7 +198,7 @@ class SessionSettings {
 
     //Marker Widget
     private int loadMarkerWindow;
-    private int loadMarkerCount;
+    private int loadMarkerVertScale;
 
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
@@ -494,7 +494,7 @@ class SessionSettings {
         ///////////////////////////////////////////////Setup new JSON object to save Marker Widget Settings
         JSONObject saveMarkerSettings = new JSONObject();
         saveMarkerSettings.setInt("markerWindow", w_marker.getMarkerWindow().getIndex());
-        saveMarkerSettings.setInt("markerCount", w_marker.getMarkerCount().getIndex());
+        saveMarkerSettings.setInt("markerVertScale", w_marker.getMarkerVertScale().getIndex());
         saveSettingsJSONData.setJSONObject(kJSONKeyMarker, saveMarkerSettings);
 
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
@@ -689,7 +689,7 @@ class SessionSettings {
         //Get Marker widget settings
         JSONObject loadMarkerSettings = loadSettingsJSONData.getJSONObject(kJSONKeyMarker);
         loadMarkerWindow = loadMarkerSettings.getInt("markerWindow");
-        loadMarkerCount = loadMarkerSettings.getInt("markerCount");
+        loadMarkerVertScale = loadMarkerSettings.getInt("markerVertScale");
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
@@ -952,8 +952,8 @@ class SessionSettings {
         ////////////////////////////Apply Marker Widget settings
         w_marker.setMarkerWindow(loadMarkerWindow);
         w_marker.cp5_widget.getController("markerWindowDropdown").getCaptionLabel().setText(w_marker.getMarkerWindow().getString());
-        w_marker.setMarkerCount(loadMarkerCount);
-        w_marker.cp5_widget.getController("markerCountDropdown").getCaptionLabel().setText(w_marker.getMarkerCount().getString());
+        w_marker.setMarkerVertScale(loadMarkerVertScale);
+        w_marker.cp5_widget.getController("markerVertScaleDropdown").getCaptionLabel().setText(w_marker.getMarkerVertScale().getString());
 
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //

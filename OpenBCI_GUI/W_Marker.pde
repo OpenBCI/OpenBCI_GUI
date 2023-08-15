@@ -18,6 +18,8 @@ class W_Marker extends Widget {
     private final int MARKER_UI_GRID_CELL_HEIGHT = 30;
     private final int MAX_NUMBER_OF_MARKER_BUTTONS = 8;
     private final int MARKER_UI_GRID_EXTERIOR_PADDING = 10;
+    private final int MARKER_UI_GRID_ROWS = 4;
+    private final int MARKER_UI_GRID_COLUMNS = 4;
     private Button[] markerButtons = new Button[MAX_NUMBER_OF_MARKER_BUTTONS];
     private Grid markerUIGrid;
 
@@ -35,8 +37,8 @@ class W_Marker extends Widget {
     private int PAD_FIVE = 5;
     private int GRAPH_PADDING = 30;
 
-    private MarkerCount markerCount = MarkerCount.FOUR; //Default number of markers to display
-    private MarkerWindow markerWindow = MarkerWindow.TEN;
+    private MarkerVertScale markerVertScale = MarkerVertScale.EIGHT;
+    private MarkerWindow markerWindow = MarkerWindow.FIVE;
 
     W_Marker(PApplet _parent){
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -49,11 +51,11 @@ class W_Marker extends Widget {
         createMarkerButtons();
 
         updateGraphDims();
+        addDropdown("markerVertScaleDropdown", "Vert Scale", markerVertScale.getEnumStringsAsList(), markerVertScale.getIndex());
         addDropdown("markerWindowDropdown", "Window", markerWindow.getEnumStringsAsList(), markerWindow.getIndex());
-        addDropdown("markerCountDropdown", "Count", markerCount.getEnumStringsAsList(), markerCount.getIndex());
-        markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerCount.getValue(), graphX, graphY, graphW, graphH);
+        markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerVertScale.getValue(), graphX, graphY, graphW, graphH);
 
-        markerUIGrid = new Grid(4, 4, MARKER_UI_GRID_CELL_HEIGHT);
+        markerUIGrid = new Grid(MARKER_UI_GRID_ROWS, MARKER_UI_GRID_COLUMNS, MARKER_UI_GRID_CELL_HEIGHT);
         markerUIGrid.setDrawTableBorder(false);
         markerUIGrid.setDrawTableInnerLines(false);
         markerUIGrid.setTableFontAndSize(p4, 14);
@@ -133,9 +135,8 @@ class W_Marker extends Widget {
 
         //Update positions of marker buttons
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
-            //int column = i % (markerCount.getValue() / 2);
-            int row = i < 4 ? 0 : 1;
-            int column = i % (4);
+            int row = i < MARKER_UI_GRID_COLUMNS ? 0 : 1;
+            int column = i % (MARKER_UI_GRID_COLUMNS);
             RectDimensions cellDims = markerUIGrid.getCellDims(row, column);
             markerButtons[i].setPosition(cellDims.x + CELL_PADDING, cellDims.y + HALF_CELL_PADDING);
             markerButtons[i].setSize(cellDims.w - CELL_PADDING_TOTAL, cellDims.h - CELL_PADDING);
@@ -160,7 +161,7 @@ class W_Marker extends Widget {
     }
 
     private Button createMarkerButton(final int markerNumber, int _x, int _y) {
-        Button newButton = createButton(localCP5, "markerButton" + markerNumber, "Insert Marker " + markerNumber, _x, _y, MARKER_BUTTON_WIDTH, MARKER_BUTTON_HEIGHT, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        Button newButton = createButton(localCP5, "markerButton" + markerNumber, "Insert " + markerNumber, _x, _y, MARKER_BUTTON_WIDTH, MARKER_BUTTON_HEIGHT, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
         newButton.setBorderColor(OBJECT_BORDER_GREY);
         newButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -309,24 +310,17 @@ class W_Marker extends Widget {
         markerBar.adjustTimeAxis(markerWindow.getValue());
     }
 
-    public void setMarkerCount(int n) {
-        markerCount = markerCount.values()[n];
-        markerBar.adjustYAxis(markerCount.getValue());
-        for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
-            if (i < markerCount.getValue()) {
-                markerButtons[i].setVisible(true);
-            } else {
-                markerButtons[i].setVisible(false);
-            }
-        }
+    public void setMarkerVertScale(int n) {
+        markerVertScale = markerVertScale.values()[n];
+        markerBar.adjustYAxis(markerVertScale.getValue());
     }
 
     public MarkerWindow getMarkerWindow() {
         return markerWindow;
     }
 
-    public MarkerCount getMarkerCount() {
-        return markerCount;
+    public MarkerVertScale getMarkerVertScale() {
+        return markerVertScale;
     }
 
     public String getMarkerReceiveIP() {
@@ -349,27 +343,20 @@ class MarkerBar {
 
     private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     private GPointsArray markerPointsArray;
-    private int numMarkers;
-
     private final String PLOT_LAYER = "layer1";
 
     private int nPoints;
-    private int numSeconds = 20; //default to 20 seconds
+    private int numSeconds;
+    private int yAxisMax;
     private float timeBetweenPoints;
     private float[] markerTimeArray;
     private int numSamplesToProcess;
-    private float minX, minY, minZ;
-    private float maxX, maxY, maxZ;
-    private float minVal;
-    private float maxVal;
-
-    private int lastProcessedDataPacketInd = 0;
     
     private DataSource markerBoard;
 
-    MarkerBar(PApplet _parent, int _numMarkers, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    MarkerBar(PApplet _parent, int _yAxisMax, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
-        numMarkers = _numMarkers;
+        yAxisMax = _yAxisMax;
         numSeconds = markerWindow;
 
         // This widget is only instantiated when the board is accel capable, so we don't need to check
@@ -389,7 +376,7 @@ class MarkerBar {
         plot.setPos(x + 36 + 4 + xOffset, y); //match marker plot position with Time Series
         plot.setDim(w - 36 - 4 - xOffset, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(numMarkers)%8]);
+        plot.setLineColor(WHITE);
         plot.setXLim(-numSeconds, 0); //set the horizontal scale
         plot.setYLim(-0.2, yLimit + .2); //change this to adjust vertical scale
         //plot.setPointSize(2);
@@ -466,9 +453,9 @@ class MarkerBar {
         }
     }
 
-    public void adjustYAxis(int markerCount) {
-        numMarkers = markerCount;
-        plot.setYLim(-0.2, numMarkers + .2);
+    public void adjustYAxis(int _yAxisMax) {
+        yAxisMax = _yAxisMax;
+        plot.setYLim(-0.2, yAxisMax + .2);
     }
 
     //Used to update the Points within the graph
@@ -536,18 +523,22 @@ public enum MarkerWindow implements IndexingInterface
     }
 }
 
-//Enum for the Marker Count in W_Marker class
-public enum MarkerCount implements IndexingInterface
+//Enum for the Marker Vertical Scale in W_Marker class
+public enum MarkerVertScale implements IndexingInterface
 {
-    FOUR (0, 4, "4"),
-    EIGHT (1, 8, "8");
+    TWO (0, 2, "2"),
+    FOUR (1, 4, "4"),
+    EIGHT (2, 8, "8"),
+    TEN (3, 10, "10"),
+    FIFTEEN (4, 15, "15"),
+    TWENTY (5, 20, "20");
 
     private int index;
     private int value;
     private String label;
-    private static MarkerCount[] vals = values();
+    private static MarkerVertScale[] vals = values();
 
-    MarkerCount(int _index, int _value, String _label) {
+    MarkerVertScale(int _index, int _value, String _label) {
         this.index = _index;
         this.value = _value;
         this.label = _label;
@@ -581,8 +572,8 @@ public void markerWindowDropdown(int n) {
     w_marker.setMarkerWindow(n);
 }
 
-public void markerCountDropdown(int n) {
-    w_marker.setMarkerCount(n);
+public void markerVertScaleDropdown(int n) {
+    w_marker.setMarkerVertScale(n);
 }
 
 //Custom UDP receive handler for receiving markers from external sources
