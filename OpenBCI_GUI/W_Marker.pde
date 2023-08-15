@@ -213,7 +213,7 @@ class W_Marker extends Widget {
 
     /* Create textfields for network parameters */
     private Textfield createTextfield(String name, String default_text) {
-        Textfield myTextfield = localCP5.addTextfield(name).align(10, 100, 10, 100) // Alignment
+        final Textfield myTextfield = localCP5.addTextfield(name).align(10, 100, 10, 100) // Alignment
                 .setSize(MARKER_RECEIVE_TEXTFIELD_WIDTH, MARKER_RECEIVE_TEXTFIELD_HEIGHT) // Size of textfield
                 .setFont(f2)
                 .setFocus(false) // Deselects textfield
