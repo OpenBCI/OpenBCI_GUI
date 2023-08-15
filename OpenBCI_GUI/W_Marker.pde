@@ -15,11 +15,11 @@ class W_Marker extends Widget {
 
     private final int MARKER_BUTTON_WIDTH = 125;
     private final int MARKER_BUTTON_HEIGHT = 20;
-    private final int MARKER_BUTTON_GRID_CELL_HEIGHT = 30;
+    private final int MARKER_UI_GRID_CELL_HEIGHT = 30;
     private final int MAX_NUMBER_OF_MARKER_BUTTONS = 8;
-    private final int MARKER_BUTTON_GRID_EXTERIOR_PADDING = 10;
+    private final int MARKER_UI_GRID_EXTERIOR_PADDING = 10;
     private Button[] markerButtons = new Button[MAX_NUMBER_OF_MARKER_BUTTONS];
-    private Grid markerButtonGrid;
+    private Grid markerUIGrid;
 
     private Textfield markerReceiveIPTextfield;
     private Textfield markerReceivePortTextfield;
@@ -27,7 +27,6 @@ class W_Marker extends Widget {
     private int markerReceivePort = 12350;
     private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 100;
     private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 20;
-    private int markerReceiveX, markerReceiveY, markerReceiveW, markerReceiveH;
 
     private hypermedia.net.UDP udpReceiver;
 
@@ -54,16 +53,16 @@ class W_Marker extends Widget {
         addDropdown("markerCountDropdown", "Count", markerCount.getEnumStringsAsList(), markerCount.getIndex());
         markerBar = new MarkerBar(_parent, MAX_NUMBER_OF_MARKER_BUTTONS, markerWindow.getValue(), markerCount.getValue(), graphX, graphY, graphW, graphH);
 
-        markerButtonGrid = new Grid(2, 4, MARKER_BUTTON_GRID_CELL_HEIGHT);
-        markerButtonGrid.setDrawTableBorder(true);
-        markerButtonGrid.setDrawTableInnerLines(true);
+        markerUIGrid = new Grid(4, 4, MARKER_UI_GRID_CELL_HEIGHT);
+        markerUIGrid.setDrawTableBorder(false);
+        markerUIGrid.setDrawTableInnerLines(false);
+        markerUIGrid.setTableFontAndSize(p4, 14);
+        markerUIGrid.setString("Receive IP", 3, 0);
+        markerUIGrid.setString("Receive Port", 3, 2);
 
-        udpReceiver = new UDP(_parent, markerReceivePort);
-        udpReceiver.listen(true);
-        udpReceiver.log(true);
-        udpReceiver.setReceiveHandler("receiveMarkerViaUdp");
+        createMarkerReceiveTextfields();
 
-        createMarkerReceiveUI();
+        initUdpMarkerReceiver();
 
         //Add all cp5 elements to a list so that they can be checked for overlap
         cp5ElementsToCheckForOverlap = new ArrayList<controlP5.Controller>();
@@ -77,6 +76,9 @@ class W_Marker extends Widget {
     public void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
 
+        copyPaste.checkForCopyPaste(markerReceiveIPTextfield);
+        copyPaste.checkForCopyPaste(markerReceivePortTextfield);
+
         lockElementsOnOverlapCheck(cp5ElementsToCheckForOverlap);
 
         if (currentBoard.isStreaming()) {
@@ -88,7 +90,7 @@ class W_Marker extends Widget {
     public void draw(){
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
 
-        markerButtonGrid.draw();
+        markerUIGrid.draw();
         markerBar.draw();
 
         //This draws all cp5 objects in the local instance
@@ -101,63 +103,58 @@ class W_Marker extends Widget {
         //Very important to allow users to interact with objects after app resize        
         localCP5.setGraphics(ourApplet, 0, 0);
 
-        resizeMarkerButtonGrid();
-
-        updateMarkerReceiveUIPosition();
+        resizeMarkerUIGrid();
 
         updateGraphDims();
         markerBar.screenResized(graphX, graphY, graphW, graphH);
-
     }
 
     private void updateGraphDims() {
         graphW = int(w - PAD_FIVE*4);
         graphH = int(h/2 - GRAPH_PADDING - PAD_FIVE*2);
         graphX = x + PAD_FIVE*2;
-        graphY = y + h - graphH - int(GRAPH_PADDING*2) + GRAPH_PADDING/6;
+        graphY = y + h - graphH - int(GRAPH_PADDING) - PAD_FIVE*2;
     }
 
-    private void resizeMarkerButtonGrid() {
+    private void resizeMarkerUIGrid() {
         int tableX = x + GRAPH_PADDING;
-        int tableY = y + MARKER_BUTTON_GRID_EXTERIOR_PADDING;
+        int tableY = y + MARKER_UI_GRID_EXTERIOR_PADDING;
         int tableW = w - GRAPH_PADDING * 2;
         int tableH = y - graphY - GRAPH_PADDING * 2;
-        markerButtonGrid.setDim(tableX, tableY, tableW);
-        markerButtonGrid.setRowHeight(MARKER_BUTTON_GRID_CELL_HEIGHT);
+        markerUIGrid.setDim(tableX, tableY, tableW);
+        markerUIGrid.setRowHeight(MARKER_UI_GRID_CELL_HEIGHT);
+        markerUIGrid.dynamicallySetTextVerticalPadding(3, 0);
+        markerUIGrid.dynamicallySetTextVerticalPadding(3, 2);
+        markerUIGrid.setHorizontalCenterTextInCells(true);
 
-        int buttonPadding = 8;
-        int buttonPaddingTotal = buttonPadding * 2;
+        final int CELL_PADDING = 8;
+        final int CELL_PADDING_TOTAL = CELL_PADDING * 2;
+        final int HALF_CELL_PADDING = CELL_PADDING / 2;
 
         //Update positions of marker buttons
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
             //int column = i % (markerCount.getValue() / 2);
             int row = i < 4 ? 0 : 1;
             int column = i % (4);
-            RectDimensions cellDims = markerButtonGrid.getCellDims(row, column);
-            markerButtons[i].setPosition(cellDims.x + buttonPadding, cellDims.y + buttonPadding);
-            markerButtons[i].setSize(cellDims.w - buttonPaddingTotal, cellDims.h - buttonPaddingTotal);
+            RectDimensions cellDims = markerUIGrid.getCellDims(row, column);
+            markerButtons[i].setPosition(cellDims.x + CELL_PADDING, cellDims.y + HALF_CELL_PADDING);
+            markerButtons[i].setSize(cellDims.w - CELL_PADDING_TOTAL, cellDims.h - CELL_PADDING);
         }
-    }
 
-    private void updateMarkerReceiveUIPosition() {
-        final int MARKER_UI_PADDING_Y = 10;
-        markerReceiveX = x + GRAPH_PADDING;
-        markerReceiveY = y + MARKER_BUTTON_GRID_EXTERIOR_PADDING * 2 + MARKER_BUTTON_GRID_CELL_HEIGHT * 2;
-        println(markerReceiveY);
-        markerReceiveW = w - GRAPH_PADDING * 2;
-        markerReceiveH = MARKER_RECEIVE_TEXTFIELD_HEIGHT + MARKER_UI_PADDING_Y;
-        int halfMarkerReceiveW = markerReceiveW / 2;
-        int markerReceiveUIMiddle = markerReceiveX + halfMarkerReceiveW;
+        RectDimensions ipTextfieldPosition = markerUIGrid.getCellDims(3, 1);
+        markerReceiveIPTextfield.setPosition(ipTextfieldPosition.x, ipTextfieldPosition.y + HALF_CELL_PADDING);
+        markerReceiveIPTextfield.setSize(ipTextfieldPosition.w, ipTextfieldPosition.h - CELL_PADDING);
 
-        markerReceiveIPTextfield.setPosition(markerReceiveX, markerReceiveY + MARKER_UI_PADDING_Y / 2);
-        markerReceivePortTextfield.setPosition(markerReceiveUIMiddle, markerReceiveY + MARKER_UI_PADDING_Y / 2);
+        RectDimensions portTextfieldPosition = markerUIGrid.getCellDims(3, 3);
+        markerReceivePortTextfield.setPosition(portTextfieldPosition.x, portTextfieldPosition.y + HALF_CELL_PADDING);
+        markerReceivePortTextfield.setSize(portTextfieldPosition.w, portTextfieldPosition.h - CELL_PADDING);
     }
 
     private void createMarkerButtons() {
         for (int i = 0; i < MAX_NUMBER_OF_MARKER_BUTTONS; i++) {
             //Create marker buttons
             //Marker number is i + 1 because marker numbers start at 1, not 0. Otherwise, will throw BrainFlow error.
-            //This initial position is temporary and will be updated in resizeMarkerButtonGrid()
+            //This initial position is temporary and will be updated in resizeMarkerUIGrid()
             markerButtons[i] = createMarkerButton(i + 1, x + 10 + (i * MARKER_BUTTON_WIDTH), y + 10);
         }
     }
@@ -208,10 +205,9 @@ class W_Marker extends Widget {
         }
     }
 
-    private void createMarkerReceiveUI() {
+    private void createMarkerReceiveTextfields() {
         markerReceiveIPTextfield = createTextfield("markerReceiveIPTextfield", markerReceiveIP);
         markerReceivePortTextfield = createTextfield("markerReceivePortTextfield", Integer.toString(markerReceivePort));
-        updateMarkerReceiveUIPosition();
     }
 
     /* Create textfields for network parameters */
@@ -229,9 +225,63 @@ class W_Marker extends Widget {
                 .setText(default_text) // Default text in the field
                 .setCaptionLabel("") // Remove caption label
                 .setVisible(true) // Initially visible
-                .setAutoClear(true) // Autoclear
+                .setAutoClear(false) // Don't clear textfield when pressing Enter key
         ;
+        //Clear textfield on double click
+        myTextfield.onDoublePress(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                output("Marker Widget: Enter your Marker Receiver IP Address or Port");
+                myTextfield.clear();
+            }
+        });
+        //Autogenerate if user presses Enter key and textfield value is null
+        myTextfield.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && myTextfield.getText().equals("")) {
+                    resetMarkerReceiveTextfield(myTextfield);
+                    initUdpMarkerReceiver();
+                }
+            }
+        });
+        //Autogenerate name if user leaves textfield and value is null
+        myTextfield.onReleaseOutside(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (!myTextfield.isActive() && myTextfield.getText().equals("")) {
+                    resetMarkerReceiveTextfield(myTextfield);
+                    initUdpMarkerReceiver();
+                }
+            }
+        });
+        //Reinitialize UDP receiver if user presses Enter key and textfield value is not null
+        myTextfield.addCallback(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && !myTextfield.getText().equals("")) {
+                    initUdpMarkerReceiver();
+                }
+            }
+        });
         return myTextfield;
+    }
+
+    private void resetMarkerReceiveTextfield(Textfield tf) {
+        if (tf.getName().equals("markerReceiveIPTextfield")) {
+            tf.setText(markerReceiveIP);
+        } else if (tf.getName().equals("markerReceivePortTextfield")) {
+            tf.setText(Integer.toString(markerReceivePort));
+        }
+    }
+
+    private void initUdpMarkerReceiver() {
+        markerReceiveIP = getIpAddrFromStr(markerReceiveIPTextfield.getText());
+        markerReceivePort = Integer.parseInt(dropNonPrintableChars(markerReceivePortTextfield.getText()));
+        if (udpReceiver != null) {
+            udpReceiver.close();
+        }
+        udpReceiver = new UDP(ourApplet, markerReceivePort, markerReceiveIP);
+        udpReceiver.listen(true);
+        udpReceiver.log(false);
+        udpReceiver.setReceiveHandler("receiveMarkerViaUdp");
+        outputSuccess("Marker Widget: Listening for markers on " + markerReceiveIP + ":" + markerReceivePort);
     }
 
     private void insertMarker(int markerNumber) {
@@ -293,7 +343,8 @@ class W_Marker extends Widget {
 class MarkerBar {
     //this class contains the plot for the 2d graph of marker data
     private int x, y, w, h;
-    private int markerBarPadding = 30;
+    private int X_AXIS_PADDING = 22;
+    private int Y_AXIS_PADDING = 30;
     private int xOffset;
 
     private GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
@@ -347,8 +398,8 @@ class MarkerBar {
         plot.getYAxis().setAxisLabelText("Marker (int)");
         plot.getYAxis().setNTicks(5);
         plot.setAllFontProperties("Arial", 0, 14);
-        plot.getXAxis().getAxisLabel().setOffset(float(markerBarPadding));
-        plot.getYAxis().getAxisLabel().setOffset(float(markerBarPadding));
+        plot.getXAxis().getAxisLabel().setOffset(float(X_AXIS_PADDING));
+        plot.getYAxis().getAxisLabel().setOffset(float(Y_AXIS_PADDING));
         plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
         plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
         plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);

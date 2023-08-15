@@ -42,7 +42,7 @@ class Grid {
         pushStyle();
         textAlign(LEFT);        
         stroke(OPENBCI_DARKBLUE);
-        textFont(p5, 12);
+        textFont(tableFont, tableFontSize);
 
         if (drawTableInnerLines) {
             // draw row lines

@@ -87,7 +87,7 @@ class W_CytonImpedance extends Widget {
 
         //Create Table first!
         dataGrid = new Grid(numTableRows, numTableColumns, cellHeight);
-        dataGrid.setTableFontAndSize(p6, 10);
+        dataGrid.setTableFontAndSize(p5, 12);
         dataGrid.setDrawTableBorder(true);
 
         //Set Column Labels

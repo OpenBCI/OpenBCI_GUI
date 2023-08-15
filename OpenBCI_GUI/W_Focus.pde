@@ -97,7 +97,7 @@ class W_Focus extends Widget {
 
         //Create data table
         dataGrid = new Grid(NUM_TABLE_ROWS, NUM_TABLE_COLUMNS, cellHeight);
-        dataGrid.setTableFontAndSize(p6, 10);
+        dataGrid.setTableFontAndSize(p5, 12);
         dataGrid.setDrawTableBorder(true);
         dataGrid.setString("Metric Value", 0, 0);
         dataGrid.setString("Delta (1.5-4Hz)", 1, 0);
