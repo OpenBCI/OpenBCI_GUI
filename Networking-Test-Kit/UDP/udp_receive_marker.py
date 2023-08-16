@@ -26,8 +26,6 @@ def print_message(*args):
     except BaseException as e:
         print(e) 
         return False
- #  print("(%s) RECEIVED MESSAGE: " % time.time() +
- # ''.join(str(struct.unpack('>%df' % int(length), args[0]))))
 
 # Clean exit from print mode
 def exit_print(signal, frame):
@@ -37,7 +35,6 @@ def exit_print(signal, frame):
 # Record received message in text file
 def record_to_file(*args):
     textfile.write(str(time.time()) + ",")
-    #textfile.write(args[0])
     obj = json.loads(args[0].decode())
     #print(obj.get('data'))
     textfile.write(json.dumps(obj))

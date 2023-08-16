@@ -322,7 +322,6 @@ abstract class BoardBrainFlow extends Board {
         if (isConnected() && streaming) {
             try {
                 boardShim.insert_marker(value);
-                //long currentTime = (long)(System.currentTimeMillis() * 1000.0);
                 String currentTimeString = dateFormat.format(new Date());
                 StringBuilder markerNotification = new StringBuilder("Inserted marker ");
                 markerNotification.append(value);
