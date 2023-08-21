@@ -200,67 +200,67 @@ list_column_sort_directions = {
 #  pt_PT, ro_RO, ru_RU, se, sk_SK, sl_SI, sr_RS, sv_SE, th_TH, to_TO, tr_TR,
 #  uk_UA, ur_IN, ur_PK, uz_UZ, vi_VN, zh_CN, zh_TW
 
-license = {
-    "default-language": "en_US",
-    "licenses": {
-        # For each language, the text of the license.  This can be plain text,
-        # RTF (in which case it must start "{\rtf1"), or a path to a file
-        # containing the license text.  If you're using RTF,
-        # watch out for Python escaping (or read it from a file).
-        "en_GB": b"""{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
- {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
- {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
- {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
- \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
- \\deftab720
- \\pard\\pardeftab720\\sa160\\partightenfactor0
+# license = {
+#    "default-language": "en_US",
+#    "licenses": {
+# For each language, the text of the license.  This can be plain text,
+# RTF (in which case it must start "{\rtf1"), or a path to a file
+# containing the license text.  If you're using RTF,
+# watch out for Python escaping (or read it from a file).
+#       "en_GB": b"""{\\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
+# {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
+# {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
+# {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
+# \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
+# \\deftab720
+# \\pard\\pardeftab720\\sa160\\partightenfactor0
 
- \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
- \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
- \\pard\\pardeftab720\\sa160\\partightenfactor0
+# \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
+# \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 Test License\\
+# \\pard\\pardeftab720\\sa160\\partightenfactor0
 
- \\fs36 \\cf2 \\strokec2 What is this?\\
- \\pard\\pardeftab720\\sa160\\partightenfactor0
+# \\fs36 \\cf2 \\strokec2 What is this?\\
+# \\pard\\pardeftab720\\sa160\\partightenfactor0
 
- \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
- \\
- }""",
-        "de_DE": "Ich bin ein Berliner. Bielefeld gibt's doch gar nicht.",
-    },
-    "buttons": {
-        # For each language, text for the buttons on the licensing window.
-        #
-        # Default buttons and text are built-in for the following languages:
-        #
-        #   da_DK: Danish
-        #   de_DE: German
-        #   en_AU: English (Australian)
-        #   en_GB: English (UK)
-        #   en_NZ: English (New Zealand)
-        #   en_US: English (US)
-        #   es_ES: Spanish
-        #   fr_CA: French (Canadian)
-        #   fr_FR: French
-        #   it_IT: Italian
-        #   ja_JP: Japanese
-        #   nb_NO: Norsk
-        #   nl_BE: Flemish
-        #   nl_NL: Dutch
-        #   pt_BR: Brazilian Portuguese
-        #   pt_PT: Portugese
-        #   sv_SE: Swedish
-        #   zh_CN: Simplified Chinese
-        #   zh_TW: Traditional Chinese
-        #
-        # You don't need to specify them for those languages; if you fail to
-        # specify them for some other language, English will be used instead.
-        "en_US": (
-            b"English",
-            b"Agree!",
-            b"Disagree!",
-            b"Print!",
-            b"Save!",
-            b'Do you agree or not? Press "Agree" or "Disagree".',
-        ),
-    },
-}
+# \\f1\\b0\\fs22 \\cf2 \\strokec2 This is the English license. It says what you are allowed to do with this software.\\
+# \\
+# }""",
+#      "de_DE": "Ich bin ein Berliner. Bielefeld gibt's doch gar nicht.",
+#   },
+#  "buttons": {
+# For each language, text for the buttons on the licensing window.
+#
+# Default buttons and text are built-in for the following languages:
+#
+#   da_DK: Danish
+#   de_DE: German
+#   en_AU: English (Australian)
+#   en_GB: English (UK)
+#   en_NZ: English (New Zealand)
+#   en_US: English (US)
+#   es_ES: Spanish
+#   fr_CA: French (Canadian)
+#   fr_FR: French
+#   it_IT: Italian
+#   ja_JP: Japanese
+#   nb_NO: Norsk
+#   nl_BE: Flemish
+#   nl_NL: Dutch
+#   pt_BR: Brazilian Portuguese
+#   pt_PT: Portugese
+#   sv_SE: Swedish
+#   zh_CN: Simplified Chinese
+#   zh_TW: Traditional Chinese
+#
+# You don't need to specify them for those languages; if you fail to
+# specify them for some other language, English will be used instead.
+#     "en_US": (
+#         b"English",
+#        b"Agree!",
+#       b"Disagree!",
+#      b"Print!",
+#     b"Save!",
+#    b'Do you agree or not? Press "Agree" or "Disagree".',
+# ),
+# },
+# }
