@@ -331,7 +331,14 @@ void settings() {
         win_w = 980;
         win_h = 580;
     }
-    size(win_w, win_h, P2D);
+
+    if (isMac()) {
+        size(win_w, win_h, JAVA2D);
+        println("Processing: Using JAVA2D Renderer for Mac with Processing 3.5.4");
+    } else {
+        size(win_w, win_h, P2D);
+    }
+    
 
     globalScreenResolution = new StringBuilder("Screen Resolution: ");
     globalScreenResolution.append(displayWidth);
