@@ -6,10 +6,6 @@ stack: python 3
 clone_depth: 3
 
 environment:
-  AWS_ACCESS_KEY_ID:
-    secure: 41Lh3mnlU+lVcr5eX3bTgmsKqcebacVgDOww7zb0r4E=
-  AWS_SECRET_ACCESS_KEY:
-    secure: jeVYQ02OTywaENrIcWvoZg+YzGnhiluCDes/kaJE4NeVIZqjlipFt5yXxCct9S5w
   PFX_PASS:
     secure: HFlvHivXXp6aQmUc3h1PBBga7E3ZyYaxwMuCjNasXZA=
   PFX_SECRET:
