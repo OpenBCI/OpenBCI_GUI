@@ -354,6 +354,11 @@ class MarkerBar {
     
     private DataSource markerBoard;
 
+    private boolean isAutoscale = false;
+    private float autoscaleMin;
+    private float autoscaleMax;
+    private int previousMillis = 0;
+
     MarkerBar(PApplet _parent, int _yAxisMax, int markerWindow, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         yAxisMax = _yAxisMax;
@@ -420,6 +425,10 @@ class MarkerBar {
     //Used to update the accelerometerBar class
     public void update() {
         updateGPlotPoints();
+
+        if (isAutoscale) {
+            adjustYAxis(-1);
+        }
     }
 
     public void draw() {
@@ -454,8 +463,26 @@ class MarkerBar {
     }
 
     public void adjustYAxis(int _yAxisMax) {
+        if (_yAxisMax == -1) {
+            yAxisMax = 1;
+            isAutoscale = true;
+            return;
+        }
+        isAutoscale = false;
         yAxisMax = _yAxisMax;
         plot.setYLim(-0.2, yAxisMax + .2);
+    }
+
+    void applyAutoscale() {
+        //Do this once a second for all TimeSeries ChannelBars to save on resources
+        int newMillis = millis();
+        boolean doAutoscale = newMillis > previousMillis + 1000;
+        if (isAutoscale && currentBoard.isStreaming() && doAutoscale) {
+            autoscaleMin = (int) Math.floor(autoscaleMin);
+            autoscaleMax = (int) Math.ceil(autoscaleMax);
+            previousMillis = newMillis;
+            plot.setYLim(autoscaleMin, autoscaleMax); //<---- This is a very expensive method. Here is the bottleneck.
+        }
     }
 
     //Used to update the Points within the graph
@@ -463,10 +490,15 @@ class MarkerBar {
         List<double[]> allData = markerBoard.getData(nPoints);
         int markerChannel = markerBoard.getMarkerChannel();
 
+        autoscaleMax = -Float.MAX_VALUE;
+        autoscaleMin = Float.MAX_VALUE;
+
         for (int i = 0; i < nPoints; i++) {
             markerPointsArray.set(i, markerTimeArray[i], (float)allData.get(i)[markerChannel], "");
+            autoscaleMax = Math.max((float)allData.get(i)[markerChannel], autoscaleMax);
+            autoscaleMin = Math.min((float)allData.get(i)[markerChannel], autoscaleMin);
         }
-
+        applyAutoscale();
         plot.setPoints(markerPointsArray, PLOT_LAYER);
     }
 
@@ -526,12 +558,12 @@ public enum MarkerWindow implements IndexingInterface
 //Enum for the Marker Vertical Scale in W_Marker class
 public enum MarkerVertScale implements IndexingInterface
 {
-    TWO (0, 2, "2"),
-    FOUR (1, 4, "4"),
-    EIGHT (2, 8, "8"),
-    TEN (3, 10, "10"),
-    FIFTEEN (4, 15, "15"),
-    TWENTY (5, 20, "20");
+    AUTO (0, -1, "Auto"),
+    TWO (1, 2, "2"),
+    FOUR (2, 4, "4"),
+    EIGHT (3, 8, "8"),
+    TEN (4, 10, "10"),
+    TWENTY (6, 20, "20");
 
     private int index;
     private int value;
