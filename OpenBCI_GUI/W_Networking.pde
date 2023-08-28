@@ -1944,7 +1944,7 @@ class Stream extends Thread {
 
             msg.clearArguments();
             msg.setAddrPattern(baseOscAddress + "/pulse/bpm");
-            msg.add(w_pulsesensor.BPM);
+            msg.add(w_pulsesensor.getBPM());
             try {
                 this.osc.send(msg, this.oscNetAddress);
             } catch (Exception e) {
@@ -1953,7 +1953,7 @@ class Stream extends Thread {
 
             msg.clearArguments();
             msg.setAddrPattern(baseOscAddress + "/pulse/ibi");
-            msg.add(w_pulsesensor.IBI);
+            msg.add(w_pulsesensor.getIBI());
             try {
                 this.osc.send(msg, this.oscNetAddress);
             } catch (Exception e) {
@@ -1963,9 +1963,9 @@ class Stream extends Thread {
         } else if (this.protocol.equals("UDP")) {
 
             StringBuilder output = new StringBuilder("{\"type\":\"pulse\",\"data\":[");
-            output.append(str(w_pulsesensor.BPM));
+            output.append(str(w_pulsesensor.getBPM()));
             output.append(",");
-            output.append(str(w_pulsesensor.IBI));
+            output.append(str(w_pulsesensor.getIBI()));
             output.append("]}\r\n");
             try {
                 this.udp.send(output.toString(), this.ip, this.port);
@@ -1976,8 +1976,8 @@ class Stream extends Thread {
         } else if (this.protocol.equals("LSL")) {
 
             float[] _dataToSend = new float[2];
-            _dataToSend[0] = w_pulsesensor.BPM;
-            _dataToSend[1] = w_pulsesensor.IBI;
+            _dataToSend[0] = w_pulsesensor.getBPM();
+            _dataToSend[1] = w_pulsesensor.getIBI();
             // From LSLLink Library: The time stamps of other samples are automatically
             // derived based on the sampling rate of the stream.
             outlet_data.push_chunk(_dataToSend);
@@ -1985,8 +1985,8 @@ class Stream extends Thread {
         } else if (this.protocol.equals("Serial")) {
 
             serialMessage = ""; // clear message
-            serialMessage += w_pulsesensor.BPM + ",";
-            serialMessage += w_pulsesensor.IBI;
+            serialMessage += w_pulsesensor.getBPM() + ",";
+            serialMessage += w_pulsesensor.getIBI();
             try {
                 this.serial_networking.write(serialMessage);
             } catch (Exception e) {

@@ -304,5 +304,8 @@ class DataProcessing {
         w_focus.updateFocusWidgetData();
         w_bandPower.updateBandPowerWidgetData();
         w_emgJoystick.updateEmgJoystickWidgetData();
+        if (w_pulsesensor != null) {
+            w_pulsesensor.updatePulseSensorWidgetData();
+        }
     }
 }
