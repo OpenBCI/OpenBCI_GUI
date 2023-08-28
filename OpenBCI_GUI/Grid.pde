@@ -42,7 +42,7 @@ class Grid {
         pushStyle();
         textAlign(LEFT);        
         stroke(OPENBCI_DARKBLUE);
-        textFont(p5, 12);
+        textFont(tableFont, tableFontSize);
 
         if (drawTableInnerLines) {
             // draw row lines
@@ -144,5 +144,9 @@ class Grid {
 
     public void setDrawTableInnerLines(boolean b) {
         drawTableInnerLines = b;
+    }
+
+    public int getHeight() {
+        return rowHeight * numRows;
     }
 }

@@ -95,14 +95,6 @@ void parseKey(char val) {
             currentBoard.setEXGChannelActive(4-1, true);
             return;
 
-        //other controls
-        case 's':
-            stopRunning();
-            return;
-
-        case 'b':
-            startRunning();
-            return;
 
         ///////////////////// Save User settings lowercase n
         case 'n':
@@ -121,9 +113,6 @@ void parseKey(char val) {
             if(currentBoard instanceof BoardCyton) {
                 ((BoardCyton)currentBoard).printRegisters();
             }
-            return;
-
-        case 'd':   
             return;
 
         case 'm':
@@ -234,6 +223,11 @@ void parseKey(char val) {
             }
             return;
         }
+    }
+
+    // Check for software marker keyboard shortcuts
+    if (w_marker.checkForMarkerKeyPress(val)) {
+        return;
     }
 
     if (currentBoard instanceof Board) {

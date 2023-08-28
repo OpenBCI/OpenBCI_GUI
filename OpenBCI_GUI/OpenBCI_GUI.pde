@@ -50,7 +50,7 @@ import java.awt.AWTException;
 import netP5.*; // for OSC
 import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
-import java.nio.ByteBuffer; //for BDF file writing
+import java.nio.ByteBuffer; //for BDF file writing and UDP Marker Receiver
 import edu.ucsd.sccn.LSL; //for LSL
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
@@ -62,8 +62,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v6.0.0-alpha.0";
-String localGUIVersionDate = "July 2023";
+String localGUIVersionString = "v6.0.0-alpha.1";
+String localGUIVersionDate = "August 2023";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;

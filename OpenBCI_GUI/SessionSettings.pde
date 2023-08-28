@@ -196,6 +196,10 @@ class SessionSettings {
     int loadEmgJoystickSmoothing;
     List<Integer> loadEmgJoystickInputs = new ArrayList<Integer>();
 
+    //Marker Widget
+    private int loadMarkerWindow;
+    private int loadMarkerVertScale;
+
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
     private JSONObject loadSettingsJSONData;
@@ -213,6 +217,7 @@ class SessionSettings {
     private final String kJSONKeySpectrogram = "spectrogram";
     private final String kJSONKeyEmg = "emg";
     private final String kJSONKeyEmgJoystick = "emgJoystick";
+    private final String kJSONKeyMarker = "marker";
 
     //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
@@ -486,6 +491,12 @@ class SessionSettings {
         saveEmgJoystickSettings.setJSONArray("joystickInputs", saveEmgJoystickInputs);
         saveSettingsJSONData.setJSONObject(kJSONKeyEmgJoystick, saveEmgJoystickSettings);
 
+        ///////////////////////////////////////////////Setup new JSON object to save Marker Widget Settings
+        JSONObject saveMarkerSettings = new JSONObject();
+        saveMarkerSettings.setInt("markerWindow", w_marker.getMarkerWindow().getIndex());
+        saveMarkerSettings.setInt("markerVertScale", w_marker.getMarkerVertScale().getIndex());
+        saveSettingsJSONData.setJSONObject(kJSONKeyMarker, saveMarkerSettings);
+
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
 
@@ -674,6 +685,11 @@ class SessionSettings {
         for (int i = 0; i < loadJoystickInputsJson.size(); i++) {
             loadEmgJoystickInputs.add(loadJoystickInputsJson.getInt(i));
         }
+
+        //Get Marker widget settings
+        JSONObject loadMarkerSettings = loadSettingsJSONData.getJSONObject(kJSONKeyMarker);
+        loadMarkerWindow = loadMarkerSettings.getInt("markerWindow");
+        loadMarkerVertScale = loadMarkerSettings.getInt("markerVertScale");
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
@@ -932,6 +948,12 @@ class SessionSettings {
         } catch (Exception e) {
             println("Settings: Exception caught applying EMG Joystick settings " + e);
         }
+
+        ////////////////////////////Apply Marker Widget settings
+        w_marker.setMarkerWindow(loadMarkerWindow);
+        w_marker.cp5_widget.getController("markerWindowDropdown").getCaptionLabel().setText(w_marker.getMarkerWindow().getString());
+        w_marker.setMarkerVertScale(loadMarkerVertScale);
+        w_marker.cp5_widget.getController("markerVertScaleDropdown").getCaptionLabel().setText(w_marker.getMarkerVertScale().getString());
 
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //

@@ -29,9 +29,11 @@ def testLSLSamplingRate():
             # print( len(chunk) )
             totalNumSamples += len(chunk)
             # print(chunk)
+            i = 0
             for sample in chunk:
-                print(sample)
+                print(sample, timestamp[i])
                 validSamples += 1
+                i += 1
 
     print( "Number of Chunks and Samples == {} , {}".format(numChunks, totalNumSamples) )
     print( "Valid Samples and Duration == {} / {}".format(validSamples, duration) )

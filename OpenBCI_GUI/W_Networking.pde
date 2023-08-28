@@ -66,7 +66,7 @@ class W_Networking extends Widget {
 
     public LinkedList<String> protocols = new LinkedList<String>(Arrays.asList("UDP", "LSL", "OSC", "Serial"));
     public LinkedList<String> dataTypes = new LinkedList<String>(Arrays.asList("None", "Focus", "EMGJoystick", "AvgBandPower",
-            "TimeSeriesFilt", "TimeSeriesRaw", "EMG", "Accel/Aux", "Pulse", "BandPower", "FFT"));
+            "TimeSeriesFilt", "TimeSeriesRaw", "EMG", "Accel/Aux", "Marker", "Pulse", "BandPower", "FFT"));
     public LinkedList<String> baudRates = new LinkedList<String>(Arrays.asList("57600", "115200", "250000", "500000"));
     public LinkedList<String> dataTypeNames = new LinkedList<String>(
             Arrays.asList("dataType1", "dataType2", "dataType3", "dataType4"));
@@ -87,11 +87,14 @@ class W_Networking extends Widget {
 
     private LinkedList<double[]> dataAccumulationQueue;
     private LinkedList<float[]> dataAccumulationQueueFiltered;
+    private LinkedList<Double> markerDataAccumulationQueue;
     public float[][] dataBufferToSend;
     public float[][] dataBufferToSend_Filtered;
+    public float[] markerDataBufferToSend;
     public AtomicBoolean[] networkingFrameLocks = new AtomicBoolean[4];
     public AtomicBoolean newTimeSeriesDataToSend = new AtomicBoolean(false);
     public AtomicBoolean newTimeSeriesDataToSendFiltered = new AtomicBoolean(false);
+    public AtomicBoolean newMarkerDataToSend = new AtomicBoolean(false);
 
     public HashMap<String, Object> cp5Map = new HashMap<String, Object>();
 
@@ -141,6 +144,8 @@ class W_Networking extends Widget {
         dataAccumulationQueue = new LinkedList<double[]>();
         dataBufferToSend_Filtered = new float[currentBoard.getNumEXGChannels()][nPointsPerUpdate];
         dataAccumulationQueueFiltered = new LinkedList<float[]>();
+        markerDataBufferToSend = new float[nPointsPerUpdate];
+        markerDataAccumulationQueue = new LinkedList<Double>();
 
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
         cp5ElementsToCheck.add((controlP5.Controller) guideButton);
@@ -261,6 +266,7 @@ class W_Networking extends Widget {
         // accumulate data
         double[][] newData = currentBoard.getFrameData();
         int[] exgChannels = currentBoard.getEXGChannels();
+        int markerChannel = currentBoard.getMarkerChannel();
 
         if (newData[exgChannels[0]].length == 0) {
             return;
@@ -280,6 +286,7 @@ class W_Networking extends Widget {
             }
             dataAccumulationQueue.add(sample);
             dataAccumulationQueueFiltered.add(sample_filtered);
+            markerDataAccumulationQueue.add(newData[markerChannel][iSample]);
         }
     }
 
@@ -305,6 +312,13 @@ class W_Networking extends Widget {
                 for (int iChan = 0; iChan < sample.length; iChan++) {
                     dataBufferToSend_Filtered[iChan][iSample] = sample[iChan];
                 }
+            }
+        }
+
+        newMarkerDataToSend.set(markerDataAccumulationQueue.size() >= nPointsPerUpdate);
+        if (newMarkerDataToSend.get()) {
+            for (int iSample = 0; iSample < nPointsPerUpdate; iSample++) {
+                markerDataBufferToSend[iSample] = markerDataAccumulationQueue.pop().floatValue();
             }
         }
     }
@@ -994,6 +1008,8 @@ class W_Networking extends Widget {
             }
         } else if (dataType.equals("EMGJoystick")) {
             return 2;
+        } else if (dataType.equals("Marker")) {
+            return 1;
         }
         throw new IllegalArgumentException("IllegalArgumentException: Error detecting number of channels for LSL stream data... please fix!");
     }
@@ -1265,6 +1281,10 @@ class Stream extends Thread {
             return w_networking.newTimeSeriesDataToSendFiltered.compareAndSet(true, false);
         }
 
+        if (this.dataType.equals("Marker")) {
+            return w_networking.newMarkerDataToSend.compareAndSet(true, false);
+        }
+
         if (w_networking.networkingFrameLocks[this.streamNumber].compareAndSet(true, false)) {
             return true;
         } else {
@@ -1308,6 +1328,8 @@ class Stream extends Thread {
             sendPulseData();
         } else if (this.dataType.equals("EMGJoystick")) {
             sendEMGJoystickData();
+        } else if (this.dataType.equals("Marker")) {
+            sendMarkerData();
         }
     }
 
@@ -1332,17 +1354,21 @@ class Stream extends Thread {
         }
 
         /*
-         * //Debugging if (sampleRateClock == 0) sampleRateClock = millis(); samplesSent
-         * = samplesSent + nPointsPerUpdate; if (millis() > sampleRateClock +
-         * sampleRateClockInterval) { float timeDelta = float(millis() -
-         * sampleRateClock) / 1000; float sampleRateCheck = samplesSent / timeDelta;
-         * println("\nNumber of samples collected = " + samplesSent);
-         * println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
-         * println("Time Interval (Actual) = " + timeDelta);
-         * println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
-         * println("Sample Rate (Actual) = " + sampleRateCheck); sampleRateClock = 0;
-         * samplesSent = 0; }
-         */
+        // This code is used to check the sample rate of the data stream
+        if (sampleRateClock == 0) sampleRateClock = millis(); 
+        samplesSent = samplesSent + nPointsPerUpdate;
+        if (millis() > sampleRateClock + sampleRateClockInterval) { 
+            float timeDelta = float(millis() - sampleRateClock) / 1000;
+            float sampleRateCheck = samplesSent / timeDelta;
+            println("\nNumber of samples collected = " + samplesSent);
+            println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
+            println("Time Interval (Actual) = " + timeDelta);
+            println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
+            println("Sample Rate (Actual) = " + sampleRateCheck);
+            sampleRateClock = 0;
+            samplesSent = 0;
+        }
+        */
 
         if (this.protocol.equals("UDP")) {
 
@@ -2032,6 +2058,92 @@ class Stream extends Thread {
                 this.serial_networking.write(output.toString());
             } catch (Exception e) {
                 println(e.getMessage());
+            }
+        }
+    }
+
+    private void sendMarkerData() {
+
+        float[] newDataFromBuffer = new float[nPointsPerUpdate];
+
+        for (int i = 0; i < newDataFromBuffer.length; i++) {
+            newDataFromBuffer[i] = w_networking.markerDataBufferToSend[i];
+        }
+
+        /*
+        // Check sampling rate for every networking protocol for this data type
+        if (sampleRateClock == 0) sampleRateClock = millis(); 
+        samplesSent = samplesSent + nPointsPerUpdate;
+        if (millis() > sampleRateClock + sampleRateClockInterval) { 
+            float timeDelta = float(millis() - sampleRateClock) / 1000;
+            float sampleRateCheck = samplesSent / timeDelta;
+            println("\nNumber of samples collected = " + samplesSent);
+            println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
+            println("Time Interval (Actual) = " + timeDelta);
+            println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
+            println("Sample Rate (Actual) = " + sampleRateCheck);
+            sampleRateClock = 0;
+            samplesSent = 0;
+        }
+        */
+
+        if (this.protocol.equals("UDP")) {
+
+            StringBuilder output = new StringBuilder();
+            output.append("{\"type\":\"");
+            output.append("marker");
+            output.append("\",\"data\":[");
+
+            for (int i = 0; i < newDataFromBuffer.length; i++) {
+                output.append(str(newDataFromBuffer[i]));
+                if (i != newDataFromBuffer.length - 1) {
+                    output.append(",");
+                }
+            }
+
+            // End of entire packet
+            output.append("]}\r\n");
+
+            try {
+                this.udp.send(output.toString(), this.ip, this.port);
+            } catch (Exception e) {
+                println(e.getMessage());
+            }
+
+        } else if (this.protocol.equals("OSC")) {
+
+            for (int i = 0; i < newDataFromBuffer.length; i++) {
+                msg.clearArguments();
+                msg.setAddrPattern(baseOscAddress + "/marker");
+                msg.add(newDataFromBuffer[i]);
+                try {
+                    this.osc.send(msg, this.oscNetAddress);
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
+            }
+
+        } else if (this.protocol.equals("LSL")) {
+            // In this case, the newDataFromBuffer array is already formatted in an acceptable way.
+            // From LSLLink Library: The time stamps of other samples are automatically
+            // derived based on the sampling rate of the stream.
+            outlet_data.push_chunk(newDataFromBuffer);
+
+        } else if (this.protocol.equals("Serial")) {
+
+            // Time Series over serial port should be disabled as there is no reasonable usage for this
+            for (int i = 0; i < newDataFromBuffer.length; i++) {
+                StringBuilder serialMessage = new StringBuilder();
+                float markerValue = newDataFromBuffer[i];    
+                serialMessage.append(threeDecimalPlaces.format(markerValue));
+                serialMessage.append("\n");
+                try {
+                    // Write message to serial
+                    this.serial_networking.write(serialMessage.toString());
+                    //println(serialMessage.toString());
+                } catch (Exception e) {
+                    println(e.getMessage());
+                }
             }
         }
     }
