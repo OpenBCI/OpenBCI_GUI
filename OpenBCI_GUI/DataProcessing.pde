@@ -303,5 +303,6 @@ class DataProcessing {
         emgSettings.values.process(dataProcessingFilteredBuffer);
         w_focus.updateFocusWidgetData();
         w_bandPower.updateBandPowerWidgetData();
+        w_emgJoystick.updateEmgJoystickWidgetData();
     }
 }
