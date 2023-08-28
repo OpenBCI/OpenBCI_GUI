@@ -296,7 +296,12 @@ class DataProcessing {
             }
         }
 
-        //Compute EMG values independent of widgets
+        /////////////////////////////////////////////////////////////
+        // Compute widget values independent of widgets being open //
+        //                       -RW #1094                         //
+        /////////////////////////////////////////////////////////////
         emgSettings.values.process(dataProcessingFilteredBuffer);
+        w_focus.updateFocusWidgetData();
+        w_bandPower.updateBandPowerWidgetData();
     }
 }

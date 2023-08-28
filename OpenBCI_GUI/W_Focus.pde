@@ -131,10 +131,8 @@ class W_Focus extends Widget {
         }
 
         if (currentBoard.isStreaming()) {
-            metricPrediction = updateFocusState();
             dataGrid.setString(df.format(metricPrediction), 0, 1);
             focusBar.update(metricPrediction);
-            predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
         }
 
         lockElementsOnOverlapCheck(cp5ElementsToCheck);
@@ -411,6 +409,12 @@ class W_Focus extends Widget {
 
     public void killAuditoryFeedback() {
         auditoryNeurofeedback.killAudio();
+    }
+
+    //Called in DataProcessing.pde to update data even if widget is closed
+    public void updateFocusWidgetData() {
+        metricPrediction = updateFocusState();
+        predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
     }
 }; //end of class
 
