@@ -307,5 +307,7 @@ class DataProcessing {
         if (w_pulsesensor != null) {
             w_pulsesensor.updatePulseSensorWidgetData();
         }
+
+        w_networking.updateNetworkingWidgetData();
     }
 }

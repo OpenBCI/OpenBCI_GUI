@@ -88,13 +88,22 @@ class W_Networking extends Widget {
     private LinkedList<double[]> dataAccumulationQueue;
     private LinkedList<float[]> dataAccumulationQueueFiltered;
     private LinkedList<Double> markerDataAccumulationQueue;
+    private LinkedList<double[]> accelDataAccumulationQueue;
+    private LinkedList<double[]> digitalDataAccumulationQueue;
+    private LinkedList<double[]> analogDataAccumulationQueue;
     public float[][] dataBufferToSend;
     public float[][] dataBufferToSend_Filtered;
     public float[] markerDataBufferToSend;
+    public float[][] accelDataBufferToSend;
+    public float[][] digitalDataBufferToSend;
+    public float[][] analogDataBufferToSend;
     public AtomicBoolean[] networkingFrameLocks = new AtomicBoolean[4];
     public AtomicBoolean newTimeSeriesDataToSend = new AtomicBoolean(false);
     public AtomicBoolean newTimeSeriesDataToSendFiltered = new AtomicBoolean(false);
     public AtomicBoolean newMarkerDataToSend = new AtomicBoolean(false);
+    public AtomicBoolean newAccelDataToSend = new AtomicBoolean(false);
+    public AtomicBoolean newDigitalDataToSend = new AtomicBoolean(false);
+    public AtomicBoolean newAnalogDataToSend = new AtomicBoolean(false);
 
     public HashMap<String, Object> cp5Map = new HashMap<String, Object>();
 
@@ -146,6 +155,12 @@ class W_Networking extends Widget {
         dataAccumulationQueueFiltered = new LinkedList<float[]>();
         markerDataBufferToSend = new float[nPointsPerUpdate];
         markerDataAccumulationQueue = new LinkedList<Double>();
+        accelDataBufferToSend = new float[3][nPointsPerUpdate];
+        accelDataAccumulationQueue = new LinkedList<double[]>();
+        digitalDataBufferToSend = new float[5][nPointsPerUpdate];
+        digitalDataAccumulationQueue = new LinkedList<double[]>();
+        analogDataBufferToSend = new float[3][nPointsPerUpdate];
+        analogDataAccumulationQueue = new LinkedList<double[]>();
 
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
         cp5ElementsToCheck.add((controlP5.Controller) guideButton);
@@ -253,17 +268,21 @@ class W_Networking extends Widget {
             previousCP5State = cp5ElementsAreActive;
         }
 
-        if (currentBoard.isStreaming()) {
-            accumulateNewData();
-            checkIfEnoughDataToSend();
-        }
-
         // Check if any textfields are active and also for copy/paste if active
         updateNetworkingTextfields();
     }
 
-    public void accumulateNewData() {
-        // accumulate data
+    // Call this function in DataProcessing.pde to update the data buffers even if the widget is not visible
+    public void updateNetworkingWidgetData() {
+        if (!currentBoard.isStreaming()) {
+            return;
+        }
+
+        accumulateNewData();
+        checkIfEnoughDataToSend();
+    }
+
+    private void accumulateNewData() {
         double[][] newData = currentBoard.getFrameData();
         int[] exgChannels = currentBoard.getEXGChannels();
         int markerChannel = currentBoard.getMarkerChannel();
@@ -287,10 +306,44 @@ class W_Networking extends Widget {
             dataAccumulationQueue.add(sample);
             dataAccumulationQueueFiltered.add(sample_filtered);
             markerDataAccumulationQueue.add(newData[markerChannel][iSample]);
+
+            if (currentBoard instanceof AccelerometerCapableBoard) {
+                AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard) currentBoard;
+                int[] accelChannels = accelBoard.getAccelerometerChannels();
+                double[] accelSample = new double[accelChannels.length];
+                for (int iChan = 0; iChan < accelChannels.length; iChan++) {
+                    accelSample[iChan] = newData[accelChannels[iChan]][iSample];
+                }
+                accelDataAccumulationQueue.add(accelSample);
+            }
+
+            if (currentBoard instanceof DigitalCapableBoard) {
+                DigitalCapableBoard digitalBoard = (DigitalCapableBoard) currentBoard;
+                if (digitalBoard.isDigitalActive()) {
+                    int[] digitalChannels = digitalBoard.getDigitalChannels();
+                    double[] digitalSample = new double[digitalChannels.length];
+                    for (int iChan = 0; iChan < digitalChannels.length; iChan++) {
+                        digitalSample[iChan] = newData[digitalChannels[iChan]][iSample];
+                    }
+                    digitalDataAccumulationQueue.add(digitalSample);
+                }
+            }
+
+            if (currentBoard instanceof AnalogCapableBoard) {
+                AnalogCapableBoard analogBoard = (AnalogCapableBoard) currentBoard;
+                if (analogBoard.isAnalogActive()) {
+                    int[] analogChannels = analogBoard.getAnalogChannels();
+                    double[] analogSample = new double[analogChannels.length];
+                    for (int iChan = 0; iChan < analogChannels.length; iChan++) {
+                        analogSample[iChan] = newData[analogChannels[iChan]][iSample];
+                    }
+                    analogDataAccumulationQueue.add(analogSample);
+                }
+            }
         }
     }
 
-    public void checkIfEnoughDataToSend() {
+    private void checkIfEnoughDataToSend() {
         newTimeSeriesDataToSend.set(dataAccumulationQueue.size() >= nPointsPerUpdate);
 
         if (newTimeSeriesDataToSend.get()) {
@@ -321,6 +374,44 @@ class W_Networking extends Widget {
                 markerDataBufferToSend[iSample] = markerDataAccumulationQueue.pop().floatValue();
             }
         }
+
+        if (currentBoard instanceof AccelerometerCapableBoard) {
+            newAccelDataToSend.set(accelDataAccumulationQueue.size() >= nPointsPerUpdate);
+            if (newAccelDataToSend.get()) {
+                for (int iSample = 0; iSample < nPointsPerUpdate; iSample++) {
+                    double[] sample = accelDataAccumulationQueue.pop();
+
+                    for (int iChan = 0; iChan < sample.length; iChan++) {
+                        accelDataBufferToSend[iChan][iSample] = (float) sample[iChan];
+                    }
+                }
+            }
+        }
+
+        if (currentBoard instanceof BoardCyton) {
+            newDigitalDataToSend.set(digitalDataAccumulationQueue.size() >= nPointsPerUpdate);
+            if (newDigitalDataToSend.get()) {
+                for (int iSample = 0; iSample < nPointsPerUpdate; iSample++) {
+                    double[] sample = digitalDataAccumulationQueue.pop();
+
+                    for (int iChan = 0; iChan < sample.length; iChan++) {
+                        digitalDataBufferToSend[iChan][iSample] = (float) sample[iChan];
+                    }
+                }
+            }
+
+            newAnalogDataToSend.set(analogDataAccumulationQueue.size() >= nPointsPerUpdate);
+            if (newAnalogDataToSend.get()) {
+                for (int iSample = 0; iSample < nPointsPerUpdate; iSample++) {
+                    double[] sample = analogDataAccumulationQueue.pop();
+
+                    for (int iChan = 0; iChan < sample.length; iChan++) {
+                        analogDataBufferToSend[iChan][iSample] = (float) sample[iChan];
+                    }
+                }
+            }
+        }
+
     }
 
     private Boolean textfieldsAreActive(String[] names) {
@@ -1878,58 +1969,87 @@ class Stream extends Thread {
     }
 
     private void sendDigitalReadData() {
+
         final int NUM_DIGITAL_READS = w_digitalRead.getNumDigitalReads();
 
         if (this.protocol.equals("OSC")) {
+
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/digital/" + i);
-                msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
+                //msg.add(w_digitalRead.digitalReadDots[i].getDigitalReadVal());
+                for (int j = 0; j < w_networking.digitalDataBufferToSend[i].length; j++) {
+                    msg.add(w_networking.digitalDataBufferToSend[i][j]);
+                }
                 try {
                     this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
+
         } else if (this.protocol.equals("UDP")) {
-            String outputter = "{\"type\":\"digital\",\"data\":[";
+            
+            StringBuilder output = new StringBuilder();
+            output.append("{\"type\":\"digital\",\"data\":[");
+
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
-                int auxData = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
-                String auxData_formatted = String.format("%d", auxData);
-                outputter += auxData_formatted;
-                if (i != NUM_DIGITAL_READS - 1) {
-                    outputter += ",";
-                } else {
-                    outputter += "]}\r\n";
+                output.append("[");
+                for (int j = 0; j < w_networking.digitalDataBufferToSend[i].length; j++) {
+                    double digitalData = w_networking.digitalDataBufferToSend[i][j];
+                    String digitalDataFormatted = String.format("%d", digitalData);
+                    output.append(digitalDataFormatted);
+                    if (j != w_networking.digitalDataBufferToSend[i].length - 1) {
+                        output.append(",");
+                    }
                 }
+                String channelArrayEnding = i != NUM_DIGITAL_READS - 1 ? "]," : "]";
+                output.append(channelArrayEnding);
             }
+
+            output.append("]}\r\n");
+
             try {
-                this.udp.send(outputter, this.ip, this.port);
+                this.udp.send(output.toString(), this.ip, this.port);
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         } else if (this.protocol.equals("LSL")) {
-            for (int i = 0; i < NUM_DIGITAL_READS; i++) {
-                dataToSend[i] = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
-            }
-            outlet_data.push_sample(dataToSend);
-        } else if (this.protocol.equals("Serial")) {
-            // Data Format: 0,1,0,1,0\n or 0,1,0\n depending if WiFi Shield is used
-            // 2 chars per pin, including \n char last pin
-            serialMessage = "";
-            for (int i = 0; i < NUM_DIGITAL_READS; i++) {
-                int auxData = w_digitalRead.digitalReadDots[i].getDigitalReadVal();
-                String auxData_formatted = String.format("%d", auxData);
-                serialMessage += auxData_formatted;
-                if (i != NUM_DIGITAL_READS - 1) {
-                    serialMessage += ",";
-                } else {
-                    serialMessage += "\n";
+
+            int numChannels = NUM_DIGITAL_READS;
+            int numSamples = w_networking.digitalDataBufferToSend[0].length;
+            float[] _dataToSend = new float[numChannels * numSamples];
+            for (int sample = 0; sample < numSamples; sample++) {
+                for (int channel = 0; channel < numChannels; channel++) {
+                    _dataToSend[channel + sample * numChannels] = w_networking.digitalDataBufferToSend[channel][sample];
                 }
             }
+            outlet_data.push_sample(_dataToSend);
+
+        } else if (this.protocol.equals("Serial")) {
+
+            StringBuilder serialMessage = new StringBuilder();
+
+            for (int i = 0; i < NUM_DIGITAL_READS; i++) {
+                serialMessage.append("[");
+                for (int j = 0; j < w_networking.digitalDataBufferToSend[i].length; j++) {
+                    double digitalData = w_networking.digitalDataBufferToSend[i][j];
+                    String digitalDataFormatted = String.format("%d", digitalData);
+                    serialMessage.append(digitalDataFormatted);
+                    if (j != w_networking.digitalDataBufferToSend[i].length - 1) {
+                        serialMessage.append(",");
+                    }
+                }
+                String channelArrayEnding = i != NUM_DIGITAL_READS - 1 ? "]," : "]";
+                serialMessage.append(channelArrayEnding.toString());
+            }
+
+            serialMessage.append("\n");
+
             try {
                 // println(serialMessage);
-                this.serial_networking.write(serialMessage);
+                this.serial_networking.write(serialMessage.toString());
             } catch (Exception e) {
                 println(e.getMessage());
             }
