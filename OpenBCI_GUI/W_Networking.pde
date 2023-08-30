@@ -95,7 +95,7 @@ class W_Networking extends Widget {
     public float[][] dataBufferToSend_Filtered;
     public float[] markerDataBufferToSend;
     public float[][] accelDataBufferToSend;
-    public float[][] digitalDataBufferToSend;
+    public int[][] digitalDataBufferToSend;
     public float[][] analogDataBufferToSend;
     public AtomicBoolean[] networkingFrameLocks = new AtomicBoolean[4];
     public AtomicBoolean newTimeSeriesDataToSend = new AtomicBoolean(false);
@@ -155,12 +155,21 @@ class W_Networking extends Widget {
         dataAccumulationQueueFiltered = new LinkedList<float[]>();
         markerDataBufferToSend = new float[nPointsPerUpdate];
         markerDataAccumulationQueue = new LinkedList<Double>();
-        accelDataBufferToSend = new float[3][nPointsPerUpdate];
-        accelDataAccumulationQueue = new LinkedList<double[]>();
-        digitalDataBufferToSend = new float[5][nPointsPerUpdate];
-        digitalDataAccumulationQueue = new LinkedList<double[]>();
-        analogDataBufferToSend = new float[3][nPointsPerUpdate];
-        analogDataAccumulationQueue = new LinkedList<double[]>();
+        if (currentBoard instanceof AccelerometerCapableBoard) {
+            AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard)currentBoard;
+            accelDataBufferToSend = new float[accelBoard.getAccelerometerChannels().length][nPointsPerUpdate];
+            accelDataAccumulationQueue = new LinkedList<double[]>();
+        }
+        if (currentBoard instanceof DigitalCapableBoard) {
+            DigitalCapableBoard digitalBoard = (DigitalCapableBoard)currentBoard;
+            digitalDataBufferToSend = new int[digitalBoard.getDigitalChannels().length][nPointsPerUpdate];
+            digitalDataAccumulationQueue = new LinkedList<double[]>();
+        }
+        if (currentBoard instanceof AnalogCapableBoard) {
+            AnalogCapableBoard analogBoard = (AnalogCapableBoard)currentBoard;
+            analogDataBufferToSend = new float[analogBoard.getAnalogChannels().length][nPointsPerUpdate];
+            analogDataAccumulationQueue = new LinkedList<double[]>();
+        }
 
         cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
         cp5ElementsToCheck.add((controlP5.Controller) guideButton);
@@ -395,7 +404,7 @@ class W_Networking extends Widget {
                     double[] sample = digitalDataAccumulationQueue.pop();
 
                     for (int iChan = 0; iChan < sample.length; iChan++) {
-                        digitalDataBufferToSend[iChan][iSample] = (float) sample[iChan];
+                        digitalDataBufferToSend[iChan][iSample] = (int) sample[iChan];
                     }
                 }
             }
@@ -1077,7 +1086,7 @@ class W_Networking extends Widget {
         } else if (dataType.equals("BandPower")) {
             return 5;
         } else if (dataType.equals("Pulse")) {
-            return 3;
+            return 2;
         } else if (dataType.equals("Accel/Aux")) {
             if (currentBoard instanceof AccelerometerCapableBoard) {
                 AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard) currentBoard;

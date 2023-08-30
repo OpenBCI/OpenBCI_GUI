@@ -35,22 +35,21 @@ def testLSLSamplingRates():
             if i == 0:
                 chunk, timestamps = inlet.pull_chunk()
                 if timestamps:
+                    print("Stream 1 Chunk: ", chunk)
                     for sample in chunk:
-                        if sample:
-                            num_samples_1 += 1
-                            #print(sample)
+                        num_samples_1 += 1
             elif i == 1:
                 chunk, timestamps_2 = inlet_2.pull_chunk()
                 if timestamps_2:
+                    print("Stream 2 Chunk: ", chunk)
                     for sample in chunk:
                         num_samples_2 += 1
-                        #print(sample)
             elif i == 2:
                 chunk, timestamps_3 = inlet_3.pull_chunk()
                 if timestamps_3:
+                    print("Stream 3 Chunk: ", chunk)
                     for sample in chunk:
                         num_samples_3 += 1
-                        #print(sample)
             #print("Stream", i + 1, " == ", chunk)
     print( "Stream 1 Sampling Rate == ", num_samples_1 / duration_seconds, " | Type : EEG")
     print( "Stream 2 Sampling Rate == ", num_samples_2 / duration_seconds, " | Type : AUX")

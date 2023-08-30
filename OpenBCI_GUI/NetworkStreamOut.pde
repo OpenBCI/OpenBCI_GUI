@@ -14,7 +14,6 @@ class NetworkStreamOut extends Thread {
 
     public Boolean isStreaming;
     private int start;
-    private float[] dataToSend;
     private double[][] previousFrameData;
 
     private int samplesSent = 0;
@@ -173,7 +172,6 @@ class NetworkStreamOut extends Thread {
 
     private void updateNumChan() {
         numExgChannels = currentBoard.getNumEXGChannels();
-        dataToSend = new float[numExgChannels * nPointsPerUpdate];
         // Bug #638: ArrayOutOfBoundsException was thrown if
         // nPointsPerUpdate was larger than 10, as start was
         // set to dataProcessingFilteredBuffer[0].length - 10.
@@ -192,6 +190,27 @@ class NetworkStreamOut extends Thread {
 
         if (this.dataType.equals("Marker")) {
             return w_networking.newMarkerDataToSend.compareAndSet(true, false);
+        }
+
+        if (this.dataType.equals("Accel/Aux")) {
+            if (currentBoard instanceof AccelerometerCapableBoard) {
+                AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard) currentBoard;
+                if (accelBoard.isAccelerometerActive()) {
+                    return w_networking.newAccelDataToSend.compareAndSet(true, false);
+                }
+            }
+            if (currentBoard instanceof AnalogCapableBoard) {
+                AnalogCapableBoard analogBoard = (AnalogCapableBoard) currentBoard;
+                if (analogBoard.isAnalogActive()) {
+                    return w_networking.newAnalogDataToSend.compareAndSet(true, false);
+                }
+            }
+            if (currentBoard instanceof DigitalCapableBoard) {
+                DigitalCapableBoard digitalBoard = (DigitalCapableBoard) currentBoard;
+                if (digitalBoard.isDigitalActive()) {
+                    return w_networking.newDigitalDataToSend.compareAndSet(true, false);
+                }
+            }
         }
 
         if (w_networking.networkingFrameLocks[this.streamNumber].compareAndSet(true, false)) {
@@ -325,15 +344,15 @@ class NetworkStreamOut extends Thread {
         } else if (this.protocol.equals("LSL")) {
             int numChannels = newDataFromBuffer.length;
             int numSamples = newDataFromBuffer[0].length;
-            float[] _dataToSend = new float[numChannels * numSamples];
+            float[] dataToSend = new float[numChannels * numSamples];
             for (int sample = 0; sample < numSamples; sample++) {
                 for (int channel = 0; channel < numChannels; channel++) {
-                    _dataToSend[channel + sample * numChannels] = newDataFromBuffer[channel][sample];
+                    dataToSend[channel + sample * numChannels] = newDataFromBuffer[channel][sample];
                 }
             }
             // From LSLLink Library: The time stamps of other samples are automatically
             // derived based on the sampling rate of the stream.
-            outlet_data.push_chunk(_dataToSend);
+            outlet_data.push_chunk(dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
@@ -441,15 +460,15 @@ class NetworkStreamOut extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
-            float[] _dataToSend = new float[numExgChannels * 125];
+            float[] dataToSend = new float[numExgChannels * 125];
             for (int i = 0; i < numExgChannels; i++) {
                 for (int j = 0; j < 125; j++) {
-                    _dataToSend[j + 125 * i] = fftBuff[i].getBand(j);
+                    dataToSend[j + 125 * i] = fftBuff[i].getBand(j);
                 }
             }
             // From LSLLink Library: The time stamps of other samples are automatically
             // derived based on the sampling rate of the stream.
-            outlet_data.push_chunk(_dataToSend);
+            outlet_data.push_chunk(dataToSend);
         } else if (this.protocol.equals("Serial")) {
             ///////////////////////////////// THIS OUTPUT IS DISABLED
             // Send FFT Data over Serial ...
@@ -469,13 +488,13 @@ class NetworkStreamOut extends Thread {
     private void sendPowerBandData() {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
         // just like the FFT data
-        int numBandPower = 5; // DELTA, THETA, ALPHA, BETA, GAMMA
+        final int NUM_BAND_POWERS = 5; // DELTA, THETA, ALPHA, BETA, GAMMA
 
         if (this.protocol.equals("OSC")) {
             for (int i = 0; i < numExgChannels; i++) {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/band-power/" + i);
-                for (int j = 0; j < numBandPower; j++) {
+                for (int j = 0; j < NUM_BAND_POWERS; j++) {
                     msg.add(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
                 }
                 try {
@@ -488,9 +507,9 @@ class NetworkStreamOut extends Thread {
             // DELTA, THETA, ALPHA, BETA, GAMMA
             String outputter = "{\"type\":\"bandPower\",\"data\":[[";
             for (int i = 0; i < numExgChannels; i++) {
-                for (int j = 0; j < numBandPower; j++) {
+                for (int j = 0; j < NUM_BAND_POWERS; j++) {
                     outputter += str(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
-                    if (j != numBandPower - 1) {
+                    if (j != NUM_BAND_POWERS - 1) {
                         outputter += ",";
                     }
                 }
@@ -505,23 +524,29 @@ class NetworkStreamOut extends Thread {
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         } else if (this.protocol.equals("LSL")) {
+
             // DELTA, THETA, ALPHA, BETA, GAMMA
-            float[] avgPowerLSL = new float[numExgChannels * numBandPower];
-            for (int i = 0; i < numExgChannels; i++) {
-                for (int j = 0; j < numBandPower; j++) {
-                    avgPowerLSL[j + numBandPower * i] = dataProcessing.avgPowerInBins[i][j];
+            int numChannels = numExgChannels;
+            float[] dataToSend = new float[numChannels * NUM_BAND_POWERS];
+            for (int band = 0; band < NUM_BAND_POWERS; band++) {
+                for (int channel = 0; channel < numChannels; channel++) {
+                    dataToSend[channel + band * numChannels] = dataProcessing.avgPowerInBins[channel][band];
                 }
             }
-            outlet_data.push_chunk(avgPowerLSL);
+            double unixTime = System.currentTimeMillis() / 1000d;
+            //println(unixTime);
+            outlet_data.push_chunk(dataToSend, unixTime, true);
+
         } else if (this.protocol.equals("Serial")) {
             for (int i = 0; i < numExgChannels; i++) {
                 serialMessage = "[" + (i + 1) + ","; // clear message
-                for (int j = 0; j < numBandPower; j++) {
+                for (int j = 0; j < NUM_BAND_POWERS; j++) {
                     float power_band = dataProcessing.avgPowerInBins[i][j];
                     String power_band_3dec = threeDecimalPlaces.format(power_band);
                     serialMessage += power_band_3dec;
-                    if (j < numBandPower - 1) {
+                    if (j < NUM_BAND_POWERS - 1) {
                         serialMessage += ","; // add a comma to serialMessage to separate chan values, as long as it
                                                 // isn't last value...
                     }
@@ -541,12 +566,12 @@ class NetworkStreamOut extends Thread {
         // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown ...
         // just like the FFT data
         // Band Power order: DELTA, THETA, ALPHA, BETA, GAMMA
-        int numBandPower = 5; 
+        final int NUM_BAND_POWERS = 5; 
 
         if (this.protocol.equals("OSC")) {
 
             msg.clearArguments();
-            for (int i = 0; i < numBandPower; i++) {
+            for (int i = 0; i < NUM_BAND_POWERS; i++) {
                 msg.setAddrPattern(baseOscAddress + "/average-band-power/" + i);
                 msg.add(w_bandPower.getNormalizedBPSelectedChannels()[i]); // [CHAN][BAND]
                 try {
@@ -559,9 +584,9 @@ class NetworkStreamOut extends Thread {
         } else if (this.protocol.equals("UDP")) {
 
             StringBuilder outputter = new StringBuilder("{\"type\":\"averageBandPower\",\"data\":[");
-            for (int i = 0; i < numBandPower; i++) {
+            for (int i = 0; i < NUM_BAND_POWERS; i++) {
                 outputter.append(str(w_bandPower.getNormalizedBPSelectedChannels()[i]));
-                if (i != numBandPower - 1) {
+                if (i != NUM_BAND_POWERS - 1) {
                     outputter.append(",");
                 } else {
                     outputter.append("]}\r\n");
@@ -582,11 +607,11 @@ class NetworkStreamOut extends Thread {
         } else if (this.protocol.equals("Serial")) {
 
             serialMessage = "[";
-            for (int i = 0; i < numBandPower; i++) {
+            for (int i = 0; i < NUM_BAND_POWERS; i++) {
                 float power_band = w_bandPower.getNormalizedBPSelectedChannels()[i];
                 String power_band_3dec = threeDecimalPlaces.format(power_band);
                 serialMessage += power_band_3dec;
-                if (i < numBandPower - 1) {
+                if (i < NUM_BAND_POWERS - 1) {
                     // add a comma to serialMessage to separate chan values, as long as it isn't last value...
                     serialMessage += ","; 
                 }
@@ -631,6 +656,7 @@ class NetworkStreamOut extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
+            float[] dataToSend = new float[numExgChannels];
             for (int i = 0; i < numExgChannels; i++) {
                 dataToSend[i] = emgSettingsValues.getOutputNormalized(i);
             }
@@ -711,13 +737,13 @@ class NetworkStreamOut extends Thread {
 
             int numChannels = NUM_ACCEL_DIMS;
             int numSamples = w_networking.accelDataBufferToSend[0].length;
-            float[] _dataToSend = new float[numChannels * numSamples];
+            float[] dataToSend = new float[numChannels * numSamples];
             for (int sample = 0; sample < numSamples; sample++) {
                 for (int channel = 0; channel < numChannels; channel++) {
-                    _dataToSend[channel + sample * numChannels] = w_networking.accelDataBufferToSend[channel][sample];
+                    dataToSend[channel + sample * numChannels] = w_networking.accelDataBufferToSend[channel][sample];
                 }
             }
-            outlet_data.push_sample(_dataToSend);
+            outlet_data.push_chunk(dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
@@ -798,13 +824,13 @@ class NetworkStreamOut extends Thread {
 
             int numChannels = NUM_ANALOG_READS;
             int numSamples = w_networking.analogDataBufferToSend[0].length;
-            float[] _dataToSend = new float[numChannels * numSamples];
+            float[] dataToSend = new float[numChannels * numSamples];
             for (int sample = 0; sample < numSamples; sample++) {
                 for (int channel = 0; channel < numChannels; channel++) {
-                    _dataToSend[channel + sample * numChannels] = w_networking.analogDataBufferToSend[channel][sample];
+                    dataToSend[channel + sample * numChannels] = w_networking.analogDataBufferToSend[channel][sample];
                 }
             }
-            outlet_data.push_sample(_dataToSend);
+            outlet_data.push_chunk(dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
@@ -862,7 +888,7 @@ class NetworkStreamOut extends Thread {
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                 output.append("[");
                 for (int j = 0; j < w_networking.digitalDataBufferToSend[i].length; j++) {
-                    double digitalData = w_networking.digitalDataBufferToSend[i][j];
+                    int digitalData = w_networking.digitalDataBufferToSend[i][j];
                     String digitalDataFormatted = String.format("%d", digitalData);
                     output.append(digitalDataFormatted);
                     if (j != w_networking.digitalDataBufferToSend[i].length - 1) {
@@ -885,13 +911,13 @@ class NetworkStreamOut extends Thread {
 
             int numChannels = NUM_DIGITAL_READS;
             int numSamples = w_networking.digitalDataBufferToSend[0].length;
-            float[] _dataToSend = new float[numChannels * numSamples];
+            float[] dataToSend = new float[numChannels * numSamples];
             for (int sample = 0; sample < numSamples; sample++) {
                 for (int channel = 0; channel < numChannels; channel++) {
-                    _dataToSend[channel + sample * numChannels] = w_networking.digitalDataBufferToSend[channel][sample];
+                    dataToSend[channel + sample * numChannels] = w_networking.digitalDataBufferToSend[channel][sample];
                 }
             }
-            outlet_data.push_sample(_dataToSend);
+            outlet_data.push_chunk(dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
@@ -900,7 +926,7 @@ class NetworkStreamOut extends Thread {
             for (int i = 0; i < NUM_DIGITAL_READS; i++) {
                 serialMessage.append("[");
                 for (int j = 0; j < w_networking.digitalDataBufferToSend[i].length; j++) {
-                    double digitalData = w_networking.digitalDataBufferToSend[i][j];
+                    int digitalData = w_networking.digitalDataBufferToSend[i][j];
                     String digitalDataFormatted = String.format("%d", digitalData);
                     serialMessage.append(digitalDataFormatted);
                     if (j != w_networking.digitalDataBufferToSend[i].length - 1) {
@@ -961,12 +987,12 @@ class NetworkStreamOut extends Thread {
 
         } else if (this.protocol.equals("LSL")) {
 
-            float[] _dataToSend = new float[2];
-            _dataToSend[0] = w_pulsesensor.getBPM();
-            _dataToSend[1] = w_pulsesensor.getIBI();
+            float[] dataToSend = new float[2];
+            dataToSend[0] = w_pulsesensor.getBPM();
+            dataToSend[1] = w_pulsesensor.getIBI();
             // From LSLLink Library: The time stamps of other samples are automatically
             // derived based on the sampling rate of the stream.
-            outlet_data.push_chunk(_dataToSend);
+            outlet_data.push_sample(dataToSend);
 
         } else if (this.protocol.equals("Serial")) {
 
@@ -1019,6 +1045,7 @@ class NetworkStreamOut extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
+            float[] dataToSend = new float[emgJoystickXY.length];
             for (int i = 0; i < emgJoystickXY.length; i++) {
                 dataToSend[i] = emgJoystickXY[i];
             }
