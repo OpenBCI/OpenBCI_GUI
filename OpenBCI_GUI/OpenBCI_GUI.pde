@@ -62,7 +62,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v6.0.0-alpha.1";
+String localGUIVersionString = "v6.0.0-alpha.2";
 String localGUIVersionDate = "August 2023";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
