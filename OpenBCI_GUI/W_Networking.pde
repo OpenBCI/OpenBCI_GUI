@@ -1839,65 +1839,90 @@ class Stream extends Thread {
     }
 
     private void sendAccelerometerData() {
+
         if (this.protocol.equals("OSC")) {
+
             for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                msg.clearArguments();
-                if (i == 0) {
-                    msg.setAddrPattern(baseOscAddress + "/accelerometer/x");
-                } else if (i == 1) {
-                    msg.setAddrPattern(baseOscAddress + "/accelerometer/y");
-                } else if (i == 2) {
-                    msg.setAddrPattern(baseOscAddress + "/accelerometer/z");
-                }
-                msg.add(w_accelerometer.getLastAccelVal(i));
-                try {
-                    this.osc.send(msg, this.oscNetAddress);
-                } catch (Exception e) {
-                    println(e.getMessage());
+                for (int j = 0; j < w_networking.accelDataBufferToSend[i].length; j++) {
+                    msg.clearArguments();
+                    if (i == 0) {
+                        msg.setAddrPattern(baseOscAddress + "/accelerometer/x");
+                    } else if (i == 1) {
+                        msg.setAddrPattern(baseOscAddress + "/accelerometer/y");
+                    } else if (i == 2) {
+                        msg.setAddrPattern(baseOscAddress + "/accelerometer/z");
+                    }
+                    msg.add(w_networking.accelDataBufferToSend[i][j]);
+                    try {
+                        this.osc.send(msg, this.oscNetAddress);
+                    } catch (Exception e) {
+                        println(e.getMessage());
+                    }
                 }
             }
+
         } else if (this.protocol.equals("UDP")) {
-            String outputter = "{\"type\":\"accelerometer\",\"data\":[";
+
+            StringBuilder output = new StringBuilder();
+            output.append("{\"type\":\"accelerometer\",\"data\":[");
+
             for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                float accelData = w_accelerometer.getLastAccelVal(i);
-                // Formatting in this way is resilient to internationalization
-                String accelData_3dec = threeDecimalPlaces.format(accelData);
-                outputter += accelData_3dec;
-                if (i != NUM_ACCEL_DIMS - 1) {
-                    outputter += ",";
-                } else {
-                    outputter += "]}\r\n";
+                output.append("[");
+                for (int j = 0; j < w_networking.accelDataBufferToSend[i].length; j++) {
+                    float accelData = w_networking.accelDataBufferToSend[i][j];
+                    // Formatting in this way is resilient to internationalization
+                    String accelData_3dec = threeDecimalPlaces.format(accelData);
+                    output.append(accelData_3dec);
+                    if (j != w_networking.accelDataBufferToSend[i].length - 1) {
+                        output.append(",");
+                    }
                 }
+                String channelArrayEnding = i != NUM_ACCEL_DIMS - 1 ? "]," : "]";
+                output.append(channelArrayEnding);
             }
+            
+            output.append("]}\r\n");
+
             try {
-                this.udp.send(outputter, this.ip, this.port);
+                this.udp.send(output.toString(), this.ip, this.port);
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         } else if (this.protocol.equals("LSL")) {
-            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                dataToSend[i] = w_accelerometer.getLastAccelVal(i);
-            }
-            outlet_data.push_sample(dataToSend);
-        } else if (this.protocol.equals("Serial")) {
-            // Data Format: +0.900,-0.042,+0.254\n
-            // 7 chars per axis, including \n char for Z
-            serialMessage = "";
-            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
-                float accelData = w_accelerometer.getLastAccelVal(i);
-                String accelData_3dec = threeDecimalPlaces.format(accelData);
-                if (accelData >= 0)
-                    serialMessage += "+";
-                serialMessage += accelData_3dec;
-                if (i != NUM_ACCEL_DIMS - 1) {
-                    serialMessage += ",";
-                } else {
-                    serialMessage += "\n";
+
+            int numChannels = NUM_ACCEL_DIMS;
+            int numSamples = w_networking.accelDataBufferToSend[0].length;
+            float[] _dataToSend = new float[numChannels * numSamples];
+            for (int sample = 0; sample < numSamples; sample++) {
+                for (int channel = 0; channel < numChannels; channel++) {
+                    _dataToSend[channel + sample * numChannels] = w_networking.accelDataBufferToSend[channel][sample];
                 }
+            }
+            outlet_data.push_sample(_dataToSend);
+
+        } else if (this.protocol.equals("Serial")) {
+
+            StringBuilder serialMessage = new StringBuilder();
+            for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
+                serialMessage.append("[");
+                for (int j = 0; j < w_networking.accelDataBufferToSend[i].length; j++) {
+                    float accelData = w_networking.accelDataBufferToSend[i][j];
+                    // Formatting in this way is resilient to internationalization
+                    String accelData_3dec = threeDecimalPlaces.format(accelData);
+                    if (accelData >= 0) {
+                        serialMessage.append("+");
+                    }
+                    serialMessage.append(accelData_3dec);
+                    if (j != w_networking.accelDataBufferToSend[i].length - 1) {
+                        serialMessage.append(",");
+                    }
+                }
+                serialMessage.append("]");
             }
             try {
                 // println(serialMessage);
-                this.serial_networking.write(serialMessage);
+                this.serial_networking.write(serialMessage.toString());
             } catch (Exception e) {
                 println(e.getMessage());
             }
@@ -1905,63 +1930,86 @@ class Stream extends Thread {
     }
 
     private void sendAnalogReadData() {
-        // this function is only called if the board is analog capable
-        int[] analogChannels = ((AnalogCapableBoard) currentBoard).getAnalogChannels();
-        List<double[]> lastData = ((AnalogCapableBoard) currentBoard).getDataWithAnalog(1);
-        double[] lastSample = lastData.get(0);
 
-        final int NUM_ANALOG_READS = analogChannels.length;
+        final int NUM_ANALOG_READS = ((AnalogCapableBoard)currentBoard).getAnalogChannels().length;
 
         if (this.protocol.equals("OSC")) {
+
             for (int i = 0; i < NUM_ANALOG_READS; i++) {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/analog/" + i);
-                msg.add((int) lastSample[analogChannels[i]]);
+                for (int j = 0; j < w_networking.analogDataBufferToSend[i].length; j++) {
+                    msg.add(w_networking.analogDataBufferToSend[i][j]);
+                }
                 try {
                     this.osc.send(msg, this.oscNetAddress);
                 } catch (Exception e) {
                     println(e.getMessage());
                 }
             }
+
         } else if (this.protocol.equals("UDP")) {
-            String outputter = "{\"type\":\"analog\",\"data\":[";
+
+            StringBuilder output = new StringBuilder();
+            output.append("{\"type\":\"analog\",\"data\":[");
+
             for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                int auxData = (int) lastSample[analogChannels[i]];
-                String auxData_formatted = fourLeadingPlaces.format(auxData);
-                outputter += auxData_formatted;
-                if (i != NUM_ANALOG_READS - 1) {
-                    outputter += ",";
-                } else {
-                    outputter += "]}\r\n";
+                output.append("[");
+                for (int j = 0; j < w_networking.analogDataBufferToSend[i].length; j++) {
+                    float analogData = w_networking.analogDataBufferToSend[i][j];
+                    // Formatting in this way is resilient to internationalization
+                    String analogData_3dec = threeDecimalPlaces.format(analogData);
+                    output.append(analogData_3dec);
+                    if (j != w_networking.analogDataBufferToSend[i].length - 1) {
+                        output.append(",");
+                    }
                 }
+                String channelArrayEnding = i != NUM_ANALOG_READS - 1 ? "]," : "]";
+                output.append(channelArrayEnding);
             }
+
+            output.append("]}\r\n");
+
             try {
-                this.udp.send(outputter, this.ip, this.port);
+                this.udp.send(output.toString(), this.ip, this.port);
             } catch (Exception e) {
                 println(e.getMessage());
             }
+
         } else if (this.protocol.equals("LSL")) {
-            for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                dataToSend[i] = (int) lastSample[analogChannels[i]];
-            }
-            outlet_data.push_sample(dataToSend);
-        } else if (this.protocol.equals("Serial")) {
-            // Data Format: 0001,0002,0003\n or 0001,0002\n depending if Wi-Fi Shield is used
-            // 5 chars per pin, including \n char for Z
-            serialMessage = "";
-            for (int i = 0; i < NUM_ANALOG_READS; i++) {
-                int auxData = (int) lastSample[analogChannels[i]];
-                String auxData_formatted = fourLeadingPlaces.format(auxData);
-                serialMessage += auxData_formatted;
-                if (i != NUM_ANALOG_READS - 1) {
-                    serialMessage += ",";
-                } else {
-                    serialMessage += "\n";
+
+            int numChannels = NUM_ANALOG_READS;
+            int numSamples = w_networking.analogDataBufferToSend[0].length;
+            float[] _dataToSend = new float[numChannels * numSamples];
+            for (int sample = 0; sample < numSamples; sample++) {
+                for (int channel = 0; channel < numChannels; channel++) {
+                    _dataToSend[channel + sample * numChannels] = w_networking.analogDataBufferToSend[channel][sample];
                 }
             }
+            outlet_data.push_sample(_dataToSend);
+
+        } else if (this.protocol.equals("Serial")) {
+
+            StringBuilder serialMessage = new StringBuilder();
+
+            for (int i = 0; i < NUM_ANALOG_READS; i++) {
+                serialMessage.append("[");
+                for (int j = 0; j < w_networking.analogDataBufferToSend[i].length; j++) {
+                    float analogData = w_networking.analogDataBufferToSend[i][j];
+                    // Formatting in this way is resilient to internationalization
+                    String analogData_3dec = threeDecimalPlaces.format(analogData);
+                    serialMessage.append(analogData_3dec);
+                    if (j != w_networking.analogDataBufferToSend[i].length - 1) {
+                        serialMessage.append(",");
+                    }
+                }
+                String channelArrayEnding = i != NUM_ANALOG_READS - 1 ? "]," : "]";
+                serialMessage.append(channelArrayEnding);
+            }
+            serialMessage.append("\n");
             try {
                 // println(serialMessage);
-                this.serial_networking.write(serialMessage);
+                this.serial_networking.write(serialMessage.toString());
             } catch (Exception e) {
                 println(e.getMessage());
             }
