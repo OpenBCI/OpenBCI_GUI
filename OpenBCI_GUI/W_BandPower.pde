@@ -1,19 +1,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//    W_BandPowers.pde
-//
-//    This is a band power visualization widget!
-//    (Couldn't think up more)
-//    This is for visualizing the power of each brainwave band: delta, theta, alpha, beta, gamma
-//    Averaged over all channels
-//
-//    Created by: Wangshu Sun, May 2017
-//    Modified by: Richard Waltman, March 2022
-//
+//                                                                                                    //
+//    W_BandPowers.pde                                                                                //
+//                                                                                                    //
+//    This is a band power visualization widget!                                                      //
+//    (Couldn't think up more)                                                                        //
+//    This is for visualizing the power of each brainwave band: delta, theta, alpha, beta, gamma      //
+//    Averaged over all channels                                                                      //
+//                                                                                                    //
+//    Created by: Wangshu Sun, May 2017                                                               //
+//    Modified by: Richard Waltman, March 2022                                                        //
+//                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 class W_BandPower extends Widget {
 
@@ -86,12 +84,10 @@ class W_BandPower extends Widget {
         );
         //setting color of text label for each histogram bar on the x axis
         bp_plot.getHistogram().setFontColor(OPENBCI_DARKBLUE);
-    } //end of constructor
+    }
 
     public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        
-        
         
         //Update channel checkboxes and active channels
         bpChanSelect.update(x, y, w);
@@ -113,7 +109,7 @@ class W_BandPower extends Widget {
         if (bpChanSelect.isVisible()) {
             lockElementsOnOverlapCheck(cp5ElementsToCheck);
         }
-    } //end of update
+    }
 
     public void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
@@ -149,10 +145,6 @@ class W_BandPower extends Widget {
     public void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         bpChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
-    }
-
-    public void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     }
 
     void flexGPlotSizeAndPosition() {
