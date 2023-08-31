@@ -1084,7 +1084,9 @@ class W_Networking extends Widget {
         } else if (dataType.equals("AvgBandPower")) {
             return 5;
         } else if (dataType.equals("BandPower")) {
-            return 5;
+            //Send out band powers for each channel sequentially
+            //Prepend channel number to each array
+            return 5 + 1;
         } else if (dataType.equals("Pulse")) {
             return 2;
         } else if (dataType.equals("Accel/Aux")) {

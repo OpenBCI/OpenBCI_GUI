@@ -527,17 +527,23 @@ class NetworkStreamOut extends Thread {
 
         } else if (this.protocol.equals("LSL")) {
 
-            // DELTA, THETA, ALPHA, BETA, GAMMA
+            // Send out band powers for each channel sequentially via push_sample
+            // Prepend channel number to each array
+            // push_chunk will send out all channels at once...but doesn't seem to gaurantee all X channels of data will be pulled at once, despite extensive testing
+            // Example sample: [Channel Number, DELTA, THETA, ALPHA, BETA, GAMMA]
+            // [0.0, 0.8451713919639587, 9.27791690826416, 0.00044474846799857914, 0.0014277123846113682, 0.0029974353965371847]
             int numChannels = numExgChannels;
-            float[] dataToSend = new float[numChannels * NUM_BAND_POWERS];
-            for (int band = 0; band < NUM_BAND_POWERS; band++) {
-                for (int channel = 0; channel < numChannels; channel++) {
-                    dataToSend[channel + band * numChannels] = dataProcessing.avgPowerInBins[channel][band];
+            float[] dataToSend = new float[NUM_BAND_POWERS + 1];
+            for (int channel = 0; channel < numChannels; channel++) {
+                for (int band = 0; band < NUM_BAND_POWERS + 1; band++) {
+                    if (band == 0) {
+                        dataToSend[band] = (float) channel;
+                    } else {
+                        dataToSend[band] = dataProcessing.avgPowerInBins[channel][band - 1];
+                    }
                 }
+                outlet_data.push_sample(dataToSend);
             }
-            double unixTime = System.currentTimeMillis() / 1000d;
-            //println(unixTime);
-            outlet_data.push_chunk(dataToSend, unixTime, true);
 
         } else if (this.protocol.equals("Serial")) {
             for (int i = 0; i < numExgChannels; i++) {
