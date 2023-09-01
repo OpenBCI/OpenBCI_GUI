@@ -90,6 +90,7 @@ public class DataWriterBF {
         folderName = "";
         folderPath = "";
         fileName = null;
+        brainflowStreamer = "";
     }
 
     public String getBrainFlowStreamerRecordingFileName() {
