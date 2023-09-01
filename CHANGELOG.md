@@ -3,6 +3,7 @@
 ### Improvements
 - Update repository to Processing 4.2 #1111
 - Add Software Marker Widget #1091
+- Add channel labels for Cyton Digital Channels in GUI CSV files and also label unused channels #1108
 
 # v5.2.1
 
