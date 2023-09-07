@@ -133,38 +133,46 @@ class NetworkStreamOut extends Thread {
     }
 
     public void run() {
-        if (!this.protocol.equals("LSL")) {
-            openNetwork();
-            while (this.isStreaming) {
-                if (!currentBoard.isStreaming()) {
+        if (this.protocol.equals("LSL")) {
+            runLSL();
+        } else {
+            runUdpOscSerial();
+        }
+    }
+
+    private void runLSL() {
+        if (currentBoard.isStreaming()) {
+            // This method has been updated to reduce duplicate packets - RW 3/15/23
+            if (checkForData()) {
+                sendData();
+            }
+        } else {
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                println(e.getMessage());
+            }
+        }
+    }
+
+    private void runUdpOscSerial() {
+        openNetwork();
+        while (this.isStreaming) {
+            if (currentBoard.isStreaming()) {
+                if (checkForData()) {
+                    sendData();
+                } else {
                     try {
                         Thread.sleep(1);
                     } catch (InterruptedException e) {
                         println(e.getMessage());
                     }
-                } else {
-                    if (checkForData()) {
-                        sendData();
-                    } else {
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                            println(e.getMessage());
-                        }
-                    }
                 }
-            }
-        } else if (this.protocol.equals("LSL")) {
-            if (!currentBoard.isStreaming()) {
+            } else {
                 try {
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
                     println(e.getMessage());
-                }
-            } else {
-                // This method has been updated to reduce duplicate packets - RW 3/15/23
-                if (checkForData()) {
-                    sendData();
                 }
             }
         }
@@ -221,43 +229,55 @@ class NetworkStreamOut extends Thread {
     }
 
     private void sendData() {
-        if (this.dataType.equals("TimeSeriesFilt") || this.dataType.equals("TimeSeriesRaw")) {
-            sendTimeSeriesData();
-        } else if (this.dataType.equals("Focus")) {
-            sendFocusData();
-        } else if (this.dataType.equals("FFT")) {
-            sendFFTData();
-        } else if (this.dataType.equals("EMG")) {
-            sendEMGData();
-        } else if (this.dataType.equals("AvgBandPower")) {
-            sendNormalizedPowerBandData();
-        } else if (this.dataType.equals("BandPower")) {
-            sendPowerBandData();
-        } else if (this.dataType.equals("Accel/Aux")) {
-            if (currentBoard instanceof AccelerometerCapableBoard) {
-                AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard) currentBoard;
-                if (accelBoard.isAccelerometerActive()) {
-                    sendAccelerometerData();
+        switch (this.dataType) {
+            case "TimeSeriesRaw":
+            case "TimeSeriesFilt":
+                sendTimeSeriesData();
+                break;
+            case "Focus":
+                sendFocusData();
+                break;
+            case "FFT":
+                sendFFTData();
+                break;
+            case "EMG":
+                sendEMGData();
+                break;
+            case "AvgBandPower":
+                sendNormalizedPowerBandData();
+                break;
+            case "BandPower":
+                sendPowerBandData();
+                break;
+            case "Accel/Aux":
+                if (currentBoard instanceof AccelerometerCapableBoard) {
+                    AccelerometerCapableBoard accelBoard = (AccelerometerCapableBoard) currentBoard;
+                    if (accelBoard.isAccelerometerActive()) {
+                        sendAccelerometerData();
+                    }
                 }
-            }
-            if (currentBoard instanceof AnalogCapableBoard) {
-                AnalogCapableBoard analogBoard = (AnalogCapableBoard) currentBoard;
-                if (analogBoard.isAnalogActive()) {
-                    sendAnalogReadData();
+                if (currentBoard instanceof AnalogCapableBoard) {
+                    AnalogCapableBoard analogBoard = (AnalogCapableBoard) currentBoard;
+                    if (analogBoard.isAnalogActive()) {
+                        sendAnalogReadData();
+                    }
                 }
-            }
-            if (currentBoard instanceof DigitalCapableBoard) {
-                DigitalCapableBoard digitalBoard = (DigitalCapableBoard) currentBoard;
-                if (digitalBoard.isDigitalActive()) {
-                    sendDigitalReadData();
+                if (currentBoard instanceof DigitalCapableBoard) {
+                    DigitalCapableBoard digitalBoard = (DigitalCapableBoard) currentBoard;
+                    if (digitalBoard.isDigitalActive()) {
+                        sendDigitalReadData();
+                    }
                 }
-            }
-        } else if (this.dataType.equals("Pulse")) {
-            sendPulseData();
-        } else if (this.dataType.equals("EMGJoystick")) {
-            sendEMGJoystickData();
-        } else if (this.dataType.equals("Marker")) {
-            sendMarkerData();
+                break;
+            case "Pulse":
+                sendPulseData();
+                break;
+            case "EMGJoystick":
+                sendEMGJoystickData();
+                break;
+            case "Marker":
+                sendMarkerData();
+                break;
         }
     }
 
@@ -384,11 +404,11 @@ class NetworkStreamOut extends Thread {
 
     // Send out 1 or 0 as an integer over all networking data types for "Focus" data
     private void sendFocusData() {
-        final int IS_METRIC = w_focus.getMetricExceedsThreshold();
+        final int metricValue = w_focus.getMetricExceedsThreshold();
         if (this.protocol.equals("OSC")) {
             msg.clearArguments();
             msg.setAddrPattern(baseOscAddress + "/focus");
-            msg.add(IS_METRIC);
+            msg.add(metricValue);
             try {
                 this.osc.send(msg, this.oscNetAddress);
             } catch (Exception e) {
@@ -396,7 +416,7 @@ class NetworkStreamOut extends Thread {
             }
         } else if (this.protocol.equals("UDP")) {
             StringBuilder sb = new StringBuilder("{\"type\":\"focus\",\"data\":");
-            sb.append(str(IS_METRIC));
+            sb.append(str(metricValue));
             sb.append("}\r\n");
             try {
                 this.udp.send(sb.toString(), this.ip, this.port);
@@ -404,12 +424,12 @@ class NetworkStreamOut extends Thread {
                 println(e.getMessage());
             }
         } else if (this.protocol.equals("LSL")) {
-            float[] output = new float[] { (float) IS_METRIC };
+            float[] output = new float[] { (float) metricValue };
             outlet_data.push_sample(output);
             // Serial
         } else if (this.protocol.equals("Serial")) {
             StringBuilder sb = new StringBuilder();
-            sb.append(IS_METRIC);
+            sb.append(metricValue);
             sb.append("\n");
             try {
                 // println("SerialMessage: " + serialMessage);
@@ -486,16 +506,16 @@ class NetworkStreamOut extends Thread {
     }
 
     private void sendPowerBandData() {
-        // UNFILTERED & FILTERED ... influenced globally by the FFT filters dropdown
-        // just like the FFT data
-        final int NUM_BAND_POWERS = 5; // DELTA, THETA, ALPHA, BETA, GAMMA
+        // UNFILTERED & FILTERED: Influenced globally by the FFT filters dropdown
+        // Band Power order: DELTA, THETA, ALPHA, BETA, GAMMA
+        final int NUM_BAND_POWERS = 5;
 
         if (this.protocol.equals("OSC")) {
-            for (int i = 0; i < numExgChannels; i++) {
+            for (int channel = 0; channel < numExgChannels; channel++) {
                 msg.clearArguments();
-                msg.setAddrPattern(baseOscAddress + "/band-power/" + i);
-                for (int j = 0; j < NUM_BAND_POWERS; j++) {
-                    msg.add(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
+                msg.setAddrPattern(baseOscAddress + "/band-power/" + channel);
+                for (int band = 0; band < NUM_BAND_POWERS; band++) {
+                    msg.add(dataProcessing.avgPowerInBins[channel][band]); // [CHAN][BAND]
                 }
                 try {
                     this.osc.send(msg, this.oscNetAddress);
@@ -506,14 +526,14 @@ class NetworkStreamOut extends Thread {
         } else if (this.protocol.equals("UDP")) {
             // DELTA, THETA, ALPHA, BETA, GAMMA
             String outputter = "{\"type\":\"bandPower\",\"data\":[[";
-            for (int i = 0; i < numExgChannels; i++) {
-                for (int j = 0; j < NUM_BAND_POWERS; j++) {
-                    outputter += str(dataProcessing.avgPowerInBins[i][j]); // [CHAN][BAND]
-                    if (j != NUM_BAND_POWERS - 1) {
+            for (int channel = 0; channel < numExgChannels; channel++) {
+                for (int band = 0; band < NUM_BAND_POWERS; band++) {
+                    outputter += str(dataProcessing.avgPowerInBins[channel][band]); // [CHAN][BAND]
+                    if (band != NUM_BAND_POWERS - 1) {
                         outputter += ",";
                     }
                 }
-                if (i != numExgChannels - 1) {
+                if (channel != numExgChannels - 1) {
                     outputter += "],[";
                 } else {
                     outputter += "]]}\r\n";
@@ -546,13 +566,15 @@ class NetworkStreamOut extends Thread {
             }
 
         } else if (this.protocol.equals("Serial")) {
-            for (int i = 0; i < numExgChannels; i++) {
-                serialMessage = "[" + (i + 1) + ","; // clear message
-                for (int j = 0; j < NUM_BAND_POWERS; j++) {
-                    float power_band = dataProcessing.avgPowerInBins[i][j];
-                    String power_band_3dec = threeDecimalPlaces.format(power_band);
-                    serialMessage += power_band_3dec;
-                    if (j < NUM_BAND_POWERS - 1) {
+
+            // Send out band powers for each channel sequentially
+            for (int channel = 0; channel < numExgChannels; channel++) {
+                serialMessage = "[" + (channel + 1) + ","; // clear message
+                for (int band = 0; band < NUM_BAND_POWERS; band++) {
+                    float value = dataProcessing.avgPowerInBins[channel][band];
+                    String valueFormatted = threeDecimalPlaces.format(value);
+                    serialMessage += valueFormatted;
+                    if (band < NUM_BAND_POWERS - 1) {
                         serialMessage += ","; // add a comma to serialMessage to separate chan values, as long as it
                                                 // isn't last value...
                     }
@@ -565,6 +587,7 @@ class NetworkStreamOut extends Thread {
                     println(e.getMessage());
                 }
             }
+
         }
     }
 
@@ -1202,13 +1225,9 @@ class NetworkStreamOut extends Thread {
     private void openNetwork() {
         println("Networking: " + getAttributes());
         if (this.protocol.equals("OSC")) {
-            // Possibly enter a nice custom exception here
-            // try {
             this.osc = new OscP5(this, this.port + 1000);
             this.oscNetAddress = new NetAddress(this.ip, this.port);
             this.msg = new OscMessage(this.baseOscAddress);
-            // } catch (Exception e) {
-            // }
         } else if (this.protocol.equals("UDP")) {
             this.udp = new UDP(this);
             this.udp.setBuffer(20000);
@@ -1221,7 +1240,6 @@ class NetworkStreamOut extends Thread {
                     currentBoard.getSampleRate(), LSL.ChannelFormat.float32, stream_id);
             outlet_data = new LSL.StreamOutlet(info_data);
         } else if (this.protocol.equals("Serial")) {
-            // Open Serial Port! %%%%%
             try {
                 serial_networking = new processing.serial.Serial(this.pApplet, this.portName, this.baudRate);
                 serial_networking.clear();
