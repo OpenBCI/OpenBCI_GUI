@@ -1,38 +1,36 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-//    W_BandPowers.pde
-//
-//    This is a band power visualization widget!
-//    (Couldn't think up more)
-//    This is for visualizing the power of each brainwave band: delta, theta, alpha, beta, gamma
-//    Averaged over all channels
-//
-//    Created by: Wangshu Sun, May 2017
-//    Modified by: Richard Waltman, March 2022
-//
+//                                                                                                    //
+//    W_BandPowers.pde                                                                                //
+//                                                                                                    //
+//    This is a band power visualization widget!                                                      //
+//    (Couldn't think up more)                                                                        //
+//    This is for visualizing the power of each brainwave band: delta, theta, alpha, beta, gamma      //
+//    Averaged over all channels                                                                      //
+//                                                                                                    //
+//    Created by: Wangshu Sun, May 2017                                                               //
+//    Modified by: Richard Waltman, March 2022                                                        //
+//                                                                                                    //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
 class W_BandPower extends Widget {
 
     // indexes
-    final int DELTA = 0; // 1-4 Hz
-    final int THETA = 1; // 4-8 Hz
-    final int ALPHA = 2; // 8-13 Hz
-    final int BETA = 3; // 13-30 Hz
-    final int GAMMA = 4; // 30-55 Hz
+    private final int DELTA = 0; // 1-4 Hz
+    private final int THETA = 1; // 4-8 Hz
+    private final int ALPHA = 2; // 8-13 Hz
+    private final int BETA = 3; // 13-30 Hz
+    private final int GAMMA = 4; // 30-55 Hz
     
     private final int NUM_BANDS = 5;
     private float[] activePower = new float[NUM_BANDS];
     private float[] normalizedBandPowers = new float[NUM_BANDS];
 
-    GPlot bp_plot;
+    private GPlot bp_plot;
     public ChannelSelect bpChanSelect;
-    boolean prevChanSelectIsVisible = false;
+    private boolean prevChanSelectIsVisible = false;
 
-    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+    private List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
 
     W_BandPower(PApplet _parent) {
         super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
@@ -86,29 +84,10 @@ class W_BandPower extends Widget {
         );
         //setting color of text label for each histogram bar on the x axis
         bp_plot.getHistogram().setFontColor(OPENBCI_DARKBLUE);
-    } //end of constructor
+    }
 
-    void update() {
+    public void update() {
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        
-        float normalizingSum = 0;
-
-        for (int i = 0; i < NUM_BANDS; i++) {
-            float sum = 0;
-
-            for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
-                int chan = bpChanSelect.activeChan.get(j);
-                sum += dataProcessing.avgPowerInBins[chan][i];
-            }
-
-            activePower[i] = sum / bpChanSelect.activeChan.size();
-
-            normalizingSum += activePower[i];
-        }
-
-        for (int i = 0; i < NUM_BANDS; i++) {
-            normalizedBandPowers[i] = activePower[i] / normalizingSum;
-        }
         
         //Update channel checkboxes and active channels
         bpChanSelect.update(x, y, w);
@@ -130,9 +109,9 @@ class W_BandPower extends Widget {
         if (bpChanSelect.isVisible()) {
             lockElementsOnOverlapCheck(cp5ElementsToCheck);
         }
-    } //end of update
+    }
 
-    void draw() {
+    public void draw() {
         super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
         pushStyle();
 
@@ -155,7 +134,7 @@ class W_BandPower extends Widget {
         bpChanSelect.draw();
     }
 
-    void screenResized() {
+    public void screenResized() {
         super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
 
         flexGPlotSizeAndPosition();
@@ -163,13 +142,9 @@ class W_BandPower extends Widget {
         bpChanSelect.screenResized(pApplet);
     }
 
-    void mousePressed() {
+    public void mousePressed() {
         super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
         bpChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
-    }
-
-    void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     }
 
     void flexGPlotSizeAndPosition() {
@@ -184,5 +159,27 @@ class W_BandPower extends Widget {
 
     public float[] getNormalizedBPSelectedChannels() {
         return normalizedBandPowers;
+    }
+
+    //Called in DataProcessing.pde to update data even if widget is closed
+    public void updateBandPowerWidgetData() {
+        float normalizingSum = 0;
+
+        for (int i = 0; i < NUM_BANDS; i++) {
+            float sum = 0;
+
+            for (int j = 0; j < bpChanSelect.activeChan.size(); j++) {
+                int chan = bpChanSelect.activeChan.get(j);
+                sum += dataProcessing.avgPowerInBins[chan][i];
+            }
+
+            activePower[i] = sum / bpChanSelect.activeChan.size();
+
+            normalizingSum += activePower[i];
+        }
+
+        for (int i = 0; i < NUM_BANDS; i++) {
+            normalizedBandPowers[i] = activePower[i] / normalizingSum;
+        }
     }
 };
