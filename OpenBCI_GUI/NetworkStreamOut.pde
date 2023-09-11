@@ -19,6 +19,7 @@ class NetworkStreamOut extends Thread {
     private int samplesSent = 0;
     private int sampleRateClock = 0;
     private int sampleRateClockInterval = 10000;
+    private boolean debugSamplingRate = false;
 
     // OSC Objects
     private OscP5 osc;
@@ -228,6 +229,23 @@ class NetworkStreamOut extends Thread {
         }
     }
 
+    private void debugTimeSeriesDataSamplingRate() {
+        // This code is used to check the sample rate of the data stream
+        if (sampleRateClock == 0) sampleRateClock = millis(); 
+        samplesSent = samplesSent + nPointsPerUpdate;
+        if (millis() > sampleRateClock + sampleRateClockInterval) { 
+            float timeDelta = float(millis() - sampleRateClock) / 1000;
+            float sampleRateCheck = samplesSent / timeDelta;
+            println("\nNumber of samples collected = " + samplesSent);
+            println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
+            println("Time Interval (Actual) = " + timeDelta);
+            println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
+            println("Sample Rate (Actual) = " + sampleRateCheck);
+            sampleRateClock = 0;
+            samplesSent = 0;
+        }
+    }
+
     private void sendData() {
         switch (this.dataType) {
             case "TimeSeriesRaw":
@@ -301,22 +319,9 @@ class NetworkStreamOut extends Thread {
             }
         }
 
-        /*
-        // This code is used to check the sample rate of the data stream
-        if (sampleRateClock == 0) sampleRateClock = millis(); 
-        samplesSent = samplesSent + nPointsPerUpdate;
-        if (millis() > sampleRateClock + sampleRateClockInterval) { 
-            float timeDelta = float(millis() - sampleRateClock) / 1000;
-            float sampleRateCheck = samplesSent / timeDelta;
-            println("\nNumber of samples collected = " + samplesSent);
-            println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
-            println("Time Interval (Actual) = " + timeDelta);
-            println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
-            println("Sample Rate (Actual) = " + sampleRateCheck);
-            sampleRateClock = 0;
-            samplesSent = 0;
+        if (debugSamplingRate) {
+            debugTimeSeriesDataSamplingRate();
         }
-        */
 
         if (this.protocol.equals("UDP")) {
 
@@ -1112,22 +1117,9 @@ class NetworkStreamOut extends Thread {
             newDataFromBuffer[i] = w_networking.markerDataBufferToSend[i];
         }
 
-        /*
-        // Check sampling rate for every networking protocol for this data type
-        if (sampleRateClock == 0) sampleRateClock = millis(); 
-        samplesSent = samplesSent + nPointsPerUpdate;
-        if (millis() > sampleRateClock + sampleRateClockInterval) { 
-            float timeDelta = float(millis() - sampleRateClock) / 1000;
-            float sampleRateCheck = samplesSent / timeDelta;
-            println("\nNumber of samples collected = " + samplesSent);
-            println("Time Interval (Desired) = " + (sampleRateClockInterval / 1000));
-            println("Time Interval (Actual) = " + timeDelta);
-            println("Sample Rate (Desired) = " + currentBoard.getSampleRate());
-            println("Sample Rate (Actual) = " + sampleRateCheck);
-            sampleRateClock = 0;
-            samplesSent = 0;
+        if (debugSamplingRate) {
+            debugTimeSeriesDataSamplingRate();
         }
-        */
 
         if (this.protocol.equals("UDP")) {
 
