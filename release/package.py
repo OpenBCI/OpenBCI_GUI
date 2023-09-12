@@ -41,10 +41,6 @@ def main ():
                 break
 
     new_name = "openbcigui_" + version + "_"
-    
-    timestamp = subprocess.check_output(['git', 'log', '-1', '--date=format:"%Y-%m-%d_%H-%M-%S"', '--format=%ad']).decode("utf-8").strip('"\n')
-    new_name = new_name + timestamp + "_"
-
     build_directory = os.path.join(os.getcwd(), flavors[LOCAL_OS])
 
     # Allow GUI to launch from directory with spaces #916
@@ -60,7 +56,7 @@ def main ():
         with open(build_directory + '/OpenBCI_GUI', 'w') as file:
             file.write(filedata)
 
-        print ( "Fixed issue on Linux when launching from directory with spaces.")
+        print ("Fixed issue on Linux when launching from directory with spaces.")
 
     if LOCAL_OS == MAC:
         shutil.move(flavors[LOCAL_OS] + ".dmg", new_name + "macosx.dmg")
