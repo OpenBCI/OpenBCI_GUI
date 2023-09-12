@@ -17,7 +17,7 @@ env:
 jobs:
   build:
     name: Build for Windows
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
     - name: Clone Repository
@@ -28,21 +28,16 @@ jobs:
       with:
         python-version: '3.9'
         architecture: 'x64'
-        cache: 'pip' # caching pip dependencies
-
-    - name: Install Python Dependencies
-      run: |
-        python -m pip install requests
-        python -m pip install beautifulsoup4
+        cache: 'pip'
 
     - name: Install Processing
       run: |
-        mkdir %GITHUB_WORKSPACE%\temp
-        cd %GITHUB_WORKSPACE%\temp
+        mkdir %GITHUB_WORKSPACE%\processing
+        cd %GITHUB_WORKSPACE%\processing
         curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
-        ls -l %GITHUB_WORKSPACE%\temp
+        ls -l %GITHUB_WORKSPACE%\processing
         unzip processing-4.2-windows-x64.zip
-        ls -l %GITHUB_WORKSPACE%\temp\processing-4.2
+        ls -l %GITHUB_WORKSPACE%\processing\processing-4.2
         mkdir %userprofile%\documents\processing\libraries
         xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
         ls -l %userprofile%\documents\processing\libraries
@@ -50,73 +45,46 @@ jobs:
     
     - name: Set Path
       run: |
-        echo %GITHUB_WORKSPACE%\temp\processing-4.2 >> %GITHUB_PATH%
-        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64 >> %GITHUB_PATH%
-        ls -l "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64"
+        echo %GITHUB_WORKSPACE%\processing\processing-4.2>>%GITHUB_PATH%
+        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64>>%GITHUB_PATH%
       shell: cmd
 
     - name: Print Path
-      run: echo %GITHUB_PATH%
+      run: echo %PATH%
       shell: cmd
 
-    - name: Explicitly run processing-java
-      run: |
-        %GITHUB_WORKSPACE%\temp\processing-4.2\processing-java.exe --help
-      shell: cmd
-
-    - name: Check processing-java command
-      run: |
-        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
-        processing-java --help
+    - name: Check processing-java Command
+      run: processing-java --help
       shell: cmd
 
     - name: Run Unit Tests
-      run: |
-        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
-        ls -l
-        python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
+      run: python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
       shell: cmd
 
-    - name: Build without Signing
-      if: ${{ true }}
-      run: |
-        echo %cd%
-        ls
-        set PATH=%PATH%;%GITHUB_WORKSPACE%\temp\processing-4.2
-        set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64
-        type nul > temp/versionstring.txt
-        type nul > temp/timestamp.txt
-        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts
+    - name: Build
+      run: python %GITHUB_WORKSPACE%\release\build.py
       shell: cmd
 
-    - name: Decrypt pfx files
-      if: ${{ false }}
+    - name: Sign
       run: |
-        iex ((New-Object Net.WebClient).DownloadString('https://raw.githubusercontent.com/appveyor/secure-file/master/install.ps1'))
-        appveyor-tools\secure-file -decrypt $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx.enc -secret $env:PFX_SECRET -salt $env:PFX_SALT -out $env:GITHUB_WORKSPACE\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
-        ls -l $env:GITHUB_WORKSPACE\release_script\windows_only
-      env:
-        PFX_PASS: ${{ secrets.PFX_PASS }}
-        PFX_SECRET: ${{ secrets.PFX_SECRET }}
-        PFX_SALT: ${{ secrets.PFX_SALT }}
-
-    - name: Build and Sign
-      if: ${{ false }}
-      run: |
-        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
-      env:
-        PFX_PASS: ${{ secrets.PFX_PASS }}
-        PFX_SECRET: ${{ secrets.PFX_SECRET }}
-        PFX_SALT: ${{ secrets.PFX_SALT }}
+        dotnet tool install --global azuresigntool
+        mt -manifest %GITHUB_WORKSPACE%\release\windows\gui.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe;#1
+        mt -manifest %GITHUB_WORKSPACE%\release\windows\java.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\java.exe;#1
+        mt -manifest %GITHUB_WORKSPACE%\release\windows\javaw.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\javaw.exe;#1
+        azuresigntool sign --azure-key-vault-url "${{ secrets.AZURE_KEY_VAULT_URI }}" --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" --azure-key-vault-certificate "${{ secrets.AZURE_CERT_NAME }}" --timestamp-rfc3161 http://timestamp.digicert.com --verbose %GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe
+      shell: cmd
+  
+    - name: Package
+      run: python %GITHUB_WORKSPACE%\release\package.py
       shell: cmd
 
-    - name: Configure AWS credentials from Production account
+    - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
         aws-region: ${{ env.AWS_REGION }}
 
-    - name: Get branch names
+    - name: Get Branch Names
       id: branch-name
       uses: tj-actions/branch-names@v7
 
