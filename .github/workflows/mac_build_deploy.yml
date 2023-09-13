@@ -80,10 +80,18 @@ jobs:
         run: |
           python $GITHUB_WORKSPACE/release/build.py
           cp $GITHUB_WORKSPACE/OpenBCI_GUI/sketch.icns $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app/Contents/Resources/sketch.icns
-          dmgbuild -s release/mac/dmgbuild_settings.py -D app=$GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app \
+
+      - name: Sign Build
+        run: |
+          codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app
+
+      - name: Create DMG
+        run: |
+          dmgbuild -s release/mac/dmgbuild_settings.py \
+            -D app=$GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app \
             OpenBCI_GUI $GITHUB_WORKSPACE/application.macosx.dmg
 
-      - name: Sign
+      - name: Sign DMG
         run: |
           codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx.dmg
 

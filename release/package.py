@@ -60,7 +60,7 @@ def main ():
 
     if LOCAL_OS == MAC:
         shutil.move(flavors[LOCAL_OS] + ".dmg", new_name + "macosx.dmg")
-    else:
+    else: # Windows and Linux
         release_directory = flavors[LOCAL_OS].replace("application.", new_name)
         release_directory = os.path.join(os.getcwd(), release_directory)
 
