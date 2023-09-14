@@ -7,49 +7,48 @@ on:
       - development
 
 jobs:
-  BuildWin:
-    runs-on: windows-2019
+  build:
+    name: Build for Windows - Processing 3
+    runs-on: windows-latest
 
     steps:
     - name: Clone Repository
       uses: actions/checkout@v3
+
     - name: Install Python 3.9
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
         architecture: 'x64'
         cache: 'pip'
-    - name: Install Python Dependencies
-      run: |
-        python -m pip install requests
-        python -m pip install beautifulsoup4
+
     - name: Set Path
-      run: |
-        echo %GITHUB_WORKSPACE%\temp\processing-3.5.3>>%GITHUB_PATH%
-        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64>>%GITHUB_PATH%
-        ls -l "C:\Program Files (x86)\Windows Kits\10\bin\10.0.18362.0\x64"
+      run: echo %GITHUB_WORKSPACE%\processing\processing-3.5.3>>%GITHUB_PATH%
       shell: cmd
+
     - name: Print Path
-      run: echo %GITHUB_PATH%
+      run: echo %PATH%
       shell: cmd
 
     - name: Install Processing
       run: |
-        mkdir %GITHUB_WORKSPACE%\temp
-        cd %GITHUB_WORKSPACE%\temp
+        mkdir processing
+        cd %GITHUB_WORKSPACE%\processing
         curl -O -L --insecure https://download.processing.org/processing-3.5.3-windows64.zip
-        ls -l %GITHUB_WORKSPACE%\temp
+        ls -l %GITHUB_WORKSPACE%\processing
         unzip processing-3.5.3-windows64.zip
-        ls -l %GITHUB_WORKSPACE%\temp\processing-3.5.3
+        ls -l %GITHUB_WORKSPACE%\processing\processing-3.5.3
         mkdir %userprofile%\documents\processing\libraries
         xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
         ls -l %userprofile%\documents\processing\libraries
       shell: cmd
+
     - name: Check processing-java
       run: processing-java --help
       shell: cmd
-    - name: Build Script
+
+    - name: Build
       run: |
         python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
-        python %GITHUB_WORKSPACE%\release_script\make-release.py --no-prompts --pfx-password %PFX_PASS% --pfx-path %GITHUB_WORKSPACE%\release_script\windows_only\0a2d0e9821bd184a1d969a1db3630c92-SHA2.pfx
+        python %GITHUB_WORKSPACE%\release\build.py
       shell: cmd
