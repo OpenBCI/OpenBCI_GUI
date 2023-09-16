@@ -6,6 +6,11 @@
 - Add channel labels for Cyton Digital Channels in GUI CSV files and also label unused channels #1108
 - Process all data in the background when widgets are closed and sending over Networking stream #1094
 
+# v5.2.2
+
+### Improvements
+- Update Ganglion decompression to support Ganglion firmware v3 and v2 #1173 Awesome work! @philippitts
+
 # v5.2.1
 
 ### Improvements

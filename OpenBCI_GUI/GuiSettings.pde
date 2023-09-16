@@ -34,6 +34,7 @@ enum ExpertModeEnum implements GuiSettingsEnum {
 public class GuiSettingsValues {
     public ExpertModeEnum expertMode = ExpertModeEnum.OFF;
     public boolean showCytonSmoothingPopup = true;
+    public boolean showGanglionUpgradePopup = true;
 
     public GuiSettingsValues() {
     }
@@ -43,7 +44,7 @@ class GuiSettings {
 
     private GuiSettingsValues values;
     private String filename;
-    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup");
+    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup", "showGanglionUpgradePopup");
 
     GuiSettings(String settingsDirectory) {
 
@@ -164,7 +165,16 @@ class GuiSettings {
         saveToFile();
     }
 
+    public void setShowGanglionUpgradePopup(boolean b) {
+        values.showGanglionUpgradePopup = b;
+        saveToFile();
+    }
+
     public boolean getShowCytonSmoothingPopup() {
         return values.showCytonSmoothingPopup;
+    }
+
+    public boolean getShowGanglionUpgradePopup() {
+        return values.showGanglionUpgradePopup;
     }
 }
