@@ -40,8 +40,12 @@ abstract class BoardBrainFlow extends Board {
                 e.printStackTrace();
             }
             boardShim.prepare_session();
+            /*
+            //This does not seem to work with Windows and Processing.
+            //For now, we will add a streamer using argument for start_stream(). -RW 9/18/2023
             if (brainflowStreamer != "")
                 boardShim.add_streamer(brainflowStreamer);
+            */
             return true; 
 
         } catch (Exception e) {
@@ -80,7 +84,7 @@ abstract class BoardBrainFlow extends Board {
         }
 
         try {
-            boardShim.start_stream (450000);
+            boardShim.start_stream (450000, brainflowStreamer);
             streaming = true;
         }
         catch (BrainFlowError e) {

@@ -8,6 +8,10 @@
 - Update to BrainFlow 5.10.0
 - Update to GUI Helpers 2.0.0 #1187
 
+### Bug Fixes
+- Fix BrainFlow error when outputting to BDF and BrainFlow streaming is enabled #1105
+- Fix BrainFlow streamer on Windows #1190
+
 # v5.2.2
 
 ### Improvements
