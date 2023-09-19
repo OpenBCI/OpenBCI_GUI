@@ -207,41 +207,16 @@ license = {
         # RTF (in which case it must start "{\rtf1"), or a path to a file
         # containing the license text.  If you're using RTF,
         # watch out for Python escaping (or read it from a file).
-        "en_US": b"""{
-        \\rtf1\\ansi\\ansicpg1252\\cocoartf1504\\cocoasubrtf820
-        {\\fonttbl\\f0\\fnil\\fcharset0 Helvetica-Bold;\\f1\\fnil\\fcharset0 Helvetica;}
-        {\\colortbl;\\red255\\green255\\blue255;\\red0\\green0\\blue0;}
-        {\\*\\expandedcolortbl;;\\cssrgb\\c0\\c0\\c0;}
-            \\paperw11905\\paperh16837\\margl1133\\margr1133\\margb1133\\margt1133
-            \\deftab720
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+        "en_US": b"""
+            The OpenBCI GUI is licensed under the MIT License.
 
-            \\f0\\b\\fs60 \\cf2 \\expnd0\\expndtw0\\kerning0
-            \\up0 \\nosupersub \\ulnone \\outl0\\strokewidth0 \\strokec2 MIT License\\
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+            Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-            \\pard\\pardeftab720\\sa160\\partightenfactor0
+            The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-            \\f1\\b0\\fs22 \\cf2 \\strokec2 
-            Permission is hereby granted, free of charge, to any person obtaining a copy
-            of this software and associated documentation files (the "Software"), to deal
-            in the Software without restriction, including without limitation the rights
-            to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-            copies of the Software, and to permit persons to whom the Software is
-            furnished to do so, subject to the following conditions:
-
-            The above copyright notice and this permission notice shall be included in all
-            copies or substantial portions of the Software.
-
-            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-            IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-            FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-            AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-            LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-            OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-            SOFTWARE.\\
-            \\
-            }"""
+            THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+            
+            """
     },
     "buttons": {
         # For each language, text for the buttons on the licensing window.
