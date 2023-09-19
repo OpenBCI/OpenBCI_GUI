@@ -1,3 +1,2 @@
 awscli
 dmgbuild
-biplist
