@@ -676,6 +676,10 @@ class BLEBox {
     private MenuList bleList;
     private Button refreshBLE;
     Map<String, String> bleMACAddrMap = new HashMap<String, String>();
+    private final int BUTTON_HEIGHT = 24;
+
+    private Button v2FirmwareButton;
+    private Button v3FirmwareButton;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -691,6 +695,17 @@ class BLEBox {
 
         createRefreshBLEButton("refreshGanglionBLEButton", "START SEARCH", x + padding, y + padding*4 + 72 + 8, w - padding*5, 24);
         createGanglionBLEMenuList(bleBox_cp5, "bleList", x + padding, y + padding*3 + 8, w - padding*2, 72, p3);
+        
+        //Temporary fix for Mac OS X and Ganglion BLE
+        if (isMac()) {
+            h = 140 + _padding * 2 + BUTTON_HEIGHT;
+            int buttonWidth = (w-padding*3)/2;
+            int buttonY = y + h - padding - BUTTON_HEIGHT;
+            createV2FirmwareButton("v2FirmwareButton", "V2 FIRMWARE", x + padding, buttonY, buttonWidth, BUTTON_HEIGHT);
+            createV3FirmwareButton("v3FirmwareButton", "V3 FIRMWARE", x + padding + buttonWidth + padding, buttonY, buttonWidth, BUTTON_HEIGHT);
+        }
+        
+
     }
 
     public void update() {
@@ -832,6 +847,41 @@ class BLEBox {
                     ganglion_portName = (String)bob.get("headline");
                     output("Ganglion Device Name = " + ganglion_portName);
                 }
+            }
+        });
+    }
+
+    //Temporary fix for Ganglion firmware on Mac
+    private void createV2FirmwareButton(String name, String text, int _x, int _y, int _w, int _h) {
+        v2FirmwareButton = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
+        v2FirmwareButton.setSwitch(true);
+        if (usingGanglionV3andMacOS) {
+            v2FirmwareButton.setOff();
+        } else {
+            v2FirmwareButton.setOn();
+        }
+        v2FirmwareButton.setOn();
+        v2FirmwareButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                v3FirmwareButton.setOff();
+                usingGanglionV3andMacOS = false;
+            }
+        });
+    }
+
+    //Temporary fix for Ganglion firmware on Mac
+    private void createV3FirmwareButton(String name, String text, int _x, int _y, int _w, int _h) {
+        v3FirmwareButton = createButton(bleBox_cp5, name, text, _x, _y, _w, _h);
+        v3FirmwareButton.setSwitch(true);
+        if (usingGanglionV3andMacOS) {
+            v3FirmwareButton.setOn();
+        } else {
+            v3FirmwareButton.setOff();
+        }
+        v3FirmwareButton.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                v2FirmwareButton.setOff();
+                usingGanglionV3andMacOS = true;
             }
         });
     }

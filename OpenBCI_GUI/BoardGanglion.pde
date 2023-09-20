@@ -24,6 +24,24 @@ class BoardGanglionNative extends BoardGanglion {
             }
         }
     }
+    
+    //Temporary fix for Ganglion firmware on Mac
+    public BoardGanglionNative(String name, boolean showUpgradePopup, boolean usingV3Firmware) {
+        super();
+        this.boardName = name;
+
+        if (usingV3Firmware) {
+            this.firmwareVersion = 3;
+            output("Detected Ganglion firmware version 3");
+        }
+        else {
+            this.firmwareVersion = 2;
+            output("Detected Ganglion firmware version 2");
+            if (showUpgradePopup) {
+                PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
+            }
+        }
+    }
 
     @Override
     protected BrainFlowInputParams getParams() {
@@ -77,6 +95,25 @@ class BoardGanglionBLE extends BoardGanglion {
         this.macAddress = macAddress;
 
         if (deviceName.indexOf("Ganglion 1.3") != -1) {
+            this.firmwareVersion = 3;
+            output("Detected Ganglion firmware version 3");
+        }
+        else {
+            this.firmwareVersion = 2;
+            if (showUpgradePopup) {
+                PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
+            }
+            output("Detected Ganglion firmware version 2");
+        }
+    }
+
+    //Temporary fix for Ganglion firmware on Mac
+    public BoardGanglionBLE(String deviceName, String serialPort, String macAddress, boolean showUpgradePopup, boolean usingV3Firmware) {
+        super();
+        this.serialPort = serialPort;
+        this.macAddress = macAddress;
+
+        if (usingV3Firmware) {
             this.firmwareVersion = 3;
             output("Detected Ganglion firmware version 3");
         }

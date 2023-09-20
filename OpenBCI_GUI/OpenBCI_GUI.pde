@@ -312,6 +312,8 @@ boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessin
 StringBuilder globalScreenResolution;
 StringBuilder globalScreenDPI;
 
+boolean usingGanglionV3andMacOS = false;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -621,12 +623,20 @@ void initSystem() {
                 String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac, showUpgradePopup);
+                if (isMac()) {
+                    currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac, showUpgradePopup, usingGanglionV3andMacOS);
+                } else {
+                    currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac, showUpgradePopup);
+                }
             } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
                 String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
                 println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionNative(ganglionName, showUpgradePopup);
+                if (isMac()) {
+                    currentBoard = new BoardGanglionNative(ganglionName, showUpgradePopup, usingGanglionV3andMacOS);
+                } else {
+                    currentBoard = new BoardGanglionNative(ganglionName, showUpgradePopup);
+                }
             }
             break;
         case DATASOURCE_STREAMING:
