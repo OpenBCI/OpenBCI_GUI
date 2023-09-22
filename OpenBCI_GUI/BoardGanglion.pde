@@ -2,27 +2,16 @@ class BoardGanglionNative extends BoardGanglion {
 
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionNative;
     private String boardName;
-    private int firmwareVersion = 0;
+    private int firmwareVersion;
 
     public BoardGanglionNative() {
         super();
     }
 
-    public BoardGanglionNative(String name, boolean showUpgradePopup) {
+    public BoardGanglionNative(GanglionDevice device) {
         super();
-        this.boardName = name;
-
-        if (name.indexOf("Ganglion 1.3") != -1) {
-            this.firmwareVersion = 3;
-            output("Detected Ganglion firmware version 3");
-        }
-        else {
-            this.firmwareVersion = 2;
-            output("Detected Ganglion firmware version 2");
-            if (showUpgradePopup) {
-                PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
-            }
-        }
+        this.boardName = device.identifier;
+        this.firmwareVersion = device.firmware_version;
     }
 
     @Override
@@ -64,29 +53,18 @@ class BoardGanglionNative extends BoardGanglion {
 
 class BoardGanglionBLE extends BoardGanglion {
 
-    private int firmwareVersion = 0;
+    private int firmwareVersion;
     private PacketLossTrackerGanglionBLE packetLossTrackerGanglionBLE;
 
     public BoardGanglionBLE() {
         super();
     }
 
-    public BoardGanglionBLE(String deviceName, String serialPort, String macAddress, boolean showUpgradePopup) {
+    public BoardGanglionBLE(GanglionDevice device, String serialPort) {
         super();
         this.serialPort = serialPort;
-        this.macAddress = macAddress;
-
-        if (deviceName.indexOf("Ganglion 1.3") != -1) {
-            this.firmwareVersion = 3;
-            output("Detected Ganglion firmware version 3");
-        }
-        else {
-            this.firmwareVersion = 2;
-            if (showUpgradePopup) {
-                PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
-            }
-            output("Detected Ganglion firmware version 2");
-        }
+        this.macAddress = device.mac_address;
+        this.firmwareVersion = device.firmware_version;
     }
 
     @Override

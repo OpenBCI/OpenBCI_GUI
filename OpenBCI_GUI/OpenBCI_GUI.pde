@@ -56,6 +56,7 @@ import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
 import http.requests.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import openbci_gui_helpers.GanglionDevice;
 
 
 //------------------------------------------------------------------------
@@ -617,16 +618,34 @@ void initSystem() {
             if (selectedProtocol == BoardProtocol.WIFI) {
                 currentBoard = new BoardGanglionWifi(wifi_ipAddress, selectedSamplingRate);
             } else if (selectedProtocol == BoardProtocol.BLED112) {
-                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
-                String ganglionPort = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
-                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
-                println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionBLE(ganglionName, ganglionPort, ganglionMac, showUpgradePopup);
+                String name = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+                String port = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
+                
+                GanglionDevice device;
+                device = Arrays.stream(controlPanel.bleBox.ganglionDevices).filter(x -> x.identifier.equals(name)).findFirst().orElse(null);
+
+                println("MAC address for Ganglion is " + device.mac_address);
+                println("Ganglion firmware is " + device.firmware_version);
+
+                if (device.firmware_version == 2 && showUpgradePopup) {
+                    PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
+                }
+
+                currentBoard = new BoardGanglionBLE(device, port);
             } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
-                String ganglionName = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
-                String ganglionMac = controlPanel.bleBox.bleMACAddrMap.get(ganglionName);
-                println("MAC address for Ganglion is " + ganglionMac);
-                currentBoard = new BoardGanglionNative(ganglionName, showUpgradePopup);
+                String name = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
+
+                GanglionDevice device;
+                device = Arrays.stream(controlPanel.bleBox.ganglionDevices).filter(x -> x.identifier.equals(name)).findFirst().orElse(null);
+
+                println("MAC address for Ganglion is " + device.mac_address);
+                println("Ganglion firmware is " + device.firmware_version);
+
+                if (device.firmware_version == 2 && showUpgradePopup) {
+                    PopupMessage msg = new PopupMessage("Warning", "Ganglion firmware version 2 detected. Please update to version 3 for better performance. \n\nhttps://docs.openbci.com/Ganglion/GanglionProgram");
+                }
+
+                currentBoard = new BoardGanglionNative(device);
             }
             break;
         case DATASOURCE_STREAMING:
