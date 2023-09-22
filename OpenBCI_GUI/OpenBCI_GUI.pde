@@ -621,8 +621,13 @@ void initSystem() {
                 String name = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
                 String port = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("subline"));
                 
-                GanglionDevice device;
-                device = Arrays.stream(controlPanel.bleBox.ganglionDevices).filter(x -> x.identifier.equals(name)).findFirst().orElse(null);
+                GanglionDevice device = new GanglionDevice();
+                for (GanglionDevice entry : controlPanel.bleBox.ganglionDevices) {
+                    if (entry.identifier.equals(name)) {
+                        device = entry;
+                        break;
+                    }
+                }
 
                 println("MAC address for Ganglion is " + device.mac_address);
                 println("Ganglion firmware is " + device.firmware_version);
@@ -635,8 +640,13 @@ void initSystem() {
             } else if (selectedProtocol == BoardProtocol.NATIVE_BLE) {
                 String name = (String)(controlPanel.bleBox.bleList.getItem(controlPanel.bleBox.bleList.activeItem).get("headline"));
 
-                GanglionDevice device;
-                device = Arrays.stream(controlPanel.bleBox.ganglionDevices).filter(x -> x.identifier.equals(name)).findFirst().orElse(null);
+                GanglionDevice device = new GanglionDevice();
+                for (GanglionDevice entry : controlPanel.bleBox.ganglionDevices) {
+                    if (entry.identifier.equals(name)) {
+                        device = entry;
+                        break;
+                    }
+                }
 
                 println("MAC address for Ganglion is " + device.mac_address);
                 println("Ganglion firmware is " + device.firmware_version);
