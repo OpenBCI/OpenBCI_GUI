@@ -76,6 +76,10 @@ private String getOperatingSystemVersion() {
     return System.getProperty("os.version");
 }
 
+private String getOperatingSystemName() {
+    return System.getProperty("os.name");
+}
+
 private int[] fetchAndParseMacOsVersion() {
     if (!isMac()) {
         println("Oops! Please only call this method on MacOS");
@@ -288,11 +292,14 @@ String getIpAddrFromStr(String strWithIP) {
     }
 }
 
-float getFontStringHeight(PFont _font, String string) {
+float getFontStringHeight(PFont font, String text) {
+    if (text == null) {
+        return 0;
+    }
     float minY = Float.MAX_VALUE;
     float maxY = Float.NEGATIVE_INFINITY;
-    for (Character c : string.toCharArray()) {
-        PShape character = _font.getShape(c); // create character vector
+    for (Character c : text.toCharArray()) {
+        PShape character = font.getShape(c); // create character vector
         for (int i = 0; i < character.getVertexCount(); i++) {
             minY = min(character.getVertex(i).y, minY);
             maxY = max(character.getVertex(i).y, maxY);

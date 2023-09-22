@@ -1,3 +1,17 @@
+# v6.0.0
+
+### Improvements
+- Update repository to Processing 4.2 #1111
+- Add Software Marker Widget #1091
+- Add channel labels for Cyton Digital Channels in GUI CSV files and also label unused channels #1108
+- Process all data in the background when widgets are closed and sending over Networking stream #1094
+- Update to BrainFlow 5.10.0
+- Update to GUI Helpers 2.0.1 #1187
+
+### Bug Fixes
+- Fix BrainFlow error when outputting to BDF and BrainFlow streaming is enabled #1105
+- Fix BrainFlow streamer on Windows #1190
+
 # v5.2.2
 
 ### Improvements

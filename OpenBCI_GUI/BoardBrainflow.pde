@@ -12,12 +12,15 @@ abstract class BoardBrainFlow extends Board {
     protected int sampleIndexChannelCache = -1;
     protected int timeStampChannelCache = -1;
     protected int totalChannelsCache = -1;
+    protected int markerChannelCache = -1;
     protected int[] exgChannelsCache = null;
     protected int[] otherChannelsCache = null;
 
     protected boolean streaming = false;
     protected double time_last_datapoint = -1.0;
     protected boolean data_popup_displayed = false;
+
+    private DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     /* Abstract Functions.
      * Implement these in your board.
@@ -37,8 +40,12 @@ abstract class BoardBrainFlow extends Board {
                 e.printStackTrace();
             }
             boardShim.prepare_session();
+            /*
+            //This does not seem to work with Windows and Processing.
+            //For now, we will add a streamer using argument for start_stream(). -RW 9/18/2023
             if (brainflowStreamer != "")
                 boardShim.add_streamer(brainflowStreamer);
+            */
             return true; 
 
         } catch (Exception e) {
@@ -77,7 +84,7 @@ abstract class BoardBrainFlow extends Board {
         }
 
         try {
-            boardShim.start_stream (450000);
+            boardShim.start_stream (450000, brainflowStreamer);
             streaming = true;
         }
         catch (BrainFlowError e) {
@@ -303,5 +310,40 @@ abstract class BoardBrainFlow extends Board {
         }
 
         return otherChannelsCache;
+    }
+
+    @Override
+    public int getMarkerChannel() {
+        if (markerChannelCache < 0) {
+            try {
+                markerChannelCache = BoardShim.get_marker_channel(getBoardIdInt());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+
+        return markerChannelCache;
+    }
+
+    @Override
+    public void insertMarker(double value) {
+        if (isConnected() && streaming) {
+            try {
+                boardShim.insert_marker(value);
+                String currentTimeString = dateFormat.format(new Date());
+                StringBuilder markerNotification = new StringBuilder("Inserted marker ");
+                markerNotification.append(value);
+                markerNotification.append(" at approximately: ");
+                markerNotification.append(currentTimeString);
+                println(markerNotification.toString());
+            } catch (BrainFlowError e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void insertMarker(int value) {
+        insertMarker((double) value);
     }
 };

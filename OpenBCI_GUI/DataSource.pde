@@ -32,4 +32,6 @@ interface DataSource {
     public int getTotalChannelCount();
 
     public boolean isStreaming();
+
+    public int getMarkerChannel();
 };

@@ -206,6 +206,12 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
     }
 
     @Override
+    public int getMarkerChannel() {
+        //There is no software marker channel for SD card playback
+        return -1;
+    }
+
+    @Override
     public double[][] getFrameData() {
         double[][] array = new double[getTotalChannelCount()][numNewSamplesThisFrame];
         List<double[]> list = getData(numNewSamplesThisFrame);

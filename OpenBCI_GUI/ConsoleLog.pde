@@ -25,7 +25,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
     private final int headerHeight = 42;
     private final int defaultWidth = 620;
-    private final int defaultHeight = 500;
+    private final int defaultHeight = 620;
     private final int buttonWidth = 142;
     private final int buttonHeight = 34;
 
@@ -61,7 +61,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
         logApplet = this;
 
         surface.setAlwaysOnTop(false);
-        surface.setResizable(true);
+        surface.setResizable(false);
 
         Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
         frame.toFront();

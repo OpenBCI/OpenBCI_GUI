@@ -50,7 +50,7 @@ import java.awt.AWTException;
 import netP5.*; // for OSC
 import oscP5.*; // for OSC
 import hypermedia.net.*; //for UDP
-import java.nio.ByteBuffer; //for BDF file writing
+import java.nio.ByteBuffer; //for BDF file writing and UDP Marker Receiver
 import edu.ucsd.sccn.LSL; //for LSL
 import com.fazecast.jSerialComm.*; //Helps distinguish serial ports on Windows
 import org.apache.commons.lang3.time.StopWatch;
@@ -62,8 +62,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 //                       Global Variables & Instances
 //------------------------------------------------------------------------
 //Used to check GUI version in TopNav.pde and displayed on the splash screen on startup
-String localGUIVersionString = "v5.2.2";
-String localGUIVersionDate = "August 2023";
+String localGUIVersionString = "v6.0.0-beta.0";
+String localGUIVersionDate = "September 2023";
 String guiLatestVersionGithubAPI = "https://api.github.com/repos/OpenBCI/OpenBCI_GUI/releases/latest";
 String guiLatestReleaseLocation = "https://github.com/OpenBCI/OpenBCI_GUI/releases/latest";
 Boolean guiIsUpToDate;
@@ -399,18 +399,19 @@ void setup() {
     StringBuilder osName = new StringBuilder("Operating System and Version: ");
     if (isLinux()) {
         osName.append("Linux");
+        osName.append(" - ");
+        osName.append(getOperatingSystemVersion());
     } else if (isWindows()) {
-        osName.append("Windows");
+        osName.append(getOperatingSystemName());
         //Throw a popup if we detect an incompatible version of Windows. Fixes #964. Found in Extras.pde.
         checkIsOldVersionOfWindowsOS();
         //This is an edge case when using 32-bit Processing Java on Windows. Throw a popup if detected.
         checkIs64BitJava();
     } else if (isMac()) {
         osName.append("Mac");
+        osName.append(" - ");
+        osName.append(getOperatingSystemVersion());
     }
-
-    osName.append(" - ");
-    osName.append(getOperatingSystemVersion());
 
     println("Console Log Started at Local Time: " + directoryManager.getFileNameDateTime());
     println(globalScreenResolution.toString());

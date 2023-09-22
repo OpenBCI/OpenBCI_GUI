@@ -277,14 +277,13 @@ class DataProcessing {
             headWidePower[i] = sum/nchan;   // averaging power over all channels
         }
 
-        //find strongest channel
+        // Calculate data used for Headplot
+        // Find strongest channel
         int refChanInd = findMax(data_std_uV);
         //println("EEG_Processing: strongest chan (one referenced) = " + (refChanInd+1));
         float[] refData_uV = dataProcessingFilteredBuffer[refChanInd];  //use the filtered data
         refData_uV = Arrays.copyOfRange(refData_uV, refData_uV.length-((int)fs_Hz), refData_uV.length);   //just grab the most recent second of data
-
-
-        //compute polarity of each channel
+        // Compute polarity of each channel
         for (int Ichan=0; Ichan < nchan; Ichan++) {
             float[] fooData_filt = dataProcessingFilteredBuffer[Ichan];  //use the filtered data
             fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-((int)fs_Hz), fooData_filt.length);   //just grab the most recent second of data
@@ -296,7 +295,18 @@ class DataProcessing {
             }
         }
 
-        //Compute EMG values independent of widgets
+        /////////////////////////////////////////////////////////////
+        // Compute widget values independent of widgets being open //
+        //                       -RW #1094                         //
+        /////////////////////////////////////////////////////////////
         emgSettings.values.process(dataProcessingFilteredBuffer);
+        w_focus.updateFocusWidgetData();
+        w_bandPower.updateBandPowerWidgetData();
+        w_emgJoystick.updateEmgJoystickWidgetData();
+        if (w_pulsesensor != null) {
+            w_pulsesensor.updatePulseSensorWidgetData();
+        }
+
+        w_networking.updateNetworkingWidgetData();
     }
 }

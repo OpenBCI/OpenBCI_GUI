@@ -101,8 +101,6 @@ class W_EMGJoystick extends Widget {
 
     public void update(){
         super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-    
-        updateJoystickInput();
     }
 
     public void draw(){
@@ -205,7 +203,8 @@ class W_EMGJoystick extends Widget {
     }
     
     //This is the core method that updates the joystick input
-    private void updateJoystickInput() {
+    //Call this method in DataProcessing.pde to update the joystick input even when widget is closed
+    public void updateEmgJoystickWidgetData() {
         previousJoystickRawX = joystickRawX;
         previousJoystickRawY = joystickRawY;
 

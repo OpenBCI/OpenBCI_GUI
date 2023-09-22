@@ -296,6 +296,7 @@ abstract class BoardGanglion extends BoardBrainFlow implements AccelerometerCapa
         for (int i=0; i<getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
+        channelNames[getMarkerChannel()] = "Marker Channel";
     }
 
     @Override

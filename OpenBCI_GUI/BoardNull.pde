@@ -52,6 +52,21 @@ class BoardNull extends Board {
     }
 
     @Override
+    public int getMarkerChannel() {
+        return 0;
+    }
+
+    @Override
+    public void insertMarker(int marker) {
+        // empty
+    }
+
+    @Override
+    public void insertMarker(double value) {
+        // empty
+    }
+
+    @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
         // empty
     }

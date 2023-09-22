@@ -219,6 +219,11 @@ abstract class DataSourcePlayback implements DataSource, FileBoard  {
         return float(getCurrentSample()) / float(getSampleRate());
     }
 
+    @Override
+    public int getMarkerChannel() {
+        return underlyingBoard.getMarkerChannel();
+    }
+
     public void goToIndex(int index) {
         currentSampleExg = index;
     }

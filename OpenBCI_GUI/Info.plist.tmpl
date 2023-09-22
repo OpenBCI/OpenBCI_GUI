@@ -5,43 +5,44 @@
         <key>CFBundleDevelopmentRegion</key>
         <string>English</string>
         <key>CFBundleExecutable</key>
-        <string>@@sketch@@</string>
+        <string>OpenBCI_GUI</string>
         <key>CFBundleIconFile</key>
         <string>sketch.icns</string>
         <key>CFBundleIdentifier</key>
-        <string>@@sketch@@</string>
+        <string>OpenBCI_GUI</string>
         <key>CFBundleDisplayName</key>
-        <string>@@sketch@@</string>
+        <string>OpenBCI_GUI</string>
         <key>CFBundleInfoDictionaryVersion</key>
         <string>6.0</string>
         <key>CFBundleName</key>
-        <string>@@sketch@@</string>
+        <string>OpenBCI_GUI</string>
         <key>CFBundlePackageType</key>
         <string>APPL</string>
 
         <!-- Customize this set as you wish -->
         <key>CFBundleShortVersionString</key>
-        <string>5</string>
+        <string>6</string>
         <key>CFBundleVersion</key>
-        <string>5.2.2</string>
+        <string>6.0.0</string>
         <key>CFBundleSignature</key>
         <string>????</string>
         <key>NSHumanReadableCopyright</key>
         <string>MIT License
 
-	Copyright © 2023 OpenBCI
-	</string>
+        Copyright © 2023 OpenBCI
+        </string>
         <key>CFBundleGetInfoString</key>
-        <string>July 2023</string>
+        <string>August 2023</string>
         <!-- End of the set that can be customized -->
 
-        @@jvm_runtime@@
+        <key>JVMRuntime</key>
+        <string>jdk-17.0.6+10</string>
 
         <key>JVMMainClassName</key>
-        <string>@@sketch@@</string>
+        <string>OpenBCI_GUI</string>
 
         <key>LSMinimumSystemVersion</key>
-        <string>10.8.5</string>
+        <string>10.14.6</string>
 
         <key>NSHighResolutionCapable</key>
         <true/>
@@ -58,17 +59,19 @@
         </dict>
 
         <key>LSUIPresentationMode</key>
-        <integer>@@lsuipresentationmode@@</integer>
+        <integer>0</integer>
 
         <key>JVMOptions</key>
         <array>
-	@@jvm_options_list@@
+	        <string>-Xms64m</string>
+            <string>-Xmx10000m</string>
+            <string>-Djna.nosys=false</string>
             <string>-Xdock:icon=$APP_ROOT/Contents/Resources/sketch.icns</string>
             <string>-Djava.library.path=$APP_ROOT/Contents/Java</string>
             <string>-Dapple.laf.useScreenMenuBar=true</string>
             <string>-Dcom.apple.macos.use-file-dialog-packages=true</string>
             <string>-Dcom.apple.macos.useScreenMenuBar=true</string>
-            <string>-Dcom.apple.mrj.application.apple.menu.about.name=@@sketch@@</string>
+            <string>-Dcom.apple.mrj.application.apple.menu.about.name=OpenBCI_GUI</string>
             <string>-Dcom.apple.smallTabs=true</string>
         </array>
         <key>JVMArguments</key>

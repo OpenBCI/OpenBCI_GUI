@@ -26,7 +26,7 @@ public class DataWriterODF {
 
         String[] colNames = getChannelNames();
         
-        for (int i=0; i<colNames.length; i++) {
+        for (int i = 0; i < colNames.length; i++) {
             output.print(colNames[i]);
             output.print(", ");
         }
@@ -37,8 +37,8 @@ public class DataWriterODF {
 
     public void append(double[][] data) {
         //get current date time with Date()
-        for (int iSample=0; iSample<data[0].length; iSample++) {
-            for (int iChan=0; iChan<data.length; iChan++) {
+        for (int iSample = 0; iSample < data[0].length; iSample++) {
+            for (int iChan = 0; iChan < data.length; iChan++) {
                 output.print(data[iChan][iSample]);
                 output.print(", ");
             }
@@ -80,6 +80,10 @@ public class DataWriterODF {
 
     protected int getTimestampChannel() {
         return ((Board)currentBoard).getTimestampChannel();
+    }
+
+    protected int getMarkerChannel() {
+        return ((Board)currentBoard).getMarkerChannel();
     }
     
 };

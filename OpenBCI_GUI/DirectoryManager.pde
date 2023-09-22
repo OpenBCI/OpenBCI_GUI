@@ -35,9 +35,11 @@ class DirectoryManager {
         String directoryName = guiDataPath + File.separator + "Sample_Data" + File.separator;
         String guiv4fileName = directoryName + "OpenBCI-sampleData-2-meditation.txt";
         String guiv5fileName = directoryName + "OpenBCI_GUI-v5-meditation.txt";
+        String guiv6fileName = directoryName + "OpenBCI_GUI-v6-meditation.txt";
         File directory = new File(directoryName);
         File guiv4_fileToCheck = new File(guiv4fileName);
         File guiv5_fileToCheck = new File(guiv5fileName);
+        File guiv6_fileToCheck = new File(guiv6fileName);
 
         if (guiv4_fileToCheck.exists()) {
             //Delete old gui v4 files in Documents folder
@@ -50,11 +52,23 @@ class DirectoryManager {
                 println("OpenBCI_GUI::Setup: Error trying to delete old GUI Sample Data in Documents folder.");
             }
         }
+
+        if (guiv5_fileToCheck.exists()) {
+            //Delete old gui v5 files in Documents folder
+            try {
+                for (File subFile : directory.listFiles()) {
+                    subFile.delete();
+                }
+                println("OpenBCI_GUI::Setup: Successfully deleted old GUI v5 sample data files!");
+            } catch (SecurityException e) {
+                println("OpenBCI_GUI::Setup: Error trying to delete old GUI Sample Data in Documents folder.");
+            }
+        }
         
-        if (!guiv5_fileToCheck.exists()) {
+        if (!guiv6_fileToCheck.exists()) {
             copySampleDataFiles(directory, directoryName);
         } else {
-            println("OpenBCI_GUI::Setup: GUI v5 Sample Data exists in Documents folder.");
+            println("OpenBCI_GUI::Setup: GUI v6 Sample Data exists in Documents folder.");
         }
 
         makeRecordingsFolder();

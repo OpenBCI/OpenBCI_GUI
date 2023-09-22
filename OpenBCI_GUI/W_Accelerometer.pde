@@ -441,7 +441,7 @@ class AccelerometerBar {
         List<double[]> allData = accelBoard.getDataWithAccel(nPoints);
         int[] accelChannels = accelBoard.getAccelerometerChannels();
 
-        for (int i=0; i < nPoints; i++) {
+        for (int i = 0; i < nPoints; i++) {
             accelPointsX.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[0]], "");
             accelPointsY.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[1]], "");
             accelPointsZ.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[2]], "");

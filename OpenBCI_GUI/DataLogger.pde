@@ -218,6 +218,9 @@ class DataLogger {
     }
 
     public void setBfWriterDefaultFolder() {
+        if (settings.getSessionPath() != "") {
+            settings.setSessionPath(directoryManager.getRecordingsPath() + "OpenBCISession_" + sessionName);
+        }
         fileWriterBF.setBrainFlowStreamerFolderName(sessionName, settings.getSessionPath());
     }
 

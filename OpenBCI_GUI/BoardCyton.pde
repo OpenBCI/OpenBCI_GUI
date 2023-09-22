@@ -602,12 +602,23 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
     
     @Override
     protected void addChannelNamesInternal(String[] channelNames) {
-        for (int i=0; i<getAccelerometerChannels().length; i++) {
+        for (int i = 0; i < getAccelerometerChannels().length; i++) {
             channelNames[getAccelerometerChannels()[i]] = "Accel Channel " + i;
         }
-        for (int i=0; i<getAnalogChannels().length; i++) {
+        for (int i = 0; i < getAnalogChannels().length; i++) {
             channelNames[getAnalogChannels()[i]] = "Analog Channel " + i;
         }
+        
+        channelNames[getDigitalChannels()[0]] = "Digital Channel 0 (D11)";
+        channelNames[getDigitalChannels()[1]] = "Digital Channel 1 (D12)";
+        channelNames[getDigitalChannels()[2]] = "Digital Channel 2 (D13)";
+        channelNames[getDigitalChannels()[3]] = "Digital Channel 3 (D17)";
+        channelNames[getDigitalChannels()[4]] = "Digital Channel 4 (D18)";
+
+        channelNames[getOtherChannels()[0]] = "Not Used";
+        channelNames[getOtherChannels()[5]] = "Not Used";
+
+        channelNames[getMarkerChannel()] = "Marker Channel";
     }
 
     @Override

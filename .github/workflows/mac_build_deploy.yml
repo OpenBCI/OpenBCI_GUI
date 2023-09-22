@@ -1,0 +1,119 @@
+name: Build GUI for macOS
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [master, development]
+  push:
+    branches: [master, development]
+  
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION : us-east-1
+
+jobs:
+  build:
+    name: Build for macOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+      
+      - name: Install Python Dependencies
+        run: pip install -r release/requirements.txt
+      
+      - name: Install Processing
+        run: |
+          curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-macos-x64.zip
+          unzip processing-4.2-macos-x64.zip
+          ls
+          mv Processing.app /Applications/Processing.app
+
+      - name: Configure PATH
+        run: |
+          echo "$GITHUB_WORKSPACE/release/mac/" >> $GITHUB_PATH
+          chmod +x $GITHUB_WORKSPACE/release/mac/processing-java
+
+      - name: Print PATH
+        run: echo "$PATH"
+
+      - name: Test processing-java command
+        run: processing-java --help
+
+      - name: Copy Libraries to Processing
+        run: |
+          mkdir -p $HOME/Documents/Processing/libraries/
+          cp -a $GITHUB_WORKSPACE/OpenBCI_GUI/libraries/. $HOME/Documents/Processing/libraries/
+
+      - name: Run Unit Tests
+        run: python $GITHUB_WORKSPACE/GuiUnitTests/run-unittests.py
+      
+      - name: Decrypt Certificate
+        run: |
+          openssl version
+          echo $MAC_CERTIFICATE_ENCRYPTED | base64 --decode > $GITHUB_WORKSPACE/release/mac/encrypted-certificate.p12.enc
+          openssl enc -aes-256-cbc -a -d -pbkdf2 \
+            -in $GITHUB_WORKSPACE/release/mac/encrypted-certificate.p12.enc \
+            -out $GITHUB_WORKSPACE/release/mac/certificate.p12 \
+            -k "$OPENSSL_CERT_K"
+        env:
+          OPENSSL_CERT_K: ${{ secrets.OPENSSL_CERT_K }}
+          MAC_CERTIFICATE_ENCRYPTED: ${{ secrets.MAC_CERTIFICATE_ENCRYPTED }}
+
+      - name: Add OSX Signing Certificate to Keychain
+        uses: apple-actions/import-codesign-certs@v2
+        with: 
+          p12-filepath: ${{ github.workspace }}/release/mac/certificate.p12
+          p12-password: ${{ secrets.CERTIFICATE_P12_PASSWORD }}
+      
+      - name: Build
+        run: |
+          python $GITHUB_WORKSPACE/release/build.py
+          cp $GITHUB_WORKSPACE/OpenBCI_GUI/sketch.icns $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app/Contents/Resources/sketch.icns
+
+      - name: Sign Build
+        run: |
+          codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app
+
+      - name: Create DMG
+        run: |
+          dmgbuild -s release/mac/dmgbuild_settings.py \
+            -D app=$GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app \
+            OpenBCI_GUI $GITHUB_WORKSPACE/application.macosx.dmg
+
+      - name: Sign DMG
+        run: |
+          codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx.dmg
+
+      - name: Package
+        run: python $GITHUB_WORKSPACE/release/package.py
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Branch Names
+        id: branch-name
+        uses: tj-actions/branch-names@v7
+      
+      - name: Store Build on AWS
+        run: |
+          cd $GITHUB_WORKSPACE
+          ls
+          CURRENT_BRANCH=${{ steps.branch-name.outputs.head_ref_branch }}
+          echo $CURRENT_BRANCH
+          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
