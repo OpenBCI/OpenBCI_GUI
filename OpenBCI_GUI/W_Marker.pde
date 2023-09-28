@@ -27,8 +27,8 @@ class W_Marker extends Widget {
     private Textfield markerReceivePortTextfield;
     private String markerReceiveIP = "127.0.0.1";
     private int markerReceivePort = 12350;
-    private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 100;
-    private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 20;
+    private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 108;
+    private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 22;
 
     private hypermedia.net.UDP udpReceiver;
 
@@ -144,11 +144,9 @@ class W_Marker extends Widget {
 
         RectDimensions ipTextfieldPosition = markerUIGrid.getCellDims(3, 1);
         markerReceiveIPTextfield.setPosition(ipTextfieldPosition.x, ipTextfieldPosition.y + HALF_CELL_PADDING);
-        markerReceiveIPTextfield.setSize(ipTextfieldPosition.w, ipTextfieldPosition.h - CELL_PADDING);
 
         RectDimensions portTextfieldPosition = markerUIGrid.getCellDims(3, 3);
         markerReceivePortTextfield.setPosition(portTextfieldPosition.x, portTextfieldPosition.y + HALF_CELL_PADDING);
-        markerReceivePortTextfield.setSize(portTextfieldPosition.w, portTextfieldPosition.h - CELL_PADDING);
     }
 
     private void createMarkerButtons() {
