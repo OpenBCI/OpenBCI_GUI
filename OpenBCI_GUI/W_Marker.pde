@@ -27,7 +27,7 @@ class W_Marker extends Widget {
     private Textfield markerReceivePortTextfield;
     private String markerReceiveIP = "127.0.0.1";
     private int markerReceivePort = 12350;
-    private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 240;
+    private final int MARKER_RECEIVE_TEXTFIELD_WIDTH = 108;
     private final int MARKER_RECEIVE_TEXTFIELD_HEIGHT = 22;
 
     private hypermedia.net.UDP udpReceiver;
