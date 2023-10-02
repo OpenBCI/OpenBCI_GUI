@@ -17,12 +17,13 @@
 
 import controlP5.*;
 
-import openbci_gui_helpers.*;
-
 import java.io.IOException;
 import java.util.List;
 
+import openbci_gui_helpers.GUIHelper;
 import openbci_gui_helpers.GanglionError;
+import openbci_gui_helpers.GanglionDevice;
+
 import com.vmichalak.protocol.ssdp.Device;
 import com.vmichalak.protocol.ssdp.SSDPClient;
 
@@ -675,7 +676,7 @@ class BLEBox {
     private ControlP5 bleBox_cp5;
     private MenuList bleList;
     private Button refreshBLE;
-    Map<String, String> bleMACAddrMap = new HashMap<String, String>();
+    GanglionDevice[] ganglionDevices;
 
     BLEBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
@@ -738,12 +739,12 @@ class BLEBox {
                 bleIsRefreshing = true;
 
                 try {
-                    bleMACAddrMap = GUIHelper.scan_for_ganglions (3);
-                    for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
+                    ganglionDevices = GUIHelper.scan_for_ganglions (3);
+                    for (GanglionDevice device : ganglionDevices)
                     {
-                        bleList.addItem(entry.getKey(),  entry.getValue(), "");
+                        bleList.addItem(device.identifier,  device.mac_address, "");
                         bleList.updateMenu();
-                        println("Found Ganglion Board: " + entry.getKey() + " " + entry.getValue());
+                        println("Found Ganglion Board: " + device.identifier + " " + device.mac_address);
                     }
                 } catch (GanglionError e)
                 {
@@ -773,10 +774,10 @@ class BLEBox {
                 final String comPort = getBLED112Port();
                 if (comPort != null) {
                     try {
-                        bleMACAddrMap = GUIHelper.scan_for_ganglions (comPort, 3);
-                        for (Map.Entry<String, String> entry : bleMACAddrMap.entrySet ())
+                        ganglionDevices = GUIHelper.scan_for_ganglions (comPort, 3);
+                        for (GanglionDevice device : ganglionDevices)
                         {
-                            bleList.addItem(entry.getKey(), comPort, "");
+                            bleList.addItem(device.identifier, comPort, "");
                             bleList.updateMenu();
                         }
                     } catch (GanglionError e)

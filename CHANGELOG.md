@@ -6,7 +6,7 @@
 - Add channel labels for Cyton Digital Channels in GUI CSV files and also label unused channels #1108
 - Process all data in the background when widgets are closed and sending over Networking stream #1094
 - Update to BrainFlow 5.10.0
-- Update to GUI Helpers 2.0.1 #1187
+- Update to GUI Helpers 3.0.0 #1187 #1191
 
 ### Bug Fixes
 - Fix BrainFlow error when outputting to BDF and BrainFlow streaming is enabled #1105
