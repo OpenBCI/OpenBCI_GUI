@@ -90,7 +90,6 @@ class W_Focus extends Widget {
         //This is the protocol for setting up dropdowns.
         dropdownWidth = 60; //Override the default dropdown width for this widget
         addDropdown("focusMetricDropdown", "Metric", focusMetric.getEnumStringsAsList(), focusMetric.getIndex());
-        addDropdown("focusClassifierDropdown", "Classifier", focusClassifier.getEnumStringsAsList(), focusClassifier.getIndex());
         addDropdown("focusThresholdDropdown", "Threshold", focusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
         addDropdown("focusWindowDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
         
@@ -191,12 +190,7 @@ class W_Focus extends Widget {
         //Custom resize these dropdowns due to longer text strings as options
         cp5_widget.get(ScrollableList.class, "focusMetricDropdown").setWidth(METRIC_DROPDOWN_W);
         cp5_widget.get(ScrollableList.class, "focusMetricDropdown").setPosition(
-            x0 + w0 - (dropdownWidth*2) - METRIC_DROPDOWN_W - CLASSIFIER_DROPDOWN_W - (PAD_TWO*4), 
-            navH + y0 + PAD_TWO
-            );
-        cp5_widget.get(ScrollableList.class, "focusClassifierDropdown").setWidth(CLASSIFIER_DROPDOWN_W);
-        cp5_widget.get(ScrollableList.class, "focusClassifierDropdown").setPosition(
-            x0 + w0 - (dropdownWidth*2) - CLASSIFIER_DROPDOWN_W - (PAD_TWO*3), 
+            x0 + w0 - (dropdownWidth*2) - METRIC_DROPDOWN_W - (PAD_TWO*3), 
             navH + y0 + PAD_TWO
             );
     }
@@ -416,6 +410,18 @@ class W_Focus extends Widget {
         metricPrediction = updateFocusState();
         predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
     }
+
+    public FocusMetric getFocusMetric() {
+        return focusMetric;
+    }
+
+    public FocusThreshold getFocusThreshold() {
+        return focusThreshold;
+    }
+
+    public FocusXLim getFocusWindow() {
+        return xLimit;
+    }
 }; //end of class
 
 //The following global functions are used by the Focus widget dropdowns. This method is the least amount of code.
@@ -425,10 +431,6 @@ public void focusWindowDropdown(int n) {
 
 public void focusMetricDropdown(int n) {
     w_focus.setMetric(n);
-}
-
-public void focusClassifierDropdown(int n) {
-    w_focus.setClassifier(n);
 }
 
 public void focusThresholdDropdown(int n) {

@@ -200,6 +200,11 @@ class SessionSettings {
     private int loadMarkerWindow;
     private int loadMarkerVertScale;
 
+    //Focus Widget
+    private int loadFocusMetric;
+    private int loadFocusThreshold;
+    private int loadFocusWindow;
+
     //Primary JSON objects for saving and loading data
     private JSONObject saveSettingsJSONData;
     private JSONObject loadSettingsJSONData;
@@ -218,6 +223,7 @@ class SessionSettings {
     private final String kJSONKeyEmg = "emg";
     private final String kJSONKeyEmgJoystick = "emgJoystick";
     private final String kJSONKeyMarker = "marker";
+    private final String kJSONKeyFocus = "focus";
 
     //used only in this class to count the number of channels being used while saving/loading, this gets updated in updateToNChan whenever the number of channels being used changes
     int slnchan;
@@ -497,6 +503,13 @@ class SessionSettings {
         saveMarkerSettings.setInt("markerVertScale", w_marker.getMarkerVertScale().getIndex());
         saveSettingsJSONData.setJSONObject(kJSONKeyMarker, saveMarkerSettings);
 
+        ///////////////////////////////////////////////Setup new JSON object to save Marker Widget Settings
+        JSONObject saveFocusSettings = new JSONObject();
+        saveFocusSettings.setInt("focusMetric", w_focus.getFocusMetric().getIndex());
+        saveFocusSettings.setInt("focusThreshold", w_focus.getFocusThreshold().getIndex());
+        saveFocusSettings.setInt("focusWindow", w_focus.getFocusWindow().getIndex());
+        saveSettingsJSONData.setJSONObject(kJSONKeyFocus, saveFocusSettings);
+
         ///////////////////////////////////////////////Setup new JSON object to save Widgets Active in respective Containers
         JSONObject saveWidgetSettings = new JSONObject();
 
@@ -690,6 +703,12 @@ class SessionSettings {
         JSONObject loadMarkerSettings = loadSettingsJSONData.getJSONObject(kJSONKeyMarker);
         loadMarkerWindow = loadMarkerSettings.getInt("markerWindow");
         loadMarkerVertScale = loadMarkerSettings.getInt("markerVertScale");
+
+        //Get Focus widget settings
+        JSONObject loadFocusSettings = loadSettingsJSONData.getJSONObject(kJSONKeyFocus);
+        loadFocusMetric = loadFocusSettings.getInt("focusMetric");
+        loadFocusThreshold = loadFocusSettings.getInt("focusThreshold");
+        loadFocusWindow = loadFocusSettings.getInt("focusWindow");
 
         //get the  Widget/Container settings
         JSONObject loadWidgetSettings = loadSettingsJSONData.getJSONObject(kJSONKeyWidget);
@@ -954,6 +973,14 @@ class SessionSettings {
         w_marker.cp5_widget.getController("markerWindowDropdown").getCaptionLabel().setText(w_marker.getMarkerWindow().getString());
         w_marker.setMarkerVertScale(loadMarkerVertScale);
         w_marker.cp5_widget.getController("markerVertScaleDropdown").getCaptionLabel().setText(w_marker.getMarkerVertScale().getString());
+
+        ////////////////////////////Apply Focus Widget settings
+        w_focus.setMetric(loadFocusMetric);
+        w_focus.cp5_widget.getController("focusMetricDropdown").getCaptionLabel().setText(w_focus.getFocusMetric().getString());
+        w_focus.setThreshold(loadFocusThreshold);
+        w_focus.cp5_widget.getController("focusThresholdDropdown").getCaptionLabel().setText(w_focus.getFocusThreshold().getString());
+        w_focus.setFocusHorizScale(loadFocusWindow);
+        w_focus.cp5_widget.getController("focusWindowDropdown").getCaptionLabel().setText(w_focus.getFocusWindow().getString());
 
         ////////////////////////////////////////////////////////////
         //    Apply more loaded widget settings above this line   //
