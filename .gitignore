@@ -1,3 +1,4 @@
+# OpenBCI_GUI original
 OpenBCI_GUI/SavedData/OpenBCI-RAW-*
 OpenBCI_GUI/SavedData/OpenBCI-EDF-*
 OpenBCI_GUI/build/
@@ -27,3 +28,7 @@ libGanglionLib.so
 libGanglionScan.so
 libunicorn.so
 OpenBCI_GUI/out/
+
+## Added by Yuhe
+# These files appears automatically somehow
+OpenBCI_GUI/libraries
