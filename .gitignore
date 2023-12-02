@@ -27,3 +27,8 @@ libGanglionLib.so
 libGanglionScan.so
 libunicorn.so
 OpenBCI_GUI/out/
+
+# Ignore Gradle directories
+.gradle
+build
+bin
