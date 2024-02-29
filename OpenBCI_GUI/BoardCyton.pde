@@ -450,8 +450,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
             currentADS1299Settings.values.gain[channel] = Gain.X1;
             currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
-            currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
-            currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
+            currentADS1299Settings.values.bias[channel] = Bias.NO_INCLUDE;
+            currentADS1299Settings.values.srb2[channel] = Srb2.CONNECT;
             currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
 
             fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.values));
