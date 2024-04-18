@@ -159,6 +159,34 @@ public boolean isElevationNeeded(String path) {
     return result;
 }
 /**
+* Determines if user is in elevated group (plugdev).  
+*
+* @return <code>true</code> if user is in group plugdev, <code>false</code> otherwise.
+ */
+public boolean isInElevatedGroup() {
+    boolean result = true;
+    if (isLinux()) {
+        try {
+            String command = "groups";
+            Process p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            InputStream stdIn = p.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(stdIn));
+            String[] values = bufferedReader.readLine().split(" ");
+            for (int idx=0; idx<values.length; idx++) {
+                result = values[idx].equals("plugdev");
+                if (result) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    return result;
+}
+
+/**
 * Determine if user has administrative privileges.
 *
 * @return

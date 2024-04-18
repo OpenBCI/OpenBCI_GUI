@@ -497,8 +497,8 @@ void delayedSetup() {
     //Apply GUI-wide settings to front end at the end of setup
     guiSettings.applySettings();
 
-    if (!isAdminUser() || isElevationNeeded()) {
-        outputError("OpenBCI_GUI: This application is not being run with Administrator access. This could limit the ability to connect to devices or read/write files.");
+    if (!isInElevatedGroup() && (!isAdminUser() || isElevationNeeded())) {
+        outputError("OpenBCI_GUI: This application is not being run with Administrator access or user is not member of plugdev group. This could limit the ability to connect to devices or read/write files.");
     }
 }
 
