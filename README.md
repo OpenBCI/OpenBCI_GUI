@@ -41,7 +41,7 @@ So, if even the very best researchers and hackers buy OpenBCI, there is still a 
 
 The OpenBCI GUI will:
 
-* Visualize data from every OpenBCI device: [Ganglion][https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board], [Cyton][https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel], and [Cyton with Daisy][https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel]
+* Visualize data from every OpenBCI device: [Ganglion][https://shop.openbci.com/products/ganglion-board], [Cyton][https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel], and [Cyton with Daisy][https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel]
 * Run as a native application on macOS, Windows, and Linux.
 * Provide filters and other data processing tools to quickly clean raw data in real time
 * Provide a networking system to move data out of GUI into other apps over UDP, OSC, LSL, and Serial.
