@@ -86,7 +86,7 @@ You might be interested in:
 * A tutorial to [make your own GUI Widget](https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget)
 * Purchase any one of the devices from our website [OpenBCI](https://shop.openbci.com/collections/frontpage): 
   * [Ganglion](https://shop.openbci.com/products/ganglion-board)
-  * [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel),
+  * [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel)
   * [Cyton with Daisy](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel)
 
 And of course, you'll want to know our:
@@ -101,7 +101,7 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 
 Follow the guide to [run the OpenBCI GUI From Processing IDE](https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide). If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
-**Note: Now compatible with Processing 4!**s
+**Note: Now compatible with Processing 4!**
 
 ### System Requirements
 #### Hardware
