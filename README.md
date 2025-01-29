@@ -41,12 +41,16 @@ So, if even the very best researchers and hackers buy OpenBCI, there is still a 
 
 The OpenBCI GUI will:
 
-* Visualize data from every OpenBCI device: [Ganglion][https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board], [Cyton][https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel], and [Cyton with Daisy][https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel]
+* Visualize data from every OpenBCI device: 
+  * [Ganglion](https://shop.openbci.com/products/ganglion-board)
+  * [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel),
+  * [Cyton with Daisy](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel)
 * Run as a native application on macOS, Windows, and Linux.
 * Provide filters and other data processing tools to quickly clean raw data in real time
 * Provide a networking system to move data out of GUI into other apps over UDP, OSC, LSL, and Serial.
 * Provide a widget framework that allows users to create their own experiments.
 * Provide the ability to output data into a saved file for later offline processing.
+
 
 Using the OpenBCI GUI allows you, the user, to quickly visualize and use your OpenBCI device. Further it should allow you to build on our powerful framework to implement your own great ideas!
 
@@ -79,11 +83,13 @@ If you want to report a problem or suggest an enhancement, we'd love for you to 
 
 You might be interested in:
 
-* A tutorial to [make your own GUI Widget][https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget]
-* Purchase a [Cyton][https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel] | [Ganglion][https://shop.openbci.com/collections/frontpage/products/pre-order-ganglion-board] | [Cyton + Daisy][https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel] from [OpenBCI][https://www.openbci.com]
+* A tutorial to [make your own GUI Widget](https://docs.openbci.com/Software/OpenBCISoftware/GUIWidgets/#custom-widget)
+* Purchase any one of the devices from our website [OpenBCI](https://shop.openbci.com/collections/frontpage): 
+  * [Ganglion](https://shop.openbci.com/products/ganglion-board)
+  * [Cyton](https://shop.openbci.com/collections/frontpage/products/cyton-biosensing-board-8-channel),
+  * [Cyton with Daisy](https://shop.openbci.com/collections/frontpage/products/cyton-daisy-biosensing-boards-16-channel)
 
 And of course, you'll want to know our:
-
 * [Contributors' guidelines](CONTRIBUTING.md)
 * [Roadmap](ROADMAP.md)
 
@@ -93,7 +99,7 @@ Thank you so much (Danke schön! Merci beaucoup!) for visiting the project and w
 
 ## Installing
 
-Follow the guide to [run the OpenBCI GUI From Processing IDE][https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide]. If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
+Follow the guide to [run the OpenBCI GUI From Processing IDE](https://docs.openbci.com/Software/OpenBCISoftware/GUIDocs/#running-the-openbci-gui-from-the-processing-ide). If you find issues in the guide, please [suggest changes](https://github.com/OpenBCI/Docs/edit/master/OpenBCI%20Software/01-OpenBCI_GUI.md)!
 
 **Note: Now compatible with Processing 4!**s
 
