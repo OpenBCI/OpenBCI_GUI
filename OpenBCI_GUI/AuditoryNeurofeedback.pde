@@ -57,6 +57,7 @@ class AuditoryNeurofeedback {
 
     //Use band powers or prediction value to control volume of each sound file
     public void update(double[] bandPowers, float predictionVal) {
+        if (!audioOutputIsAvailable) {return;}
         if (usingBandPowers) {
             for (int i = 0; i < NUM_SOUND_FILES; i++) {
                 float gain = map((float)bandPowers[i], 0.1, .7, MIN_GAIN + 20f, MAX_GAIN);
@@ -85,6 +86,7 @@ class AuditoryNeurofeedback {
     }
 
     public void killAudio() {
+        if (!audioOutputIsAvailable) {return;}
         for (int i = 0; i < NUM_SOUND_FILES; i++) {
             auditoryNfbFilePlayers[i].pause();
             auditoryNfbFilePlayers[i].rewind();
