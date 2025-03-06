@@ -1,11 +1,11 @@
 """Here we show that we can use push_sample to send and pull_chunk to receive a sample."""
 import time
-from pylsl import StreamInlet, resolve_stream
+from pylsl import StreamInlet, resolve_byprop
 from time import sleep
 
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-streams = resolve_stream('type', 'FOCUS')
+streams = resolve_byprop('type', 'FOCUS')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])

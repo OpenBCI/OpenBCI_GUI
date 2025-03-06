@@ -1,6 +1,6 @@
 """Example program to show how to read a multi-channel time series from LSL."""
 import time
-from pylsl import StreamInlet, resolve_stream
+from pylsl import StreamInlet, resolve_byprop
 from time import sleep
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +9,7 @@ from collections import deque
 
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-streams = resolve_stream('type', 'EEG')
+streams = resolve_byprop('type', 'EEG')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(streams[0])

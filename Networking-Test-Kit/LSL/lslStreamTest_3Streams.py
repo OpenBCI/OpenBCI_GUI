@@ -6,16 +6,16 @@ Also, the # Chan should match the data type (Examples: 1 for Focus, 3 for Accel)
 
 """
 
-from pylsl import StreamInlet, resolve_stream
+from pylsl import StreamInlet, resolve_byprop
 import time
 
 numStreams = 3
 duration_seconds = 10
 # first resolve an EEG stream on the lab network
 print("looking for an EEG stream...")
-stream_1 = resolve_stream('type', 'EEG')
-stream_2 = resolve_stream('type', 'AUX')
-stream_3 = resolve_stream('type', 'FOCUS')
+stream_1 = resolve_byprop('type', 'EEG')
+stream_2 = resolve_byprop('type', 'AUX')
+stream_3 = resolve_byprop('type', 'FOCUS')
 
 # create a new inlet to read from the stream
 inlet = StreamInlet(stream_1[0])
