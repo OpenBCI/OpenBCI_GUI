@@ -5,26 +5,21 @@ import argparse
 import signal
 import struct
 import os
-import json
 
 numSamples = 0
 
-# Print received message to console
+# Print received message to console (interprets bytes)
 def print_message(*args):
     try:
-        #print(args[0]) #added to see raw data 
-        obj = json.loads(args[0].decode())
-        print(obj.get('data'))
-        num_samples_packet = len(obj.get('data'))
+        data = args[0]  # Raw bytes from UDP
+        marker = struct.unpack('!d', data)[0]  # Unpack as double-precision float
+        print(f"Received Marker: {marker}")
+
         global numSamples
-        print("NumSamplesInPacket_Marker == " + str(num_samples_packet))
-        numSamples += num_samples_packet
-        if obj:
-            return True
-        else:
-            return False
-    except BaseException as e:
-        print(e) 
+        numSamples += 1  # Count the number of received markers
+        return True
+    except struct.error as e:
+        print("Error unpacking data:", e)
         return False
 
 # Clean exit from print mode
@@ -32,13 +27,15 @@ def exit_print(signal, frame):
     print("Closing listener")
     sys.exit(0)
 
-# Record received message in text file
+# Record received message in a text file
 def record_to_file(*args):
-    textfile.write(str(time.time()) + ",")
-    obj = json.loads(args[0].decode())
-    #print(obj.get('data'))
-    textfile.write(json.dumps(obj))
-    textfile.write("\n")
+    textfile.write(f"{time.time()},")
+    try:
+        data = args[0]
+        marker = struct.unpack('!d', data)[0]  # Unpack bytes into float
+        textfile.write(f"{marker}\n")
+    except struct.error as e:
+        print("Error unpacking data:", e)
 
 # Save recording, clean exit from record mode
 def close_file(*args):
@@ -47,60 +44,53 @@ def close_file(*args):
     sys.exit(0)
 
 if __name__ == "__main__":
-  # Collect command line arguments
-  parser = argparse.ArgumentParser()
-  parser.add_argument("--ip",
-      default="127.0.0.1", help="The ip to listen on")
-  parser.add_argument("--port",
-      type=int, default=12345, help="The port to listen on")
-  parser.add_argument("--address",default="/openbci", help="address to listen to")
-  parser.add_argument("--option",default="print",help="Debugger option")
-  parser.add_argument("--len",default=9,help="Debugger option")
-  args = parser.parse_args()
+    # Collect command line arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default="127.0.0.1", help="The IP to listen on")
+    parser.add_argument("--port", type=int, default=12345, help="The port to listen on")
+    parser.add_argument("--option", default="print", help="Debugger option: 'print' or 'record'")
+    args = parser.parse_args()
 
-  # Set up necessary parameters from command line
-  length =  int(args.len)
-  if args.option=="print":
-      signal.signal(signal.SIGINT, exit_print)
-  elif args.option=="record":
-      i = 0
-      while os.path.exists("udp_test%s.txt" % i):
-        i += 1
-      filename = "udp_test%i.txt" % i
-      textfile = open(filename, "w")
-      textfile.write("time,address,messages\n")
-      textfile.write("-------------------------\n")
-      print("Recording to %s" % filename)
-      signal.signal(signal.SIGINT, close_file)
+    # Set up signal handling for clean exit
+    if args.option == "print":
+        signal.signal(signal.SIGINT, exit_print)
+    elif args.option == "record":
+        i = 0
+        while os.path.exists(f"udp_test{i}.txt"):
+            i += 1
+        filename = f"udp_test{i}.txt"
+        textfile = open(filename, "w")
+        textfile.write("time,marker\n")
+        print(f"Recording to {filename}")
+        signal.signal(signal.SIGINT, close_file)
 
-  # Connect to socket
-  sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-  sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  server_address = (args.ip, args.port)
-  sock.bind(server_address)
+    # Create and bind the UDP socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind((args.ip, args.port))
 
-  # Display socket attributes
-  print('--------------------')
-  print("-- UDP LISTENER -- ")
-  print('--------------------')
-  print("IP:", args.ip)
-  print("PORT:", args.port)
-  print('--------------------')
-  print("%s option selected" % args.option)
+    # Display socket attributes
+    print('--------------------')
+    print("-- UDP LISTENER -- ")
+    print('--------------------')
+    print(f"IP: {args.ip}")
+    print(f"PORT: {args.port}")
+    print('--------------------')
+    print(f"{args.option} option selected")
 
-  # Receive messages
-  print("Listening...")
-  start = time.time()
-  
-  duration = 10
-  while time.time() <= start + duration:
-    data, addr = sock.recvfrom(20000) # buffer size is 20000 bytes
-    if args.option=="print":
-        print_message(data)
-    elif args.option=="record":
-        record_to_file(data)
-        numSamples += 1
+    # Start listening
+    print("Listening for UDP packets...")
+    start = time.time()
+    duration = 10  # Listen for 10 seconds
 
-print( "Samples == {}".format(numSamples) )
-print( "Duration == {}".format(duration) )
-print( "Avg Sampling Rate == {}".format(numSamples / duration) )
+    while time.time() <= start + duration:
+        data, addr = sock.recvfrom(8)  # Expecting an 8-byte double-precision float
+        if args.option == "print":
+            print_message(data)
+        elif args.option == "record":
+            record_to_file(data)
+            numSamples += 1
+
+    print(f"Samples == {numSamples}")
+    print(f"Duration == {duration}")
+    print(f"Avg Sampling Rate == {numSamples / duration}")
