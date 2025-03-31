@@ -2,7 +2,7 @@ import brainflow.*;
 
 import org.apache.commons.lang3.tuple.Pair;
 
-public enum BrainFlowStreaming_Boards
+public enum BrainFlowPlaybackBoards
 {
     CYTON("Cyton", BoardIds.CYTON_BOARD),
     CYTONDAISY("CytonDaisy", BoardIds.CYTON_DAISY_BOARD),
@@ -12,7 +12,7 @@ public enum BrainFlowStreaming_Boards
     private String name;
     private BoardIds boardId;
  
-    BrainFlowStreaming_Boards(String _name, BoardIds _boardId) {
+    BrainFlowPlaybackBoards(String _name, BoardIds _boardId) {
         this.name = _name;
         this.boardId = _boardId;
     }
@@ -26,31 +26,28 @@ public enum BrainFlowStreaming_Boards
     }
 }
 
-class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCapableBoard {
+class BoardBrainFlowPlayback extends BoardBrainFlow implements AccelerometerCapableBoard {
 
     private int[] accelChannelsCache = null;
     private BoardIds masterBoardId;
-    private String ipAddress;
-    private int ipPort;
+    private String filePath;
 
-    public BoardBrainFlowStreaming(BoardIds masterBoardId, String ipAddress, int ipPort) {
+    public BoardBrainFlowPlayback(BoardIds masterBoardId, String filePath) {
         super();
         this.masterBoardId = masterBoardId;
-        this.ipAddress = ipAddress;
-        this.ipPort = ipPort;
+        this.filePath = filePath;
     }
 
     // implement mandatory abstract functions
     @Override
     protected BrainFlowInputParams getParams() {
         BrainFlowInputParams params = new BrainFlowInputParams();
-        params.ip_address = ipAddress;
-        params.ip_port = ipPort;
+        params.file = filePath;
         params.master_board = masterBoardId.get_code();
         return params;
     }
 
-    // for streaming board need to use master board id in function like  get_eeg_channels
+    // for playback board need to use master board id in function like get_eeg_channels
     @Override
     public BoardIds getBoardId() {
         return masterBoardId;
@@ -59,8 +56,8 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
     @Override
     public boolean initializeInternal() {
         try {
-            // here we need to provide board id of streaming board
-            boardShim = new BoardShim (BoardIds.STREAMING_BOARD.get_code(), getParams());
+            // here we need to provide board id of playback board
+            boardShim = new BoardShim (BoardIds.PLAYBACK_FILE_BOARD.get_code(), getParams());
             try {
                 BoardShim.enable_dev_board_logger();
                 BoardShim.set_log_file(directoryManager.getConsoleDataPath() + "Brainflow_" +
@@ -69,8 +66,8 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
                 e.printStackTrace();
             }
             boardShim.prepare_session();
+            boardShim.config_board("loopback_true");
             return true; 
-
         } catch (Exception e) {
             boardShim = null;
             outputError("ERROR: " + e + " when initializing Brainflow board. Data will not stream.");
@@ -81,7 +78,7 @@ class BoardBrainFlowStreaming extends BoardBrainFlow implements AccelerometerCap
 
     @Override
     public void setEXGChannelActive(int channelIndex, boolean active) {
-        // do nothing here
+        outputWarn("EXG is always active for Playback board");
     }
 
     @Override
