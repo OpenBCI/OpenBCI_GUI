@@ -1611,7 +1611,7 @@ class BrainFlowStreamerBox {
     private Button outputToNetwork;
     private Button outputToFile;
     private ScrollableList bfFileSaveOption;
-    private DataWriterBFEnum dataWriterBfEnum = DataWriterBFEnum.DEFAULT;
+    private DataWriterBFEnum dataWriterBfEnum = DataWriterBFEnum.NONE;
     private final int HEADER_H = 14;
     private final int OBJECT_H = 24;
     private final String DEFAULT_IP_ADDRESS = "225.1.1.1";
