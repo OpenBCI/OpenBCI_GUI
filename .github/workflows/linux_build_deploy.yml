@@ -70,7 +70,7 @@ jobs:
       
       - name: Get Branch Names
         id: branch-name
-        uses: tj-actions/branch-names@v7
+        uses: tj-actions/branch-names@v9.0.0
       
       - name: Store Build on AWS
         run: |
