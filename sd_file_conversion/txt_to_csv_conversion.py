@@ -286,7 +286,7 @@ def start_converting(sd_dir:str = "./",
     save_path = save_path
 
     # Get a list of files in the specified directory with a '.txt' extension
-    files = [file for file in os.listdir(sd_dir) if file.endswith('.txt')]
+    files = [file for file in os.listdir(sd_dir) if file.endswith('.TXT')]
     
     # Sort the files in reverse order (latest files first)
     if files:
