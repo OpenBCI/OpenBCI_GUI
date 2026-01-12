@@ -6,7 +6,7 @@
 		Name='OpenBCI GUI'
 		Manufacturer='OpenBCI, Inc.'
 		Version='7.0.0'
-		UpgradeCode='75eade24-72b2-4019-9256-c8a3411e5874'
+		UpgradeCode='45d666b4-ab22-4d2c-9ba3-1d143812dbc0'
 		Compressed='yes'
 	>
 		<MajorUpgrade DowngradeErrorMessage='!(loc.DowngradeError)' />
