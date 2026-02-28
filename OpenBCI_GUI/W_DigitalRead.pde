@@ -195,7 +195,7 @@ class DigitalReadDot{
     color dotStroke = #d2d2d2;
     color dot0Fill = #f5f5f5;
     color dot1Fill = #f5f5f5;
-    color val0Fill = OPENBCI_DARKBLUE;
+    color val0Fill = OPENBCI_DARKBLUE; // Note: This is used for digital indicator, may need dynamic update
     color val1Fill = WHITE;
 
     int dotX;

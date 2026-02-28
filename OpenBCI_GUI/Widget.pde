@@ -195,7 +195,7 @@ class Widget {
         textFont(h5);		
         textSize(12);		
         textAlign(CENTER, BOTTOM);		
-        fill(OPENBCI_DARKBLUE);		
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);		
         for(int i = 0; i < dropdowns.size(); i++){		
             int dropdownPos = dropdowns.size() - i;
             int _width = cp5_widget.getController(dropdowns.get(i).id).getWidth();

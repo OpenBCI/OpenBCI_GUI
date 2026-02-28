@@ -165,8 +165,8 @@ class W_Emg extends WidgetWithSettings {
 
                 //draw channel number at upper left corner of row/column cell
                 pushStyle();
-                stroke(OPENBCI_DARKBLUE);
-                fill(OPENBCI_DARKBLUE);
+                stroke(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
+                fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
                 textFont(h4, 14);
                 text((channel + 1), 10, 20);
                 popStyle();

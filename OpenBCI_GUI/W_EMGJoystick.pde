@@ -309,7 +309,7 @@ class W_EmgJoystick extends WidgetWithSettings {
     private void drawChannelLabels() {
         pushStyle();
 
-        fill(OPENBCI_DARKBLUE);
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         textFont(p4, 14);
         textLeading(14);
         textAlign(CENTER,CENTER);

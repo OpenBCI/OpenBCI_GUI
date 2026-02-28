@@ -49,7 +49,7 @@ class ChannelSelect {
         if (channelSelectHover) {
             fill(OPENBCI_BLUE);
         } else {
-            fill(OPENBCI_DARKBLUE);
+            fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         }
         textFont(p5, 12);
         

@@ -616,16 +616,16 @@ class PlaybackScrollbar {
 
         //select color for playback indicator
         if (over || locked) {
-            fill(OPENBCI_DARKBLUE);
+            fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         } else {
-            fill(102, 102, 102);
+            fill(style.isDarkMode() ? style.getSecondaryTextColor() : color(102, 102, 102));
         }
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
 
         //draw current timestamp and X of Y Seconds above scrollbar
         textFont(p2, 18);
-        fill(OPENBCI_DARKBLUE);
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         textAlign(LEFT, TOP);
         float textHeight = textAscent() - textDescent();
         float textY = y - textHeight - 10;
@@ -706,7 +706,7 @@ class TimeDisplay {
         if (!currentAbsoluteTimeToDisplay.equals(null)) {
             int fontSize = 17;
             textFont(p2, fontSize);
-            fill(OPENBCI_DARKBLUE);
+            fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
             text(streamTimeElapsed.toString(), xpos + 10, ypos);
