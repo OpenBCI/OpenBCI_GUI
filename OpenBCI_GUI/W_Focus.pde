@@ -213,6 +213,13 @@ class W_Focus extends WidgetWithSettings {
         super.mousePressed();
         focusChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
+    
+    @Override
+    public void updateColors() {
+        super.updateColors();
+        dataGrid.updateDefaultTextColor();
+        auditoryNeurofeedback.updateColors();
+    }
 
     private void resizeTable() {
         int extraPadding = focusChanSelect.isVisible() ? NAV_HEIGHT : 0;
@@ -329,6 +336,8 @@ class W_Focus extends WidgetWithSettings {
         ellipse(xc, yc, wc, hc);
         noStroke();
         textAlign(CENTER);
+        // Use theme-aware text color for status label
+        fill(predictionExceedsThreshold ? cFocus : (style.isDarkMode() ? style.getTextColor() : cDark));
         text(sb.toString(), xc, yc + hc/2 + 16);
         popStyle();
     }

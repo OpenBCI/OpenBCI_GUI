@@ -148,6 +148,28 @@ class W_Marker extends WidgetWithSettings {
         localCP5.draw();
     }
 
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        markerBar.updatePlotColors();
+        // Update button colors
+        color btnBg = style.isDarkMode() ? style.getButtonColor() : colorNotPressed;
+        color btnText = style.isDarkMode() ? style.getButtonTextColor() : OPENBCI_DARKBLUE;
+        for (Button btn : markerButtons) {
+            btn.setColorBackground(btnBg);
+            btn.getCaptionLabel().setColor(btnText);
+        }
+        // Update textfield colors
+        color tfBg = style.isDarkMode() ? style.getBoxColor() : color(255);
+        color tfText = style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE;
+        markerReceiveIPTextfield.setColorBackground(tfBg);
+        markerReceiveIPTextfield.setColorValueLabel(tfText);
+        markerReceiveIPTextfield.setColor(tfText);
+        markerReceivePortTextfield.setColorBackground(tfBg);
+        markerReceivePortTextfield.setColorValueLabel(tfText);
+        markerReceivePortTextfield.setColor(tfText);
+    }
+
     public void screenResized(){
         super.screenResized();
       
@@ -475,12 +497,8 @@ class MarkerBar {
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(X_AXIS_PADDING));
         plot.getYAxis().getAxisLabel().setOffset(float(Y_AXIS_PADDING));
-        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors
+        updatePlotColors();
         gplotAutoscaler = new GPlotAutoscaler(false, AUTOSCALE_SPACING);
 
         initArrays();
@@ -572,6 +590,21 @@ class MarkerBar {
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
 
+    }
+    
+    public void updatePlotColors() {
+        // Apply theme colors to the marker plot
+        color axisColor = style.getGraphAxisColor();
+        plot.setBgColor(style.getGraphBackground());
+        plot.setBoxBgColor(style.getGraphBoxBackground());
+        plot.setBoxLineColor(style.getGraphLineColor());
+        plot.setGridLineColor(style.getGraphGridColor());
+        plot.getXAxis().setFontColor(axisColor);
+        plot.getXAxis().setLineColor(axisColor);
+        plot.getXAxis().getAxisLabel().setFontColor(axisColor);
+        plot.getYAxis().setFontColor(axisColor);
+        plot.getYAxis().setLineColor(axisColor);
+        plot.getYAxis().getAxisLabel().setFontColor(axisColor);
     }
 };
 

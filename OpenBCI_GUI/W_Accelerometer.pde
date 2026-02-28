@@ -122,18 +122,20 @@ class W_Accelerometer extends WidgetWithSettings {
 
         pushStyle();
 
-        fill(50);
+        // Use theme-aware colors for labels
+        fill(style.isDarkMode() ? style.getSecondaryTextColor() : 50);
         textFont(p4, 14);
         textAlign(CENTER,CENTER);
         text("z", polarWindowX, (polarWindowY-polarWindowHeight/2)-12);
         text("x", (polarWindowX+polarWindowWidth/2)+8, polarWindowY-5);
         text("y", (polarWindowX+polarCorner)+10, (polarWindowY-polarCorner)-10);
 
-        fill(graphBG);  //pulse window background
-        stroke(graphStroke);
+        // Use theme-aware colors for circular display
+        fill(style.isDarkMode() ? style.getGraphBoxBackground() : graphBG);
+        stroke(style.isDarkMode() ? style.getGraphLineColor() : graphStroke);
         ellipse(polarWindowX,polarWindowY,polarWindowWidth,polarWindowHeight);
 
-        stroke(180);
+        stroke(style.isDarkMode() ? style.getGraphGridColor() : 180);
         line(polarWindowX-polarWindowWidth/2, polarWindowY, polarWindowX+polarWindowWidth/2, polarWindowY);
         line(polarWindowX, polarWindowY-polarWindowHeight/2, polarWindowX, polarWindowY+polarWindowHeight/2);
         line(polarWindowX-polarCorner, polarWindowY+polarCorner, polarWindowX+polarCorner, polarWindowY-polarCorner);
@@ -176,6 +178,12 @@ class W_Accelerometer extends WidgetWithSettings {
         accelModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
     
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        accelerometerBar.updatePlotColors();
+    }
+
     void mousePressed() {
         super.mousePressed();
     }
@@ -352,12 +360,8 @@ class AccelerometerBar {
         plot.setAllFontProperties("Arial", 0, 14);
         plot.getXAxis().getAxisLabel().setOffset(float(accBarPadding));
         plot.getYAxis().getAxisLabel().setOffset(float(accBarPadding));
-        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors
+        updatePlotColors();
         gplotAutoscaler = new GPlotAutoscaler(false, AUTOSCALE_SPACING);
 
         initArrays();
@@ -473,5 +477,20 @@ class AccelerometerBar {
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
 
+    }
+    
+    void updatePlotColors() {
+        // Apply theme colors to the accelerometer plot
+        color axisColor = style.getGraphAxisColor();
+        plot.setBgColor(style.getGraphBackground());
+        plot.setBoxBgColor(style.getGraphBoxBackground());
+        plot.setBoxLineColor(style.getGraphLineColor());
+        plot.setGridLineColor(style.getGraphGridColor());
+        plot.getXAxis().setFontColor(axisColor);
+        plot.getXAxis().setLineColor(axisColor);
+        plot.getXAxis().getAxisLabel().setFontColor(axisColor);
+        plot.getYAxis().setFontColor(axisColor);
+        plot.getYAxis().setLineColor(axisColor);
+        plot.getYAxis().getAxisLabel().setFontColor(axisColor);
     }
 }; //end of class

@@ -32,7 +32,12 @@ class Grid {
         strings = new String[numRows][numCols];
         textColors = new color[numRows][numCols];
 
-        color defaultTextColor = OPENBCI_DARKBLUE;
+        updateDefaultTextColor();
+    }
+    
+    // Update default text color based on theme
+    public void updateDefaultTextColor() {
+        color defaultTextColor = style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE;
         for (color[] row: textColors) {
             Arrays.fill(row, defaultTextColor);
         }
@@ -41,7 +46,7 @@ class Grid {
     public void draw() {
         pushStyle();
         textAlign(LEFT);        
-        stroke(OPENBCI_DARKBLUE);
+        stroke(style.isDarkMode() ? style.getGraphGridColor() : OPENBCI_DARKBLUE);
         textFont(tableFont, tableFontSize);
 
         if (drawTableInnerLines) {
@@ -69,7 +74,7 @@ class Grid {
 
         if (drawTableBorder) {
             noFill();
-            stroke(OPENBCI_DARKBLUE);
+            stroke(style.isDarkMode() ? style.getGraphGridColor() : OPENBCI_DARKBLUE);
             rect(x, y, w, rowOffset[numRows - 1]);
         }
         

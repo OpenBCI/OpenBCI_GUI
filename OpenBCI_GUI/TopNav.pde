@@ -247,9 +247,8 @@ class TopNav {
         configSelector.draw();
         tutorialSelector.draw();
 
-        //Draw Console Log Image on top of cp5 object - use white for dark themes
-        PImage _logo = style.isDarkMode() ? consoleImgWhite : (style.getTheme() == THEME_LIGHT ? consoleImgBlue : consoleImgWhite);
-        image(_logo, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);
+        //Draw Console Log Image on top of cp5 object - white for both themes (dark bg)
+        image(consoleImgWhite, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);
         //Draw camera image on top of cp5 object
         image(screenshotImgWhite, screenshotButton.getPosition()[0] + 6, screenshotButton.getPosition()[1] + 2, 22, 22);
     }
@@ -720,6 +719,7 @@ class ConfigSelector {
     private boolean clearAllSettingsPressed;
     public boolean isVisible;
     private ControlP5 settings_cp5;
+    private Button themeToggle;
     private Button expertMode;
     private Button autoStartDataStream;
     private Button autoStartNetworkStream;
@@ -745,7 +745,7 @@ class ConfigSelector {
         margin = 6;
         b_w = w - margin*2;
         b_h = 22;
-        h = margin*10 + b_h*9;
+        h = margin*11 + b_h*10;
         //makes the setting text "are you sure" display correctly on linux
         osPadding = isLinux() ? -3 : -2;
         osPadding2 = isLinux() ? 5 : 0;
@@ -758,6 +758,8 @@ class ConfigSelector {
         isVisible = false;
 
         int buttonNumber = 0;
+        createThemeToggleButton("themeToggle", getThemeButtonText(), x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
+        buttonNumber++;
         createExpertModeButton("expertMode", "Turn Expert Mode On", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
         buttonNumber++;
         createAutoStartDataStreamButton("autoStartDataStream", "Auto Start Data Stream", x + margin, y + margin*(buttonNumber+1) + b_h*(buttonNumber), b_w, b_h);
@@ -781,8 +783,9 @@ class ConfigSelector {
 
     public void draw() {
         if (isVisible) { //only draw if visible
-            color strokeColor = OPENBCI_DARKBLUE;
-            color fillColor = SUBNAV_LIGHTBLUE;
+            // Use theme-aware colors
+            color strokeColor = style.isDarkMode() ? style.getBoxStrokeColor() : OPENBCI_DARKBLUE;
+            color fillColor = style.isDarkMode() ? style.getBoxColor() : SUBNAV_LIGHTBLUE;
             
             pushStyle();
 
@@ -797,7 +800,7 @@ class ConfigSelector {
 
             if (clearAllSettingsPressed) {
                 textFont(p2, 16);
-                fill(255);
+                fill(style.isDarkMode() ? style.getTextColor() : 255);
                 textAlign(CENTER);
                 text("Are You Sure?", x + w/2, clearAllGUISettings.getPosition()[1] + b_h*2);
             }
@@ -837,7 +840,7 @@ class ConfigSelector {
         x = width - w - 3;
         int dx = oldX - x;
 
-        h = !isSessionStarted ? margin*6 + b_h*5 : margin*9 + b_h*8;
+        h = !isSessionStarted ? margin*7 + b_h*6 : margin*10 + b_h*9;
 
         //Update the Y position for the clear settings buttons
         float clearSettingsButtonY = !isSessionStarted ? 
@@ -920,6 +923,22 @@ class ConfigSelector {
                 guiSettings.setAutoLoadSessionSettings(isActive);
             }
         });
+    }
+
+    private void createThemeToggleButton(String name, String text, int _x, int _y, int _w, int _h) {
+        themeToggle = createButton(settings_cp5, name, text, _x, _y, _w, _h, p5, 12, BUTTON_EXPERTPURPLE, WHITE);
+        themeToggle.onRelease(new CallbackListener() {
+            public void controlEvent(CallbackEvent theEvent) {
+                style.cycleTheme();
+                themeToggle.getCaptionLabel().setText(getThemeButtonText());
+                output("Theme changed to: " + style.getThemeName());
+            }
+        });
+        themeToggle.setDescription("Toggle between Default, Dark, and Light themes for the GUI.");
+    }
+
+    private String getThemeButtonText() {
+        return "Theme: " + style.getThemeName();
     }
 
     private void createExpertModeButton(String name, String text, int _x, int _y, int _w, int _h) {

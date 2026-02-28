@@ -95,12 +95,8 @@ class W_BandPower extends WidgetWithSettings {
         bp_plot.getXAxis().getAxisLabel().setOffset(42f);
         bp_plot.startHistograms(GPlot.VERTICAL);
         bp_plot.getHistogram().setDrawLabels(true);
-        bp_plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        bp_plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        bp_plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        bp_plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        bp_plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        bp_plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors
+        updatePlotColors();
 
         //setting border of histograms to match BG
         bp_plot.getHistogram().setLineColors(new color[]{
@@ -248,6 +244,28 @@ class W_BandPower extends WidgetWithSettings {
     public void setFilteringDropdownFrontend(FFTFilteredEnum _filteredEnum) {
         widgetSettings.set(FFTFilteredEnum.class, _filteredEnum);
         updateDropdownLabel(FFTFilteredEnum.class, "bandPowerDataFilteringDropdown");
+    }
+    
+    private void updatePlotColors() {
+        // Apply theme colors to the BandPower plot
+        color axisColor = style.getGraphAxisColor();
+        bp_plot.setBgColor(style.getGraphBackground());
+        bp_plot.setBoxBgColor(style.getGraphBoxBackground());
+        bp_plot.setBoxLineColor(style.getGraphLineColor());
+        bp_plot.setGridLineColor(style.getGraphGridColor());
+        bp_plot.getXAxis().setFontColor(axisColor);
+        bp_plot.getXAxis().setLineColor(axisColor);
+        bp_plot.getXAxis().getAxisLabel().setFontColor(axisColor);
+        bp_plot.getYAxis().setFontColor(axisColor);
+        bp_plot.getYAxis().setLineColor(axisColor);
+        bp_plot.getYAxis().getAxisLabel().setFontColor(axisColor);
+        bp_plot.getHistogram().setFontColor(axisColor);
+    }
+    
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        updatePlotColors();
     }
 };
 

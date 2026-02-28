@@ -74,6 +74,12 @@ class Widget {
         rect(x0, y0+navH, w0, navH); //button bar
         popStyle();
     }
+    
+    // Called when theme changes - override in subclasses to update plot colors
+    public void updateColors() {
+        // Update dropdown colors for this widget
+        cp5_widget.setColor(dropdownColorsGlobal);
+    }
 
     public void addDropdown(String _id, String _title, List _items, int _defaultItem){
         NavBarDropdown dropdownToAdd = new NavBarDropdown(_id, _title, _items, _defaultItem);

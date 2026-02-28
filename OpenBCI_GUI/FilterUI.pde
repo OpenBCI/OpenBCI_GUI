@@ -36,7 +36,9 @@ class FilterUIPopup extends PApplet implements Runnable {
 
     private color headerColor = OPENBCI_BLUE;
     private color buttonColor = OPENBCI_BLUE;
+    // backgroundColor will be set dynamically based on theme
     private color backgroundColor = GREY_235;
+    private color textLabelColor = color(102);
     
     private ControlP5 cp5;
 
@@ -137,11 +139,24 @@ class FilterUIPopup extends PApplet implements Runnable {
         frame.toFront();
         frame.requestFocus();
 
+        // Set theme-aware colors
+        updateThemeColors();
+
         cp5 = new ControlP5(this);
         cp5.setGraphics(this, 0, 0);
         cp5.setAutoDraw(false);
 
         createAllCp5Objects();
+    }
+    
+    private void updateThemeColors() {
+        if (style.isDarkMode()) {
+            backgroundColor = style.getBoxColor();
+            textLabelColor = style.getTextColor();
+        } else {
+            backgroundColor = GREY_235;
+            textLabelColor = color(102);
+        }
     }
 
     @Override
@@ -220,7 +235,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         text("Notch", headerObjX[2], HEADER_OBJ_Y, HEADER_OBJ_WIDTH, uiObjectHeight);
         // Column labels
         textAlign(CENTER, TOP);
-        fill(102);
+        fill(textLabelColor);
         text("Channel", columnObjX[0], HEADER_HEIGHT + SM_SPACER, TEXTFIELD_WIDTH, HEADER_HEIGHT);
         String firstColumnHeader = "";
         String secondColumnHeader = "";
