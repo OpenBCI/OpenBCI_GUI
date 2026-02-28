@@ -197,29 +197,19 @@ class TopNav {
     }
 
     void draw() {
-        PImage logo;
-        int logo_w = 128;
-        int logo_h = 22;
-        color topNavBg;
-        color subNavBg;
+        // Use the global style manager for theme-aware colors
+        PImage logo = style.getLogo(logo_white, logo_black);
+        color topNavBg = style.getTopNavBackground();
+        color subNavBg = style.getSubNavBackground();
         
-        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-            topNavBg = OPENBCI_BLUE;
-            subNavBg = SUBNAV_LIGHTBLUE;
-            logo = logo_white;
-        } else {
-            topNavBg = WHITE;
-            subNavBg = color(229);
-            logo = logo_black;
-        }
+        // Update stroke color based on theme
+        color currentStrokeColor = style.isDarkMode() ? style.getBoxStrokeColor() : strokeColor;
 
         //Draw background rectangles for TopNav and SubNav
         pushStyle();
-        //stroke(OPENBCI_DARKBLUE);
         fill(topNavBg);
         rect(0, 0, width, navBarHeight);
-        //noStroke();
-        stroke(strokeColor);
+        stroke(currentStrokeColor);
         fill(subNavBg);
         rect(-1, navBarHeight, width+2, navBarHeight);
         popStyle();
@@ -257,8 +247,8 @@ class TopNav {
         configSelector.draw();
         tutorialSelector.draw();
 
-        //Draw Console Log Image on top of cp5 object
-        PImage _logo = (colorScheme == COLOR_SCHEME_DEFAULT) ? consoleImgBlue : consoleImgWhite;
+        //Draw Console Log Image on top of cp5 object - use white for dark themes
+        PImage _logo = style.isDarkMode() ? consoleImgWhite : (style.getTheme() == THEME_LIGHT ? consoleImgBlue : consoleImgWhite);
         image(_logo, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);
         //Draw camera image on top of cp5 object
         image(screenshotImgWhite, screenshotButton.getPosition()[0] + 6, screenshotButton.getPosition()[1] + 2, 22, 22);

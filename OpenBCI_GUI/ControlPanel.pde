@@ -227,14 +227,14 @@ class ControlPanel {
         //draw the box that tells you to stop the system in order to edit control settings
         if (drawStopInstructions) {
             pushStyle();
-            fill(boxColor);
+            fill(style.getBoxColor());
             strokeWeight(1);
-            stroke(boxStrokeColor);
+            stroke(style.getBoxStrokeColor());
             rect(x, y, w, dataSourceBox.h); //draw background of box
             String stopInstructions = "Press the \"STOP SESSION\" button to change your data source or edit system settings.";
             textAlign(CENTER, TOP);
             textFont(p4, 14);
-            fill(OPENBCI_DARKBLUE);
+            fill(style.getTextColor());
             text(stopInstructions, x + globalPadding*2, y + globalPadding*3, w - globalPadding*4, dataSourceBox.h - globalPadding*4);
             popStyle();
         }

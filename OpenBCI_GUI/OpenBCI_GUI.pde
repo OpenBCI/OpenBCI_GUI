@@ -402,6 +402,11 @@ void setup() {
     
     directoryManager = new DirectoryManager();
 
+    // Initialize the global style/theme manager
+    // This must be done early so all UI components can access theme colors
+    style = new Style();
+    println("Style: Initialized with " + style.getThemeName() + " theme");
+
     // redirect all output to a custom stream that will intercept all prints
     // write them to file and display them in the GUI's console window
     outputStream = new CustomOutputStream(System.out);
