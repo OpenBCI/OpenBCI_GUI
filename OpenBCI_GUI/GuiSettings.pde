@@ -40,6 +40,7 @@ public class GuiSettingsValues {
     public boolean autoStartDataStream = false;
     public boolean autoStartNetworkStream = false;
     public boolean autoLoadSessionSettings = false;
+    public ThemeType themeType = ThemeType.DEFAULT;
 
     public GuiSettingsValues() {
     }
@@ -87,6 +88,8 @@ class GuiSettings {
                 saveToFile();
             }
             
+            // Apply persisted theme
+            applyThemeFromSettings();
             return true;
 
         } catch (IOException e) {
@@ -168,6 +171,7 @@ class GuiSettings {
         topNav.configSelector.toggleAutoStartDataStreamFrontEnd(getAutoStartDataStream());
         topNav.configSelector.toggleAutoStartNetworkStreamFrontEnd(getAutoStartNetworkStream());
         topNav.configSelector.toggleAutoLoadSessionSettingsFrontEnd(getAutoLoadSessionSettings());
+        applyThemeFromSettings();
     }
 
     public void setExpertMode(ExpertModeEnum val) {
@@ -240,5 +244,26 @@ class GuiSettings {
     public void setAutoLoadSessionSettings(boolean b) {
         values.autoLoadSessionSettings = b;
         saveToFile();
+    }
+
+    public void setThemeType(ThemeType themeType) {
+        values.themeType = themeType;
+        saveToFile();
+        println("OpenBCI_GUI::Settings: Theme saved as " + themeType.getString());
+    }
+
+    public ThemeType getThemeType() {
+        return values.themeType;
+    }
+
+    private void applyThemeFromSettings() {
+        if (style != null && values.themeType != null) {
+            style.setTheme(values.themeType);
+            // If widgets are initialized, notify them of the theme
+            if (widgetManager != null) {
+                style.notifyThemeChange();
+            }
+            println("OpenBCI_GUI::Settings: Applied persisted theme: " + values.themeType.getString());
+        }
     }
 }

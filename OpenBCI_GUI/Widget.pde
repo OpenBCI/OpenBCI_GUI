@@ -68,9 +68,9 @@ class Widget {
 
         //draw nav bars and button bars
         pushStyle();
-        fill(style.isDarkMode() ? style.getSubNavBackground() : color(150, 150, 150));
+        fill(style.isDefaultMode() ? color(150, 150, 150) : style.getSubNavBackground());
         rect(x0, y0, w0, navH); //top bar
-        fill(style.isDarkMode() ? style.getBoxColor() : color(200, 200, 200));
+        fill(style.isDefaultMode() ? color(200, 200, 200) : style.getBoxColor());
         rect(x0, y0+navH, w0, navH); //button bar
         popStyle();
     }

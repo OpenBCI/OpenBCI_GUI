@@ -100,7 +100,7 @@ class ChannelSelect {
 
     public void drawGrayBackground(int _x, int _y, int _w, int _h) {
         pushStyle();
-        fill(200);
+        fill(style.isDarkMode() ? style.getBoxColor() : 200);  
         rect(_x, _y, _w, _h);
         popStyle();
     }
