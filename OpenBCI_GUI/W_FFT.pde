@@ -173,7 +173,7 @@ class W_Fft extends WidgetWithSettings {
         fftPlot.endDraw();
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
-        fill(200, 200, 200);
+        fill(style.isDefaultMode() ? color(200, 200, 200) : style.getBoxColor());
         rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();

@@ -108,12 +108,12 @@ class W_PulseSensor extends Widget {
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
-        fill(graphBG);
-        stroke(graphStroke);
+        fill(style.isDarkMode() ? style.getGraphBoxBackground() : graphBG);
+        stroke(style.isDarkMode() ? style.getGraphLineColor() : graphStroke);
         rect(pulseWindowX,pulseWindowY,pulseWindowWidth,pulseWindowHeight);
         rect(bpmWindowX,bpmWindowY,bpmWindowWidth,bpmWindowHeight);
 
-        fill(50);
+        fill(style.isDarkMode() ? style.getSecondaryTextColor() : 50);
         textFont(p4, 16);
         textAlign(LEFT,CENTER);
         text("BPM "+bpmValue, bpmPositionX, bpmPositionY);

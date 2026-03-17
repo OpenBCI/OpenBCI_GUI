@@ -158,7 +158,7 @@ class W_BandPower extends WidgetWithSettings {
         bp_plot.endDraw();
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
-        fill(200, 200, 200);
+        fill(style.isDefaultMode() ? color(200, 200, 200) : style.getBoxColor());
         rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
@@ -249,8 +249,9 @@ class W_BandPower extends WidgetWithSettings {
     private void updatePlotColors() {
         // Apply theme colors to the BandPower plot
         color axisColor = style.getGraphAxisColor();
+        color boxBgColor = style.getGraphBoxBackground();
         bp_plot.setBgColor(style.getGraphBackground());
-        bp_plot.setBoxBgColor(style.getGraphBoxBackground());
+        bp_plot.setBoxBgColor(boxBgColor);
         bp_plot.setBoxLineColor(style.getGraphLineColor());
         bp_plot.setGridLineColor(style.getGraphGridColor());
         bp_plot.getXAxis().setFontColor(axisColor);
@@ -260,6 +261,10 @@ class W_BandPower extends WidgetWithSettings {
         bp_plot.getYAxis().setLineColor(axisColor);
         bp_plot.getYAxis().getAxisLabel().setFontColor(axisColor);
         bp_plot.getHistogram().setFontColor(axisColor);
+        // Update histogram line colors to match background
+        bp_plot.getHistogram().setLineColors(new color[]{
+            boxBgColor, boxBgColor, boxBgColor, boxBgColor, boxBgColor
+        });
     }
     
     @Override
