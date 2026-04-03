@@ -1,4 +1,4 @@
-import time
+import os
 from collections import deque
 
 import numpy as np
@@ -12,6 +12,7 @@ CHANNELS = 8
 WINDOW_SIZE = 250
 STEP_SIZE = 50
 MODEL_PATH = "eeg_transformer.pt"
+POLL_TIMEOUT_SECONDS = 1.0
 
 # Simple English → Afrikaans mapping for demo purposes
 EN_TO_AF = {
@@ -24,6 +25,23 @@ EN_TO_AF = {
 }
 
 
+def load_model(model_path, device):
+    try:
+        model = torch.jit.load(model_path, map_location=device)
+        model.eval()
+        return model
+    except Exception:
+        allow_unsafe = os.environ.get("ALLOW_UNSAFE_TORCH_LOAD", "0") == "1"
+        if not allow_unsafe:
+            raise RuntimeError(
+                "Failed to load TorchScript model safely. "
+                "Set ALLOW_UNSAFE_TORCH_LOAD=1 only for trusted model files."
+            )
+        model = torch.load(model_path, map_location=device, weights_only=False)
+        model.eval()
+        return model
+
+
 def main():
     print("Resolving EEG stream...")
     streams = resolve_stream("type", "EEG")
@@ -34,8 +52,7 @@ def main():
 
     print("Loading transformer model...")
     device = torch.device("cpu")
-    model = torch.load(MODEL_PATH, map_location=device)
-    model.eval()
+    model = load_model(MODEL_PATH, device)
     print("Model loaded.")
 
     buffer = deque(maxlen=WINDOW_SIZE)
@@ -43,10 +60,12 @@ def main():
 
     try:
         while True:
-            sample, _ = inlet.pull_sample(timeout=1.0)
+            sample, _ = inlet.pull_sample(timeout=POLL_TIMEOUT_SECONDS)
             if sample is None:
                 continue
 
+            if len(sample) < CHANNELS:
+                continue
             buffer.append(sample[:CHANNELS])
 
             if len(buffer) == WINDOW_SIZE:
@@ -68,11 +87,7 @@ def main():
                 af_label = EN_TO_AF.get(predicted_label_eng, predicted_label_eng)
                 print(f"Afrikaans Prediction: {af_label}")
 
-                for _ in range(STEP_SIZE):
-                    if buffer:
-                        buffer.popleft()
-
-            time.sleep(0.01)
+                buffer = deque(list(buffer)[STEP_SIZE:], maxlen=WINDOW_SIZE)
 
     except KeyboardInterrupt:
         print("Real-time decoding stopped by user.")
