@@ -81,7 +81,7 @@ def main():
                 segment = (segment - np.mean(segment, axis=0)) / (
                     np.std(segment, axis=0) + 1e-6
                 )
-                segment_tensor = torch.from_numpy(segment).unsqueeze(0)
+                segment_tensor = torch.from_numpy(segment).unsqueeze(0).to(device)
 
                 with torch.no_grad():
                     logits = model(segment_tensor)
