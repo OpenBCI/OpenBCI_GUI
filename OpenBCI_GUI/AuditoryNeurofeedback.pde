@@ -140,5 +140,14 @@ class AuditoryNeurofeedback {
         });
         modeButton.setDescription("Change Auditory Feedback mode. Use the Metric to control all notes at once, or use Band Powers to control certain notes of the chord.");
     }
+    
+    public void updateColors() {
+        color btnBg = style.isDarkMode() ? style.getButtonColor() : colorNotPressed;
+        color btnText = style.isDarkMode() ? style.getButtonTextColor() : OPENBCI_DARKBLUE;
+        startStopButton.setColorBackground(btnBg);
+        startStopButton.getCaptionLabel().setColor(btnText);
+        modeButton.setColorBackground(btnBg);
+        modeButton.getCaptionLabel().setColor(btnText);
+    }
 
 }

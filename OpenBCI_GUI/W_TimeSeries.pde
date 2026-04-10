@@ -293,6 +293,15 @@ class W_TimeSeries extends WidgetWithSettings {
         
     }
 
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        // Update all channel bar plot colors when theme changes
+        for (ChannelBar cb : channelBars) {
+            cb.updatePlotColors();
+        }
+    }
+
     void mousePressed() {
         super.mousePressed();
         tsChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked

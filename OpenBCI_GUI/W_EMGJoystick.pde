@@ -181,12 +181,12 @@ class W_EmgJoystick extends WidgetWithSettings {
         */
 
         //Background for graph
-        fill(graphBG);
-        stroke(graphStroke);
+        fill(style.isDarkMode() ? style.getGraphBoxBackground() : graphBG);
+        stroke(style.isDarkMode() ? style.getGraphLineColor() : graphStroke);
         circle(polarWindowX, polarWindowY, polarWindowDiameter);
 
         //X and Y axis lines
-        stroke(180);
+        stroke(style.isDarkMode() ? style.getGraphGridColor() : 180);
         line(polarWindowX - polarWindowHalfDiameter, polarWindowY, polarWindowX + polarWindowHalfDiameter, polarWindowY);
         line(polarWindowX, polarWindowY - polarWindowHalfDiameter, polarWindowX, polarWindowY + polarWindowHalfDiameter);
 
@@ -309,7 +309,7 @@ class W_EmgJoystick extends WidgetWithSettings {
     private void drawChannelLabels() {
         pushStyle();
 
-        fill(OPENBCI_DARKBLUE);
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         textFont(p4, 14);
         textLeading(14);
         textAlign(CENTER,CENTER);

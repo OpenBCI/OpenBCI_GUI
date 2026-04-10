@@ -133,13 +133,19 @@ class W_PacketLoss extends Widget {
         super.draw();
 
         pushStyle();
-        fill(OPENBCI_DARKBLUE);
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         textFont(p5, 12);
         text("Session length: " + sessionTimeElapsed.toString(), x + PADDING_5, y + 15);
         text("Stream length: " + streamTimeElapsed.toString(), x + PADDING_5, y + 35);
         popStyle();
 
         dataGrid.draw();
+    }
+    
+    @Override
+    public void updateColors() {
+        super.updateColors();
+        dataGrid.updateDefaultTextColor();
     }
 
     public void screenResized(){
@@ -168,5 +174,4 @@ class W_PacketLoss extends Widget {
     private void resizeGrid() {
         dataGrid.setDim(x, y + TOP_PADDING, w);
     }
-
 };

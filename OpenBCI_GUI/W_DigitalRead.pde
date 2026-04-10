@@ -103,6 +103,14 @@ class W_DigitalRead extends Widget {
             }
         }
     }
+    
+    @Override
+    public void updateColors() {
+        super.updateColors();
+        for (int i = 0; i < numDigitalReadDots; i++) {
+            digitalReadDots[i].updateColors();
+        }
+    }
 
     public void screenResized() {
         super.screenResized();
@@ -197,6 +205,11 @@ class DigitalReadDot{
     color dot1Fill = #f5f5f5;
     color val0Fill = OPENBCI_DARKBLUE;
     color val1Fill = WHITE;
+    
+    color getDotStroke() { return style.isDarkMode() ? style.getGraphLineColor() : dotStroke; }
+    color getDot0Fill() { return style.isDarkMode() ? style.getGraphBoxBackground() : dot0Fill; }
+    color getVal0Fill() { return style.isDarkMode() ? style.getSecondaryTextColor() : val0Fill; }
+    color getPinTextColor() { return style.isDarkMode() ? style.getSecondaryTextColor() : OPENBCI_DARKBLUE; }
 
     int dotX;
     int dotY;
@@ -239,8 +252,12 @@ class DigitalReadDot{
         drawDigitalValue = true;
 
         digitalPin = new TextBox("D" + digitalInputString, dotX, dotY - dotWidth);
-        digitalPin.textColor = OPENBCI_DARKBLUE;
+        digitalPin.textColor = getPinTextColor();
         digitalPin.alignH = CENTER;
+    }
+    
+    void updateColors() {
+        digitalPin.textColor = getPinTextColor();
     }
 
     void update() {
@@ -272,10 +289,10 @@ class DigitalReadDot{
             fill(dot1Fill);
             digitalValue.textColor = val1Fill;
         } else {
-            fill(dot0Fill);
-            digitalValue.textColor = val0Fill;
+            fill(getDot0Fill());
+            digitalValue.textColor = getVal0Fill();
         }
-        stroke(dotStroke);
+        stroke(getDotStroke());
         ellipse(dotX, dotY, dotWidth, dotHeight);
 
         if (drawDigitalValue) {

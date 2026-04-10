@@ -58,15 +58,9 @@ void parseKey(char val) {
             drawContainers = !drawContainers;
             return;
         case '{':
-            /*
-            if(colorScheme == COLOR_SCHEME_DEFAULT){
-                colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-            } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-                colorScheme = COLOR_SCHEME_DEFAULT;
-            }
-            */
-            //topNav.updateNavButtonsBasedOnColorScheme();
-            output("New Dark color scheme coming soon!");
+            // Cycle through themes: Default -> Dark -> Light -> Default...
+            style.cycleTheme();
+            output("Theme changed to: " + style.getThemeName());
             return;
 
         //deactivate channels 1-4

@@ -100,12 +100,8 @@ class W_Fft extends WidgetWithSettings {
         fftPlot.getYAxis().setDrawTickLabels(true);
         fftPlot.setPointSize(2);
         fftPlot.setPointColor(0);
-        fftPlot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        fftPlot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        fftPlot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        fftPlot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        fftPlot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        fftPlot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors
+        updatePlotColors();
 
         //setup points of fft point arrays
         for (int i = 0; i < fftGplotPoints.length; i++) {
@@ -177,7 +173,7 @@ class W_Fft extends WidgetWithSettings {
         fftPlot.endDraw();
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
-        fill(200, 200, 200);
+        fill(style.isDefaultMode() ? color(200, 200, 200) : style.getBoxColor());
         rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
@@ -254,6 +250,27 @@ class W_Fft extends WidgetWithSettings {
     public void setFilteringDropdownFrontend(FFTFilteredEnum _filteredEnum) {
         widgetSettings.set(FFTFilteredEnum.class, _filteredEnum);
         updateDropdownLabel(FFTFilteredEnum.class, "fftFilteringDropdown");
+    }
+    
+    private void updatePlotColors() {
+        // Apply theme colors to the FFT plot
+        color axisColor = style.getGraphAxisColor();
+        fftPlot.setBgColor(style.getGraphBackground());
+        fftPlot.setBoxBgColor(style.getGraphBoxBackground());
+        fftPlot.setBoxLineColor(style.getGraphLineColor());
+        fftPlot.setGridLineColor(style.getGraphGridColor());
+        fftPlot.getXAxis().setFontColor(axisColor);
+        fftPlot.getXAxis().setLineColor(axisColor);
+        fftPlot.getXAxis().getAxisLabel().setFontColor(axisColor);
+        fftPlot.getYAxis().setFontColor(axisColor);
+        fftPlot.getYAxis().setLineColor(axisColor);
+        fftPlot.getYAxis().getAxisLabel().setFontColor(axisColor);
+    }
+    
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        updatePlotColors();
     }
 };
 

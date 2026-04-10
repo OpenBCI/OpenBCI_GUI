@@ -62,17 +62,23 @@ class Widget {
     public void draw(){
         pushStyle();
         noStroke();
-        fill(255);
-        rect(x,y-1,w,h+1); //draw white widget background
+        fill(style.getWidgetBackground());
+        rect(x,y-1,w,h+1); //draw widget background
         popStyle();
 
         //draw nav bars and button bars
         pushStyle();
-        fill(150, 150, 150);
+        fill(style.isDefaultMode() ? color(150, 150, 150) : style.getSubNavBackground());
         rect(x0, y0, w0, navH); //top bar
-        fill(200, 200, 200);
+        fill(style.isDefaultMode() ? color(200, 200, 200) : style.getBoxColor());
         rect(x0, y0+navH, w0, navH); //button bar
         popStyle();
+    }
+    
+    // Called when theme changes - override in subclasses to update plot colors
+    public void updateColors() {
+        // Update dropdown colors for this widget
+        cp5_widget.setColor(dropdownColorsGlobal);
     }
 
     public void addDropdown(String _id, String _title, List _items, int _defaultItem){
@@ -189,7 +195,7 @@ class Widget {
         textFont(h5);		
         textSize(12);		
         textAlign(CENTER, BOTTOM);		
-        fill(OPENBCI_DARKBLUE);		
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);		
         for(int i = 0; i < dropdowns.size(); i++){		
             int dropdownPos = dropdowns.size() - i;
             int _width = cp5_widget.getController(dropdowns.get(i).id).getWidth();

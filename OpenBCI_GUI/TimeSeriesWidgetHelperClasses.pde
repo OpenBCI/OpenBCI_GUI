@@ -75,9 +75,8 @@ class ChannelBar {
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors to plot
+        updatePlotColors();
         if (channelIndex == globalChannelCount-1) {
             plot.getXAxis().setAxisLabelText("Time (s)");
             plot.getXAxis().getAxisLabel().setOffset(plotBottomWellH/2 + 5f);
@@ -348,6 +347,18 @@ class ChannelBar {
         boolean isLastChannel = channelIndex ==  widgetManager.getTimeSeriesWidget().tsChanSelect.getActiveChannels().get(numActiveChannels - 1);
         return isLastChannel;
     }
+    
+    public void updatePlotColors() {
+        // Apply theme colors to the plot
+        color axisColor = style.getGraphAxisColor();
+        plot.setBgColor(style.getGraphBackground());
+        plot.setBoxBgColor(style.getGraphBoxBackground());
+        plot.setBoxLineColor(style.getGraphLineColor());
+        plot.setGridLineColor(style.getGraphGridColor());
+        plot.getXAxis().setFontColor(axisColor);
+        plot.getXAxis().setLineColor(axisColor);
+        plot.getXAxis().getAxisLabel().setFontColor(axisColor);
+    }
 
     public void mousePressed() {
     }
@@ -605,16 +616,16 @@ class PlaybackScrollbar {
 
         //select color for playback indicator
         if (over || locked) {
-            fill(OPENBCI_DARKBLUE);
+            fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         } else {
-            fill(102, 102, 102);
+            fill(style.isDarkMode() ? style.getSecondaryTextColor() : color(102, 102, 102));
         }
         //draws playback position indicator
         rect(spos, ypos, sheight/2, sheight);
 
         //draw current timestamp and X of Y Seconds above scrollbar
         textFont(p2, 18);
-        fill(OPENBCI_DARKBLUE);
+        fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
         textAlign(LEFT, TOP);
         float textHeight = textAscent() - textDescent();
         float textY = y - textHeight - 10;
@@ -695,7 +706,7 @@ class TimeDisplay {
         if (!currentAbsoluteTimeToDisplay.equals(null)) {
             int fontSize = 17;
             textFont(p2, fontSize);
-            fill(OPENBCI_DARKBLUE);
+            fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
             float tw = textWidth(currentAbsoluteTimeToDisplay);
             text(currentAbsoluteTimeToDisplay, xpos + swidth - tw, ypos);
             text(streamTimeElapsed.toString(), xpos + 10, ypos);

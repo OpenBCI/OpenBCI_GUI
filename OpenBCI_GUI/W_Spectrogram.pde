@@ -164,7 +164,7 @@ class W_Spectrogram extends WidgetWithSettings {
 
     private void drawBackground() {
         pushStyle();
-        fill(0);
+        fill(style.isDarkMode() ? style.getGraphBoxBackground() : 0);
         rect(x, y, w, h);
         popStyle();
     }

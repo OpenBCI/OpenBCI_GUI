@@ -140,11 +140,11 @@ class W_Emg extends WidgetWithSettings {
                 //circle for outer threshold
                 noFill();
                 strokeWeight(1);
-                stroke(OPENBCI_DARKBLUE, 150);
+                stroke(style.isDarkMode() ? style.getSecondaryTextColor() : OPENBCI_DARKBLUE, 150);
                 circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getUpperThreshold(channel));
 
                 //circle for inner threshold
-                stroke(OPENBCI_DARKBLUE, 150);
+                stroke(style.isDarkMode() ? style.getSecondaryTextColor() : OPENBCI_DARKBLUE, 150);
                 circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getLowerThreshold(channel));
 
                 int _x = int(5*colOffset/8);
@@ -159,14 +159,14 @@ class W_Emg extends WidgetWithSettings {
 
                 //draw background bar container for mapped uV value indication
                 strokeWeight(1);
-                stroke(OPENBCI_DARKBLUE, 150);
+                stroke(style.isDarkMode() ? style.getSecondaryTextColor() : OPENBCI_DARKBLUE, 150);
                 noFill();
                 rect(_x, _y, _w, _h);
 
                 //draw channel number at upper left corner of row/column cell
                 pushStyle();
-                stroke(OPENBCI_DARKBLUE);
-                fill(OPENBCI_DARKBLUE);
+                stroke(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
+                fill(style.isDarkMode() ? style.getTextColor() : OPENBCI_DARKBLUE);
                 textFont(h4, 14);
                 text((channel + 1), 10, 20);
                 popStyle();

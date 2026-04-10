@@ -349,6 +349,14 @@ class WidgetManager {
         return allWidgetSettings.toString();
     }
 
+    public void updateAllWidgetColors() {
+        // Called when theme changes to update all widget colors
+        for (Widget widget : widgets) {
+            widget.updateColors();
+        }
+        println("WidgetManager: Updated colors for all widgets");
+    }
+
     public void loadWidgetSettingsFromJson(String widgetSettingsJson) {
         JSONObject json = parseJSONObject(widgetSettingsJson);
         if (json == null) {

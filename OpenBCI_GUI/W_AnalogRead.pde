@@ -128,6 +128,14 @@ class W_AnalogRead extends WidgetWithSettings {
         analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
 
+    @Override
+    public void updateColors() {
+        super.updateColors(); // Update dropdown colors
+        for (AnalogReadBar bar : analogReadBars) {
+            bar.updatePlotColors();
+        }
+    }
+
     public void mousePressed() {
         super.mousePressed();
     }
@@ -270,9 +278,8 @@ class AnalogReadBar{
         plot.setPointSize(2);
         plot.setPointColor(0);
         plot.setAllFontProperties("Arial", 0, 14);
-        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        // Apply theme colors
+        updatePlotColors();
         if(auxValuesPosition == 2) {
             plot.getXAxis().setAxisLabelText("Time (s)");
         }
@@ -439,5 +446,17 @@ class AnalogReadBar{
         analogPin.y = y + int(h/2.0);
         digitalPin.x = analogPin.x;
         digitalPin.y = analogPin.y + 12;
+    }
+    
+    void updatePlotColors() {
+        // Apply theme colors to the analog read plot
+        color axisColor = style.getGraphAxisColor();
+        plot.setBgColor(style.getGraphBackground());
+        plot.setBoxBgColor(style.getGraphBoxBackground());
+        plot.setBoxLineColor(style.getGraphLineColor());
+        plot.setGridLineColor(style.getGraphGridColor());
+        plot.getXAxis().setFontColor(axisColor);
+        plot.getXAxis().setLineColor(axisColor);
+        plot.getXAxis().getAxisLabel().setFontColor(axisColor);
     }
 };
