@@ -70,8 +70,8 @@ class NetworkStreamOutOSC extends NetworkStreamOut {
                 msg.clearArguments();
                 msg.setAddrPattern(baseOscAddress + "/" + dataTypeKey + "/ch" + i + "/bin" + j);
                 msg.add(fftBuff[i].getBand(j));
+                outputUsingProtocol();
             }
-            outputUsingProtocol();
         }
     }
 
