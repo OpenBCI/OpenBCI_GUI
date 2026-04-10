@@ -40,7 +40,7 @@ class EmgSettingsValues {
         averageuV = new float[channelCount];
 
         Arrays.fill(window, EmgWindow.ONE_SECOND);
-        Arrays.fill(uvLimit, EmgUVLimit.TWO_HUNDRED_UV);
+        Arrays.fill(uvLimit, EmgUVLimit.ONE_HUNDRED_UV);
         Arrays.fill(creepIncreasing, EmgCreepIncreasing.POINT_9);
         Arrays.fill(creepDecreasing, EmgCreepDecreasing.POINT_99999);
         Arrays.fill(minimumDeltaUV, EmgMinimumDeltaUV.TEN_UV);
@@ -99,10 +99,17 @@ class EmgSettingsValues {
             if(outputNormalized[i] < 0){
                 outputNormalized[i] = 0; //always make sure this value is >= 0
             }
+            if (outputNormalized[i] > 1) {
+                outputNormalized[i] = 1; //always make sure this value is <= 1
+            }
         }
     }
 
-    public float getOutputNormalized(int channel) {
+    public float[] getNormalizedValues() {
+        return outputNormalized;
+    }
+
+    public float getNormalizedChannelValue(int channel) {
         return outputNormalized[channel];
     }
 

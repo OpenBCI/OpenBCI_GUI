@@ -11,6 +11,12 @@ import static java.util.prefs.Preferences.systemRoot;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+public void takeGUIScreenshot() {
+    String pictureFilename = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
+    saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + pictureFilename);
+    output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + pictureFilename);
+}
+
 /**
   * @description Helper function to determine if the system is linux or not.
   * @return {boolean} true if os is linux, false otherwise.
@@ -410,6 +416,11 @@ void doubleToFloatArray(double[] array, float[] res) {
     }
 }
 
+public double convertByteArrayToDouble(byte[] array) {
+    ByteBuffer buffer = ByteBuffer.wrap(array);
+    return buffer.getDouble();
+}
+
 // shortens a string to a given width by adding [...] in the middle
 // make sure to pass the right font for accurate sizing
 String shortenString(String str, float maxWidth, PFont font) {
@@ -569,14 +580,6 @@ class FilterConstants {
         short_name = short_name_given;
     }
 };
-
-class PlotFontInfo {
-        String fontName = "fonts/Raleway-Regular.otf";
-        int axisLabel_size = 16;
-        int tickLabel_size = 14;
-        int buttonLabel_size = 12;
-};
-
 
 class TextBox {
     private int x, y;

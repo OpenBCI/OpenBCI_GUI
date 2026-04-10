@@ -137,7 +137,7 @@ class DataSourceSDCard implements DataSource, FileBoard, AccelerometerCapableBoa
         currentSample += numNewSamplesThisFrame;
 
         if (endOfFileReached()) {
-            topNav.stopButtonWasPressed();
+            topNav.dataStreamTogglePressed();
         }
 
         // don't go beyond raw data array size

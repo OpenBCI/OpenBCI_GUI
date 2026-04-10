@@ -158,77 +158,6 @@ abstract class BoardCytonSerialBase extends BoardCyton implements SmoothingCapab
 
 };
 
-class BoardCytonWifi extends BoardCytonWifiBase {
-    public BoardCytonWifi() {
-        super();
-    }
-    public BoardCytonWifi(String ipAddress, int samplingRate) {
-        super(samplingRate);
-        this.ipAddress = ipAddress;
-    }
-
-    @Override
-    public BoardIds getBoardId() {
-        return BoardIds.CYTON_WIFI_BOARD;
-    }
-};
-
-class BoardCytonWifiDaisy extends BoardCytonWifiBase {
-    public BoardCytonWifiDaisy() {
-        super();
-    }
-    public BoardCytonWifiDaisy(String ipAddress, int samplingRate) {
-        super(samplingRate);
-        this.ipAddress = ipAddress;
-    }
-
-    @Override
-    public BoardIds getBoardId() {
-        return BoardIds.CYTON_DAISY_WIFI_BOARD;
-    }
-};
-
-abstract class BoardCytonWifiBase extends BoardCyton {
-    // https://docs.openbci.com/docs/02Cyton/CytonSDK#sample-rate
-    private Map<Integer, String> samplingRateCommands = new HashMap<Integer, String>() {{
-        put(16000, "~0");
-        put(8000, "~1");
-        put(4000, "~2");
-        put(2000, "~3");
-        put(1000, "~4");
-        put(500, "~5");
-        put(250, "~6");
-    }};
-
-    public BoardCytonWifiBase() {
-        super();
-    }
-
-    public BoardCytonWifiBase(int samplingRate) {
-        super();
-        samplingRateCache = samplingRate;
-    }
-
-    @Override
-    public boolean initializeInternal() {
-        boolean res = super.initializeInternal();
-
-        if ((res) && (samplingRateCache > 0)){
-            String command = samplingRateCommands.get(samplingRateCache);
-            sendCommand(command);
-        }
-        return res;
-    }
-
-    @Override
-    protected PacketLossTracker setupPacketLossTracker() {
-        final int minSampleIndex = 0;
-        final int maxSampleIndex = 255;
-        return new PacketLossTracker(getSampleIndexChannel(), getTimestampChannel(),
-                                    minSampleIndex, maxSampleIndex);
-    }
-};
-
 class CytonDefaultSettings extends ADS1299Settings {
     CytonDefaultSettings(Board theBoard) {
         super(theBoard);
@@ -245,7 +174,7 @@ class CytonDefaultSettings extends ADS1299Settings {
 
 abstract class BoardCyton extends BoardBrainFlow
 implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard, DigitalCapableBoard, ADS1299SettingsBoard {
-    private final char[] channelSelectForSettings = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+    private final char[] channelIndentifierChars = {'1', '2', '3', '4', '5', '6', '7', '8', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
 
     private ADS1299Settings currentADS1299Settings;
     private boolean[] isCheckingImpedance;
@@ -427,7 +356,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         }
 
         // for example: z 4 1 0 Z
-        String command = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        String command = String.format("z%c%c%cZ", channelIndentifierChars[channel], p, n);
         sendCommand(command);
 
         isCheckingImpedance[channel] = active;
@@ -450,8 +379,8 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
             currentADS1299Settings.values.gain[channel] = Gain.X1;
             currentADS1299Settings.values.inputType[channel] = InputType.NORMAL;
-            currentADS1299Settings.values.bias[channel] = Bias.INCLUDE;
-            currentADS1299Settings.values.srb2[channel] = Srb2.DISCONNECT;
+            currentADS1299Settings.values.bias[channel] = Bias.NO_INCLUDE;
+            currentADS1299Settings.values.srb2[channel] = Srb2.CONNECT;
             currentADS1299Settings.values.srb1[channel] = Srb1.DISCONNECT;
 
             fullCommand.append(currentADS1299Settings.getValuesString(channel, currentADS1299Settings.values));
@@ -470,7 +399,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
         }
         
         // Format the impedance command string. Example: z 4 1 0 Z
-        String impedanceCommandString = String.format("z%c%c%cZ", channelSelectForSettings[channel], p, n);
+        String impedanceCommandString = String.format("z%c%c%cZ", channelIndentifierChars[channel], p, n);
         fullCommand.append(impedanceCommandString);
         final String commandToSend = fullCommand.toString();
 
@@ -556,7 +485,7 @@ implements ImpedanceSettingsBoard, AccelerometerCapableBoard, AnalogCapableBoard
 
     @Override
     public char getChannelSelector(int channel) {
-        return channelSelectForSettings[channel];
+        return channelIndentifierChars[channel];
     }
 
     public CytonBoardMode getBoardMode() {

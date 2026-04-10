@@ -151,8 +151,15 @@ class PacketLossTracker {
 
                 if(!silent) {
                     // print the packet loss event
-                    println("WARNING: Lost " + numSamplesLost + " Samples Between "
-                        +  (int)lastSample[sampleIndexChannel] + "-" + (int)sample[sampleIndexChannel]);
+                    StringBuilder sb = new StringBuilder("WARNING: Lost ");
+                    sb.append(numSamplesLost);
+                    sb.append(" Samples Between ");
+                    sb.append((int)lastSample[sampleIndexChannel]);
+                    sb.append("-");
+                    sb.append((int)sample[sampleIndexChannel]);
+                    sb.append(" | Timestamp: ");
+                    sb.append(fetchCurrentTimeString());
+                    println(sb.toString());
                 }
             }
 
@@ -174,6 +181,12 @@ class PacketLossTracker {
         lastSample = null;
     }
 
+    private String fetchCurrentTimeString() {
+        LocalDateTime time = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+        return time.format(formatter);
+    }
+    
     protected void checkCurrentStreamStatus() {
         PacketRecord lastMillisPacketRecord = getCumulativePacketRecordForLast(windowSizeNotificationMs);
         if (lastMillisPacketRecord.getLostPercent() > thresholdNotification) {

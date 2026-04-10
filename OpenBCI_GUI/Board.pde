@@ -46,6 +46,10 @@ abstract class Board implements DataSource {
 
         dataThisFrame = getNewDataInternal();
 
+        if (dataThisFrame == null) {
+            return;
+        }
+
         for (int i = 0; i < dataThisFrame[0].length; i++) {
             double[] newEntry = new double[getTotalChannelCount()];
             for (int j = 0; j < getTotalChannelCount(); j++) {
@@ -87,6 +91,7 @@ abstract class Board implements DataSource {
 
         names[getTimestampChannel()] = "Timestamp";
         names[getSampleIndexChannel()] = "Sample Index";
+        names[getMarkerChannel()] = "Marker";
 
         int[] exgChannels = getEXGChannels();
         for (int i=0; i<exgChannels.length; i++) {

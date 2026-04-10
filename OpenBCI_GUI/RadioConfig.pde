@@ -85,7 +85,7 @@ class RadioConfig {
         if(!connect_to_portName(rcConfig)){
             return;
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x07);
@@ -93,9 +93,9 @@ class RadioConfig {
             if(print_bytes(rcConfig)){
                 String[] s = split(rcStringReceived, ':');
                 if (s[0].equals("Success")) {
-                    outputSuccess("Successfully connected to Cyton using " + openBCI_portName);
+                    outputSuccess("Successfully connected to Cyton using " + cytonDonglePortName);
                 } else {
-                    outputError("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
+                    outputError("Failed to connect using " + cytonDonglePortName + ". Check hardware or try pressing 'Auto-Scan'.");
                 }
             }
         } else {
@@ -112,7 +112,7 @@ class RadioConfig {
         if(!connect_to_portName()){
             return false;
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x07);
@@ -124,10 +124,10 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    verbosePrint("Cyton Auto-Connect Button: Successfully connected to Cyton using " + openBCI_portName);
+                    verbosePrint("Cyton Auto-Connect Button: Successfully connected to Cyton using " + cytonDonglePortName);
                     return true;
                 } else {
-                    verbosePrint("Cyton Auto-Connect Button: Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
+                    verbosePrint("Cyton Auto-Connect Button: Failed to connect using " + cytonDonglePortName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -155,7 +155,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x00);
@@ -176,7 +176,7 @@ class RadioConfig {
                 return false;
             }
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             serial_direct_board.write(0xF0);
             serial_direct_board.write(0x00);
@@ -188,10 +188,10 @@ class RadioConfig {
                 String[] s = split(rcStringReceived, ':');
                 closeSerialPort();
                 if (s[0].equals("Success")) {
-                    println(rcStringReceived + ". Using COM port: " + openBCI_portName);
+                    println(rcStringReceived + ". Using COM port: " + cytonDonglePortName);
                     return true;
                 } else {
-                    verbosePrint("Failed to connect using " + openBCI_portName + ". Check hardware or try pressing 'Auto-Scan'.");
+                    verbosePrint("Failed to connect using " + cytonDonglePortName + ". Check hardware or try pressing 'Auto-Scan'.");
                     return false;
                 }
             }
@@ -221,7 +221,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -260,7 +260,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -288,7 +288,7 @@ class RadioConfig {
                 return;
             }
         }
-        serial_direct_board = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //force open the com port
+        serial_direct_board = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //force open the com port
         if(serial_direct_board != null){
             if(channel_number > 0){
                 serial_direct_board.write(0xF0);
@@ -308,11 +308,11 @@ class RadioConfig {
     /**** Function to connect to a selected port ****/  // JAM 1/2017
     //    Needs to be connected to something to perform the Radio_Config tasks
    private boolean connect_to_portName(RadioConfigBox rcConfig){
-        if(openBCI_portName != "N/A"){
-            output("Attempting to open Serial/COM port: " + openBCI_portName);
+        if(cytonDonglePortName != "N/A"){
+            output("Attempting to open Serial/COM port: " + cytonDonglePortName);
             try {
-                println("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
-                serial_output = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
+                println("Radios_Config: connect_to_portName: Attempting to open serial port: " + cytonDonglePortName);
+                serial_output = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //open the com port
                 serial_output.clear(); // clear anything in the com port's buffer
                 // portIsOpen = true;
                 println("Radios_Config: connect_to_portName: Port is open!");
@@ -329,7 +329,7 @@ class RadioConfig {
                     rcConfig.print_onscreen("Error connecting to Serial port.\n\nTry a different port?");
                 }
                 closeSerialPort();
-                println("Failed to connect using " + openBCI_portName);
+                println("Failed to connect using " + cytonDonglePortName);
                 return false;
             }
         } else {
@@ -340,11 +340,11 @@ class RadioConfig {
     }
 
     private boolean connect_to_portName(){
-        if(openBCI_portName != "N/A"){
-            verbosePrint("Attempting to open Serial/COM port: " + openBCI_portName);
+        if(cytonDonglePortName != "N/A"){
+            verbosePrint("Attempting to open Serial/COM port: " + cytonDonglePortName);
             try {
-                verbosePrint("Radios_Config: connect_to_portName: Attempting to open serial port: " + openBCI_portName);
-                serial_output = new processing.serial.Serial(ourApplet, openBCI_portName, openBCI_baud); //open the com port
+                verbosePrint("Radios_Config: connect_to_portName: Attempting to open serial port: " + cytonDonglePortName);
+                serial_output = new processing.serial.Serial(ourApplet, cytonDonglePortName, cytonDongleBaudRate); //open the com port
                 serial_output.clear(); // clear anything in the com port's buffer
                 // portIsOpen = true;
                 verbosePrint("Radios_Config: connect_to_portName: Port is open!");
@@ -360,7 +360,7 @@ class RadioConfig {
                     println("Error connecting to selected Serial/COM port. Make sure your board is powered up and your dongle is plugged in.");
                 }
                 closeSerialPort();
-                println("Failed to connect using " + openBCI_portName);
+                println("Failed to connect using " + cytonDonglePortName);
                 return false;
             }
         } else {

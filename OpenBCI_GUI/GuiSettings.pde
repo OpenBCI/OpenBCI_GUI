@@ -35,6 +35,11 @@ public class GuiSettingsValues {
     public ExpertModeEnum expertMode = ExpertModeEnum.OFF;
     public boolean showCytonSmoothingPopup = true;
     public boolean showGanglionUpgradePopup = true;
+    public boolean showStopStreamHardwareSettingsPopup = true;
+    public boolean showConfirmExitAppPopup = true;
+    public boolean autoStartDataStream = false;
+    public boolean autoStartNetworkStream = false;
+    public boolean autoLoadSessionSettings = false;
 
     public GuiSettingsValues() {
     }
@@ -44,7 +49,6 @@ class GuiSettings {
 
     private GuiSettingsValues values;
     private String filename;
-    private List<String> valueKeys = Arrays.asList("expertMode", "showCytonSmoothingPopup", "showGanglionUpgradePopup");
 
     GuiSettings(String settingsDirectory) {
 
@@ -130,10 +134,17 @@ class GuiSettings {
     }
 
     private boolean validateJsonKeys(String stringToSearch) {
+        List<String> valueKeys = new ArrayList<String>();
+        Gson valueGson = new Gson();
+        Map<String, Object> valueMap = valueGson.fromJson(getJson(), new TypeToken<Map<String, Object>>() {}.getType());
+        for (String mapKey : valueMap.keySet()) {
+            valueKeys.add(mapKey);
+        }
+
         List<String> foundKeys = new ArrayList<String>();
-        Gson gson = new Gson();
-        Map<String, Object> map = gson.fromJson(stringToSearch, new TypeToken<Map<String, Object>>() {}.getType());
-        for (String mapKey : map.keySet()) {
+        Gson foundGson = new Gson();
+        Map<String, Object> foundMap = foundGson.fromJson(stringToSearch, new TypeToken<Map<String, Object>>() {}.getType());
+        for (String mapKey : foundMap.keySet()) {
             foundKeys.add(mapKey);
         }
 
@@ -145,10 +156,18 @@ class GuiSettings {
         return isEqual;
     }
 
+    public void resetAllSettings() {
+        values = new GuiSettingsValues();
+        applySettings();
+    }
+
     //Call this method at the end of GUI main Setup in OpenBCI_GUI.pde to make sure everything exists
     //Has to be in this class to make sure other classes exist
     public void applySettings() {
         topNav.configSelector.toggleExpertModeFrontEnd(getExpertModeBoolean());
+        topNav.configSelector.toggleAutoStartDataStreamFrontEnd(getAutoStartDataStream());
+        topNav.configSelector.toggleAutoStartNetworkStreamFrontEnd(getAutoStartNetworkStream());
+        topNav.configSelector.toggleAutoLoadSessionSettingsFrontEnd(getAutoLoadSessionSettings());
     }
 
     public void setExpertMode(ExpertModeEnum val) {
@@ -176,5 +195,50 @@ class GuiSettings {
 
     public boolean getShowGanglionUpgradePopup() {
         return values.showGanglionUpgradePopup;
+    }
+
+    public void setShowStopStreamHardwareSettingsPopup(boolean b) {
+        values.showStopStreamHardwareSettingsPopup = b;
+        saveToFile();
+    }
+
+    public boolean getShowStopStreamHardwareSettingsPopup() {
+        return values.showStopStreamHardwareSettingsPopup;
+    }
+
+    public void setShowConfirmExitAppPopup(boolean b) {
+        values.showConfirmExitAppPopup = b;
+        saveToFile();
+    }
+
+    public boolean getShowConfirmExitAppPopup() {
+        return values.showConfirmExitAppPopup;
+    }
+
+    public void setAutoStartDataStream(boolean b) {
+        values.autoStartDataStream = b;
+        saveToFile();
+    }
+
+    public boolean getAutoStartDataStream() {
+        return values.autoStartDataStream;
+    }
+
+    public void setAutoStartNetworkStream(boolean b) {
+        values.autoStartNetworkStream = b;
+        saveToFile();
+    }
+
+    public boolean getAutoStartNetworkStream() {
+        return values.autoStartNetworkStream;
+    }
+
+    public boolean getAutoLoadSessionSettings() {
+        return values.autoLoadSessionSettings;
+    }
+
+    public void setAutoLoadSessionSettings(boolean b) {
+        values.autoLoadSessionSettings = b;
+        saveToFile();
     }
 }

@@ -52,17 +52,19 @@ void parseKey(char val) {
     switch (val) {
         case ' ':
             // space to start/stop the stream
-            topNav.stopButtonWasPressed();
+            topNav.dataStreamTogglePressed();
             return;
         case ',':
             drawContainers = !drawContainers;
             return;
         case '{':
+            /*
             if(colorScheme == COLOR_SCHEME_DEFAULT){
                 colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
             } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
                 colorScheme = COLOR_SCHEME_DEFAULT;
             }
+            */
             //topNav.updateNavButtonsBasedOnColorScheme();
             output("New Dark color scheme coming soon!");
             return;
@@ -99,14 +101,14 @@ void parseKey(char val) {
         ///////////////////// Save User settings lowercase n
         case 'n':
             println("Interactivity: Save key pressed!");
-            settings.save(settings.getPath("User", eegDataSource, nchan));
-            outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory settings.");
+            sessionSettings.save(sessionSettings.getPath("User", eegDataSource, globalChannelCount));
+            outputSuccess("Settings Saved! Using Expert Mode, you can load these settings using 'N' key. Click \"Default\" to revert to factory sessionSettings.");
             return;
 
         ///////////////////// Load User settings uppercase N
         case 'N':
             println("Interactivity: Load key pressed!");
-            settings.loadKeyPressed();
+            sessionSettings.loadKeyPressed();
             return;
 
         case '?':
@@ -116,16 +118,13 @@ void parseKey(char val) {
             return;
 
         case 'm':
-            String picfname = "OpenBCI-" + directoryManager.getFileNameDateTime() + ".jpg";
-            //println("OpenBCI_GUI: 'm' was pressed...taking screenshot:" + picfname);
-            saveFrame(directoryManager.getGuiDataPath() + "Screenshots" + System.getProperty("file.separator") + picfname);    // take a shot of that!
-            output("Screenshot captured! Saved to /Documents/OpenBCI_GUI/Screenshots/" + picfname);
+            takeGUIScreenshot();
             return;
         default:
             break;
     }
 
-    if (nchan > 4) {
+    if (globalChannelCount > 4) {
         switch (val) {
             case '5':
                 currentBoard.setEXGChannelActive(5-1, false);
@@ -156,7 +155,7 @@ void parseKey(char val) {
         }
     }
 
-    if (nchan > 8) {
+    if (globalChannelCount > 8) {
         switch (val) {
             case 'q':
                 currentBoard.setEXGChannelActive(9-1, false);
@@ -214,19 +213,20 @@ void parseKey(char val) {
     // Fixes #976. These keyboard shortcuts enable synthetic square waves on Ganglion and Cyton
     if (currentBoard instanceof BoardGanglion || currentBoard instanceof BoardCyton) {
         if (val == '[' ||  val == ']') {
-            println("Expert Mode: '" + val + "' pressed. Sending to Ganglion...");
+            println("Expert Mode: '" + val + "' pressed. Sending to board...");
             Boolean success = ((Board)currentBoard).sendCommand(str(val)).getKey();
             if (success) {
-                outputSuccess("Expert Mode: Success sending '" + val + "' to Ganglion!");
+                outputSuccess("Expert Mode: Success sending '" + val + "' to board!");
             } else {
-                outputWarn("Expert Mode: Error sending '" + val + "' to Ganglion. Try again with data stream stopped.");
+                outputWarn("Expert Mode: Error sending '" + val + "' to board. Try again with data stream stopped.");
             }
             return;
         }
     }
 
     // Check for software marker keyboard shortcuts
-    if (w_marker.checkForMarkerKeyPress(val)) {
+    W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+    if (markerWidget.checkForMarkerKeyPress(val)) {
         return;
     }
 
@@ -242,7 +242,7 @@ void mouseDragged() {
 
         //calling mouse dragged inly outside of Control Panel
         if (controlPanel.isOpen == false) {
-            wm.mouseDragged();
+            widgetManager.mouseDragged();
         }
     }
 }
@@ -262,13 +262,10 @@ synchronized void mousePressed() {
         if (controlPanel.isOpen == false) {
             //was the stopButton pressed?
 
-            wm.mousePressed();
+            widgetManager.mousePressed();
 
         }
     }
-
-    //topNav is always clickable
-    topNav.mousePressed();
 
     //interacting with control panel
     if (controlPanel.isOpen) {
@@ -299,7 +296,7 @@ synchronized void mouseReleased() {
     if (systemMode >= SYSTEMMODE_POSTINIT) {
 
         // GUIWidgets_mouseReleased(); // to replace GUI_Manager version (above) soon... cdr 7/25/16
-        wm.mouseReleased();
+        widgetManager.mouseReleased();
     }
 }
 

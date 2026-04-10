@@ -21,13 +21,9 @@ import brainflow.DataFilter;
 import brainflow.LogLevels;
 import brainflow.MLModel;
 
-class W_Focus extends Widget {
+class W_Focus extends WidgetWithSettings {
 
-    //to see all core variables/methods of the Widget class, refer to Widget.pde
-    //put your custom variables here...
-    //private ControlP5 focus_cp5;
-    //private Button widgetTemplateButton;
-    private ChannelSelect focusChanSelect;
+    private ExGChannelSelect focusChanSelect;
     private boolean prevChanSelectIsVisible = false;
     private AuditoryNeurofeedback auditoryNeurofeedback;
 
@@ -45,13 +41,8 @@ class W_Focus extends Widget {
     private final int METRIC_DROPDOWN_W = 100;
     private final int CLASSIFIER_DROPDOWN_W = 80;
 
-    private FocusBar focusBar;
+    private FifoChannelBar focusBar;
     private float focusBarHardYAxisLimit = 1.05f; //Provide slight "breathing room" to avoid GPlot error when metric value == 1.0
-    private FocusXLim xLimit = FocusXLim.TEN;
-    private FocusMetric focusMetric = FocusMetric.RELAXATION;
-    private FocusClassifier focusClassifier = FocusClassifier.REGRESSION;
-    private FocusThreshold focusThreshold = FocusThreshold.EIGHT_TENTHS;
-    private FocusColors focusColors = FocusColors.GREEN;
 
     private int[] exgChannels;
     private int channelCount;
@@ -66,16 +57,12 @@ class W_Focus extends Widget {
     private final int GRAPH_PADDING = 30;
     private color cBack, cDark, cMark, cFocus, cWave, cPanel;
 
-    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+    List<controlP5.Controller> cp5ElementsToCheck;
 
-    W_Focus(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-         //Add channel select dropdown to this widget
-        focusChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "FocusChannelSelect");
-        focusChanSelect.activateAllButtons();
-        cp5ElementsToCheck.addAll(focusChanSelect.getCp5ElementsForOverlapCheck());
-
+    W_Focus() {
+        super();
+        widgetTitle = "Focus";
+        
         auditoryNeurofeedback = new AuditoryNeurofeedback(x + PAD_FIVE, y + PAD_FIVE, w/2 - PAD_FIVE*2, navBarHeight/2);
         cp5ElementsToCheck.add((controlP5.Controller)auditoryNeurofeedback.startStopButton);
         cp5ElementsToCheck.add((controlP5.Controller)auditoryNeurofeedback.modeButton);
@@ -86,14 +73,6 @@ class W_Focus extends Widget {
 
         // initialize graphics parameters
         onColorChange();
-        
-        //This is the protocol for setting up dropdowns.
-        dropdownWidth = 60; //Override the default dropdown width for this widget
-        addDropdown("focusMetricDropdown", "Metric", focusMetric.getEnumStringsAsList(), focusMetric.getIndex());
-        addDropdown("focusClassifierDropdown", "Classifier", focusClassifier.getEnumStringsAsList(), focusClassifier.getIndex());
-        addDropdown("focusThresholdDropdown", "Threshold", focusThreshold.getEnumStringsAsList(), focusThreshold.getIndex());
-        addDropdown("focusWindowDropdown", "Window", xLimit.getEnumStringsAsList(), xLimit.getIndex());
-        
 
         //Create data table
         dataGrid = new Grid(NUM_TABLE_ROWS, NUM_TABLE_COLUMNS, cellHeight);
@@ -106,20 +85,62 @@ class W_Focus extends Widget {
         dataGrid.setString("Beta (13-30Hz)", 4, 0);
         dataGrid.setString("Gamma (30-45Hz)", 5, 0);
 
-        //Instantiate local cp5 for this box. This allows extra control of drawing cp5 elements specifically inside this class.
-        //focus_cp5 = new ControlP5(ourApplet);
-        //focus_cp5.setGraphics(ourApplet, 0,0);
-        //focus_cp5.setAutoDraw(false);
-
         //create our focus graph
         updateGraphDims();
-        focusBar = new FocusBar(_parent, xLimit.getValue(), focusBarHardYAxisLimit, graphX, graphY, graphW, graphH);
-
+        int xLimitValue = widgetSettings.get(FocusXLim.class).getValue();
+        focusBar = new FifoChannelBar(ourApplet, "Metric Value", xLimitValue, focusBarHardYAxisLimit, graphX, graphY, graphW, graphH, ACCEL_X_COLOR, FocusXLim.TWENTY.getValue());
+        
         initBrainFlowMetric();
     }
 
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+
+        widgetSettings.set(FocusXLim.class, FocusXLim.TEN)
+                .set(FocusMetric.class, FocusMetric.RELAXATION)
+                .set(FocusClassifier.class, FocusClassifier.REGRESSION)
+                .set(FocusThreshold.class, FocusThreshold.EIGHT_TENTHS)
+                .set(FocusColors.class, FocusColors.GREEN);
+        
+        dropdownWidth = 60; //Override the default dropdown width for this widget
+        initDropdown(FocusMetric.class, "focusMetricDropdown", "Metric");
+        initDropdown(FocusThreshold.class, "focusThresholdDropdown", "Threshold");
+        initDropdown(FocusXLim.class, "focusWindowDropdown", "Window");
+
+        //Add channel select dropdown to this widget
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        focusChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
+        focusChanSelect.activateAllButtons();
+        saveActiveChannels(focusChanSelect.getActiveChannels());
+        cp5ElementsToCheck.addAll(focusChanSelect.getCp5ElementsForOverlapCheck());
+
+        widgetSettings.saveDefaults();
+    }
+
+    @Override
+    protected void applySettings() {
+        //Apply settings to dropdowns
+        updateDropdownLabel(FocusXLim.class, "focusWindowDropdown");
+        updateDropdownLabel(FocusMetric.class, "focusMetricDropdown");
+        updateDropdownLabel(FocusThreshold.class, "focusThresholdDropdown");
+        applyHorizontalScale();
+        initBrainFlowMetric();
+
+        //Apply settings to channel select dropdown
+        applyActiveChannels(focusChanSelect);
+    }
+
+    @Override
+    protected void updateChannelSettings() {
+        //Save active channels to settings
+        if (focusChanSelect != null) {
+            saveActiveChannels(focusChanSelect.getActiveChannels());
+        }
+    }
+
     public void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         //Update channel checkboxes and active channels
         focusChanSelect.update(x, y, w);
@@ -139,7 +160,7 @@ class W_Focus extends Widget {
     }
 
     public void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
 
         //Draw data table
@@ -160,8 +181,6 @@ class W_Focus extends Widget {
             popStyle();
         }
 
-        //This draws all cp5 objects in the local instance
-        //focus_cp5.draw();
         auditoryNeurofeedback.draw();
         
         //Draw the graph
@@ -171,43 +190,32 @@ class W_Focus extends Widget {
     }
 
     public void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        //Very important to allow users to interact with objects after app resize        
-        //focus_cp5.setGraphics(ourApplet, 0, 0);
+        super.screenResized();
 
         resizeTable();
-
-        //We need to set the position of our Cp5 object after the screen is resized
-        //widgetTemplateButton.setPosition(x + w/2 - widgetTemplateButton.getWidth()/2, y + h/2 - widgetTemplateButton.getHeight()/2);
 
         updateStatusCircle();
         updateAuditoryNeurofeedbackPosition();
 
         updateGraphDims();
         focusBar.screenResized(graphX, graphY, graphW, graphH);
-        focusChanSelect.screenResized(pApplet);
+        focusChanSelect.screenResized(ourApplet);
 
         //Custom resize these dropdowns due to longer text strings as options
         cp5_widget.get(ScrollableList.class, "focusMetricDropdown").setWidth(METRIC_DROPDOWN_W);
         cp5_widget.get(ScrollableList.class, "focusMetricDropdown").setPosition(
-            x0 + w0 - (dropdownWidth*2) - METRIC_DROPDOWN_W - CLASSIFIER_DROPDOWN_W - (PAD_TWO*4), 
-            navH + y0 + PAD_TWO
-            );
-        cp5_widget.get(ScrollableList.class, "focusClassifierDropdown").setWidth(CLASSIFIER_DROPDOWN_W);
-        cp5_widget.get(ScrollableList.class, "focusClassifierDropdown").setPosition(
-            x0 + w0 - (dropdownWidth*2) - CLASSIFIER_DROPDOWN_W - (PAD_TWO*3), 
+            x0 + w0 - (dropdownWidth*2) - METRIC_DROPDOWN_W - (PAD_TWO*3), 
             navH + y0 + PAD_TWO
             );
     }
 
     void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         focusChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     private void resizeTable() {
-        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int extraPadding = focusChanSelect.isVisible() ? NAV_HEIGHT : 0;
         float upperLeftContainerW = w/2;
         float upperLeftContainerH = h/2;
         //float min = min(upperLeftContainerW, upperLeftContainerH);
@@ -222,9 +230,9 @@ class W_Focus extends Widget {
     }
 
     private void updateAuditoryNeurofeedbackPosition() {
-        int extraPadding = focusChanSelect.isVisible() ? navHeight : 0;
+        int extraPadding = focusChanSelect.isVisible() ? NAV_HEIGHT : 0;
         int subContainerMiddleX = x + w/4;
-        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - navHeight + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
+        auditoryNeurofeedback.screenResized(subContainerMiddleX, (int)(y + h/2 - NAV_HEIGHT + extraPadding), w/2 - PAD_FIVE*2, navBarHeight/2);
     }
 
     private void updateStatusCircle() {
@@ -232,7 +240,7 @@ class W_Focus extends Widget {
         float upperLeftContainerH = h/2;
         float min = min(upperLeftContainerW, upperLeftContainerH);
         xc = x + w/4;
-        yc = y + h/4 - navHeight;
+        yc = y + h/4 - NAV_HEIGHT;
         wc = min * (3f/5);
         hc = wc;
     }
@@ -248,11 +256,12 @@ class W_Focus extends Widget {
     //Returns a metric value from 0. to 1. When there is an error, returns -1.
     private double updateFocusState() {
         try {
-            int windowSize = currentBoard.getSampleRate() * xLimit.getValue();
+            int xLimitValue = widgetSettings.get(FocusXLim.class).getValue();
+            int windowSize = currentBoard.getSampleRate() * xLimitValue;
             // getData in GUI returns data in shape ndatapoints x nchannels, in BrainFlow its transposed
             List<double[]> currentData = currentBoard.getData(windowSize);
 
-            if (currentData.size() != windowSize || focusChanSelect.activeChan.size() <= 0) {
+            if (currentData.size() != windowSize || focusChanSelect.getActiveChannels().size() <= 0) {
                 return -1.0;
             }
 
@@ -264,8 +273,8 @@ class W_Focus extends Widget {
             }
 
             int[] channelsInDataArray = ArrayUtils.toPrimitive(
-                    focusChanSelect.activeChan.toArray(
-                        new Integer[focusChanSelect.activeChan.size()]
+                    focusChanSelect.getActiveChannels().toArray(
+                        new Integer[focusChanSelect.getActiveChannels().size()]
                     ));
 
             //Full Source Code for this method: https://github.com/brainflow-dev/brainflow/blob/c5f0ad86683e6eab556e30965befb7c93e389a3b/src/data_handler/data_handler.cpp#L1115
@@ -309,6 +318,7 @@ class W_Focus extends Widget {
             strokeColor = cDark;
             sb.append("Not ");
         }
+        FocusMetric focusMetric = widgetSettings.get(FocusMetric.class);
         sb.append(focusMetric.getIdealStateString());
         //Draw status graphic
         pushStyle();
@@ -324,6 +334,11 @@ class W_Focus extends Widget {
     }
 
     private void initBrainFlowMetric() {
+        if (mlModel != null) {
+            endSession();
+        }
+        FocusMetric focusMetric = widgetSettings.get(FocusMetric.class);
+        FocusClassifier focusClassifier = widgetSettings.get(FocusClassifier.class);
         BrainFlowModelParams modelParams = new BrainFlowModelParams(
                 focusMetric.getMetric().get_code(),
                 focusClassifier.getClassifier().get_code()
@@ -346,6 +361,7 @@ class W_Focus extends Widget {
     }
 
     private void onColorChange() {
+        FocusColors focusColors = widgetSettings.get(FocusColors.class);
         switch(focusColors) {
             case GREEN:
                 cBack = #ffffff;   //white
@@ -375,32 +391,35 @@ class W_Focus extends Widget {
     }
 
     void channelSelectFlexWidgetUI() {
-        focusBar.setPlotPosAndOuterDim(focusChanSelect.isVisible());
+        focusBar.setPlotPositionAndOuterDimensions(focusChanSelect.isVisible());
         int factor = focusChanSelect.isVisible() ? 1 : -1;
-        yc += navHeight * factor;
+        yc += NAV_HEIGHT * factor;
         resizeTable();
         updateAuditoryNeurofeedbackPosition();
     }
 
-    public void setFocusHorizScale(int n) {
-        xLimit = xLimit.values()[n];
-        focusBar.adjustTimeAxis(xLimit.getValue());
+    public void setFocusHorizontalScale(int n) {
+        widgetSettings.setByIndex(FocusXLim.class, n);
+        applyHorizontalScale();
     }
 
     public void setMetric(int n) {
-        focusMetric = focusMetric.values()[n];
-        endSession();
+        widgetSettings.setByIndex(FocusMetric.class, n);
         initBrainFlowMetric();
     }
 
     public void setClassifier(int n) {
-        focusClassifier = focusClassifier.values()[n];
-        endSession();
+        widgetSettings.setByIndex(FocusClassifier.class, n);
         initBrainFlowMetric();
     }
 
+    private void applyHorizontalScale() {
+        int windowValue = widgetSettings.get(FocusXLim.class).getValue();
+        focusBar.adjustTimeAxis(windowValue);
+    }
+
     public void setThreshold(int n) {
-        focusThreshold = focusThreshold.values()[n];
+        widgetSettings.setByIndex(FocusThreshold.class, n);
     }
 
     public int getMetricExceedsThreshold() {
@@ -414,159 +433,27 @@ class W_Focus extends Widget {
     //Called in DataProcessing.pde to update data even if widget is closed
     public void updateFocusWidgetData() {
         metricPrediction = updateFocusState();
-        predictionExceedsThreshold = metricPrediction > focusThreshold.getValue();
+        float focusThresholdValue = widgetSettings.get(FocusThreshold.class).getValue();
+        predictionExceedsThreshold = metricPrediction > focusThresholdValue;
     }
-}; //end of class
+
+    public void clear() {
+        focusBar.clear();
+        metricPrediction = 0d;
+        dataGrid.setString(df.format(metricPrediction), 0, 1);
+        focusBar.update(metricPrediction);
+    }
+};
 
 //The following global functions are used by the Focus widget dropdowns. This method is the least amount of code.
 public void focusWindowDropdown(int n) {
-    w_focus.setFocusHorizScale(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setFocusHorizontalScale(n);
 }
 
 public void focusMetricDropdown(int n) {
-    w_focus.setMetric(n);
-}
-
-public void focusClassifierDropdown(int n) {
-    w_focus.setClassifier(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setMetric(n);
 }
 
 public void focusThresholdDropdown(int n) {
-    w_focus.setThreshold(n);
+    ((W_Focus) widgetManager.getWidget("W_Focus")).setThreshold(n);
 }
-
-//This class contains the time series plot for the focus metric over time
-class FocusBar {
-    int x, y, w, h;
-    int focusBarPadding = 30;
-    int xOffset;
-    final int nPoints = 30 * 1000;
-
-    GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
-    LinkedList<Float> fifoList;
-    LinkedList<Float> fifoTimeList;
-
-    int numSeconds;
-    color channelColor; //color of plot trace
-
-    FocusBar(PApplet _parent, int xLimit, float yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
-        x = _x;
-        y = _y;
-        w = _w;
-        h = _h;
-        if (eegDataSource == DATASOURCE_CYTON) {
-            xOffset = 22;
-        } else {
-            xOffset = 0;
-        }
-        numSeconds = xLimit;
-
-        plot = new GPlot(_parent);
-        plot.setPos(x + 36 + 4 + xOffset, y); //match Accelerometer plot position with Time Series
-        plot.setDim(w - 36 - 4 - xOffset, h);
-        plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
-        plot.setXLim(-numSeconds,0); //set the horizontal scale
-        plot.setYLim(0, yLimit); //change this to adjust vertical scale
-        //plot.setPointSize(2);
-        plot.setPointColor(0);
-        plot.getXAxis().setAxisLabelText("Time (s)");
-        plot.getYAxis().setAxisLabelText("Metric Value");
-        plot.setAllFontProperties("Arial", 0, 14);
-        plot.getXAxis().getAxisLabel().setOffset(float(22));
-        plot.getYAxis().getAxisLabel().setOffset(float(focusBarPadding));
-        plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-
-        adjustTimeAxis(numSeconds);
-
-        initArrays();
-
-        //set the plot points for X, Y, and Z axes
-        plot.addLayer("layer 1", new GPointsArray(30));
-        plot.getLayer("layer 1").setLineColor(ACCEL_X_COLOR);
-    }
-
-    private void initArrays() {
-        fifoList = new LinkedList<Float>();
-        fifoTimeList = new LinkedList<Float>();
-        for (int i = 0; i < nPoints; i++) {
-            fifoList.add(0f);
-            fifoTimeList.add(0f);
-        }
-    }
-
-    public void update(double val) {
-        updateGPlotPoints(val);
-    }
-
-    public void draw() {
-        plot.beginDraw();
-        plot.drawBox(); //we won't draw this eventually ...
-        plot.drawGridLines(GPlot.BOTH);
-        plot.drawLines(); //Draw a Line graph!
-        //plot.drawPoints(); //Used to draw Points instead of Lines
-        plot.drawYAxis();
-        plot.drawXAxis();
-        plot.getXAxis().draw();
-        plot.endDraw();
-    }
-
-    public void adjustTimeAxis(int _newTimeSize) {
-        numSeconds = _newTimeSize;
-        plot.setXLim(-_newTimeSize,0);
-        initArrays();
-        //Set the number of axis divisions...
-        if (_newTimeSize > 1) {
-            plot.getXAxis().setNTicks(_newTimeSize);
-        }else{
-            plot.getXAxis().setNTicks(10);
-        }
-    }
-
-    //Used to update the Points within the graph
-    private void updateGPlotPoints(double val) {
-        float timerVal = (float)millis() / 1000.0;
-        fifoTimeList.removeFirst();
-        fifoTimeList.addLast(timerVal);
-        fifoList.removeFirst();
-        fifoList.addLast((float)val);
-
-        int stopId = 0;
-        for (stopId = nPoints - 1; stopId > 0; stopId--) {
-            if (timerVal - fifoTimeList.get(stopId) > numSeconds) {
-                break;
-            }
-        }
-        int size = nPoints - 1 - stopId;
-        GPointsArray focusPoints = new GPointsArray(size);
-        for (int i = 0; i < size; i++) {
-            focusPoints.set(i, fifoTimeList.get(i + stopId) - timerVal, fifoList.get(i + stopId), "");
-        }
-        plot.setPoints(focusPoints, "layer 1");
-    }
-
-    public void screenResized(int _x, int _y, int _w, int _h) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = _h;
-        //reposition & resize the plot
-        plot.setPos(x + 36 + 4 + xOffset, y);
-        plot.setDim(w - 36 - 4 - xOffset, h);
-
-    }
-
-    public void setPlotPosAndOuterDim(boolean chanSelectIsVisible) {
-        int _y = chanSelectIsVisible ? y + 22 : y;
-        int _h = chanSelectIsVisible ? h - 22 : h;
-        //reposition & resize the plot
-        plot.setPos(x + 36 + 4 + xOffset, _y);
-        plot.setDim(w - 36 - 4 - xOffset, _h);
-    }
-
-}; //end of class

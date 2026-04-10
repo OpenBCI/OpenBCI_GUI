@@ -1,0 +1,15 @@
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+	<Fragment>
+		<ComponentGroup Id='AppComponents' Directory='INSTALLFOLDER'>
+			<Files Include='..\..\application.windows64\**'>
+				<Exclude Files='..\..\application.windows64\OpenBCI_GUI.exe' />
+			</Files>
+			<Component Id='AppExecutable'>
+				<File
+					Id='AppExecutable'
+					Source='..\..\application.windows64\OpenBCI_GUI.exe'
+				/>
+			</Component>
+		</ComponentGroup>
+	</Fragment>
+</Wix>

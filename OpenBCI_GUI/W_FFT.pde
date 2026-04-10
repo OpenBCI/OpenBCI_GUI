@@ -5,130 +5,136 @@
 // It extends the Widget class
 //
 // Conor Russomanno, November 2016
+// Refactored: Richard Waltman, March 2025
 //
 // Requires the plotting library from grafica ...
 // replacing the old gwoptics (which is now no longer supported)
 //
 ///////////////////////////////////////////////////
 
-class W_fft extends Widget {
+class W_Fft extends WidgetWithSettings {
+    public ExGChannelSelect fftChanSelect;
+    private boolean prevChanSelectIsVisible = false;
 
-    public ChannelSelect fftChanSelect;
-    boolean prevChanSelectIsVisible = false;
+    private GPlot fftPlot; //create an fft plot for each active channel
+    private GPointsArray[] fftGplotPoints;
 
-    GPlot fft_plot; //create an fft plot for each active channel
-    GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
-    
-    int[] lineColor = {
-        (int)color(129, 129, 129),
-        (int)color(124, 75, 141),
-        (int)color(54, 87, 158),
-        (int)color(49, 113, 89),
-        (int)SIGNAL_CHECK_YELLOW,
-        (int)color(253, 94, 52),
-        (int)BOLD_RED,
-        (int)color(162, 82, 49),
-        (int)color(129, 129, 129),
-        (int)color(124, 75, 141),
-        (int)color(54, 87, 158),
-        (int)color(49, 113, 89),
-        (int)SIGNAL_CHECK_YELLOW,
-        (int)color(253, 94, 52),
-        (int)BOLD_RED,
-        (int)color(162, 82, 49)
-    };
+    private int fftFrequencyLimit;
 
-    int[] xLimOptions = {20, 40, 60, 100, 120, 250, 500, 800};
-    int[] yLimOptions = {10, 50, 100, 1000};
+    private List<controlP5.Controller> cp5ElementsToCheck;
 
-    int xLim = xLimOptions[2];  //maximum value of x axis ... in this case 20 Hz, 40 Hz, 60 Hz, 120 Hz
-    int xMax = xLimOptions[xLimOptions.length-1];   //maximum possible frequency in FFT
-    int FFT_indexLim = int(1.0*xMax*(getNfftSafe()/currentBoard.getSampleRate()));   // maxim value of FFT index
-    int yLim = yLimOptions[2];  //maximum value of y axis ... 100 uV
+    W_Fft() {
+        super();
+        widgetTitle = "FFT Plot";
 
-    List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-
-    W_fft(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
-
-        //Add channel select dropdown to this widget
-        fftChanSelect = new ChannelSelect(pApplet, this, x, y, w, navH, "BP_Channels");
-        fftChanSelect.activateAllButtons();
-        cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
-
-        //Default FFT plot settings
-        settings.fftMaxFrqSave = 2;
-        settings.fftMaxuVSave = 2;
-        settings.fftLogLinSave = 0;
-        settings.fftSmoothingSave = 3;
-        settings.fftFilterSave = 0;
-
-        //This is the protocol for setting up dropdowns.
-        //Note that these 3 dropdowns correspond to the 3 global functions below
-        //You just need to make sure the "id" (the 1st String) has the same name as the corresponding function
-        addDropdown("MaxFreq", "Max Freq", Arrays.asList(settings.fftMaxFrqArray), settings.fftMaxFrqSave);
-        addDropdown("VertScale", "Max uV", Arrays.asList(settings.fftVertScaleArray), settings.fftMaxuVSave);
-        addDropdown("LogLin", "Log/Lin", Arrays.asList(settings.fftLogLinArray), settings.fftLogLinSave);
-        addDropdown("Smoothing", "Smooth", Arrays.asList(settings.fftSmoothingArray), smoothFac_ind); //smoothFac_ind is a global variable at the top of W_HeadPlot.pde
-        addDropdown("UnfiltFilt", "Filters?", Arrays.asList(settings.fftFilterArray), settings.fftFilterSave);
-
-        fft_points = new GPointsArray[nchan];
-        // println("fft_points.length: " + fft_points.length);
-        initializeFFTPlot(_parent);
-
+        fftGplotPoints = new GPointsArray[globalChannelCount];
+        initializeFFTPlot();
     }
 
-    void initializeFFTPlot(PApplet _parent) {
-        //setup GPlot for FFT
-        fft_plot = new GPlot(_parent, x, y-navHeight, w, h+navHeight); //based on container dimensions
-        fft_plot.setAllFontProperties("Arial", 0, 14);
-        fft_plot.getXAxis().setAxisLabelText("Frequency (Hz)");
-        fft_plot.getYAxis().setAxisLabelText("Amplitude (uV)");
-        fft_plot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default
-        fft_plot.setLogScale("y");
+    @Override
+    protected void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(FFTMaxFrequency.class, FFTMaxFrequency.MAX_60)
+                .set(FFTVerticalScale.class, FFTVerticalScale.SCALE_100)
+                .set(GraphLogLin.class, GraphLogLin.LOG)
+                .set(FFTSmoothingFactor.class, globalFFTSettings.getSmoothingFactor())
+                .set(FFTFilteredEnum.class, globalFFTSettings.getFilteredEnum());
 
-        fft_plot.setYLim(0.1, yLim);
-        int _nTicks = int(yLim/10 - 1); //number of axis subdivisions
-        fft_plot.getYAxis().setNTicks(_nTicks);  //sets the number of axis divisions...
-        fft_plot.setXLim(0.1, xLim);
-        fft_plot.getYAxis().setDrawTickLabels(true);
-        fft_plot.setPointSize(2);
-        fft_plot.setPointColor(0);
-        fft_plot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
-        fft_plot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
-        fft_plot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
-        fft_plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
-        fft_plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
-        fft_plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        initDropdown(FFTMaxFrequency.class, "fftMaxFrequencyDropdown", "Max Hz");
+        initDropdown(FFTVerticalScale.class, "fftVerticalScaleDropdown", "Max uV");
+        initDropdown(GraphLogLin.class, "GraphLogLinDropdown", "Log/Lin");
+        initDropdown(FFTSmoothingFactor.class, "fftSmoothingDropdown", "Smooth");
+        initDropdown(FFTFilteredEnum.class, "fftFilteringDropdown", "Filters");
+        
+        fftChanSelect = new ExGChannelSelect(ourApplet, x, y, w, navH);
+        fftChanSelect.activateAllButtons();
+        cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
+        cp5ElementsToCheck.addAll(fftChanSelect.getCp5ElementsForOverlapCheck());
+        saveActiveChannels(fftChanSelect.getActiveChannels());
+        widgetSettings.saveDefaults();
+
+        int maxFrequencyHighestValue = ((FFTMaxFrequency) widgetSettings.get(FFTMaxFrequency.class)).getHighestFrequency();
+        fftFrequencyLimit = int(1.0 * maxFrequencyHighestValue * (getNumFFTPoints() / currentBoard.getSampleRate()));
+    }
+
+    @Override
+    protected void applySettings() {
+        updateDropdownLabel(FFTMaxFrequency.class, "fftMaxFrequencyDropdown");
+        updateDropdownLabel(FFTVerticalScale.class, "fftVerticalScaleDropdown");
+        updateDropdownLabel(GraphLogLin.class, "GraphLogLinDropdown");
+        updateDropdownLabel(FFTSmoothingFactor.class, "fftSmoothingDropdown");
+        updateDropdownLabel(FFTFilteredEnum.class, "fftFilteringDropdown");
+        applyActiveChannels(fftChanSelect);
+        applyMaxFrequency();
+        applyVerticalScale();
+        setPlotLogScale();
+        FFTSmoothingFactor smoothingFactor = widgetSettings.get(FFTSmoothingFactor.class);
+        FFTFilteredEnum filteredEnum = widgetSettings.get(FFTFilteredEnum.class);
+        globalFFTSettings.setSmoothingFactor(smoothingFactor);
+        globalFFTSettings.setFilteredEnum(filteredEnum);
+    }
+
+    @Override
+    protected void updateChannelSettings() {
+        if (fftChanSelect != null) {
+            saveActiveChannels(fftChanSelect.getActiveChannels());
+        }
+    }
+
+
+    private void initializeFFTPlot() {
+        //setup GPlot for FFT
+        fftPlot = new GPlot(ourApplet, x, y-NAV_HEIGHT, w, h+NAV_HEIGHT);
+        fftPlot.setAllFontProperties("Arial", 0, 14);
+        fftPlot.getXAxis().setAxisLabelText("Frequency (Hz)");
+        fftPlot.getYAxis().setAxisLabelText("Amplitude (uV)");
+        fftPlot.setMar(60, 70, 40, 30); //{ bot=60, left=70, top=40, right=30 } by default
+        setPlotLogScale();
+
+        int verticalScaleValue = widgetSettings.get(FFTVerticalScale.class).getValue();
+        int maxFrequencyValue = widgetSettings.get(FFTMaxFrequency.class).getValue();
+        fftPlot.setYLim(0.1, verticalScaleValue);
+        int _nTicks = 10;
+        fftPlot.getYAxis().setNTicks(_nTicks);  //sets the number of axis divisions...
+        fftPlot.setXLim(0.1, maxFrequencyValue);
+        fftPlot.getYAxis().setDrawTickLabels(true);
+        fftPlot.setPointSize(2);
+        fftPlot.setPointColor(0);
+        fftPlot.getXAxis().setFontColor(OPENBCI_DARKBLUE);
+        fftPlot.getXAxis().setLineColor(OPENBCI_DARKBLUE);
+        fftPlot.getXAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        fftPlot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
+        fftPlot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
+        fftPlot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
 
         //setup points of fft point arrays
-        for (int i = 0; i < fft_points.length; i++) {
-            fft_points[i] = new GPointsArray(FFT_indexLim);
+        for (int i = 0; i < fftGplotPoints.length; i++) {
+            fftGplotPoints[i] = new GPointsArray(fftFrequencyLimit);
         }
 
         //fill fft point arrays
-        for (int i = 0; i < fft_points.length; i++) { //loop through each channel
-            for (int j = 0; j < FFT_indexLim; j++) {
+        for (int i = 0; i < fftGplotPoints.length; i++) { //loop through each channel
+            for (int j = 0; j < fftFrequencyLimit; j++) {
                 GPoint temp = new GPoint(j, 0);
-                fft_points[i].set(j, temp);
+                fftGplotPoints[i].set(j, temp);
             }
         }
 
         //map fft point arrays to fft plots
-        fft_plot.setPoints(fft_points[0]);
+        fftPlot.setPoints(fftGplotPoints[0]);
     }
 
     void update(){
 
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
-        float sr = currentBoard.getSampleRate();
-        int nfft = getNfftSafe();
+        super.update();
+        float sampleRate = currentBoard.getSampleRate();
+        int fftPointCount = getNumFFTPoints();
 
         //update the points of the FFT channel arrays for all channels
-        for (int i = 0; i < fft_points.length; i++) {
-            for (int j = 0; j < FFT_indexLim + 2; j++) {  //loop through frequency domain data, and store into points array
-                GPoint powerAtBin = new GPoint((1.0*sr/nfft)*j, fftBuff[i].getBand(j));
-                fft_points[i].set(j, powerAtBin);
+        for (int i = 0; i < fftGplotPoints.length; i++) {
+            for (int j = 0; j < fftFrequencyLimit + 2; j++) {  //loop through frequency domain data, and store into points array
+                GPoint powerAtBin = new GPoint((1.0*sampleRate/fftPointCount)*j, fftBuff[i].getBand(j));
+                fftGplotPoints[i].set(j, powerAtBin);
             }
         }
 
@@ -147,32 +153,32 @@ class W_fft extends Widget {
     }
 
     void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
         //draw FFT Graph w/ all plots
         noStroke();
-        fft_plot.beginDraw();
-        fft_plot.drawBackground();
-        fft_plot.drawBox();
-        fft_plot.drawXAxis();
-        fft_plot.drawYAxis();
-        fft_plot.drawGridLines(GPlot.BOTH);
+        fftPlot.beginDraw();
+        fftPlot.drawBackground();
+        fftPlot.drawBox();
+        fftPlot.drawXAxis();
+        fftPlot.drawYAxis();
+        fftPlot.drawGridLines(GPlot.BOTH);
         //Update and draw active channels that have been selected via channel select for this widget
-        for (int j = 0; j < fftChanSelect.activeChan.size(); j++) {
-            int chan = fftChanSelect.activeChan.get(j);
-            fft_plot.setLineColor(lineColor[chan]);
+        for (int j = 0; j < fftChanSelect.getActiveChannels().size(); j++) {
+            int chan = fftChanSelect.getActiveChannels().get(j);
+            fftPlot.setLineColor((int)channelColors[chan % 8]);
             //remap fft point arrays to fft plots
-            fft_plot.setPoints(fft_points[chan]);
-            fft_plot.drawLines();
+            fftPlot.setPoints(fftGplotPoints[chan]);
+            fftPlot.drawLines();
         }  
-        fft_plot.endDraw();
+        fftPlot.endDraw();
 
         //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
         fill(200, 200, 200);
-        rect(x, y - navHeight, w, navHeight); //button bar
+        rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
 
@@ -180,84 +186,100 @@ class W_fft extends Widget {
     }
 
     void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
-        //update position/size of FFT plot
-        fft_plot.setPos(x, y-navHeight);//update position
-        fft_plot.setOuterDim(w, h+navHeight);//update dimensions
+        flexGPlotSizeAndPosition();
 
-        fftChanSelect.screenResized(pApplet);
+        fftChanSelect.screenResized(ourApplet);
     }
 
     void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
         fftChanSelect.mousePressed(this.dropdownIsActive); //Calls channel select mousePressed and checks if clicked
     }
 
     void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     void flexGPlotSizeAndPosition() {
         if (fftChanSelect.isVisible()) {
-                fft_plot.setPos(x, y);
-                fft_plot.setOuterDim(w, h);
+                fftPlot.setPos(x, y + fftChanSelect.getHeight() - navH);
+                fftPlot.setOuterDim(w, h - fftChanSelect.getHeight() + navH);
         } else {
-            fft_plot.setPos(x, y - navHeight);
-            fft_plot.setOuterDim(w, h + navHeight);
+            fftPlot.setPos(x, y - navH);
+            fftPlot.setOuterDim(w, h + navH);
         }
+    }
+
+    private void applyMaxFrequency() {
+        int maxFrequencyValue = widgetSettings.get(FFTMaxFrequency.class).getValue();
+        fftPlot.setXLim(0.1, maxFrequencyValue);
+    }
+
+    private void applyVerticalScale() {
+        int verticalScaleValue = widgetSettings.get(FFTVerticalScale.class).getValue();
+        fftPlot.setYLim(0.1, verticalScaleValue);
+    }
+
+    public void setMaxFrequency(int n) {
+        widgetSettings.setByIndex(FFTMaxFrequency.class, n);
+        applyMaxFrequency();
+    }
+
+    public void setVerticalScale(int n) {
+        widgetSettings.setByIndex(FFTVerticalScale.class, n);
+        applyVerticalScale();
+    }
+
+    public void setLogLin(int n) {
+        widgetSettings.setByIndex(GraphLogLin.class, n);
+        setPlotLogScale();
+    }
+
+    private void setPlotLogScale() {
+        GraphLogLin logLin = widgetSettings.get(GraphLogLin.class);
+        if (logLin == GraphLogLin.LOG) {
+            fftPlot.setLogScale("y");
+        } else {
+            fftPlot.setLogScale("");
+        }
+    }
+
+    public void setSmoothingDropdownFrontend(FFTSmoothingFactor _smoothingFactor) {
+        widgetSettings.set(FFTSmoothingFactor.class, _smoothingFactor);
+        updateDropdownLabel(FFTSmoothingFactor.class, "fftSmoothingDropdown");
+    }
+
+    public void setFilteringDropdownFrontend(FFTFilteredEnum _filteredEnum) {
+        widgetSettings.set(FFTFilteredEnum.class, _filteredEnum);
+        updateDropdownLabel(FFTFilteredEnum.class, "fftFilteringDropdown");
     }
 };
 
 //These functions need to be global! These functions are activated when an item from the corresponding dropdown is selected
-//triggered when there is an event in the MaxFreq. Dropdown
-void MaxFreq(int n) {
-    /* request the selected item based on index n */
-    w_fft.fft_plot.setXLim(0.1, w_fft.xLimOptions[n]); //update the xLim of the FFT_Plot
-    settings.fftMaxFrqSave = n; //save the xLim to variable for save/load settings
+public void fftMaxFrequencyDropdown(int n) {
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setMaxFrequency(n);
 }
 
-//triggered when there is an event in the VertScale Dropdown
-void VertScale(int n) {
-
-    w_fft.fft_plot.setYLim(0.1, w_fft.yLimOptions[n]); //update the yLim of the FFT_Plot
-    settings.fftMaxuVSave = n; //save the yLim to variable for save/load settings
+public void fftVerticalScaleDropdown(int n) {
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setVerticalScale(n);
 }
 
-//triggered when there is an event in the LogLin Dropdown
-void LogLin(int n) {
-    if (n==0) {
-        w_fft.fft_plot.setLogScale("y");
-        //store the current setting to save
-        settings.fftLogLinSave = 0;
-    } else {
-        w_fft.fft_plot.setLogScale("");
-        //store the current setting to save
-        settings.fftLogLinSave = 1;
-    }
+public void GraphLogLinDropdown(int n) {
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setLogLin(n);
 }
 
-//triggered when there is an event in the Smoothing Dropdown
-void Smoothing(int n) {
-    smoothFac_ind = n;
-    settings.fftSmoothingSave = n;
-    //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
-    w_fft.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
-    w_bandPower.cp5_widget.getController("Smoothing").getCaptionLabel().setText(settings.fftSmoothingArray[n]);
-
+public void fftSmoothingDropdown(int n) {
+    globalFFTSettings.setSmoothingFactor(FFTSmoothingFactor.values()[n]);
+    FFTSmoothingFactor smoothingFactor = globalFFTSettings.getSmoothingFactor();
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setSmoothingDropdownFrontend(smoothingFactor);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setSmoothingDropdownFrontend(smoothingFactor);
 }
 
-//triggered when there is an event in the UnfiltFilt Dropdown
-void UnfiltFilt(int n) {
-    settings.fftFilterSave = n;
-    if (n==0) {
-        //have FFT use filtered data -- default
-        isFFTFiltered = true;
-    } else {
-        //have FFT use unfiltered data
-        isFFTFiltered = false;
-    }
-    //since this function is called by both the BandPower and FFT Widgets the dropdown needs to be updated in both
-    w_fft.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
-    w_bandPower.cp5_widget.getController("UnfiltFilt").getCaptionLabel().setText(settings.fftFilterArray[n]);
+public void fftFilteringDropdown(int n) {
+    globalFFTSettings.setFilteredEnum(FFTFilteredEnum.values()[n]);
+    FFTFilteredEnum filteredEnum = globalFFTSettings.getFilteredEnum();
+    ((W_BandPower) widgetManager.getWidget("W_BandPower")).setFilteringDropdownFrontend(filteredEnum);
+    ((W_Fft) widgetManager.getWidget("W_Fft")).setFilteringDropdownFrontend(filteredEnum);
 }

@@ -13,8 +13,13 @@ def print_message(*args):
         print(args[0]) #added to see raw data 
         obj = json.loads(args[0].decode())
         print(obj.get('data'))
+        if obj:
+            return True
+        else:
+            return False
     except BaseException as e:
         print(e)
+        return False
  #  print("(%s) RECEIVED MESSAGE: " % time.time() +
  # ''.join(str(struct.unpack('>%df' % int(length), args[0]))))
 
@@ -83,10 +88,10 @@ if __name__ == "__main__":
   numSamples = 0
   duration = 10
   while time.time() <= start + duration:
-    data, addr = sock.recvfrom(20000) # buffer size is 20000 bytes
+    data, addr = sock.recvfrom(65507) # buffer size is 65507 bytes
     if args.option=="print":
-      print_message(data)
-      numSamples += 1
+      if print_message(data):
+        numSamples += 1
     elif args.option=="record":
       record_to_file(data)
 print( "Samples == {}".format(numSamples) )

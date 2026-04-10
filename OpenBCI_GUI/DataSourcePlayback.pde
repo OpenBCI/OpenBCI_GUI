@@ -1,15 +1,16 @@
 abstract class DataSourcePlayback implements DataSource, FileBoard  {
-    private String playbackFilePathExg;
-    private ArrayList<double[]> rawDataExg;
-    private int currentSampleExg;
-    private int timeOfLastUpdateMSExg;
-    private String underlyingClassName;
-    private int numNewSamplesThisFrameExg;
+    protected String playbackFilePathExg;
+    protected ArrayList<double[]> rawDataExg;
+    protected int currentSampleExg;
+    protected int timeOfLastUpdateMSExg;
+    protected int numNewSamplesThisFrameExg;
 
     private boolean initialized = false;
-    private boolean streaming = false;
-    
+    protected boolean streaming = false;
+
     public Board underlyingBoard = null;
+    protected String underlyingClassName;
+    
     private int sampleRateExg = -1;
     private int numChannelsExg = 0;  // use it instead getTotalChannelCount() method for old playback files
 
@@ -49,9 +50,9 @@ abstract class DataSourcePlayback implements DataSource, FileBoard  {
             //only needed for synthetic board. can delete if we get rid of synthetic board.
             if (line.startsWith("%Number of channels")) {
                 int startIndex = line.indexOf('=') + 2;
-                String nchanStr = line.substring(startIndex);
-                int chanCount = Integer.parseInt(nchanStr);
-                updateToNChan(chanCount); // sythetic board depends on this being set before it's initialized
+                String channelCountString = line.substring(startIndex);
+                int channelCount = Integer.parseInt(channelCountString);
+                updateGlobalChannelCount(channelCount); // sythetic board depends on this being set before it's initialized
             }
 
             // some boards have configurable sample rate, so read it from header
@@ -114,7 +115,7 @@ abstract class DataSourcePlayback implements DataSource, FileBoard  {
             if (((valStrs.length - 1) != getTotalChannelCount()) && (numChannelsExg == 0)) {
                 outputWarn("you are using old file for playback.");
             }
-            numChannelsExg = valStrs.length - 1;  // -1 becaise of gui's timestamps
+            numChannelsExg = valStrs.length - 1;  // -1 because of gui's timestamps
 
             double[] row = new double[numChannelsExg];
             for (int iCol = 0; iCol < numChannelsExg; iCol++) {
@@ -145,7 +146,7 @@ abstract class DataSourcePlayback implements DataSource, FileBoard  {
         currentSampleExg += numNewSamplesThisFrameExg;
         
         if (endOfFileReached()) {
-            topNav.stopButtonWasPressed();
+            topNav.dataStreamTogglePressed();
         }
 
         // don't go beyond raw data array size
@@ -309,12 +310,9 @@ public DataSourcePlayback getDataSourcePlaybackClassFromFile(String path) {
     switch (underlyingBoardClassName) {
         case ("BoardCytonSerial"):
         case ("BoardCytonSerialDaisy"):
-        case ("BoardCytonWifi"):
-        case ("BoardCytonWifiDaisy"):
             return new DataSourcePlaybackCyton(path);
         case ("BoardGanglionBLE"):
         case ("BoardGanglionNative"):
-        case ("BoardGanglionWifi"):
             return new DataSourcePlaybackGanglion(path);
         case ("BoardBrainFlowSynthetic"):
             return new DataSourcePlaybackSynthetic(path);

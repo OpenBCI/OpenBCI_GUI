@@ -7,51 +7,45 @@ class SignalCheckThresholdUI {
     private int defaultValue_kOhms;
     private int valuePercentage;
     private int valuekOhms;
-    private CytonSignalCheckMode signalCheckMode;
+    private CytonSignalCheckMode signalCheckModeCyton;
     private color textColor = OPENBCI_DARKBLUE;
-    private boolean hasUpdatedTextColor = false;
+    private color isActiveBorderColor;
 
-    SignalCheckThresholdUI(ControlP5 _cp5, String _name, int _x, int _y, int _w, int _h, color _textColor, CytonSignalCheckMode _mode) {
-        signalCheckMode = _mode;
+    SignalCheckThresholdUI(ControlP5 _cp5, String _name, int _x, int _y, int _w, int _h, color _isActiveBorderColor, CytonSignalCheckMode _mode) {
+        signalCheckModeCyton = _mode;
         name = _name;
-        textColor = _textColor;
+        isActiveBorderColor = _isActiveBorderColor;
         defaultValue_Percentage = name.equals("errorThreshold") ? 90 : 75;
         valuePercentage = defaultValue_Percentage;
         defaultValue_kOhms = name == "errorThreshold" ? 2500 : 750;
         valuekOhms = defaultValue_kOhms;
-        thresholdTF = createTextfield(_cp5, _name, 0, _x, _y, _w, _h, _textColor);
+        thresholdTF = createTextfield(_cp5, _name, 0, _x, _y, _w, _h, _isActiveBorderColor);
         updateTextfieldModeChanged(_mode);
         //textfieldHeight = _h;
     }
 
     public void update() {
-        if (!hasUpdatedTextColor) {
-            thresholdTF.setColorValueLabel(textColor);
-            thresholdTF.setColorActive(textColor);
-            hasUpdatedTextColor = true;
-        }
-
         textfieldUpdateHelper.checkTextfield(thresholdTF);
     }
-
+    
     public void updateTextfieldModeChanged(CytonSignalCheckMode _mode) {
-        signalCheckMode = _mode;
+        signalCheckModeCyton = _mode;
         customThreshold(thresholdTF, getTextfieldIntVal());
     }
 
-    private Textfield createTextfield(ControlP5 _cp5, String name, int intValue, int _x, int _y, int _w, int _h, color _textColor) {
+    private Textfield createTextfield(ControlP5 _cp5, String name, int intValue, int _x, int _y, int _w, int _h, color _isActiveBorderColor) {
         //Create these textfields under cp5_widget base instance so because they are always visible
         final Textfield myTextfield = _cp5.addTextfield(name)
             .setPosition(_x, _y)
             .setCaptionLabel("")
             .setSize(_w, _h)
-            .setFont(f5)
+            .setFont(p5)
             .setFocus(false)
             .setColor(color(26, 26, 26))
             .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(_textColor)  // text color
-            .setColorForeground(color(210))  // border color when not selected - grey
-            .setColorActive(isSelected_color)  // border color when selected - green
+            .setColorValueLabel(textColor)  // text color
+            .setColorForeground(isActiveBorderColor)  // border color when not selected - grey
+            .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
             .setText("%") //set the text
             .align(5, 10, 20, 40)
@@ -107,6 +101,10 @@ class SignalCheckThresholdUI {
         thresholdTF.setPosition(_x, _y);
     }
 
+    public float[] getPosition() {
+        return thresholdTF.getPosition();
+    }
+
     private int getDefaultTextfieldIntVal() {
         return isSignalCheckRailedMode() ? defaultValue_Percentage : defaultValue_kOhms;
     }
@@ -118,26 +116,33 @@ class SignalCheckThresholdUI {
     private void setTextfieldVal(int val) {
         if (isSignalCheckRailedMode()) {
             if (name == "errorThreshold") {
-                for (int i = 0; i < nchan; i++) {
+                for (int i = 0; i < globalChannelCount; i++) {
                     is_railed[i].setRailedThreshold((double) val);
                 }
             } else {
-                for (int i = 0; i < nchan; i++) {
+                for (int i = 0; i < globalChannelCount; i++) {
                     is_railed[i].setRailedWarnThreshold((double) val);
                 }
             }
             valuePercentage = val;
         } else {
-            if (name == "errorThreshold") {
-                w_cytonImpedance.updateElectrodeStatusYellowThreshold((double)val);
-            } else {
-                w_cytonImpedance.updateElectrodeStatusGreenThreshold((double)val);
+            if (currentBoard instanceof BoardCyton) {
+                W_CytonImpedance cytonImpedanceWidget = (W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance");
+                if (name == "errorThreshold") {
+                    cytonImpedanceWidget.updateElectrodeStatusYellowThreshold((double)val);
+                } else {
+                    cytonImpedanceWidget.updateElectrodeStatusGreenThreshold((double)val);
+                }
             }
             valuekOhms = val;
         }
     }
 
     private boolean isSignalCheckRailedMode() {
-        return signalCheckMode == CytonSignalCheckMode.LIVE;
+        if (currentBoard instanceof BoardCyton) { 
+            return signalCheckModeCyton == CytonSignalCheckMode.LIVE;
+        } else {
+            return false;
+        }
     }
 };

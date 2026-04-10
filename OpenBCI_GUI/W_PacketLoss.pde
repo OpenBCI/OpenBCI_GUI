@@ -1,73 +1,73 @@
 
-enum CalculationWindowSize
-    {
-        SECONDS1("1 sec", 1*1000),
-        SECONDS10("10 sec", 10*1000),
-        MINUTE1("1 min", 60*1000);
+enum CalculationWindowSize {
+    SECONDS1("Last 1s", 1*1000),
+    SECONDS10("Last 10s", 10*1000),
+    MINUTE1("Last 1m", 60*1000);
 
-        private String name;
-        private int milliseconds;
+    private String name;
+    private int milliseconds;
+
+    CalculationWindowSize(String _name, int _millis) {
+        this.name = _name;
+        this.milliseconds = _millis;
+    }
     
-        CalculationWindowSize(String _name, int _millis) {
-            this.name = _name;
-            this.milliseconds = _millis;
-        }
-        
-        public String  getName() {
-            return name;
-        }
-
-        public int getMilliseconds() {
-            return milliseconds;
-        }
+    public String  getName() {
+        return name;
     }
 
+    public int getMilliseconds() {
+        return milliseconds;
+    }
+}
+
 class W_PacketLoss extends Widget {
-    private Grid dataGrid;
+    protected Grid dataGrid;
     private PacketLossTracker packetLossTracker;
 
     private PacketRecord sessionPacketRecord;
     private PacketRecord streamPacketRecord;
     private PacketRecord lastMillisPacketRecord;
 
-    private ControlP5 cp5;
-    private ScrollableList tableDropdown;
+    protected ScrollableList tableDropdown;
     
-    private final int padding = 5;
-    private final int cellHeight = 20;
+    protected final int PADDING_5 = 5;
+    protected final int CELL_HEIGHT = 20;
+    protected final int TOP_PADDING = 50;
 
     private CalculationWindowSize tableWindowSize = CalculationWindowSize.SECONDS10;
 
-    W_PacketLoss(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_PacketLoss() {
+        super();
+        widgetTitle = "Packet Loss";
 
-        dataGrid = new Grid(5/*numRows*/, 4/*numCols*/, cellHeight);
+        dataGrid = new Grid(5/*numRows*/, 4/*numCols*/, CELL_HEIGHT);
         packetLossTracker = ((Board)currentBoard).getPacketLossTracker();
         sessionPacketRecord = packetLossTracker.getSessionPacketRecord();
         streamPacketRecord = packetLossTracker.getStreamPacketRecord();
+        
+        dataGrid.setString("Session", 0, 1);
+        dataGrid.setString("Stream", 0, 2);
 
-        dataGrid.setString("entire session", 0, 1);
-        dataGrid.setString("contiguous stream", 0, 2);
-
-        dataGrid.setString("packets lost", 1, 0);
-        dataGrid.setString("packets received", 2, 0);
-        dataGrid.setString("packets expected", 3, 0);
-        dataGrid.setString("% packets lost", 4, 0);
+        dataGrid.setString("Packets", 0, 0);
+        dataGrid.setString("Lost", 1, 0);
+        dataGrid.setString("Received", 2, 0);
+        dataGrid.setString("Expected", 3, 0);
+        dataGrid.setString("% Lost", 4, 0);
 
         createTableDropdown();
 
-        // call once in constructor
-        screenResized();
+        resizeGrid();
     }
 
     private void createTableDropdown() {
         tableDropdown = cp5_widget.addScrollableList("TableTimeWindow")
             .setDrawOutline(false)
             .setOpen(false)
-            .setColor(settings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(OBJECT_BORDER_GREY)
-            .setBarHeight(cellHeight) //height of top/primary bar
-            .setItemHeight(cellHeight) //height of all item/dropdown bars
+            .setBarHeight(CELL_HEIGHT) //height of top/primary bar
+            .setItemHeight(CELL_HEIGHT) //height of all item/dropdown bars
             ;
 
         // for each entry in the enum, add it to the dropdown.
@@ -102,8 +102,8 @@ class W_PacketLoss extends Widget {
         });
     }
 
-    void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+    public void update(){
+        super.update();
 
         lastMillisPacketRecord = packetLossTracker.getCumulativePacketRecordForLast(tableWindowSize.getMilliseconds());
 
@@ -125,37 +125,35 @@ class W_PacketLoss extends Widget {
         // place dropdown on table
         RectDimensions cellDim = dataGrid.getCellDims(0, 3);
         tableDropdown.setPosition(cellDim.x, cellDim.y);
-
         int dropdownHeight = tableDropdown.getBarHeight() + tableDropdown.getBarHeight() * tableDropdown.getItems().size();
         tableDropdown.setSize(cellDim.w, dropdownHeight);
     }
 
-    void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+    public void draw(){
+        super.draw();
 
         pushStyle();
         fill(OPENBCI_DARKBLUE);
         textFont(p5, 12);
-        text("Session length: " + sessionTimeElapsed.toString(), x + padding, y + 15);
-        text("Stream length: " + streamTimeElapsed.toString(), x + padding, y + 35);
+        text("Session length: " + sessionTimeElapsed.toString(), x + PADDING_5, y + 15);
+        text("Stream length: " + streamTimeElapsed.toString(), x + PADDING_5, y + 35);
         popStyle();
 
         dataGrid.draw();
     }
 
-    void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
-
-        dataGrid.setDim(x, y + 50, w);
+    public void screenResized(){
+        super.screenResized();
+        resizeGrid();
     }
 
-    void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+    public void mousePressed(){
+        super.mousePressed();
 
     }
 
-    void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+    public void mouseReleased(){
+        super.mouseReleased();
 
     }
 
@@ -165,6 +163,10 @@ class W_PacketLoss extends Widget {
         }
 
         return fraction * 100 / total;
+    }
+
+    private void resizeGrid() {
+        dataGrid.setDim(x, y + TOP_PADDING, w);
     }
 
 };

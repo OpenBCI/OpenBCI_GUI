@@ -80,8 +80,8 @@ void drawContainers() {
     if (widthOfLastScreen_C != width || heightOfLastScreen_C != height) {
         setupContainers();
         //setupVizs(); //container extension example (more below)
-        settings.widthOfLastScreen = width;
-        settings.heightOfLastScreen = height;
+        sessionSettings.widthOfLastScreen = width;
+        sessionSettings.heightOfLastScreen = height;
     }
 }
 

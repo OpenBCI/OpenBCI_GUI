@@ -803,17 +803,17 @@ public class DataWriterBDF {
             // the following lines convert the new input type (double)
             // to the input type this function originally expected
             // (24 bit integer in a byte array of length 3)
-            int value = (int)allData[exgchannels[i]][sampleIndex];
+            double valueDouble = allData[exgchannels[i]][sampleIndex];
+            int valueInt = (int)Math.round(valueDouble);
             ByteBuffer bb = ByteBuffer.allocate(4); 
-            bb.putInt(value); 
+            bb.putInt(valueInt);
             byte[] bytes = bb.array();
-            // skip the first byte which should be full of zeroes anyway (24 bit int)
-            byte[] values = {bytes[1], bytes[2], bytes[3]};
 
-            // Make the values little endian
-            chanValBuf[i][samplesInDataRecord][0] = values[2];
-            chanValBuf[i][samplesInDataRecord][1] = values[1];
-            chanValBuf[i][samplesInDataRecord][2] = values[0];
+            // skip the first byte, we only care about lower 24 bits
+            // and swap order to little-endian
+            chanValBuf[i][samplesInDataRecord][0] = bytes[3];
+            chanValBuf[i][samplesInDataRecord][1] = bytes[2];
+            chanValBuf[i][samplesInDataRecord][2] = bytes[1];
         }
     }
 

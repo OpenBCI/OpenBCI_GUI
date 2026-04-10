@@ -1,6 +1,6 @@
 import java.text.NumberFormat;
 
-public enum ElectrodeState {
+public enum CytonElectrodeState {
     GREYED_OUT(0, #717577),
     RED(1, #ff0000),
     YELLOW(2, #e6c700),
@@ -9,16 +9,16 @@ public enum ElectrodeState {
     NOT_TESTABLE(4, #717577);
 
     private final int value;
-    private final color _color;
+    private final color statusColor;
 
-    ElectrodeState(int newValue, color c) {
-        value = newValue;
-        _color = c;
+    CytonElectrodeState(int _value, color _color) {
+        value = _value;
+        statusColor = _color;
     }
 
     public int getValue() { return value; }
 
-    public int getColor() { return _color; }
+    public int getColor() { return statusColor; }
 }
 
 interface CytonElectrodeEnum {
@@ -163,8 +163,8 @@ class CytonElectrodeStatus {
     protected double statusValue;
     protected String statusValueAsString;
     protected String anatomicalName;
-    protected ElectrodeState state_live;
-    protected ElectrodeState state_imp;
+    protected CytonElectrodeState state_live;
+    protected CytonElectrodeState state_imp;
     protected NumberFormat railedNF = NumberFormat.getInstance();
     protected DecimalFormat impedanceNF;
     protected DecimalFormat impShortNF;
@@ -185,7 +185,7 @@ class CytonElectrodeStatus {
     protected Gif checkingElectrodeGif;
     protected final int gifDiameterBorderOffset = 30; //From the weight of the pixels in the original gif
 
-    CytonElectrodeStatus(ControlP5 _cp5, CytonElectrodeEnum electrodeEnum, BoardCyton _impBoard, Gif statusGif) {
+    CytonElectrodeStatus(ControlP5 _cp5, CytonElectrodeEnum electrodeEnum, BoardCyton _impBoard) {
         local_cp5 = _cp5;
         cytonBoard = (BoardCyton)_impBoard;
         impedanceNF = new DecimalFormat("###,###.#");
@@ -199,10 +199,10 @@ class CytonElectrodeStatus {
         is_N_Pin = thisElectrode.isPin_N();
         railedNF.setMaximumFractionDigits(2);
         dataTableColumnOffset = is_N_Pin ? 1 : 2;
-        checkingElectrodeGif = statusGif;
+        checkingElectrodeGif = checkingImpedanceStatusGif;
 
-        state_imp = ElectrodeState.GREYED_OUT;
-        state_live = ElectrodeState.GREYED_OUT;
+        state_imp = CytonElectrodeState.GREYED_OUT;
+        state_live = CytonElectrodeState.GREYED_OUT;
 
         //This will be resized and positioned during session starts when widget is assigned a container
         createCytonElectrodeTestingButton("electrode_"+electrodeLocation, "Test", 0, 0, 20, 10);
@@ -213,7 +213,7 @@ class CytonElectrodeStatus {
         float x = w * thisElectrode.getCircleXY()[0];
         float y = h * thisElectrode.getCircleXY()[1];
 
-        ElectrodeState state = getElectrodeState();
+        CytonElectrodeState state = getCytonElectrodeState();
 
         pushStyle();
         fill(state.getColor());
@@ -221,7 +221,7 @@ class CytonElectrodeStatus {
         ellipseMode(CENTER);
         ellipse(x, y, d, d);
 
-        if (state != ElectrodeState.NOT_TESTABLE && cytonBoard.isCheckingImpedanceNorP(channelNumber-1, is_N_Pin)) {
+        if (state != CytonElectrodeState.NOT_TESTABLE && cytonBoard.isCheckingImpedanceNorP(channelNumber-1, is_N_Pin)) {
             imageMode(CENTER);
             image(checkingElectrodeGif, x - 1, y - 1, d + gifDiameterBorderOffset, d + gifDiameterBorderOffset);
         }
@@ -231,9 +231,9 @@ class CytonElectrodeStatus {
     public void update(Grid _dataTable, boolean _isImpedanceMode) {
         
         isInImpedanceMode = _isImpedanceMode;
-        ElectrodeState state = getElectrodeState();
+        CytonElectrodeState state = getCytonElectrodeState();
 
-        if (state == ElectrodeState.NOT_TESTABLE) {
+        if (state == CytonElectrodeState.NOT_TESTABLE) {
             return;
         }
 
@@ -246,11 +246,11 @@ class CytonElectrodeStatus {
             boolean greaterThanZero = statusValue > Double.MIN_NORMAL;
             color railedTextColor = OPENBCI_DARKBLUE;
             if (statusValue > impedanceYellowCuttoff) {
-                state_imp = ElectrodeState.RED;
+                state_imp = CytonElectrodeState.RED;
             } else if (statusValue < impedanceYellowCuttoff && statusValue > impedanceGreenCutoff) {
-                state_imp = ElectrodeState.YELLOW;
+                state_imp = CytonElectrodeState.YELLOW;
             } else if (greaterThanZero && statusValue < impedanceGreenCutoff) {
-                state_imp = ElectrodeState.GREEN;
+                state_imp = CytonElectrodeState.GREEN;
             }
             //Impedance mode uses buttons carefully positioned in the table to display information
             testing_button.getCaptionLabel().setText(getImpValShortString());
@@ -263,13 +263,13 @@ class CytonElectrodeStatus {
             boolean greaterThanZero = statusValue > Double.MIN_NORMAL;
             color railedTextColor = OPENBCI_DARKBLUE;
             if (is_railed[i].is_railed) {
-                state_live = ElectrodeState.RED;
+                state_live = CytonElectrodeState.RED;
                 railedTextColor = SIGNAL_CHECK_RED;
             } else if (is_railed[i].is_railed_warn) {
-                state_live = ElectrodeState.YELLOW;
+                state_live = CytonElectrodeState.YELLOW;
                 railedTextColor = SIGNAL_CHECK_YELLOW;
             } else if (greaterThanZero) {
-                state_live = ElectrodeState.BLUE;
+                state_live = CytonElectrodeState.BLUE;
             }
             //Railed percentage mode (Live) uses text in the data table
             StringBuilder s = new StringBuilder(railedNF.format(statusValue));
@@ -298,11 +298,11 @@ class CytonElectrodeStatus {
         return channelNumber;
     }
 
-    public final ElectrodeState getElectrodeState() {
+    public final CytonElectrodeState getCytonElectrodeState() {
         return isInImpedanceMode ? state_imp : state_live;
     }
 
-    public void setElectrodeState(ElectrodeState s) {
+    public void setCytonElectrodeState(CytonElectrodeState s) {
         if (isInImpedanceMode) {
             state_imp = s;
         } else {
@@ -332,8 +332,8 @@ class CytonElectrodeStatus {
 
     //Here is the method that creates a "Test" button for every electrode position
     protected void createCytonElectrodeTestingButton(String name, String text, int _x, int _y, int _w, int _h) {
-        ElectrodeState state = getElectrodeState();
-        if (state == ElectrodeState.NOT_TESTABLE) {
+        CytonElectrodeState state = getCytonElectrodeState();
+        if (state == CytonElectrodeState.NOT_TESTABLE) {
             return; //Some electrode positions cannot be tested
         }
         testing_button = createButton(local_cp5, name, text, _x, _y, _w, _h);
@@ -346,15 +346,16 @@ class CytonElectrodeStatus {
                 final int _chan = channelNumber - 1;
                 final int curMillis = millis();
                 println("CytonElectrodeTestButton: Toggling Impedance on ~~ " + electrodeLocation);
-                w_cytonImpedance.toggleImpedanceOnElectrode(!cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), _chan, is_N_Pin, curMillis);
+                W_CytonImpedance cytonImpedanceWidget = (W_CytonImpedance) widgetManager.getWidget("W_CytonImpedance");
+                cytonImpedanceWidget.toggleImpedanceOnElectrode(!cytonBoard.isCheckingImpedanceNorP(_chan, is_N_Pin), _chan, is_N_Pin, curMillis);
             }
         });
         testing_button.setDescription("Click to toggle impedance check for this ADS pin.");
     }
 
     public void resizeButton(Grid _dataTable) {
-        ElectrodeState state = getElectrodeState();
-        if (state == ElectrodeState.NOT_TESTABLE) {
+        CytonElectrodeState state = getCytonElectrodeState();
+        if (state == CytonElectrodeState.NOT_TESTABLE) {
             return; //Some electrode positions cannot be tested
         }
         cellDims = _dataTable.getCellDims(channelNumber, dataTableColumnOffset);
@@ -364,20 +365,20 @@ class CytonElectrodeStatus {
 
     //Override the electrode state
     public void setElectrodeGreyedOut() {
-        ElectrodeState state = getElectrodeState();
-        if (state == ElectrodeState.NOT_TESTABLE) {
+        CytonElectrodeState state = getCytonElectrodeState();
+        if (state == CytonElectrodeState.NOT_TESTABLE) {
             return;
         }
-        state = ElectrodeState.GREYED_OUT;
+        state = CytonElectrodeState.GREYED_OUT;
     }
 
     //Override the electrode state
     public void setElectrodeGreenStatus() {
-        ElectrodeState state = getElectrodeState();
-        if (state == ElectrodeState.NOT_TESTABLE) {
+        CytonElectrodeState state = getCytonElectrodeState();
+        if (state == CytonElectrodeState.NOT_TESTABLE) {
             return;
         }
-        state = ElectrodeState.GREEN;
+        state = CytonElectrodeState.GREEN;
     }
 
     public void resetTestingButton() {

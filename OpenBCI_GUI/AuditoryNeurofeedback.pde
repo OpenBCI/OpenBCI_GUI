@@ -18,7 +18,7 @@ void asyncLoadAudioFiles() {
     for (int i = 0; i < _numSoundFiles; i++) {
         //Use large buffer size and cache files in memory
         try {
-            auditoryNfbFilePlayers[i] = new FilePlayer( minim.loadFileStream("bp" + (i+1) + ".mp3", 2048, true) );
+            auditoryNfbFilePlayers[i] = new FilePlayer( minim.loadFileStream("Auditory_Neurofeedback/bp" + (i+1) + ".mp3", 2048, true) );
             auditoryNfbGains[i] = new ddf.minim.ugens.Gain(-15.0f);
             auditoryNfbFilePlayers[i].patch(auditoryNfbGains[i]).patch(audioOutput);
         } catch (Exception e) {

@@ -140,6 +140,7 @@ public enum EmgMinimumDeltaUV implements EmgSettingsEnum
     SIX_UV (2, "6 uV", 6),
     EIGHT_UV (3, "8 uV", 8),
     TEN_UV (4, "10 uV", 10),
+    FIFTEEN_UV (4, "15 uV", 15),
     TWENTY_UV (5, "20 uV", 20),
     FORTY_UV (6, "40 uV", 40),
     EIGHTY_UV (7, "80 uV", 80);

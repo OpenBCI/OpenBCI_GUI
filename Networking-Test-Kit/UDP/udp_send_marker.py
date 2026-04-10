@@ -12,7 +12,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--ip", default="127.0.0.1",
       help="The IP of the UDP server")
-    parser.add_argument("--port", type=int, default=12350,
+    parser.add_argument("--port", type=int, default=12340,
       help="The port the UDP server is sending to")
     args = parser.parse_args()
 

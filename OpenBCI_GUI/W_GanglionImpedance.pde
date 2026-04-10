@@ -1,32 +1,21 @@
-
-////////////////////////////////////////////////////
-//
-//    W_template.pde (ie "Widget Template")
-//
-//    This is a Template Widget, intended to be used as a starting point for OpenBCI Community members that want to develop their own custom widgets!
-//    Good luck! If you embark on this journey, please let us know. Your contributions are valuable to everyone!
-//
-//    Created by: Conor Russomanno, November 2016
-//
-///////////////////////////////////////////////////,
-
-
 class W_GanglionImpedance extends Widget {
+
     Button startStopCheck;
     int padding = 24;
 
-    W_GanglionImpedance(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_GanglionImpedance() {
+        super();
+        widgetTitle = "Ganglion Signal";
 
-        createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, navHeight, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
+        createStartStopCheck("startStopCheck", "Start Impedance Check", x + padding, y + padding, 200, NAV_HEIGHT, p4, 14, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
     }
 
     void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
@@ -80,16 +69,8 @@ class W_GanglionImpedance extends Widget {
     }
 
     void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
         startStopCheck.setPosition(x + padding, y + padding);
-    }
-
-    void mousePressed(){
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
-    }
-
-    void mouseReleased(){
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
     }
 
     private void createStartStopCheck(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {

@@ -21,20 +21,21 @@ class W_playback extends Widget {
 
     private boolean menuHasUpdated = false;
 
-    W_playback(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_playback() {
+        super();
+        widgetTitle = "Playback History";
 
-        cp5_playback = new ControlP5(pApplet);
+        cp5_playback = new ControlP5(ourApplet);
         cp5_playback.setGraphics(ourApplet, 0,0);
         cp5_playback.setAutoDraw(false);
 
         int initialWidth = w - padding*2;
         createPlaybackMenuList(cp5_playback, "playbackMenuList", x + padding/2, y + 2, initialWidth, h - padding*2, p3);
-        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - navHeight + 2, 200, navHeight - 6);
+        createSelectPlaybackFileButton("selectPlaybackFile_Session", "Select Playback File", x + w/2 - (padding*2), y - NAV_HEIGHT + 2, 200, NAV_HEIGHT - 6);
     }
 
     void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
         if (!menuHasUpdated) {
             refreshPlaybackList();
             menuHasUpdated = true;
@@ -56,7 +57,7 @@ class W_playback extends Widget {
     }
 
     void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         //x,y,w,h are the positioning variables of the Widget class
         pushStyle();
@@ -77,14 +78,14 @@ class W_playback extends Widget {
     } //end draw loop
 
     void screenResized() {
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         //**IMPORTANT FOR CP5**//
         //This makes the cp5 objects within the widget scale properly
-        cp5_playback.setGraphics(pApplet, 0, 0);
+        cp5_playback.setGraphics(ourApplet, 0, 0);
 
         //Resize and position cp5 objects within this widget
-        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - navHeight + 2);
+        selectPlaybackFileButton.setPosition(x + w - selectPlaybackFileButton.getWidth() - 2, y - NAV_HEIGHT + 2);
 
         playbackMenuList.setPosition(x + padding/2, y + 2);
         playbackMenuList.setSize(w - padding*2, h - padding*2);
@@ -129,7 +130,11 @@ class W_playback extends Widget {
         selectPlaybackFileButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
-                selectInput("Select a pre-recorded file for playback:", "playbackSelectedWidgetButton");
+                FileChooser chooser = new FileChooser(
+                    FileChooserMode.LOAD,
+                    "playbackSelectedWidgetButton",
+                    new File(directoryManager.getGuiDataPath() + "Recordings"),
+                    "Select a file for playback");           
             }
         });
         selectPlaybackFileButton.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");

@@ -133,6 +133,7 @@ public class ADS1299SettingsValues {
     //Used for Channel On/Off to reflect what happens in Firmware
     public Bias[] previousBias;
     public Srb2[] previousSrb2;
+    public Srb1[] previousSrb1;
     public InputType[] previousInputType;
 
     public ADS1299SettingsValues() {
@@ -186,6 +187,7 @@ class ADS1299Settings {
 
         values.previousBias = values.bias.clone();
         values.previousSrb2 = values.srb2.clone();
+        values.previousSrb1 = values.srb1.clone();
         values.previousInputType = values.inputType.clone();
 
         String currentVals = getJson();
@@ -237,14 +239,17 @@ class ADS1299Settings {
         if (active) {
             values.bias[chan] = values.previousBias[chan];
             values.srb2[chan] = values.previousSrb2[chan];
+            values.srb1[chan] = values.previousSrb1[chan];
             values.inputType[chan] = values.previousInputType[chan];
         } else {
             values.previousBias[chan] = values.bias[chan];
             values.previousSrb2[chan] = values.srb2[chan];
+            values.previousSrb1[chan] = values.srb1[chan];
             values.previousInputType[chan] = values.inputType[chan];
 
             values.bias[chan] = Bias.NO_INCLUDE;
             values.srb2[chan] = Srb2.DISCONNECT;
+            values.srb1[chan] = Srb1.DISCONNECT;
             values.inputType[chan] = InputType.SHORTED;
         }
 
@@ -290,7 +295,6 @@ class ADS1299Settings {
         return board.sendCommand(sb.toString()).getKey().booleanValue();
     }
 
-    //Return true if all commits are successful
     public void revertAllChannelsToDefaultValues() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         String defaultValsAsString = gson.toJson(defaultValues);
@@ -311,7 +315,12 @@ class ADS1299Settings {
         previousValues.srb1[chan] = values.srb1[chan];
     }
 
-    public void revertToLastValues(int chan) {
+    public boolean revertToLastValues(int chan) {
+        revertToLastValuesWithoutCommitting(chan);
+        return commit(chan);
+    }
+    
+    public void revertToLastValuesWithoutCommitting(int chan) {
         values.gain[chan] = previousValues.gain[chan];
         values.inputType[chan] = previousValues.inputType[chan];
         values.bias[chan] = previousValues.bias[chan];
@@ -336,6 +345,12 @@ class ADS1299Settings {
                                         vals.inputType[chan].ordinal(), vals.bias[chan].ordinal(),
                                         vals.srb2[chan].ordinal(), vals.srb1[chan].ordinal());
         return commandString;
+    }
+
+    public void saveDefaultValues() {
+        Gson gson = new Gson();
+        String defaultValsAsString = gson.toJson(values);
+        defaultValues = gson.fromJson(defaultValsAsString, ADS1299SettingsValues.class);
     }
 }
 

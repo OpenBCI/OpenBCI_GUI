@@ -55,26 +55,6 @@ def clean():
                 os.remove(file_path)
                 print ("Successfully deleted " + file)
 
-def update_timestamp():
-    sketch = find_sketch_directory()
-    main_file = os.path.join(sketch, "OpenBCI_GUI.pde")
-
-    timestamp = subprocess.check_output(['git', 'log', '-1', '--date=format:"%Y/%m/%d %T"', '--format=%ad']).decode("utf-8").strip('"\n')
-
-    data = []
-    with open(main_file, 'r') as sketch_file:
-        data = sketch_file.readlines()
-
-    for i in range(0, len(data)):
-        if data[i].startswith("String localGUIVersionDate"):
-            print(data[i])
-            data[i] = "String localGUIVersionDate = \"" + timestamp + "\";\n"
-            print(data[i])
-            break
-
-    with open(main_file, 'w') as sketch_file:
-        sketch_file.writelines(data)
-
 def build():
     # unfortunately, processing-java always returns exit code 1,
     # so we can't reliably check for success or failure
@@ -98,7 +78,6 @@ def delete_source_directory():
 
 def main ():
     clean()
-    update_timestamp()
     build()
     delete_source_directory()
 

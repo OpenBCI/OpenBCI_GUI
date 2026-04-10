@@ -245,13 +245,12 @@ public class MenuList extends controlP5.Controller {
     // When detecting a click, check if the click happend to the far right, if yes, scroll to that position,
     // Otherwise do whatever this item of the list is supposed to do.
     public void onClick() {
-        println(getName() + ": click! ");
+        
         if (items.size() > 0) { //Fixes #480
             if (getPointer().x()>getWidth()-scrollerWidth) {
                 if(getHeight() != 0){
                     npos= -map(getPointer().y(), 0, getHeight(), 0, items.size()*itemHeight);
                 }
-                updateMenu = true;
             } else {
                 int len = itemHeight * items.size();
                 int index = 0;
@@ -260,6 +259,7 @@ public class MenuList extends controlP5.Controller {
                 }
                 setValue(index);
                 activeItem = index;
+                println(getName() + ": Selected item " + getItem(index).get("headline").toString());
             }
             updateMenu = true;
         }
@@ -338,6 +338,13 @@ public class MenuList extends controlP5.Controller {
 
     public int getListSize() {
        return items.size(); 
+    }
+
+    public void selectItem(int theIndex) {
+        setValue(theIndex);
+        activeItem = theIndex;
+        updateMenu = true;
+        println(getName() + ": Selected item " + getItem(theIndex).get("headline").toString());
     }
 };
 

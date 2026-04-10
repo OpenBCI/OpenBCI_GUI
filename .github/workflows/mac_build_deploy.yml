@@ -6,13 +6,13 @@ on:
     branches: [master, development]
   push:
     branches: [master, development]
-  
+
 permissions:
   id-token: write
   contents: read
 
 env:
-  AWS_REGION : us-east-1
+  AWS_REGION: us-east-1
 
 jobs:
   build:
@@ -28,10 +28,10 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pip'
-      
+
       - name: Install Python Dependencies
         run: pip install -r release/requirements.txt
-      
+
       - name: Install Processing
         run: |
           curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-macos-x64.zip
@@ -57,7 +57,7 @@ jobs:
 
       - name: Run Unit Tests
         run: python $GITHUB_WORKSPACE/GuiUnitTests/run-unittests.py
-      
+
       - name: Decrypt Certificate
         run: |
           openssl version
@@ -72,26 +72,35 @@ jobs:
 
       - name: Add OSX Signing Certificate to Keychain
         uses: apple-actions/import-codesign-certs@v2
-        with: 
+        with:
           p12-filepath: ${{ github.workspace }}/release/mac/certificate.p12
           p12-password: ${{ secrets.CERTIFICATE_P12_PASSWORD }}
-      
+
       - name: Build
         run: |
           python $GITHUB_WORKSPACE/release/build.py
           cp $GITHUB_WORKSPACE/OpenBCI_GUI/sketch.icns $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app/Contents/Resources/sketch.icns
 
       - name: Sign Build
+        if: ${{ false }}
         run: |
           codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app
+
+      - name: Debug DMG Build Settings
+        run: |
+          echo "Examining license settings in dmgbuild_settings.py..."
+          cat release/mac/dmgbuild_settings.py
+          pip install --upgrade dmgbuild
 
       - name: Create DMG
         run: |
           dmgbuild -s release/mac/dmgbuild_settings.py \
             -D app=$GITHUB_WORKSPACE/application.macosx/OpenBCI_GUI.app \
+            -D license_encoding=utf-8 \
             OpenBCI_GUI $GITHUB_WORKSPACE/application.macosx.dmg
 
       - name: Sign DMG
+        if: ${{ false }}
         run: |
           codesign -f -v -s "Developer ID Application: OpenBCI, Inc. (3P82WRGLM8)" $GITHUB_WORKSPACE/application.macosx.dmg
 
@@ -107,13 +116,13 @@ jobs:
       - name: Get Branch Names
         id: branch-name
         uses: tj-actions/branch-names@v7
-      
+
       - name: Store Build on AWS
         run: |
           cd $GITHUB_WORKSPACE
           ls
           CURRENT_BRANCH=${{ steps.branch-name.outputs.head_ref_branch }}
           echo $CURRENT_BRANCH
-          aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
-          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 rm s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v7/${CURRENT_BRANCH}  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"
+          aws s3 cp $GITHUB_WORKSPACE/. s3://openbci-public-gui-v7/latest  --recursive --exclude "*" --include "openbcigui_*_macosx.dmg"

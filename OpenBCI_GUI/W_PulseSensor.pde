@@ -9,7 +9,6 @@
 ////////////////////////////////////////////////////
 
 class W_PulseSensor extends Widget {
-
     //to see all core variables/methods of the Widget class, refer to Widget.pde
     //put your custom variables here...
     private color graphStroke = #d2d2d2;
@@ -62,8 +61,9 @@ class W_PulseSensor extends Widget {
 
     private AnalogCapableBoard analogBoard;
 
-    W_PulseSensor(PApplet _parent){
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_PulseSensor() {
+        super();
+        widgetTitle = "Pulse Sensor";
 
         analogBoard = (AnalogCapableBoard)currentBoard;
 
@@ -76,11 +76,11 @@ class W_PulseSensor extends Widget {
         setPulseWidgetVariables();
         initializePulseFinderVariables();
 
-        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + navHeight + 1), 128, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAnalogModeButton("pulseSensorAnalogModeButton", "Turn Analog Read On", (int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1), 128, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
     }
 
     public void update(){
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if(currentBoard instanceof DataSourcePlayback) {
             if (((DataSourcePlayback)currentBoard) instanceof AnalogCapableBoard
@@ -104,7 +104,7 @@ class W_PulseSensor extends Widget {
     }
 
     public void draw(){
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
         //remember to refer to x,y,w,h which are the positioning variables of the Widget class
         pushStyle();
 
@@ -128,10 +128,10 @@ class W_PulseSensor extends Widget {
     }
 
     public void screenResized(){
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
 
         setPulseWidgetVariables();
-        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
+        analogModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
 
     private void createAnalogModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -143,23 +143,20 @@ class W_PulseSensor extends Widget {
                     analogBoard.setAnalogActive(true);
                     analogModeButton.getCaptionLabel().setText("Turn Analog Read Off");	
                     output("Starting to read analog inputs on pin marked D11.");
-                    w_analogRead.toggleAnalogReadButton(true);
-                    w_accelerometer.accelBoardSetActive(false);
-                    w_digitalRead.toggleDigitalReadButton(false);
+                    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(true);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(false);
+                    ((W_DigitalRead) widgetManager.getWidget("W_Accelerometer")).toggleDigitalReadButton(false);
                 } else {
                     analogBoard.setAnalogActive(false);
                     analogModeButton.getCaptionLabel().setText("Turn Analog Read On");
                     output("Starting to read accelerometer");
-                    w_analogRead.toggleAnalogReadButton(false);
-                    w_accelerometer.accelBoardSetActive(true);
-                    w_digitalRead.toggleDigitalReadButton(false);
+                    ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(false);
+                    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).accelBoardSetActive(true);
+                    ((W_DigitalRead) widgetManager.getWidget("W_Accelerometer")).toggleDigitalReadButton(false);
                 }
             }
         });
-        String _helpText = (selectedProtocol == BoardProtocol.WIFI) ? 
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11) and A6(D12)." :
-            "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13)."
-            ;
+        String _helpText = "Click this button to activate/deactivate analog read on Cyton pins A5(D11), A6(D12) and A7(D13).";
         analogModeButton.setDescription(_helpText);
     }
 

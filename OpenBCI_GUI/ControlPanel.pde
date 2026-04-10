@@ -35,8 +35,6 @@ class ControlPanel {
     public int x, y, w, h;
     public boolean isOpen;
 
-    PlotFontInfo fontInfo;
-
     //various control panel elements that are unique to specific datasources
     DataSourceBox dataSourceBox;
     SerialBox serialBox;
@@ -50,10 +48,7 @@ class ControlPanel {
     StreamingBoardBox streamingBoardBox;
     BLEBox bleBox;
     public SessionDataBox dataLogBoxGanglion;
-    WifiBox wifiBox;
-    InterfaceBoxCyton interfaceBoxCyton;
     InterfaceBoxGanglion interfaceBoxGanglion;
-    SampleRateCytonBox sampleRateCytonBox;
     SampleRateGanglionBox sampleRateGanglionBox;
     SDBox sdBox;
     BrainFlowStreamerBox bfStreamerBoxCyton;
@@ -81,30 +76,22 @@ class ControlPanel {
         h = height - int(helpWidget.h);
 
         isOpen = false;
-        fontInfo = new PlotFontInfo();
 
         globalPadding = 10;  //controls the padding of all elements on the control panel
 
-        //boxes active when eegDataSource = Normal (OpenBCI)
         dataSourceBox = new DataSourceBox(x, y, w, h, globalPadding);
-        interfaceBoxCyton = new InterfaceBoxCyton(x + w, dataSourceBox.y, w, h, globalPadding);
         interfaceBoxGanglion = new InterfaceBoxGanglion(x + w, dataSourceBox.y, w, h, globalPadding);
         
         comPortBox = new ComPortBox(x+w*2, y, w, h, globalPadding);
         rcBox = new RadioConfigBox(x+w, y + comPortBox.h, w, h, globalPadding);
 
-        serialBox = new SerialBox(x + w, interfaceBoxCyton.y + interfaceBoxCyton.h, w, h, globalPadding);
-        wifiBox = new WifiBox(x + w + x + w - 3, interfaceBoxCyton.y, w, h, globalPadding);
+        serialBox = new SerialBox(x + w, dataSourceBox.y, w, h, globalPadding);
 
         channelCountBox = new ChannelCountBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding);
         dataLogBoxCyton = new SessionDataBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding, DATASOURCE_CYTON, dataLogger.getDataLoggerOutputFormat(), "sessionNameCyton");
         bfStreamerBoxCyton = new BrainFlowStreamerBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding, "bfStreamerCyton");
         sdBox = new SDBox(x + w, (bfStreamerBoxCyton.y + bfStreamerBoxCyton.h), w, h, globalPadding);
         
-        //Draw this to the right of the other cyton boxes
-        sampleRateCytonBox = new SampleRateCytonBox(wifiBox.x, wifiBox.y + wifiBox.h, w, h, globalPadding);
-        
-        //boxes active when eegDataSource = Playback
         int playbackWidth = int(w * 1.35);
         playbackFileBox = new PlaybackFileBox(x + w, dataSourceBox.y, playbackWidth, h, globalPadding);
         recentPlaybackBox = new RecentPlaybackBox(x + w, (playbackFileBox.y + playbackFileBox.h), playbackWidth, h, globalPadding);
@@ -129,7 +116,6 @@ class ControlPanel {
     public void resetListItems(){
         comPortBox.serialList.activeItem = -1;
         bleBox.bleList.activeItem = -1;
-        wifiBox.wifiList.activeItem = -1;
     }
 
     public void open(){
@@ -179,9 +165,6 @@ class ControlPanel {
         channelPopup.update();
 
         dataLogBoxGanglion.update();
-
-        wifiBox.update();
-        interfaceBoxCyton.update();
         interfaceBoxGanglion.update();
     }
 
@@ -199,36 +182,23 @@ class ControlPanel {
 
             //Carefully draw certain boxes based on UI/UX flow... let each box handle what is drawn inside with localCp5 instances
             if (eegDataSource == DATASOURCE_CYTON) {	//when data source is from OpenBCI
-                interfaceBoxCyton.draw();
-                if (selectedProtocol != BoardProtocol.NONE) {
-                    if (selectedProtocol == BoardProtocol.SERIAL) {
-                        serialBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
-                        serialBox.draw();
-                        channelCountBox.y = serialBox.y + serialBox.h;
-                        if (rcBox.isShowing) {
-                            comPortBox.draw();
-                            rcBox.draw();
-                            comPortBox.serialList.setVisible(true);
-                            if (channelPopup.wasClicked()) {
-                                channelPopup.draw();
-                            }
-                        }
-                    } else if (selectedProtocol == BoardProtocol.WIFI) {
-                        wifiBox.y = interfaceBoxCyton.y;
-                        wifiBox.x = interfaceBoxCyton.x + interfaceBoxCyton.w;
-                        sampleRateCytonBox.y = wifiBox.y + wifiBox.h;
-                        channelCountBox.y = interfaceBoxCyton.y + interfaceBoxCyton.h;
-                        wifiBox.draw();
-                        sampleRateCytonBox.draw();
+                serialBox.draw();
+                channelCountBox.y = serialBox.y + serialBox.h;
+                if (rcBox.isShowing) {
+                    comPortBox.draw();
+                    rcBox.draw();
+                    comPortBox.serialList.setVisible(true);
+                    if (channelPopup.wasClicked()) {
+                        channelPopup.draw();
                     }
-                    dataLogBoxCyton.y = channelCountBox.y + channelCountBox.h;
-                    bfStreamerBoxCyton.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
-                    sdBox.y = bfStreamerBoxCyton.y + bfStreamerBoxCyton.h;
-                    channelCountBox.draw();
-                    sdBox.draw();
-                    bfStreamerBoxCyton.draw();
-                    dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
                 }
+                dataLogBoxCyton.y = channelCountBox.y + channelCountBox.h;
+                bfStreamerBoxCyton.y = dataLogBoxCyton.y + dataLogBoxCyton.h;
+                sdBox.y = bfStreamerBoxCyton.y + bfStreamerBoxCyton.h;
+                channelCountBox.draw();
+                sdBox.draw();
+                bfStreamerBoxCyton.draw();
+                dataLogBoxCyton.draw(); //Drawing here allows max file size dropdown to be drawn on top
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) { //when data source is from playback file
                 recentPlaybackBox.draw();
                 playbackFileBox.draw();
@@ -244,14 +214,6 @@ class ControlPanel {
                         bleBox.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
                         dataLogBoxGanglion.y = bleBox.y + bleBox.h;
                         bleBox.draw();
-                    } else if (selectedProtocol == BoardProtocol.WIFI) {
-                        wifiBox.y = interfaceBoxGanglion.y;
-                        wifiBox.x = interfaceBoxGanglion.x + interfaceBoxGanglion.w;
-                        sampleRateGanglionBox.y = wifiBox.y + wifiBox.h;
-                        sampleRateGanglionBox.x = wifiBox.x;
-                        dataLogBoxGanglion.y = interfaceBoxGanglion.y + interfaceBoxGanglion.h;
-                        wifiBox.draw();
-                        sampleRateGanglionBox.draw();
                     }
                     bfStreamerBoxGanglion.y = dataLogBoxGanglion.y + dataLogBoxGanglion.h;
                     bfStreamerBoxGanglion.draw();
@@ -281,7 +243,7 @@ class ControlPanel {
     public void hideRadioPopoutBox() {
         rcBox.isShowing = false;
         comPortBox.isShowing = false;
-        serialBox.popOutRadioConfigButton.getCaptionLabel().setText("Manual >");
+        serialBox.popOutRadioConfigButton.setOff();
         rcBox.closeSerialPort();
     }
 
@@ -304,18 +266,7 @@ class ControlPanel {
         sb.append("OpenBCISession_");
         sb.append(dataLogger.getSessionName());
         sb.append(File.separator);
-        settings.setSessionPath(sb.toString());
-    }
-
-    public void setDataLoggerOutputs() {
-        if (eegDataSource == DATASOURCE_CYTON) {
-            // Store the current text field value of "Session Name" to be passed along to dataFiles
-            dataLogger.setSessionName(controlPanel.dataLogBoxCyton.getSessionTextfieldString());
-        } else if (eegDataSource == DATASOURCE_GANGLION) {
-            dataLogger.setSessionName(controlPanel.dataLogBoxGanglion.getSessionTextfieldString());
-        } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
-            dataLogger.setSessionName(directoryManager.getFileNameDateTime());
-        }
+        dataLogger.setSessionPath(sb.toString());
     }
 
     public void setBrainFlowStreamerOutput() {
@@ -353,28 +304,34 @@ class ControlPanel {
 
 class DataSourceBox {
     public int x, y, w, h, padding; //size and position
-    private int numItems;
+    private final int NUM_ITEMS = 5;
     private int boxHeight = 24;
     private int spacing = 43;
     private ControlP5 datasource_cp5;
     private MenuList sourceList;
+    private boolean initialUpdate = false;
 
     DataSourceBox(int _x, int _y, int _w, int _h, int _padding) {
-        numItems = 5;
         x = _x;
         y = _y;
         w = _w;
-        h = spacing + (numItems * boxHeight);
+        h = spacing + (NUM_ITEMS * boxHeight);
         padding = _padding;
 
         //Instantiate local cp5 for this box
         datasource_cp5 = new ControlP5(ourApplet);
         datasource_cp5.setGraphics(ourApplet, 0,0);
         datasource_cp5.setAutoDraw(false);
-        createDatasourceList(datasource_cp5, "sourceList", x + padding, y + padding*2 + 13, w - padding*2, numItems * boxHeight, p3);
+        createDatasourceList(datasource_cp5, "DataSourceList", x + padding, y + padding*2 + 13, w - padding*2, NUM_ITEMS * boxHeight, p3);
     }
 
     public void update() {
+        if (!initialUpdate) {
+            initialUpdate = true;
+            if (eegDataSource >= 0) {
+                sourceList.selectItem(0); //Select the first item in the list on startup
+            }
+        }
     }
 
     public void draw() {
@@ -395,8 +352,6 @@ class DataSourceBox {
     private void createDatasourceList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
         sourceList = new MenuList(_cp5, name, _w, _h, font);
         sourceList.setPosition(_x, _y);
-        // sourceList.itemHeight = 28;
-        // sourceList.padding = 9;
         sourceList.addItem("CYTON (live)", DATASOURCE_CYTON);
         sourceList.addItem("GANGLION (live)", DATASOURCE_GANGLION);
         sourceList.addItem("PLAYBACK (from file)", DATASOURCE_PLAYBACKFILE);
@@ -409,7 +364,7 @@ class DataSourceBox {
                     Map bob = sourceList.getItem(int(sourceList.getValue()));
                     String str = (String)bob.get("headline"); // Get the text displayed in the MenuList
                     int newDataSource = (int)bob.get("value");
-                    settings.controlEventDataSource = str; //Used for output message on system start
+                    sessionSettings.controlEventDataSource = str; //Used for output message on system start
                     eegDataSource = newDataSource;
 
                     //Reset protocol
@@ -418,12 +373,10 @@ class DataSourceBox {
                     //Perform this check in a way that ignores order of items in the menulist
                     if (eegDataSource == DATASOURCE_CYTON) {
                         controlPanel.channelCountBox.set8ChanButtonActive();
-                        controlPanel.interfaceBoxCyton.resetCytonSelectedProtocol();
-                        controlPanel.wifiBox.setDefaultToDynamicIP();
+                        selectedProtocol = BoardProtocol.SERIAL;
                     } else if (eegDataSource == DATASOURCE_GANGLION) {
-                        updateToNChan(4);
+                        updateGlobalChannelCount(4);
                         controlPanel.interfaceBoxGanglion.resetGanglionSelectedProtocol();
-                        controlPanel.wifiBox.setDefaultToDynamicIP();
                     } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                         //GUI auto detects number of channels for playback when file is selected
                     } else if (eegDataSource == DATASOURCE_STREAMING) {
@@ -456,7 +409,7 @@ class SerialBox {
         cytonsb_cp5.setAutoDraw(false);
 
         createAutoConnectButton("cytonAutoConnectButton", "AUTO-CONNECT", x + padding, y + padding*3 + 4, w - padding*3 - 70, 24);
-        createRadioConfigButton("cytonRadioConfigButton", "Manual >", x + w - 70 - padding, y + padding*3 + 4, 70, 24);
+        createRadioConfigButton("cytonRadioConfigButton", "Settings", x + w - 70 - padding, y + padding*3 + 4, 70, 24);
     }
 
     public void update() {
@@ -474,9 +427,7 @@ class SerialBox {
         text("SERIAL CONNECT", x + padding, y + padding);
         popStyle();
 
-        if (selectedProtocol == BoardProtocol.SERIAL) {
-            cytonsb_cp5.draw();
-        }
+        cytonsb_cp5.draw();
     }
 
     private Button createSBButton(String name, String text, int _x, int _y, int _w, int _h) {
@@ -496,16 +447,15 @@ class SerialBox {
 
     private void createRadioConfigButton(String name, String text, int _x, int _y, int _w, int _h) {
         popOutRadioConfigButton = createSBButton(name, text, _x, _y, _w, _h);
+        popOutRadioConfigButton.setSwitch(true);
         popOutRadioConfigButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                if (selectedProtocol == BoardProtocol.SERIAL) {
-                    if (controlPanel.rcBox.isShowing) {
-                        controlPanel.hideRadioPopoutBox();
-                    } else {
-                        controlPanel.rcBox.isShowing = true;
-                        controlPanel.rcBox.print_onscreen(controlPanel.rcBox.initial_message);
-                        popOutRadioConfigButton.getCaptionLabel().setText("Manual <");
-                    }
+                boolean showRadioBox = popOutRadioConfigButton.isOn();
+                if (!showRadioBox) {
+                    controlPanel.hideRadioPopoutBox();
+                } else {
+                    controlPanel.rcBox.isShowing = true;
+                    controlPanel.rcBox.print_onscreen(controlPanel.rcBox.initial_message);
                 }
             }
         });
@@ -586,8 +536,8 @@ class ComPortBox {
             public void controlEvent(CallbackEvent theEvent) {
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     Map bob = serialList.getItem(int(serialList.getValue()));
-                    openBCI_portName = (String)bob.get("subline");
-                    output("ControlPanel: Selected OpenBCI Port " + openBCI_portName);
+                    cytonDonglePortName = (String)bob.get("subline");
+                    output("ControlPanel: Selected OpenBCI Port " + cytonDonglePortName);
                 }
             }
         });
@@ -598,7 +548,7 @@ class ComPortBox {
         println("\n-------------------------------------------------\nControlPanel: Attempting to Auto-Connect to Cyton\n-------------------------------------------------\n");
         LinkedList<String> comPorts = getCytonComPorts();
         if (!comPorts.isEmpty()) {
-            openBCI_portName = comPorts.getFirst();
+            cytonDonglePortName = comPorts.getFirst();
             if (cytonRadioCfg.get_channel()) {
                 controlPanel.initBox.initButtonPressed();
             } else {                
@@ -614,7 +564,7 @@ class ComPortBox {
     //This is called after overlay has a chance to draw on top to inform users the GUI is working and not crashed
     private void cytonAutoConnect_AutoScan() {
         if (cytonRadioCfg.scan_channels()) {
-            println("Successfully connected to Cyton using " + openBCI_portName);
+            println("Successfully connected to Cyton using " + cytonDonglePortName);
             controlPanel.initBox.initButtonPressed();
         } else {
             outputError("Unable to connect to Cyton. Please check hardware and power source.");
@@ -724,7 +674,7 @@ class BLEBox {
         bleBox_cp5.draw();
     }
 
-    private void refreshGanglionNativeList() {
+private void refreshGanglionNativeList() {
         if (bleIsRefreshing) {
             output("Search for Ganglions using Native Bluetooth is in progress.");
             return;
@@ -837,331 +787,18 @@ class BLEBox {
     }
 };
 
-class WifiBox {
-    public int x, y, w, h, padding; //size and position
-    private boolean wifiIsRefreshing = false;
-    private ControlP5 wifiBox_cp5;
-    private MenuList wifiList;
-    private Button refreshWifi;
-    private Button wifiIPAddressDynamic;
-    private Button wifiIPAddressStatic;
-    private Textfield staticIPAddressTF;
-    private int wifiDynamic_x;
-    private int wifiStatic_x;
-    private int wifiButtons_y;
-    private int refreshWifi_x;
-    private int refreshWifi_y;
-
-    WifiBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 184 + _padding + 14;
-        padding = _padding;
-
-        //Instantiate local cp5 for this box
-        wifiBox_cp5 = new ControlP5(ourApplet);
-        wifiBox_cp5.setGraphics(ourApplet, 0,0);
-        wifiBox_cp5.setAutoDraw(false);
-
-        wifiDynamic_x = x + padding;
-        wifiStatic_x = x + padding*2 + (w-padding*3)/2;
-        wifiButtons_y = y + padding*2 + 16;
-        createDynamicIPAddressButton("wifiIPAddressDynamicButton", "DYNAMIC IP", wifiDynamic_x, wifiButtons_y, (w-padding*3)/2, 24);
-        createStaticIPAddressButton("wifiIPAddressStaticButton", "STATIC IP", wifiStatic_x, wifiButtons_y, (w-padding*3)/2, 24);
-
-        refreshWifi_x = x + padding;
-        refreshWifi_y = y + padding*5 + 72 + 8 + 24;
-        createRefreshWifiButton("refreshWifiButton", "START SEARCH", refreshWifi_x, refreshWifi_y, w - padding*5, 24);
-        createWifiList(wifiBox_cp5, "wifiList", x + padding, y + padding*4 + 8 + 24, w - padding*2, 72 + 8, p3);
-        createStaticIPAddressTextfield();
-    }
-
-    public void update() {
-        wifiList.updateMenu();
-        copyPaste.checkForCopyPaste(staticIPAddressTF);
-    }
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(OPENBCI_DARKBLUE);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("WIFI SHIELDS", x + padding, y + padding);
-        popStyle();
-
-        wifiDynamic_x = x + padding;
-        wifiStatic_x = x + padding*2 + (w-padding*3)/2;
-        wifiButtons_y = y + padding*2 + 16;
-        wifiIPAddressDynamic.setPosition(wifiDynamic_x, wifiButtons_y);
-        wifiIPAddressStatic.setPosition(wifiStatic_x, wifiButtons_y);
-
-        if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC) {
-            pushStyle();
-            fill(OPENBCI_DARKBLUE);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text("ENTER IP ADDRESS", x + padding, y + h - 24 - 12 - padding*2);
-            popStyle();
-            staticIPAddressTF.setPosition(x + padding, y + h - 24 - padding);
-        } else {
-            wifiList.setPosition(x + padding, wifiButtons_y + 24 + padding);
-
-            refreshWifi_x = x + padding;
-            refreshWifi_y = y + padding*5 + 72 + 8 + 24;
-            refreshWifi.setPosition(refreshWifi_x, refreshWifi_y);
-
-            String boardIpInfo = "BOARD IP: ";
-            if (wifi_portName != "N/A") { // If user has selected a board from the menulist...
-                boardIpInfo += wifi_ipAddress;
-            }
-            pushStyle();
-            fill(OPENBCI_DARKBLUE);
-            textFont(h3, 16);
-            textAlign(LEFT, TOP);
-            text(boardIpInfo, x + w/2 - textWidth(boardIpInfo)/2, y + h - padding - 15);
-            popStyle();
-
-            if (wifiIsRefreshing){
-                //Display spinning cog gif
-                image(loadingGIF_blue, x + 225,  refreshWifi_y + 4, 20, 20);
-            } else {
-                //Draw small grey circle
-                pushStyle();
-                fill(#999999);
-                ellipseMode(CENTER);
-                ellipse(x + 225 + 10, refreshWifi_y + 12, 12, 12);
-                popStyle();
-            }
-        }
-
-        wifiBox_cp5.draw();
-    }
-
-    public void refreshWifiList() {
-        output("Wifi Devices Refreshing");
-        wifiList.items.clear();
-        Thread thread = new Thread(){
-            public void run() {
-                refreshWifi.getCaptionLabel().setText("SEARCHING...");
-                wifiIsRefreshing = true;
-                try {
-                    List<Device> devices = SSDPClient.discover (3000, "urn:schemas-upnp-org:device:Basic:1");
-                    if (devices.isEmpty ()) {
-                        println("No WIFI Shields found");
-                    }
-                    for (int i = 0; i < devices.size(); i++) {
-                        wifiList.addItem(devices.get(i).getName(), devices.get(i).getIPAddress(), "");
-                    }
-                    wifiList.updateMenu();
-                } catch (Exception e) {
-                    println("Exception in wifi shield scanning");
-                    e.printStackTrace ();
-                }
-                refreshWifi.getCaptionLabel().setText("START SEARCH");
-                wifiIsRefreshing = false;
-            }
-        };
-        thread.start();
-    }
-
-    private void createDynamicIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
-        wifiIPAddressDynamic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
-        wifiIPAddressDynamic.setSwitch(true);
-        wifiIPAddressDynamic.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                h = 208;
-                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
-                println("ControlPanel: Using Dynamic IP address of the WiFi Shield!");
-                wifiIPAddressDynamic.setOn();
-                wifiIPAddressStatic.setOff();
-                staticIPAddressTF.setVisible(false);
-                wifiList.setVisible(true);
-            }
-        });
-        wifiIPAddressDynamic.setOn();
-    }
-
-    private void createStaticIPAddressButton(String name, String text, int _x, int _y, int _w, int _h) {
-        wifiIPAddressStatic = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
-        wifiIPAddressStatic.setSwitch(true);
-        wifiIPAddressStatic.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                h = 120;
-                controlPanel.setWiFiSearchStyle(controlPanel.WIFI_STATIC);
-                println("ControlPanel: Using Static IP address of the WiFi Shield!");
-                wifiIPAddressDynamic.setOff();
-                wifiIPAddressStatic.setOn();
-                staticIPAddressTF.setVisible(true);
-                wifiList.setVisible(false);
-            }
-        });
-    }
-
-    private void createRefreshWifiButton(String name, String text, int _x, int _y, int _w, int _h) {
-        refreshWifi = createButton(wifiBox_cp5, name, text, _x, _y, _w, _h);
-        refreshWifi.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                refreshWifiList();
-            }
-        });
-    }
-
-    private void createWifiList(ControlP5 _cp5, String name, int _x, int _y, int _w, int _h, PFont font) {
-        wifiList = new MenuList(_cp5, name, _w, _h, font);
-        wifiList.setPosition(_x, _y);
-        wifiList.addCallback(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
-                    Map bob = wifiList.getItem(int(wifiList.getValue()));
-                    wifi_portName = (String)bob.get("headline");
-                    wifi_ipAddress = (String)bob.get("subline");
-                    output("Selected WiFi Board: " + wifi_portName+ ", WiFi IP Address: " + wifi_ipAddress );
-                }
-            }
-        });
-    }
-
-    private void createStaticIPAddressTextfield() {
-        staticIPAddressTF = wifiBox_cp5.addTextfield("staticIPAddress")
-            .setPosition(x + 90, y + 100)
-            .setCaptionLabel("")
-            .setSize(w - padding*2, 26)
-            .setFont(f2)
-            .setFocus(false)
-            .setColor(color(26, 26, 26))
-            .setColorBackground(color(255, 255, 255)) // text field bg color
-            .setColorValueLabel(OPENBCI_DARKBLUE)  // text color
-            .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
-            .setColorActive(isSelected_color)  // border color when selected
-            .setColorCursor(color(26, 26, 26))
-            .setText(wifi_ipAddress)
-            .align(5, 10, 20, 40)
-            .setAutoClear(true)
-            .setVisible(false);
-        //Clear textfield on double click
-        staticIPAddressTF.onDoublePress(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                output("WiFi Static IP: Enter your custom IP address for WiFi shield.");
-                staticIPAddressTF.clear();
-            }
-        });
-    }
-
-    public void setDefaultToDynamicIP() {
-        h = 208;
-        controlPanel.setWiFiSearchStyle(controlPanel.WIFI_DYNAMIC);
-        wifiIPAddressDynamic.setOn();
-        wifiIPAddressStatic.setOff();
-        staticIPAddressTF.setVisible(false);
-        wifiList.setVisible(true);
-    }
-
-    private void setStaticIPTextfield(String text) {
-        staticIPAddressTF.setText(text);
-    }
-};
-
-class InterfaceBoxCyton {
-    public int x, y, w, h, padding; //size and position
-    private ControlP5 ifbc_cp5;
-    private Button protocolSerialCyton;
-    private Button protocolWifiCyton;
-
-    InterfaceBoxCyton(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = (24 + _padding) * 3;
-        padding = _padding;
-
-        //Instantiate local cp5 for this box
-        ifbc_cp5 = new ControlP5(ourApplet);
-        ifbc_cp5.setGraphics(ourApplet, 0,0);
-        ifbc_cp5.setAutoDraw(false);
-
-        //Disabled both toggles by default for this box
-        createSerialCytonButton("protocolSerialCyton", "Serial (from Dongle)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
-        createWifiCytonButton("protocolWifiCyton", "Wifi (from Wifi Shield)", false, x + padding, y + padding * 4 + 24 + 4, w - padding * 2, 24);
-    }
-
-    public void update() {}
-
-    public void draw() {
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(OPENBCI_DARKBLUE);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("PICK TRANSFER PROTOCOL", x + padding, y + padding);
-        popStyle();
-
-        ifbc_cp5.draw();
-    }
-
-    private Button createIFBCButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        final Button b = createButton(ifbc_cp5, name, text, _x, _y, _w, _h);
-        b.setSwitch(true); //This turns the button into a switch
-        if (isToggled) {
-            b.setOn();
-        }
-        return b;
-    }
-
-    private void createSerialCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        protocolSerialCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
-        protocolSerialCyton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                controlPanel.wifiBox.wifiList.items.clear();
-                controlPanel.bleBox.bleList.items.clear();
-                selectedProtocol = BoardProtocol.SERIAL;
-                controlPanel.comPortBox.refreshPortListCyton();
-                protocolSerialCyton.setOn();
-                protocolWifiCyton.setOff();
-            }
-        });
-    }
-
-    private void createWifiCytonButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        protocolWifiCyton = createIFBCButton(name, text, isToggled, _x, _y, _w, _h);
-        protocolWifiCyton.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                controlPanel.wifiBox.wifiList.items.clear();
-                controlPanel.bleBox.bleList.items.clear();
-                selectedProtocol = BoardProtocol.WIFI;
-                protocolSerialCyton.setOff();
-                protocolWifiCyton.setOn();
-            }
-        });
-    }
-
-    public void resetCytonSelectedProtocol() {
-        protocolSerialCyton.setOff();
-        protocolWifiCyton.setOff();
-        selectedProtocol = BoardProtocol.NONE;
-    }
-};
-
 class InterfaceBoxGanglion {
     public int x, y, w, h, padding; //size and position
     private ControlP5 ifbg_cp5;
     private Button protocolGanglionNativeBLE;
     private Button protocolBLED112Ganglion;
-    private Button protocolWifiGanglion;
 
     InterfaceBoxGanglion(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
         padding = _padding;
-        h = (24 + _padding) * 4;
+        h = (24 + _padding) * 3;
         int buttonHeight = 24;
 
             //Instantiate local cp5 for this box
@@ -1171,7 +808,6 @@ class InterfaceBoxGanglion {
 
         createGanglionNativeBLEButton("protocolNativeBLEGanglion", "Bluetooth (Native)", false, x + padding, y + padding * 3 + 4, w - padding * 2, 24);
         createBLED112Button("protocolBLED112Ganglion", "Bluetooth (BLED112 Dongle)", false, x + padding, y + (padding * 4) + 24 + 4, w - padding * 2, 24);
-        createGanglionWifiButton("protocolWifiGanglion", "Wifi (from Wifi Shield)", false, x + padding, y + (padding * 5) + (24 * 2) + 4, w - padding * 2, 24);
     }
 
     public void update() {}
@@ -1205,13 +841,11 @@ class InterfaceBoxGanglion {
         protocolGanglionNativeBLE = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolGanglionNativeBLE.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.NATIVE_BLE;
                 controlPanel.bleBox.refreshGanglionNativeList();
                 protocolGanglionNativeBLE.setOn();
                 protocolBLED112Ganglion.setOff();
-                protocolWifiGanglion.setOff();
             }
         });
     }
@@ -1220,27 +854,11 @@ class InterfaceBoxGanglion {
         protocolBLED112Ganglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
         protocolBLED112Ganglion.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                controlPanel.wifiBox.wifiList.items.clear();
                 controlPanel.bleBox.bleList.items.clear();
                 selectedProtocol = BoardProtocol.BLED112;
                 controlPanel.bleBox.refreshGanglionBLEList();
                 protocolGanglionNativeBLE.setOff();
                 protocolBLED112Ganglion.setOn();
-                protocolWifiGanglion.setOff();
-            }
-        });
-    }
-
-    private void createGanglionWifiButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        protocolWifiGanglion = createIFBGButton(name, text, isToggled, _x, _y, _w, _h);
-        protocolWifiGanglion.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                controlPanel.wifiBox.wifiList.items.clear();
-                controlPanel.bleBox.bleList.items.clear();
-                selectedProtocol = BoardProtocol.WIFI;
-                protocolGanglionNativeBLE.setOff();
-                protocolBLED112Ganglion.setOff();
-                protocolWifiGanglion.setOn();
             }
         });
     }
@@ -1248,7 +866,6 @@ class InterfaceBoxGanglion {
     public void resetGanglionSelectedProtocol() {
         protocolGanglionNativeBLE.setOff();
         protocolBLED112Ganglion.setOff();
-        protocolWifiGanglion.setOff();
         selectedProtocol = BoardProtocol.NONE;
     }
 };
@@ -1293,12 +910,29 @@ class SessionDataBox {
         createODFButton("odfButton", "OpenBCI", dataLogger.getDataLoggerOutputFormat(), x + padding, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
         createBDFButton("bdfButton", "BDF+", dataLogger.getDataLoggerOutputFormat(), x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58, (w-padding*3)/2, 24);
 
-        createMaxDurationDropdown("maxFileDuration", Arrays.asList(settings.fileDurations));
-        
+        List<String> fileDurationList = EnumHelper.getEnumStrings(OdfFileDuration.class);
+        createMaxDurationDropdown("maxFileDuration", fileDurationList, odfFileDuration);
     }
 
     public void update() {
-        copyPaste.checkForCopyPaste(sessionNameTextfield);
+        textfieldUpdateHelper.checkTextfield(sessionNameTextfield);
+
+        //Update the position of UI elements here, as this changes when user selects WiFi mode
+        sessionNameTextfield.setPosition(x + 60, y + 32);
+        autoSessionName.setPosition(x + padding, y + 66);
+        outputODF.setPosition(x + padding, y + padding*2 + 18 + 58);
+        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58);
+
+        boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
+        h = odfIsSelected ? odfModeHeight : bdfModeHeight;
+        maxDurationDropdown.setVisible(odfIsSelected);
+        if (odfIsSelected && outputBDF.isOn()) {
+            outputODF.setOn();
+            outputBDF.setOff();
+        } else if (!odfIsSelected && outputODF.isOn()) {
+            outputBDF.setOn();
+            outputODF.setOff();
+        }
     }
 
     public void draw() {
@@ -1314,17 +948,9 @@ class SessionDataBox {
         textFont(p4, 14);
         text("Name", x + padding, y + padding*2 + 14);
         popStyle();
-        
-        //Update the position of UI elements here, as this changes when user selects WiFi mode
-        sessionNameTextfield.setPosition(x + 60, y + 32);
-        autoSessionName.setPosition(x + padding, y + 66);
-        outputODF.setPosition(x + padding, y + padding*2 + 18 + 58);
-        outputBDF.setPosition(x + padding*2 + (w-padding*3)/2, y + padding*2 + 18 + 58);
-        maxDurationDropdown.setPosition(x + maxDurTextWidth, int(outputODF.getPosition()[1]) + 24 + padding);
-        
+
         boolean odfIsSelected = dataLogger.getDataLoggerOutputFormat() == dataLogger.OUTPUT_SOURCE_ODF;
         maxDurationDropdown.setVisible(odfIsSelected);
-        
         if (odfIsSelected) {
             pushStyle();
             //draw backgrounds to dropdown scrollableLists ... unfortunately ControlP5 doesn't have this by default, so we have to hack it to make it look nice...
@@ -1338,6 +964,7 @@ class SessionDataBox {
             text("Max File Duration", maxDurText_x, y + h - 24 - padding + extraPadding);
             popStyle();
         }
+
         sessionData_cp5.draw();
     }
 
@@ -1383,10 +1010,10 @@ class SessionDataBox {
         });
     }
 
-    private void createMaxDurationDropdown(String name, List<String> _items){
+    private void createMaxDurationDropdown(String name, List<String> _items, OdfFileDuration defaultValue) {
         maxDurationDropdown = sessionData_cp5.addScrollableList(name)
             .setOpen(false)
-            .setColor(settings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(150)
             //.setColorBackground(OPENBCI_BLUE) // text field bg color
             .setColorValueLabel(OPENBCI_DARKBLUE)       // text color
@@ -1404,7 +1031,7 @@ class SessionDataBox {
         maxDurationDropdown
             .getCaptionLabel() //the caption label is the text object in the primary bar
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
+            .setText(defaultValue.getString())
             .setFont(p4)
             .setSize(14)
             .getStyle() //need to grab style before affecting the paddingTop
@@ -1413,7 +1040,7 @@ class SessionDataBox {
         maxDurationDropdown
             .getValueLabel() //the value label is connected to the text objects in the dropdown item bars
             .toUpperCase(false) //DO NOT AUTOSET TO UPPERCASE!!!
-            .setText(settings.fileDurations[settings.defaultOBCIMaxFileSize])
+            .setText(defaultValue.getString())
             .setFont(h5)
             .setSize(12) //set the font size of the item bars to 14pt
             .getStyle() //need to grab style before affecting the paddingTop
@@ -1423,7 +1050,7 @@ class SessionDataBox {
             public void controlEvent(CallbackEvent theEvent) {    
                 if (theEvent.getAction() == ControlP5.ACTION_BROADCAST) {
                     int n = (int)(theEvent.getController()).getValue();
-                    settings.setLogFileDurationChoice(n);
+                    dataLogger.setLogFileDurationChoice(n);
                     println("ControlPanel: Chosen Recording Duration: " + n);
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     lockOutsideElements(true);
@@ -1505,27 +1132,22 @@ class SessionDataBox {
         sessionNameTextfield.setText(s);
     }
 
-    // True locks elements, False unlocks elements
     private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
-            //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             controlPanel.channelCountBox.lockCp5Objects(_toggle);
-            if (_toggle) {
-                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
-            } else {
-                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).unlock();
-            }
+            controlPanel.sdBox.lockCp5Objects(_toggle);
+            controlPanel.bfStreamerBoxCyton.lockCp5Objects(_toggle);
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
-        } else {
+        } else if (eegDataSource == DATASOURCE_GANGLION) {
             controlPanel.sampleRateGanglionBox.lockCp5Objects(_toggle);
         }
     }
 
-    public void lockSessionDataBoxCp5Elements(boolean b) {
-        sessionNameTextfield.setLock(b);
-        autoSessionName.setLock(b);
-        outputODF.setLock(b);
-        outputBDF.setLock(b);
+    public void lockCp5Objects(boolean lock) {
+        sessionNameTextfield.setLock(lock);
+        autoSessionName.setLock(lock);
+        outputODF.setLock(lock);
+        outputBDF.setLock(lock);
     }
 };
 
@@ -1553,7 +1175,7 @@ class ChannelCountBox {
         cb8_butX = x + padding;
         cb16_butX = x + padding*2 + (w-padding*3)/2;
         cb_butY = y + padding*2 + 18;
-        boolean is8Channels = (nchan == 8) ? true : false;
+        boolean is8Channels = (globalChannelCount == 8) ? true : false;
         createChan8Button("cyton8ChanButton", "8 CHANNELS", is8Channels, cb8_butX, cb_butY, (w-padding*3)/2, 24);
         createChan16Button("cyton16ChanButton", "16 CHANNELS", is8Channels, cb16_butX, cb_butY, (w-padding*3)/2, 24);
     }
@@ -1578,7 +1200,7 @@ class ChannelCountBox {
         fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+        text("  (" + str(globalChannelCount) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         ccc_cp5.draw();
@@ -1597,7 +1219,7 @@ class ChannelCountBox {
         chanButton8 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
         chanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(8);
+                updateGlobalChannelCount(8);
                 chanButton8.setOn();
                 chanButton16.setOff();
             }
@@ -1608,7 +1230,7 @@ class ChannelCountBox {
         chanButton16 = createCCCButton(name, text, isToggled, _x, _y, _w, _h);
         chanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(16);
+                updateGlobalChannelCount(16);
                 chanButton8.setOff();
                 chanButton16.setOn();
             }
@@ -1621,7 +1243,7 @@ class ChannelCountBox {
     }
 
     public void set8ChanButtonActive() {
-        updateToNChan(8);
+        updateGlobalChannelCount(8);
         chanButton8.setOn();
         chanButton16.setOff();
     }
@@ -1721,116 +1343,6 @@ class SampleRateGanglionBox {
     }
 };
 
-class SampleRateCytonBox {
-    public int x, y, w, h, padding; //size and position
-    private ControlP5 srcb_cp5;
-    private Button sampleRate250;
-    private Button sampleRate500;
-    private Button sampleRate1000;
-    private int sr250_butX;
-    private int sr500_butX;
-    private int sr1000_butX;
-    private int srButton_butY;
-
-    SampleRateCytonBox(int _x, int _y, int _w, int _h, int _padding) {
-        x = _x;
-        y = _y;
-        w = _w;
-        h = 73;
-        padding = _padding;
-
-        //Instantiate local cp5 for this box
-        srcb_cp5 = new ControlP5(ourApplet);
-        srcb_cp5.setGraphics(ourApplet, 0,0);
-        srcb_cp5.setAutoDraw(false);
-
-        sr250_butX = x + padding;
-        sr500_butX = x + padding*2 + (w-padding*4)/3;
-        sr1000_butX = x + padding*3 + ((w-padding*4)/3)*2;
-        srButton_butY =  y + padding*2 + 18;
-        createSR250Button("cytonSR250", "250Hz", false, sr250_butX, srButton_butY, (w-padding*4)/3, 24);
-        createSR500Button("cytonSR500", "500Hz", false, sr500_butX, srButton_butY, (w-padding*4)/3, 24);
-        //Make 1000Hz option selected by default
-        createSR1000Button("cytonSR1000", "1000Hz", true, sr1000_butX, srButton_butY, (w-padding*4)/3, 24);
-    }
-
-    public void update() {
-
-    }
-
-    public void draw() {
-
-        srButton_butY =  y + padding*2 + 18;
-        sampleRate250.setPosition(sr250_butX, srButton_butY);
-        sampleRate500.setPosition(sr500_butX, srButton_butY);
-        sampleRate1000.setPosition(sr1000_butX, srButton_butY);
-
-        pushStyle();
-        fill(boxColor);
-        stroke(boxStrokeColor);
-        strokeWeight(1);
-        rect(x, y, w, h);
-        fill(OPENBCI_DARKBLUE);
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        text("SAMPLE RATE ", x + padding, y + padding);
-        fill(OPENBCI_DARKBLUE); //set color to green
-        textFont(h3, 16);
-        textAlign(LEFT, TOP);
-        popStyle();
-
-        srcb_cp5.draw();
-    }
-
-    private Button createSRCBButton(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        final Button b = createButton(srcb_cp5, name, text, _x, _y, _w, _h);
-        b.setSwitch(true); //This turns the button into a switch
-        if (isToggled) {
-            b.setOn();
-        }
-        return b;
-    }
-
-    private void createSR250Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        sampleRate250 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
-        sampleRate250.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                selectedSamplingRate = 250;
-                println("ControlPanel: User selected Cyton+WiFi 250Hz");
-                sampleRate250.setOn();
-                sampleRate500.setOff();
-                sampleRate1000.setOff();
-            }
-        });
-    }
-
-    private void createSR500Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        sampleRate500 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
-        sampleRate500.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                selectedSamplingRate = 500;
-                println("ControlPanel: User selected Cyton+WiFi 500Hz");
-                sampleRate250.setOff();
-                sampleRate500.setOn();
-                sampleRate1000.setOff();
-            }
-        });
-    }
-
-    private void createSR1000Button(String name, String text, boolean isToggled, int _x, int _y, int _w, int _h) {
-        sampleRate1000 = createSRCBButton(name, text, isToggled, _x, _y, _w, _h);
-        sampleRate1000.onRelease(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                selectedSamplingRate = 1000;
-                println("ControlPanel: User selected Cyton+WiFi 1000Hz");
-                sampleRate250.setOff();
-                sampleRate500.setOff();
-                sampleRate1000.setOn();
-            }
-        });
-    }
-};
-
 class SyntheticChannelCountBox {
     public int x, y, w, h, padding; //size and position
     private ControlP5 sccb_cp5;
@@ -1871,7 +1383,7 @@ class SyntheticChannelCountBox {
         fill(OPENBCI_DARKBLUE); //set color to green
         textFont(h3, 16);
         textAlign(LEFT, TOP);
-        text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+        text("  (" + str(globalChannelCount) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
         popStyle();
 
         sccb_cp5.draw();
@@ -1890,7 +1402,7 @@ class SyntheticChannelCountBox {
         synthChanButton4 = createSCCBButton(name, text, false,_x, _y, _w, _h);
         synthChanButton4.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(4);
+                updateGlobalChannelCount(4);
                 synthChanButton4.setOn();
                 synthChanButton8.setOff();
                 synthChanButton16.setOff();
@@ -1903,7 +1415,7 @@ class SyntheticChannelCountBox {
         synthChanButton8 = createSCCBButton(name, text, true, _x, _y, _w, _h);
         synthChanButton8.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(8);
+                updateGlobalChannelCount(8);
                 synthChanButton4.setOff();
                 synthChanButton8.setOn();
                 synthChanButton16.setOff();
@@ -1915,7 +1427,7 @@ class SyntheticChannelCountBox {
         synthChanButton16 = createSCCBButton(name, text, false, _x, _y, _w, _h);
         synthChanButton16.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                updateToNChan(16);
+                updateGlobalChannelCount(16);
                 synthChanButton4.setOff();
                 synthChanButton8.setOff();
                 synthChanButton16.setOn();
@@ -1924,7 +1436,7 @@ class SyntheticChannelCountBox {
     }
 
     public void set8ChanButtonActive() {
-        updateToNChan(8);
+        updateGlobalChannelCount(8);
         synthChanButton4.setOff();
         synthChanButton8.setOn();
         synthChanButton16.setOff();
@@ -1938,14 +1450,14 @@ class RecentPlaybackBox {
     private String filePickedShort = "Select Recent Playback File";
     private ControlP5 rpb_cp5;
     private ScrollableList recentPlaybackSL;
-    private int titleH = 14;
+    private int TITLE_HEIGHT = 14;
     private int buttonH = 24;
 
     RecentPlaybackBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = titleH + buttonH + _padding*3;
+        h = TITLE_HEIGHT + buttonH + _padding*3;
         padding = _padding;
 
         rpb_cp5 = new ControlP5(ourApplet);
@@ -2092,9 +1604,8 @@ class BrainFlowStreamerBox {
     private ControlP5 bfStreamerCp5;
     private int maxDurTextWidth = 82;
     private int maxDurText_x = 0;
-    private Textfield ipAddress;
-    private Textfield port;
-    private Button autoSessionName;
+    private Textfield ipAddressTextfield;
+    private Textfield portTextfield;
     private Button outputToNetwork;
     private Button outputToFile;
     private ScrollableList bfFileSaveOption;
@@ -2125,16 +1636,16 @@ class BrainFlowStreamerBox {
     }
 
     public void update() {
-        copyPaste.checkForCopyPaste(ipAddress);
-        copyPaste.checkForCopyPaste(port);
+        textfieldUpdateHelper.checkTextfield(ipAddressTextfield);
+        textfieldUpdateHelper.checkTextfield(portTextfield);
     }
 
-        public void draw() {
+    public void draw() {
         int streamerTextfieldY = y + padding*3 + HEADER_H + OBJECT_H;
 
         bfFileSaveOption.setVisible(outputToFile.isOn());
-        ipAddress.setVisible(outputToNetwork.isOn());
-        port.setVisible(outputToNetwork.isOn());
+        ipAddressTextfield.setVisible(outputToNetwork.isOn());
+        portTextfield.setVisible(outputToNetwork.isOn());
 
         pushStyle();
         fill(boxColor);
@@ -2150,7 +1661,7 @@ class BrainFlowStreamerBox {
             text("Location", x + padding, streamerTextfieldY + 2);
         } else if (outputToNetwork.isOn()) {
             text("IP", x + padding, streamerTextfieldY + 2);
-            text("Port", x + w - padding*2 - port.getWidth() - 14 - padding, streamerTextfieldY + 2);
+            text("Port", x + w - padding*2 - portTextfield.getWidth() - 14 - padding, streamerTextfieldY + 2);
         }
         popStyle();
         
@@ -2158,14 +1669,14 @@ class BrainFlowStreamerBox {
         outputToNetwork.setPosition(x + padding, y + HEADER_H + padding*2);
         outputToFile.setPosition(x + padding*2 + (w-padding*3)/2, y + HEADER_H + padding*2);
         bfFileSaveOption.setPosition(x + 80, streamerTextfieldY);
-        ipAddress.setPosition(x + padding * 3, streamerTextfieldY);
-        port.setPosition(x + w - padding - port.getWidth(), streamerTextfieldY);
+        ipAddressTextfield.setPosition(x + padding * 3, streamerTextfieldY);
+        portTextfield.setPosition(x + w - padding - portTextfield.getWidth(), streamerTextfieldY);
         
         bfStreamerCp5.draw();
     }
 
     private void createNetworkTextfields() {
-        ipAddress = bfStreamerCp5.addTextfield("ipAddress")
+        ipAddressTextfield = bfStreamerCp5.addTextfield("ipAddressTextfield")
             .setPosition(x + padding * 3, y + HEADER_H + padding*2)
             .setCaptionLabel("")
             .setSize(120, OBJECT_H)
@@ -2177,26 +1688,26 @@ class BrainFlowStreamerBox {
             .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText(DEFAULT_IP_ADDRESS) //default ipAddress == ""
+            .setText(DEFAULT_IP_ADDRESS)
             .align(5, 10, 20, 40)
             //.onDoublePress(cb)
             .addCallback(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
-                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && ipAddress.getText().equals("")) {
-                            ipAddress.setText(DEFAULT_IP_ADDRESS);
+                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && ipAddressTextfield.getText().equals("")) {
+                            ipAddressTextfield.setText(DEFAULT_IP_ADDRESS);
                         }
                     }
                 })
             .onReleaseOutside(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
-                        if (!ipAddress.isActive() && ipAddress.getText().equals("")) {
-                            ipAddress.setText(DEFAULT_IP_ADDRESS);
+                        if (!ipAddressTextfield.isActive() && ipAddressTextfield.getText().equals("")) {
+                            ipAddressTextfield.setText(DEFAULT_IP_ADDRESS);
                         }
                     }
                 })
             .onDoublePress(cb);
         
-        port = bfStreamerCp5.addTextfield("port")
+        portTextfield = bfStreamerCp5.addTextfield("portTextfield")
             .setPosition(x + padding*5 + w/2, y + HEADER_H + padding*2)
             .setCaptionLabel("")
             .setSize(50, OBJECT_H)
@@ -2208,20 +1719,20 @@ class BrainFlowStreamerBox {
             .setColorForeground(OPENBCI_DARKBLUE)  // border color when not selected
             .setColorActive(isSelected_color)  // border color when selected
             .setColorCursor(color(26, 26, 26))
-            .setText(DEFAULT_PORT) //default port == 0
+            .setText(DEFAULT_PORT)
             .align(5, 10, 20, 40)
             //.onDoublePress(cb)
             .addCallback(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
-                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && port.getText().equals("")) {
-                            port.setText(DEFAULT_PORT);
+                        if (theEvent.getAction() == ControlP5.ACTION_BROADCAST && portTextfield.getText().equals("")) {
+                            portTextfield.setText(DEFAULT_PORT);
                         }
                     }
                 })
             .onReleaseOutside(new CallbackListener() {
                     public void controlEvent(CallbackEvent theEvent) {
-                        if (!port.isActive() && port.getText().equals("")) {
-                            port.setText(DEFAULT_PORT);
+                        if (!portTextfield.isActive() && portTextfield.getText().equals("")) {
+                            portTextfield.setText(DEFAULT_PORT);
                         }
                     }
                 })
@@ -2241,11 +1752,8 @@ class BrainFlowStreamerBox {
         outputToNetwork = createBrainFlowOutputToggle(name, text, false, _x, _y, _w, _h);
         outputToNetwork.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                //output(odfMessage);
-                //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_ODF);
                 outputToNetwork.setOn();
                 outputToFile.setOff();
-                //setToODFHeight();
             }
         });
         outputToNetwork.setDescription("Use BrainFlow Streamer to output to network address. You can accept this data stream using a separate process which utilizes any BrainFlow binding. This is a helpful feature for developers.");
@@ -2255,11 +1763,8 @@ class BrainFlowStreamerBox {
         outputToFile = createBrainFlowOutputToggle(name, text, true, _x, _y, _w, _h);
         outputToFile.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
-                //output(bdfMessage);
-                //dataLogger.setDataLoggerOutputFormat(dataLogger.OUTPUT_SOURCE_BDF);
                 outputToNetwork.setOff();
                 outputToFile.setOn();
-                //setToBDFHeight();
             }
         });
         outputToFile.setDescription("Set BrainFlow Streamer output to stream over network. A new file will be made in the session folder when the data stream is paused or max file duration is reached.");
@@ -2268,7 +1773,7 @@ class BrainFlowStreamerBox {
     private void createDropdown(String name){
         bfFileSaveOption = bfStreamerCp5.addScrollableList(name)
             .setOpen(false)
-            .setColor(settings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(150)
             .setSize(167, (dataWriterBfEnum.values().length + 1) * 24)
             .setBarHeight(24) //height of top/primary bar
@@ -2306,10 +1811,11 @@ class BrainFlowStreamerBox {
                     sb.append(" file location.");
                     output(sb.toString());
                     if (dataWriterBfEnum.getIsCustomLocation()) {
-                        selectOutput("Select a folder to save BrainFlow CSV files to:", 
-                                "bfSelectedFolder",
-                                new File(directoryManager.getRecordingsPath())
-                        );
+                        FileChooser chooser = new FileChooser(
+                            FileChooserMode.SAVE,
+                            "bfSelectedFolder",
+                            new File(directoryManager.getRecordingsPath()),
+                            "Save BrainFlow CSV to file");
                     }
                 } else if (theEvent.getAction() == ControlP5.ACTION_ENTER) {
                     lockOutsideElements(true);
@@ -2323,9 +1829,9 @@ class BrainFlowStreamerBox {
 
     private String getBFNetworkTextfieldsAsString() {
         StringBuilder sb = new StringBuilder("streaming_board://");
-        sb.append(ipAddress.getText());
+        sb.append(ipAddressTextfield.getText());
         sb.append(":");
-        sb.append(port.getText());
+        sb.append(portTextfield.getText());
         return sb.toString();
     }
 
@@ -2345,23 +1851,12 @@ class BrainFlowStreamerBox {
         return outputToFile.isOn() && dataWriterBfEnum.getIsDefaultLocation();
     }
 
-    // True locks elements, False unlocks elements
     private void lockOutsideElements (boolean _toggle) {
         if (eegDataSource == DATASOURCE_CYTON) {
-            //Cyton for Serial and WiFi (WiFi details are drawn to the right, so no need to lock)
             controlPanel.channelCountBox.lockCp5Objects(_toggle);
-            if (_toggle) {
-                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).lock();
-            } else {
-                controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).unlock();
-            }
+            controlPanel.sdBox.lockCp5Objects(_toggle);
             controlPanel.sdBox.cp5_sdBox.get(ScrollableList.class, controlPanel.sdBox.sdBoxDropdownName).setUpdate(!_toggle);
         }
-    }
-
-    public void lockSessionDataBoxCp5Elements(boolean b) {
-        ipAddress.setLock(b);
-        port.setLock(b);
     }
 
     //Clear text field on double-click
@@ -2371,6 +1866,14 @@ class BrainFlowStreamerBox {
             tf.clear();
         }
     };
+
+    public void lockCp5Objects(boolean lock) {
+        ipAddressTextfield.setLock(lock);
+        portTextfield.setLock(lock);
+        outputToNetwork.setLock(lock);
+        outputToFile.setLock(lock);
+        bfFileSaveOption.setLock(lock);
+    }
 };
 
 class StreamingBoardBox {
@@ -2436,8 +1939,8 @@ class StreamingBoardBox {
     }
 
     public void update() {
-        copyPaste.checkForCopyPaste(ipAddress);
-        copyPaste.checkForCopyPaste(port);
+        textfieldUpdateHelper.checkTextfield(ipAddress);
+        textfieldUpdateHelper.checkTextfield(port);
     }
 
     public void draw() {
@@ -2534,14 +2037,14 @@ class PlaybackFileBox {
     private Button selectPlaybackFile;
     private int sampleDataButton_w = 100;
     private int sampleDataButton_h = 20;
-    private int titleH = 14;
+    private int TITLE_HEIGHT = 14;
     private int buttonH = 24;
 
     PlaybackFileBox(int _x, int _y, int _w, int _h, int _padding) {
         x = _x;
         y = _y;
         w = _w;
-        h = buttonH + (_padding * 3) + titleH;
+        h = buttonH + (_padding * 3) + TITLE_HEIGHT;
         padding = _padding;
 
         //Instantiate local cp5 for this box
@@ -2549,7 +2052,7 @@ class PlaybackFileBox {
         pbfb_cp5.setGraphics(ourApplet, 0,0);
         pbfb_cp5.setAutoDraw(false);
 
-        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + titleH, w - padding*2, buttonH);
+        createSelectPlaybackFileButton("selectPlaybackFileControlPanel", "SELECT OPENBCI PLAYBACK FILE", x + padding, y + padding*2 + TITLE_HEIGHT, w - padding*2, buttonH);
         createSampleDataButton("selectSampleDataControlPanel", "Sample Data", x + w - sampleDataButton_w - padding, y + padding - 2, sampleDataButton_w, sampleDataButton_h);
     }
 
@@ -2576,10 +2079,11 @@ class PlaybackFileBox {
         selectPlaybackFile.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
-                selectInput("Select a pre-recorded file for playback:", 
-                            "playbackFileSelected",
-                            new File(directoryManager.getGuiDataPath() + "Recordings")
-                );
+                FileChooser chooser = new FileChooser(
+                    FileChooserMode.LOAD,
+                    "playbackFileSelected",
+                    new File(directoryManager.getGuiDataPath() + "Recordings"),
+                    "Select a file for playback");
             }
         });
         selectPlaybackFile.setDescription("Click to open a dialog box to select an OpenBCI playback file (.txt or .csv).");
@@ -2590,10 +2094,12 @@ class PlaybackFileBox {
         sampleDataButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
                 output("Select a file for playback");
-                selectInput("Select a pre-recorded file for playback:", 
-                            "playbackFileSelected", 
-                            new File(directoryManager.getGuiDataPath() + "Sample_Data" + System.getProperty("file.separator") + "OpenBCI-sampleData-2-meditation.txt")
-                );
+                File sampleDataFile = new File(directoryManager.getGuiDataPath() + "Sample_Data" + System.getProperty("file.separator") + "OpenBCI_GUI-v6-meditation.txt");
+                FileChooser chooser = new FileChooser(
+                    FileChooserMode.LOAD,
+                    "playbackFileSelected",
+                    sampleDataFile,
+                    "Select a file for playback");
             }
         });
         //sampleDataButton.setCornerRoundness((int)(sampleDataButton_h));
@@ -2656,7 +2162,7 @@ class SDBox {
 
         sdList = cp5_sdBox.addScrollableList(name)
             .setOpen(false)
-            .setColor(settings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(150)
             .setSize(w - padding*2, 2*24)//temporary size
             .setBarHeight(24) //height of top/primary bar
@@ -2703,6 +2209,10 @@ class SDBox {
 
     public void updatePosition() {
         sdList.setPosition(x + padding, y + padding*2 + 14);
+    }
+
+    public void lockCp5Objects(boolean lock) {
+        sdList.setLock(lock);
     }
 };
 
@@ -2961,21 +2471,15 @@ class InitBox {
             if ((eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.NONE) || (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.NONE)) {
                 outputWarn("No Transfer Protocol selected. Please select your Transfer Protocol and retry system initiation.");
                 return;
-            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && openBCI_portName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
+            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.SERIAL && cytonDonglePortName == "N/A") { //if data source == normal && if no serial port selected OR no SD setting selected
                 outputWarn("No Serial/COM port selected. Attempting to AUTO-CONNECT to Cyton.");
                 controlPanel.comPortBox.attemptAutoConnectCyton();   
-                return;
-            } else if (eegDataSource == DATASOURCE_CYTON && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                outputWarn("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
                 return;
             } else if (eegDataSource == DATASOURCE_PLAYBACKFILE && playbackData_fname == "N/A" && sdData_fname == "N/A") { //if data source == playback && playback file == 'N/A'
                 outputWarn("No playback file selected. Please select a playback file and retry system initiation.");        // tell user that they need to select a file before the system can be started
                 return;
             } else if (eegDataSource == DATASOURCE_GANGLION && (selectedProtocol == BoardProtocol.NATIVE_BLE || selectedProtocol == BoardProtocol.BLED112) && ganglion_portName == "N/A") {
                 outputWarn("No BLE device selected. Please select your Ganglion device and retry system initiation.");
-                return;
-            } else if (eegDataSource == DATASOURCE_GANGLION && selectedProtocol == BoardProtocol.WIFI && wifi_portName == "N/A" && controlPanel.getWifiSearchStyle() == controlPanel.WIFI_DYNAMIC) {
-                outputWarn("No Wifi Shield selected. Please select your Wifi Shield and retry system initiation.");
                 return;
             } else if (eegDataSource == -1) {//if no data source selected
                 outputWarn("No DATA SOURCE selected. Please select a DATA SOURCE and retry system initiation.");//tell user they must select a data source before initiating system
@@ -2986,13 +2490,7 @@ class InitBox {
                 // Global steps to START SESSION
                 // Prepare the serial port
 
-                //Set data logger outputs to save data to BDF or CSV
-                controlPanel.setDataLoggerOutputs();
-
-                if (controlPanel.getWifiSearchStyle() == controlPanel.WIFI_STATIC && (selectedProtocol == BoardProtocol.WIFI || selectedProtocol == BoardProtocol.WIFI)) {
-                    wifi_ipAddress = controlPanel.wifiBox.staticIPAddressTF.getText();
-                    println("Static IP address of " + wifi_ipAddress);
-                }
+                controlPanel.fetchSessionNameTextfieldAllBoards();
 
                 //Set this flag to true, and draw "Starting Session..." to screen after then next draw() loop
                 midInit = true;
@@ -3006,9 +2504,12 @@ class InitBox {
             //creates new data file name so that you don't accidentally overwrite the old one
             controlPanel.dataLogBoxCyton.setSessionTextfieldText(directoryManager.getFileNameDateTime());
             controlPanel.dataLogBoxGanglion.setSessionTextfieldText(directoryManager.getFileNameDateTime());
-            controlPanel.wifiBox.setStaticIPTextfield(wifi_ipAddress);
-            w_focus.killAuditoryFeedback();
+            W_Focus focusWidget = (W_Focus) widgetManager.getWidget("W_Focus");
+            W_Marker markerWidget = (W_Marker) widgetManager.getWidget("W_Marker");
+            focusWidget.killAuditoryFeedback();
+            markerWidget.disposeUdpMarkerReceiver();
             haltSystem();
+            widgetManager.setAllWidgetsNull();
         }
     }
 

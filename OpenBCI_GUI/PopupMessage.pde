@@ -8,21 +8,21 @@ class PopupMessage extends PApplet implements Runnable {
     private final int defaultHeight = 250;
 
     private final int headerHeight = 55;
-    private final int padding = 20;
+    protected final int padding = 20;
 
     private final int buttonWidth = 120;
-    private final int buttonHeight = 40;
+    protected final int buttonHeight = 40;
 
     private String message = "Empty Popup";
     private String headerMessage = "Error";
-    private String buttonMessage = "OK";
+    protected String buttonMessage = "OK";
     private String buttonLink = null;
 
     private color headerColor = OPENBCI_BLUE;
-    private color buttonColor = OPENBCI_BLUE;
+    protected color buttonColor = OPENBCI_BLUE;
     private color backgroundColor = GREY_235;
     
-    private ControlP5 cp5;
+    protected ControlP5 cp5;
 
     public PopupMessage(String header, String msg) {
         super();
@@ -59,7 +59,7 @@ class PopupMessage extends PApplet implements Runnable {
     @Override
     void setup() {
         surface.setTitle(headerMessage);
-        surface.setAlwaysOnTop(false);
+        surface.setAlwaysOnTop(true);
         surface.setResizable(false);
 
         Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
@@ -67,27 +67,16 @@ class PopupMessage extends PApplet implements Runnable {
         frame.requestFocus();
 
         cp5 = new ControlP5(this);
+        cp5.setAutoDraw(false);
 
-        cp5.addButton("onButtonPressed")
-            .setPosition(width/2 - buttonWidth/2, height - buttonHeight - padding)
-            .setSize(buttonWidth, buttonHeight)
-            .setColorLabel(color(255))
-            .setColorForeground(buttonColor)
-            .setColorBackground(buttonColor);
-        cp5.getController("onButtonPressed")
-            .getCaptionLabel()
-            .setFont(p1)
-            .toUpperCase(false)
-            .setSize(20)
-            .setText(buttonMessage)
-            .getStyle()
-            .setMarginTop(-2);
+        createPrimaryButton();
     }
 
     @Override
     void draw() {
-        final int w = defaultWidth;
-        final int h = defaultHeight;
+
+        final int w = width;
+        final int h = height;
 
         pushStyle();
 
@@ -95,28 +84,32 @@ class PopupMessage extends PApplet implements Runnable {
         background(OPENBCI_DARKBLUE);
         stroke(204);
         fill(backgroundColor);
-        rect((width - w)/2, (height - h)/2, w, h);
+        rect(0, 0, w, h);
 
         // draw header
         noStroke();
         fill(headerColor);
-        rect((width - w)/2, (height - h)/2, w, headerHeight);
+        rect(0, 0, w, headerHeight);
 
         //draw header text
         textFont(p0, 24);
         fill(WHITE);
         textAlign(LEFT, CENTER);
-        text(headerMessage, (width - w)/2 + padding, headerHeight/2);
+        text(headerMessage, 0 + padding, headerHeight/2);
 
         //draw message
         textFont(p3, 16);
-        fill(102);
+        fill(GREY_100);
         textAlign(LEFT, TOP);
-        text(message, (width - w)/2 + padding, (height - h)/2 + padding + headerHeight, w-padding*2, h-padding*2-headerHeight);
+        text(message, 0 + padding, 0 + padding + headerHeight, w - padding*2, h - padding*2 - headerHeight);
 
         popStyle();
         
-        cp5.draw();
+        try {
+            cp5.draw();
+        } catch (ConcurrentModificationException e) {
+            println("PopupMessage Base Class: Error drawing cp5" + e.getMessage());
+        }
     }
 
     @Override
@@ -134,7 +127,24 @@ class PopupMessage extends PApplet implements Runnable {
         dispose();
     }
 
-    public void onButtonPressed() {
+    protected void createPrimaryButton() {
+        cp5.addButton("onPrimaryButtonPressed")
+            .setPosition(width/2 - buttonWidth/2, height - buttonHeight - padding)
+            .setSize(buttonWidth, buttonHeight)
+            .setColorLabel(color(255))
+            .setColorForeground(BUTTON_HOVER)
+            .setColorBackground(buttonColor);
+        cp5.getController("onPrimaryButtonPressed")
+            .getCaptionLabel()
+            .setFont(p1)
+            .toUpperCase(false)
+            .setSize(20)
+            .setText(buttonMessage)
+            .getStyle()
+            .setMarginTop(-2);
+    }
+
+    public void onPrimaryButtonPressed() {
         if (buttonLink != null) {
             link(buttonLink);
         }

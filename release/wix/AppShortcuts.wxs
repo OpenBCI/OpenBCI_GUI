@@ -1,0 +1,46 @@
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+	<Fragment>
+		<StandardDirectory Id='DesktopFolder'>
+			<Component Id='AppDesktopShortcut'>
+				<Shortcut
+					Id='ApplicationDesktopShortcut'
+					Name='OpenBCI GUI'
+					Description='Connect to your OpenBCI hardware, visualize physiological data, and stream it to other applications and tools'
+					Target='[#AppExecutable]'
+					WorkingDirectory='INSTALLFOLDER'
+					Directory='DesktopFolder'
+				/>
+				<RemoveFolder Id='DesktopFolder' On='uninstall' />
+				<RegistryValue
+					Root='HKCU'
+					Key='Software\OpenBCI\OpenBCI_GUI\DesktopShortcut'
+					Name='installed'
+					Type='integer'
+					Value='1'
+					KeyPath='yes'
+				/>
+			</Component>
+		</StandardDirectory>
+		<StandardDirectory Id='ProgramMenuFolder'>
+			<Component Id='AppStartMenuShortcut'>
+				<Shortcut
+					Id='ApplicationStartMenuShortcut'
+					Name='OpenBCI GUI'
+					Description='Connect to your OpenBCI hardware, visualize physiological data, and stream it to other applications and tools'
+					Target='[#AppExecutable]'
+					WorkingDirectory='INSTALLFOLDER'
+					Directory='ProgramMenuFolder'
+				/>
+				<RemoveFolder Id='ProgramMenuFolder' On='uninstall' />
+				<RegistryValue
+					Root='HKCU'
+					Key='Software\OpenBCI\OpenBCI_GUI\StartMenuShortcut'
+					Name='installed'
+					Type='integer'
+					Value='1'
+					KeyPath='yes'
+				/>
+			</Component>
+		</StandardDirectory>
+	</Fragment>
+</Wix>

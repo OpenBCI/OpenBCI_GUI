@@ -18,6 +18,7 @@ OpenBCI_GUI/application.*
 OpenBCI_GUI_unittests/UNITTEST_FAILURE
 openbcigui_*
 application.*
+!application.ico
 *.autosave
 .vscode/*
 temp/*
@@ -27,3 +28,6 @@ libGanglionLib.so
 libGanglionScan.so
 libunicorn.so
 OpenBCI_GUI/out/
+release/wix/bin/*
+release/wix/obj/*
+UNITTEST_FAILURE

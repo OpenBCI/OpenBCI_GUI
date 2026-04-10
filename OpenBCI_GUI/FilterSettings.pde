@@ -33,7 +33,7 @@ public class FilterSettingsValues {
 
     public FilterSettingsValues(int channelCount) {
         brainFlowFilter = BFFilter.BANDPASS;
-        filterChannelSelect = FilterChannelSelect.ALL_CHANNELS;
+        filterChannelSelect = FilterChannelSelect.CUSTOM_CHANNELS;
         globalEnvFilter = GlobalEnvironmentalFilter.FIFTY_AND_SIXTY;
 
         //Set Master Values for all channels for BandStop Filter
@@ -92,46 +92,19 @@ class FilterSettings {
         defaultValues = new FilterSettingsValues(channelCount);
     }
 
-    public boolean loadSettingsValues(String filename) {
-        try {
-            File file = new File(filename);
-            StringBuilder fileContents = new StringBuilder((int)file.length());        
-            Scanner scanner = new Scanner(file);
-            while(scanner.hasNextLine()) {
-                fileContents.append(scanner.nextLine() + System.lineSeparator());
-            }
-            Gson gson = new Gson();
-            values = gson.fromJson(fileContents.toString(), FilterSettingsValues.class);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();    
-            File f = new File(filename);
-            if (f.exists()) {
-                if (f.delete()) {
-                    println("FilterSettings: Could not load filter settings from disk. Deleting this file...");
-                } else {
-                    println("FilterSettings: Error deleting old/broken filter settings file! Please make sure the GUI has proper read/write permissions.");
-                }
-            }
-            return false;
-        }
-    }
-
     public String getJson() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.toJson(values);
     }
 
-    public boolean saveToFile(String filename) {
-        String json = getJson();
+    public void loadSettingsFromJson(String json) {
         try {
-            FileWriter writer = new FileWriter(filename);
-            writer.write(json);
-            writer.close();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            Gson gson = new Gson();
+            values = gson.fromJson(json, FilterSettingsValues.class);
+            filterSettingsWereLoadedFromFile = true;
+        } catch (Exception e) {
+            e.printStackTrace();    
+            println("FilterSettings: Could not load filter settings from JSON string.");
         }
     }
 
@@ -142,55 +115,5 @@ class FilterSettings {
     //Called in UI to control number of channels. This is set from the board when this class is instantiated.
     public int getChannelCount() {
         return channelCount;
-    }
-
-    //Avoid error with popup being in another thread.
-    public void storeSettings() {
-        StringBuilder settingsFilename = new StringBuilder(directoryManager.getSettingsPath());
-        settingsFilename.append("FilterSettings");
-        settingsFilename.append("_");
-        settingsFilename.append(getChannelCount());
-        settingsFilename.append("Channels.json");
-        String filename = settingsFilename.toString();
-        File fileToSave = new File(filename);
-        selectOutput("Save filter settings to file", "storeFilterSettings", fileToSave);
-    }
-    //Avoid error with popup being in another thread.
-    public void loadSettings() {
-        StringBuilder settingsFilename = new StringBuilder(directoryManager.getSettingsPath());
-        settingsFilename.append("FilterSettings");
-        settingsFilename.append("_");
-        settingsFilename.append(getChannelCount());
-        settingsFilename.append("Channels.json");
-        String filename = settingsFilename.toString();
-        File fileToLoad = new File(filename);
-        selectInput("Select settings file to load", "loadFilterSettings", fileToLoad);
-    }
-}
-
-//Used by button in the Filter UI. Must be global and public.
-public void loadFilterSettings(File selection) {
-    if (selection == null) {
-        output("Filters Settings file not selected.");
-    } else {
-        if (filterSettings.loadSettingsValues(selection.getAbsolutePath())) {
-            outputSuccess("Filter Settings Loaded!");
-            filterSettingsWereLoadedFromFile = true;
-        } else {
-            outputError("Failed to load Filter Settings. The old/broken file has been deleted.");
-        }
-    }
-}
-
-//Used by button in the Filter UI. Must be global and public.
-public void storeFilterSettings(File selection) {
-    if (selection == null) {
-        output("Filter Settings file not selected.");
-    } else {
-        if (filterSettings.saveToFile(selection.getAbsolutePath())) {
-            outputSuccess("Filter Settings Saved!");
-        } else {
-            outputError("Failed to save Filter Settings.");
-        }
     }
 }

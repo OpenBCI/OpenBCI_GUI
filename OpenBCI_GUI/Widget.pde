@@ -7,29 +7,21 @@
 //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//Used for Widget Dropdown Enums
-interface IndexingInterface {
-    public int getIndex();
-    public String getString();
-}
-
-class Widget{
-
-    protected PApplet pApplet;
+class Widget {
+    protected String widgetTitle = "Widget"; //default name of the widget
 
     protected int x0, y0, w0, h0; //true x,y,w,h of container
     protected int x, y, w, h; //adjusted x,y,w,h of white space `blank rectangle` under the nav...
 
     private int currentContainer; //this determines where the widget is located ... based on the x/y/w/h of the parent container
 
+    protected ControlP5 cp5_widget;
+    private ArrayList<NavBarDropdown> dropdowns;
     protected boolean dropdownIsActive = false;
     private boolean previousDropdownIsActive = false;
     private boolean previousTopNavDropdownMenuIsOpen = false;
     private boolean widgetSelectorIsActive = false;
 
-    private ArrayList<NavBarDropdown> dropdowns;
-    protected ControlP5 cp5_widget;
-    protected String widgetTitle = "No Title Set";
     //used to limit the size of the widget selector, forces a scroll bar to show and allows us to add even more widgets in the future
     private final float widgetDropdownScaling = .90;
     private boolean isWidgetActive = false;
@@ -41,16 +33,17 @@ class Widget{
     protected int dropdownWidth = 64;
     private boolean initialResize = false; //used to properly resize the widgetSelector when loading default settings
 
-    Widget(PApplet _parent){
-        pApplet = _parent;
-        cp5_widget = new ControlP5(pApplet);
+    Widget() {
+        cp5_widget = new ControlP5(ourApplet);
         cp5_widget.setAutoDraw(false); //this prevents the cp5 object from drawing automatically (if it is set to true it will be drawn last, on top of all other GUI stuff... not good)
         dropdowns = new ArrayList<NavBarDropdown>();
-        //setup dropdown menus
 
         currentContainer = 5; //central container by default
         mapToCurrentContainer();
+    }
 
+    public String getWidgetTitle() {
+        return widgetTitle;
     }
 
     public boolean getIsActive() {
@@ -88,12 +81,12 @@ class Widget{
     }
 
     public void setupWidgetSelectorDropdown(ArrayList<String> _widgetOptions){
-        cp5_widget.setColor(settings.dropdownColors);
+        cp5_widget.setColor(dropdownColorsGlobal);
         ScrollableList scrollList = cp5_widget.addScrollableList("WidgetSelector")
             .setPosition(x0+2, y0+2) //upper left corner
             // .setFont(h2)
             .setOpen(false)
-            .setColor(settings.dropdownColors)
+            .setColor(dropdownColorsGlobal)
             .setOutlineColor(OBJECT_BORDER_GREY)
             //.setSize(widgetSelectorWidth, int(h0 * widgetDropdownScaling) )// + maxFreqList.size())
             //.setSize(widgetSelectorWidth, (NUM_WIDGETS_TO_SHOW+1)*(navH-4) )// + maxFreqList.size())
@@ -123,7 +116,7 @@ class Widget{
     }
 
     public void setupNavDropdowns(){
-        cp5_widget.setColor(settings.dropdownColors);
+        cp5_widget.setColor(dropdownColorsGlobal);
         // println("Setting up dropdowns...");
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
@@ -132,7 +125,7 @@ class Widget{
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), y0 + navH + 2) //float right
                 .setFont(h5)
                 .setOpen(false)
-                .setColor(settings.dropdownColors)
+                .setColor(dropdownColorsGlobal)
                 .setOutlineColor(OBJECT_BORDER_GREY)
                 .setSize(dropdownWidth, (dropdowns.get(i).items.size()+1)*(navH-4) )// + maxFreqList.size())
                 .setBarHeight(navH-4)
@@ -219,10 +212,6 @@ class Widget{
         mapToCurrentContainer();
     }
 
-    public void setTitle(String _widgetTitle){
-        widgetTitle = _widgetTitle;
-    }
-
     public void setContainer(int _currentContainer){
         currentContainer = _currentContainer;
         mapToCurrentContainer();
@@ -233,8 +222,8 @@ class Widget{
     private void resizeWidgetSelector() {
         int dropdownsItemsToShow = int((h0 * widgetDropdownScaling) / (navH - 4));
         widgetSelectorHeight = (dropdownsItemsToShow + 1) * (navH - 4);
-        if (wm != null) {
-            int maxDropdownHeight = (wm.widgetOptions.size() + 1) * (navH - 4);
+        if (widgetManager != null) {
+            int maxDropdownHeight = (widgetManager.getWidgetCount() + 1) * (navH - 4);
             if (widgetSelectorHeight > maxDropdownHeight) widgetSelectorHeight = maxDropdownHeight;
         }
 
@@ -258,7 +247,7 @@ class Widget{
         h = h0 - navH*2;
 
         //This line resets the origin for all cp5 elements under "cp5_widget" when the screen is resized, otherwise there will be drawing errors
-        cp5_widget.setGraphics(pApplet, 0, 0);
+        cp5_widget.setGraphics(ourApplet, 0, 0);
 
         if (cp5_widget.getController("WidgetSelector") != null) {
             resizeWidgetSelector();
@@ -268,7 +257,7 @@ class Widget{
         for(int i = 0; i < dropdowns.size(); i++){
             int dropdownPos = dropdowns.size() - i;
             cp5_widget.getController(dropdowns.get(i).id)
-                //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), navHeight+(y+2)) // float left
+                //.setPosition(w-(dropdownWidth*dropdownPos)-(2*(dropdownPos+1)), NAV_HEIGHT+(y+2)) // float left
                 .setPosition(x0+w0-(dropdownWidth*(dropdownPos))-(2*(dropdownPos)), navH +(y0+2)) //float right
                 //.setSize(dropdownWidth, (maxFreqList.size()+1)*(navBarHeight-4))
                 ;
@@ -317,6 +306,190 @@ class Widget{
         }
     }
 }; //end of base Widget class
+
+abstract class WidgetWithSettings extends Widget {
+    protected WidgetSettings widgetSettings;
+    
+    WidgetWithSettings() {
+        super();
+        // Create settings with the widget's title
+        widgetSettings = new WidgetSettings(getWidgetTitle());
+        // Initialize settings with default values
+        initWidgetSettings();
+    }
+    
+    /**
+     * Initialize widget settings with default values
+     * Override this method in widget subclasses to set custom defaults
+     */
+    protected void initWidgetSettings() {
+        // Default implementation is empty
+        // Child classes should override this to add their specific settings
+    }
+
+    /**
+     * Apply current settings to the widget UI
+     * Override this method in subclasses to update UI elements based on settings
+     */
+    protected abstract void applySettings();
+    
+    /**
+     * Get the settings object for this widget
+     * @return WidgetSettings object for this widget
+     */
+    public WidgetSettings getSettings() {
+        return widgetSettings;
+    }
+    
+    /**
+     * Convert widget settings to JSON string
+     * @return JSON representation of settings
+     */
+    public String settingsToJSON() {
+        // Call saveSettings to ensure all widget settings are up-to-date before serializing
+        saveSettings();
+        return widgetSettings.toJSON();
+    }
+    
+    /**
+     * Load settings from JSON string
+     * @param jsonString JSON string containing settings
+     * @return true if settings were loaded successfully, false otherwise
+     */
+    public boolean loadSettingsFromJSON(String jsonString) {
+        boolean success = widgetSettings.loadFromJSON(jsonString);
+        if (success) {
+            applySettings();
+        }
+        return success;
+    }
+    
+    /**
+     * Helper method to initialize a dropdown with values from an enum
+     * @param enumClass Enum class to get values from
+     * @param id ID for the dropdown controller
+     * @param label Label to display above the dropdown
+     */
+    protected <T extends Enum<T> & IndexingInterface> void initDropdown(Class<T> enumClass, String id, String label) {
+        T currentValue = widgetSettings.get(enumClass);
+        int currentIndex = currentValue != null ? currentValue.getIndex() : 0;
+        List<String> options = EnumHelper.getEnumStrings(enumClass);
+        addDropdown(id, label, options, currentIndex);
+    }
+
+    /**
+     * Helper method to update a dropdown label with current setting value
+     * @param enumClass Enum class to get the current value from
+     * @param controllerId ID of the controller to update
+     */
+    protected <T extends Enum<T> & IndexingInterface> void updateDropdownLabel(Class<T> enumClass, String controllerId) {
+        T currentValue = widgetSettings.get(enumClass);
+        if (currentValue != null) {
+            String value = currentValue.getString();
+            cp5_widget.getController(controllerId).getCaptionLabel().setText(value);
+        }
+    }
+
+    /**
+     * Save active channel selection to widget settings
+     * @param channels List of selected channel indices
+     */
+    protected void saveActiveChannels(List<Integer> channels) {
+        widgetSettings.setActiveChannels(channels);
+        println(widgetTitle + ": Saved " + channels.size() + " active channels");
+    }
+
+    /**
+     * Apply saved active channel selection to a channel select component
+     * @param channelSelect The channel select component to update
+     * @return true if channels were loaded and applied, false otherwise
+     */
+    protected boolean applyActiveChannels(ExGChannelSelect channelSelect) {
+        List<Integer> savedChannels = widgetSettings.getActiveChannels();
+        if (!savedChannels.isEmpty()) {
+            channelSelect.updateChannelSelection(savedChannels);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the list of active channels from settings
+     * @return List of active channel indices, or empty list if none are saved
+     */
+    protected List<Integer> getActiveChannels() {
+        return widgetSettings.getActiveChannels();
+    }
+
+    /**
+     * Check if active channels are defined in settings
+     * @return true if active channels are defined, false otherwise
+     */
+    protected boolean hasActiveChannels() {
+        return widgetSettings.hasActiveChannels();
+    }
+
+    /**
+     * Update channel settings from any channel selectors before saving
+     * Each widget class should override this if it has channel selectors
+     */
+    protected void updateChannelSettings() {
+        // Default implementation does nothing
+        // Override in widgets that have channel selectors
+    }
+
+    /**
+     * Save active channel selection to widget settings with a specific name
+     * @param name Identifier for this channel selection (e.g., "top", "bottom")
+     * @param channels List of selected channel indices
+     */
+    protected void saveNamedChannels(String name, List<Integer> channels) {
+        widgetSettings.setNamedChannels(name, channels);
+        println(widgetTitle + ": Saved " + channels.size() + " channels for " + name);
+    }
+
+    /**
+     * Apply saved named channel selection to a channel select component
+     * @param name Identifier for the channel selection
+     * @param channelSelect The channel select component to update
+     * @return true if channels were loaded and applied, false otherwise
+     */
+    protected boolean applyNamedChannels(String name, ExGChannelSelect channelSelect) {
+        List<Integer> savedChannels = widgetSettings.getNamedChannels(name);
+        if (!savedChannels.isEmpty()) {
+            channelSelect.updateChannelSelection(savedChannels);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the list of active channels for a named selection from settings
+     * @param name Identifier for the channel selection
+     * @return List of active channel indices, or empty list if none are saved
+     */
+    protected List<Integer> getNamedChannels(String name) {
+        return widgetSettings.getNamedChannels(name);
+    }
+
+    /**
+     * Check if a named channel selection is defined in settings
+     * @param name Identifier for the channel selection
+     * @return true if the named channel selection is defined, false otherwise
+     */
+    protected boolean hasNamedChannels(String name) {
+        return widgetSettings.hasNamedChannels(name);
+    }
+
+    /**
+     * Save settings before serializing to JSON
+     * Default implementation - for channels only
+     * Child classes can override this to save additional settings
+     */
+    protected void saveSettings() {
+        updateChannelSettings();
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -367,271 +540,23 @@ class NavBarDropdown{
 void WidgetSelector(int n){
     println("New widget [" + n + "] selected for container...");
     //find out if the widget you selected is already active
-    boolean isSelectedWidgetActive = wm.widgets.get(n).getIsActive();
+    boolean isSelectedWidgetActive = widgetManager.widgets.get(n).getIsActive();
 
     //find out which widget & container you are currently in...
     int theContainer = -1;
-    for(int i = 0; i < wm.widgets.size(); i++){
-        if(wm.widgets.get(i).isMouseHere()){
-            theContainer = wm.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
+    for(int i = 0; i < widgetManager.widgets.size(); i++){
+        if(widgetManager.widgets.get(i).isMouseHere()){
+            theContainer = widgetManager.widgets.get(i).currentContainer; //keep track of current container (where mouse is...)
             if(isSelectedWidgetActive){ //if the selected widget was already active
-                wm.widgets.get(i).setContainer(wm.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
+                widgetManager.widgets.get(i).setContainer(widgetManager.widgets.get(n).currentContainer); //just switch the widget locations (ie swap containers)
             } else{
-                wm.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
+                widgetManager.widgets.get(i).setIsActive(false);   //deactivate the current widget (if it is different than the one selected)
             }
         }
     }
 
-    wm.widgets.get(n).setIsActive(true);//activate the new widget
-    wm.widgets.get(n).setContainer(theContainer);//map it to the current container
+    widgetManager.widgets.get(n).setIsActive(true);//activate the new widget
+    widgetManager.widgets.get(n).setContainer(theContainer);//map it to the current container
 }
 
-// This is a helpful class that will add a channel select feature to a Widget
-class ChannelSelect {
-    protected Widget widget;
-    private List<controlP5.Controller> cp5ElementsToCheck = new ArrayList<controlP5.Controller>();
-    protected int x, y, w, h, navH, butToggleY;
-    public float tri_xpos = 0;
-    protected float chanSelectXPos = 0;
-    protected final int button_spacer = 10;
-    public ControlP5 cp5_chanSelect;   //ControlP5 to contain our checkboxes
-    protected List<Toggle> channelButtons;
-    protected int offset;  //offset on nav bar of checkboxes
-    protected int buttonW;
-    protected int buttonH;
-    protected boolean channelSelectHover;
-    protected boolean isVisible;
-    public List<Integer> activeChan;
-    public String chanDropdownName;
-    protected boolean isFirstRowChannelSelect = true;
-    protected boolean isDualChannelSelect = false;
 
-    private int labelWidth = 0;
-    private int labelSpacer = 0;
-    private String firstRowLabel = "Top";
-    private String secondRowLabel = "Bot";
-
-    ChannelSelect(PApplet _parent, Widget _widget, int _x, int _y, int _w, int _navH, String checkBoxName) {
-        widget = _widget;
-        x = _x;
-        y = _y;
-        w = _w;
-        h = _navH;
-        navH = _navH;
-        activeChan = new ArrayList<Integer>();
-        chanDropdownName = checkBoxName;
-
-        //setup for checkboxes
-        cp5_chanSelect = new ControlP5(_parent);
-        cp5_chanSelect.setGraphics(_parent, 0, 0);
-        cp5_chanSelect.setAutoDraw(false); //draw only when specified
-        createButtons(nchan);
-    }
-
-    public void update(int _x, int _y, int _w) {
-        //update the x,y,w for this class using the parent class
-        x = _x;
-        y = _y;
-        w = _w;
-        //Toggle open/closed the channel menu
-        if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-            channelSelectHover = true;
-        } else {
-            channelSelectHover = false;
-        }
-        //Update position of buttons on every update and check for UI overlap
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setPosition(x + labelWidth + labelSpacer + (button_spacer*(i+1)) + (buttonW*i), y + offset);
-        }
-    }
-
-    public void draw() {
-        chanSelectXPos = x + 2;
-        pushStyle();
-        noStroke();
-        if (isFirstRowChannelSelect) {
-            //change "Channels" text color and triangle color on hover
-            if (channelSelectHover) {
-                fill(OPENBCI_BLUE);
-            } else {
-                fill(OPENBCI_DARKBLUE);
-            }
-            textFont(p5, 12);
-            
-            text("Channels", chanSelectXPos, y - 6);
-            tri_xpos = x + textWidth("Channels") + 7;
-
-            //draw triangle as pointing up or down, depending on if channel Select is active or closed
-            if (!isVisible) {
-                triangle(tri_xpos, y - 7, tri_xpos + 6, y - 13, tri_xpos + 12, y - 7);
-            } else {
-                triangle(tri_xpos, y - 13, tri_xpos + 6, y - 7, tri_xpos + 12, y - 13);
-                //if active, draw a grey background for the channel select checkboxes
-                fill(200);
-                rect(x,y,w,navH);
-            }
-        } else { //This is the case in Spectrogram where we need a second channel selector
-            //this draws extra grey space behind the checklist buttons
-            if (isVisible) {
-                fill(200);
-                rect(x,y,w,navH);
-            }
-        }
-        popStyle();
-
-        if (isVisible) {
-            //Draw channel select buttons
-            cp5_chanSelect.draw();
-            //Draw a border around toggle buttons to indicate if channel is on or off
-            pushStyle();
-            int weight = 1;
-            strokeWeight(weight);
-            noFill();
-            for (int i = 0; i < nchan; i++) {
-                color c = currentBoard.isEXGChannelActive(i) ? color(0,255,0,255) : color(255,0,0,255);
-                stroke(c);
-                rect(x + labelWidth + labelSpacer + (button_spacer*(i+1)) + (buttonW*i) - weight, y + offset - weight, channelButtons.get(i).getWidth() + weight, channelButtons.get(i).getHeight() + weight);
-            }
-            popStyle();
-            //Draw label 
-            if (isDualChannelSelect) {
-                pushStyle();
-                fill(0);
-                textFont(p5, 12);
-                textAlign(CENTER, TOP);
-                String label = isFirstRowChannelSelect ? firstRowLabel : secondRowLabel;
-                text(label, x + labelSpacer + labelWidth/2, y + offset);
-                popStyle();
-            }
-        }
-    }
-
-    public void screenResized(PApplet _parent) {
-        cp5_chanSelect.setGraphics(_parent, 0, 0);
-    }
-
-    public void mousePressed(boolean dropdownIsActive) {
-        if (!dropdownIsActive) {
-            if (mouseX > (chanSelectXPos) && mouseX < (tri_xpos + 10) && mouseY < (y - navH*0.25) && mouseY > (y - navH*0.65)) {
-                isVisible = !isVisible;
-            }
-        }
-    }
-
-    private void createButtons(int _nchan) {
-        channelButtons = new ArrayList<Toggle>();
-        
-        int checkSize = navH - 6;
-        offset = (navH - checkSize)/2;
-
-        channelSelectHover = false;
-        isVisible = false;
-
-        buttonW = checkSize;
-        buttonH = buttonW;
-
-        for (int i = 0; i < _nchan; i++) {
-            //start all items as invisible until user clicks dropdown to show checkboxes
-            channelButtons.add(
-                createButton("ch"+(i+1), (i+1), true, x + (button_spacer*(i+2)) + (buttonW*i), y + offset, buttonW, buttonH)
-            );
-            cp5ElementsToCheck.add((controlP5.Controller)channelButtons.get(i));
-        }
-    }
-
-    private Toggle createButton(String name, int chan, boolean _isVisible, int _x, int _y, int _w, int _h) {
-        int _fontSize = 12;
-        int marginLeftOffset = chan > 9 ? -9 : -6;
-        Toggle myButton = cp5_chanSelect.addToggle(name)
-            .setPosition(_x, _y)
-            .setSize(_w, _h)
-            .setColorLabel(OPENBCI_DARKBLUE)
-            .setColorForeground(color(120))
-            .setColorBackground(color(150))
-            .setColorActive(color(57, 128, 204))
-            .setVisible(_isVisible)
-            ;
-        myButton
-            .getCaptionLabel()
-            .setFont(createFont("Arial", _fontSize, true))
-            .toUpperCase(false)
-            .setSize(_fontSize)
-            .setText(String.valueOf(chan))
-            .getStyle() //need to grab style before affecting margin and padding
-            .setMargin(-_h - 3, 0, 0, marginLeftOffset)
-            .setPaddingLeft(10)
-            ;
-        myButton.onPress(new CallbackListener() {
-            public void controlEvent(CallbackEvent theEvent) {
-                int chan = Integer.parseInt(((Toggle)theEvent.getController()).getCaptionLabel().getText()) - 1;  
-                boolean b = ((Toggle)theEvent.getController()).getBooleanValue();
-                setToggleState(chan, b);
-                //println(widget + " || " + activeChan);
-            }
-        });
-        return myButton;
-    }
-
-    public void setIsFirstRowChannelSelect(boolean b) {
-        isFirstRowChannelSelect = b;
-    }
-
-    public void setIsDualChannelSelect(boolean b) {
-        isDualChannelSelect = b;
-        if (isDualChannelSelect) {
-            labelWidth = 28;
-            labelSpacer = 4;
-        }
-    }
-
-    public List<controlP5.Controller> getCp5ElementsForOverlapCheck() {
-        return cp5ElementsToCheck;
-    }
-
-    public void setFirstRowLabel(String s) {
-        firstRowLabel = s;
-    }
-
-    public void setSecondRowLabel(String s) {
-        secondRowLabel = s;
-    }
-
-    public boolean isVisible() {
-        return isVisible;
-    }
-
-    public void setIsVisible(boolean b) {
-        isVisible = b;
-    }
-
-    public void deactivateAllButtons() {
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setState(false);
-        }
-        activeChan.clear();
-    }
-
-    public void activateAllButtons() {
-        for (int i = 0; i < nchan; i++) {
-            channelButtons.get(i).setState(true);
-            activeChan.add(i);
-        }
-        Collections.sort(activeChan);
-    }
-
-    public void setToggleState(Integer chan, boolean b) {
-        channelButtons.get(chan).setState(b);
-        if (b && !activeChan.contains(chan)) {
-            activeChan.add(chan);
-        } else if (!b && activeChan.contains(chan)) {
-            activeChan.remove(chan);
-        }
-        Collections.sort(activeChan);
-        //println(activeChan.toArray());
-    }
-    
-    public int getHeight() {
-        return h;
-    }
-
-} //end of ChannelSelect class

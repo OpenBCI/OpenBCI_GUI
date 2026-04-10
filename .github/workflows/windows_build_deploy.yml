@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION : us-east-1
+  AWS_REGION: us-east-1
 
 jobs:
   build:
@@ -20,81 +20,134 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - name: Clone Repository
-      uses: actions/checkout@v3
+      - name: Clone Repository
+        uses: actions/checkout@v4
 
-    - name: Install Python 3.9
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        architecture: 'x64'
+      - name: Install Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+          architecture: 'x64'
 
-    - name: Install Processing
-      run: |
-        mkdir %GITHUB_WORKSPACE%\processing
-        cd %GITHUB_WORKSPACE%\processing
-        curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
-        ls -l %GITHUB_WORKSPACE%\processing
-        unzip processing-4.2-windows-x64.zip
-        ls -l %GITHUB_WORKSPACE%\processing\processing-4.2
-        mkdir %userprofile%\documents\processing\libraries
-        xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
-        ls -l %userprofile%\documents\processing\libraries
-      shell: cmd
-    
-    - name: Set Path
-      run: |
-        echo %GITHUB_WORKSPACE%\processing\processing-4.2>>%GITHUB_PATH%
-        echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64>>%GITHUB_PATH%
-      shell: cmd
+      - name: Install Processing
+        run: |
+          mkdir %GITHUB_WORKSPACE%\processing
+          cd %GITHUB_WORKSPACE%\processing
+          curl -O -L --insecure https://github.com/processing/processing4/releases/download/processing-1292-4.2/processing-4.2-windows-x64.zip
+          ls -l %GITHUB_WORKSPACE%\processing
+          unzip processing-4.2-windows-x64.zip
+          ls -l %GITHUB_WORKSPACE%\processing\processing-4.2
+          mkdir %userprofile%\documents\processing\libraries
+          xcopy %GITHUB_WORKSPACE%\OpenBCI_GUI\libraries\* %userprofile%\documents\processing\libraries /s /i /q
+          ls -l %userprofile%\documents\processing\libraries
+        shell: cmd
 
-    - name: Print Path
-      run: echo %PATH%
-      shell: cmd
+      - name: Set Path
+        run: |
+          echo %GITHUB_WORKSPACE%\processing\processing-4.2>>%GITHUB_PATH%
+          echo C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64>>%GITHUB_PATH%
+        shell: cmd
 
-    - name: Check processing-java Command
-      run: processing-java --help
-      shell: cmd
+      - name: Print Path
+        run: echo %PATH%
+        shell: cmd
 
-    - name: Run Unit Tests
-      run: python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
-      shell: cmd
+      - name: Check processing-java Command
+        run: processing-java --help
+        shell: cmd
 
-    - name: Build
-      run: python %GITHUB_WORKSPACE%\release\build.py
-      shell: cmd
+      - name: Update Processing Application Icon File
+        run: |
+          echo ${{ env.gui-icon-parent-folder }}
+          ls -l ${{ env.gui-icon-parent-folder }}
+          echo ${{ env.processing-icon-path }}
+          ls -l ${{ env.processing-icon-path }}
+          xcopy ${{ env.gui-icon-path }} ${{ env.processing-icon-path }} /i /y
+        env:
+          gui-icon-parent-folder: ${{ github.workspace }}\release\windows\icons\application
+          gui-icon-path: ${{ github.workspace }}\release\windows\icons\application\application.ico
+          processing-icon-path: ${{ github.workspace }}\processing\processing-4.2\modes\java\application
 
-    - name: Sign
-      run: |
-        dotnet tool install --global azuresigntool
-        mt -manifest %GITHUB_WORKSPACE%\release\windows\gui.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe;#1
-        mt -manifest %GITHUB_WORKSPACE%\release\windows\java.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\java.exe;#1
-        mt -manifest %GITHUB_WORKSPACE%\release\windows\javaw.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\javaw.exe;#1
-        azuresigntool sign --azure-key-vault-url "${{ secrets.AZURE_KEY_VAULT_URI }}" --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" --azure-key-vault-certificate "${{ secrets.AZURE_CERT_NAME }}" --timestamp-rfc3161 http://timestamp.digicert.com --verbose %GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe
-      shell: cmd
-  
-    - name: Package
-      run: python %GITHUB_WORKSPACE%\release\package.py
-      shell: cmd
+      - name: Update Processing Core Icon Files
+        run: |
+          ren ${{ env.processing-core-folder }}\core.jar core.zip
+          mkdir ${{ env.processing-core-icon-path }}
+          ls -l ${{ env.processing-core-folder }}
+          unzip ${{ env.processing-core-folder }}\core.zip -d ${{ env.processing-core-unzip-path }}
+          del ${{ env.processing-core-folder }}\core.zip
+          xcopy ${{ env.gui-core-icon-path }} ${{ env.processing-core-icon-path }} /e /i /y
+          cd ${{ env.processing-core-unzip-path }}
+          ls -l
+          7z a -r core.zip *
+          ren core.zip core.jar
+          echo "Updated Processing Core Icon Files"
+          ls -l
+          move core.jar ${{ env.processing-core-updated-jar-path }}
+          cd ${{ env.processing-core-updated-jar-path }}
+          rmdir ${{ env.processing-core-icon-path }} /s /q
+          ls -l
+        env:
+          processing-core-folder: ${{ github.workspace }}\processing\processing-4.2\core\library\
+          processing-core-unzip-path: ${{ github.workspace }}\processing\processing-4.2\core\library\core
+          gui-core-icon-path: ${{ github.workspace }}\release\windows\icons\core\*
+          processing-core-icon-path: ${{ github.workspace }}\processing\processing-4.2\core\library\core\icon
+          processing-core-updated-jar-path: ${{ github.workspace }}\processing\processing-4.2\core\library\
+        shell: cmd
 
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-        aws-region: ${{ env.AWS_REGION }}
+      - name: Run Unit Tests
+        run: python %GITHUB_WORKSPACE%\GuiUnitTests\run-unittests.py
+        shell: cmd
 
-    - name: Get Branch Names
-      id: branch-name
-      uses: tj-actions/branch-names@v7
+      - name: Build
+        run: python %GITHUB_WORKSPACE%\release\build.py
+        shell: cmd
 
-    - name: Store Build on AWS
-      run: |
-        cd ${{ github.workspace }}
-        ls
-        echo "${{ steps.branch-name.outputs.head_ref_branch }}"
-        set S3_BRANCH_FOLDER=s3://openbci-public-gui-v6/${{ steps.branch-name.outputs.head_ref_branch }}
-        echo %S3_BRANCH_FOLDER%
-        aws s3 rm s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp ${{ github.workspace }}/. %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-        aws s3 cp ${{ github.workspace }}/. s3://openbci-public-gui-v6/latest  --recursive --exclude "*" --include "openbcigui_*_windows64.zip"
-      shell: cmd
+      - name: Sign Executables
+        if: ${{ true }}
+        run: |
+          dotnet tool install --global azuresigntool
+          mt -manifest %GITHUB_WORKSPACE%\release\windows\gui.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe;#1
+          mt -manifest %GITHUB_WORKSPACE%\release\windows\java.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\java.exe;#1
+          mt -manifest %GITHUB_WORKSPACE%\release\windows\javaw.manifest -outputresource:%GITHUB_WORKSPACE%\application.windows64\java\bin\javaw.exe;#1
+          azuresigntool sign --azure-key-vault-url "${{ secrets.AZURE_KEY_VAULT_URI }}" --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" --azure-key-vault-certificate "${{ secrets.AZURE_CERT_NAME }}" --timestamp-rfc3161 http://timestamp.digicert.com --verbose %GITHUB_WORKSPACE%\application.windows64\OpenBCI_GUI.exe
+        shell: cmd
+
+      - name: Package
+        id: package
+        run: python %GITHUB_WORKSPACE%\release\package.py
+        shell: cmd
+
+      - name: Sign MSI Package
+        if: ${{ true }}
+        run: |
+          azuresigntool sign --azure-key-vault-url "${{ secrets.AZURE_KEY_VAULT_URI }}" --azure-key-vault-client-id "${{ secrets.AZURE_CLIENT_ID }}" --azure-key-vault-tenant-id "${{ secrets.AZURE_TENANT_ID }}" --azure-key-vault-client-secret "${{ secrets.AZURE_CLIENT_SECRET }}" --azure-key-vault-certificate "${{ secrets.AZURE_CERT_NAME }}" --timestamp-rfc3161 http://timestamp.digicert.com --verbose ${{ env.msi-path }}
+        env:
+          msi-path: ${{ steps.package.outputs.msi_path }}
+        shell: cmd
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Get Branch Names
+        id: branch-name
+        uses: tj-actions/branch-names@v8
+
+      - name: Store Build on AWS
+        run: |
+          cd ${{ env.msi-path }}
+          ls
+          echo "${{ steps.branch-name.outputs.head_ref_branch }}"
+          set S3_BRANCH_FOLDER=s3://openbci-public-gui-v7/${{ steps.branch-name.outputs.head_ref_branch }}
+          echo Branch Folder: %S3_BRANCH_FOLDER%
+          set S3_LATEST_FOLDER=s3://openbci-public-gui-v7/latest
+          echo Latest Folder: %S3_LATEST_FOLDER%
+          aws s3 rm %S3_LATEST_FOLDER%  --recursive --exclude "*" --include "*.msi"
+          aws s3 rm %S3_BRANCH_FOLDER%  --recursive --exclude "*" --include "*.msi"
+          aws s3 cp . %S3_BRANCH_FOLDER% --recursive --exclude "*" --include "*.msi"
+          aws s3 cp . %S3_LATEST_FOLDER% --recursive --exclude "*" --include "*.msi"
+        env:
+          msi-path: ${{ github.workspace }}\release\wix\bin\Release\en-US\
+        shell: cmd

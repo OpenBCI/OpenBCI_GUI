@@ -6,7 +6,7 @@ class DataSourcePlaybackSynthetic extends DataSourcePlayback implements Accelero
 
     protected boolean instantiateUnderlyingBoard() {
         try {
-            underlyingBoard = new BoardBrainFlowSynthetic(nchan);
+            underlyingBoard = new BoardBrainFlowSynthetic(globalChannelCount);
         } catch (Exception e) {
             println(e.getMessage());
             e.printStackTrace();

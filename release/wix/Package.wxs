@@ -1,0 +1,48 @@
+﻿<Wix
+	xmlns='http://wixtoolset.org/schemas/v4/wxs'
+	xmlns:ui='http://wixtoolset.org/schemas/v4/wxs/ui'
+>
+	<Package
+		Name='OpenBCI GUI'
+		Manufacturer='OpenBCI, Inc.'
+		Version='7.0.0'
+		UpgradeCode='45d666b4-ab22-4d2c-9ba3-1d143812dbc0'
+		Compressed='yes'
+	>
+		<MajorUpgrade DowngradeErrorMessage='!(loc.DowngradeError)' />
+
+		<MediaTemplate EmbedCab='yes' />
+
+		<Icon Id='WINDOWS.ico' SourceFile='openbci-cog-logo.ico' />
+		<Property Id='ARPPRODUCTICON' Value='WINDOWS.ico' />
+
+		<Feature Id='Main'>
+			<ComponentGroupRef Id='AppComponents' />
+			<ComponentRef Id='AppDesktopShortcut' />
+			<ComponentRef Id='AppStartMenuShortcut' />
+		</Feature>
+
+		<WixVariable
+			Id='WixUIExclamationIco'
+			Value='openbcigui-installer-infoicon.png'
+		/>
+		<WixVariable Id='WixUIInfoIco' Value='openbcigui-installer-infoicon.png' />
+		<WixVariable
+			Id='WixUINewIco'
+			Value='openbcigui-installer-buttonglyph.png'
+		/>
+		<WixVariable Id='WixUIUpIco' Value='openbcigui-installer-buttonglyph.png' />
+		<WixVariable
+			Id='WixUIBannerBmp'
+			Value='openbcigui-installer-topbanner.png'
+		/>
+		<WixVariable
+			Id='WixUIDialogBmp'
+			Value='openbcigui-installer-background.png'
+		/>
+
+		<WixVariable Id='WixUILicenseRtf' Value='openbci-eula.rtf' />
+
+		<ui:WixUI Id='WixUI_InstallDir' InstallDirectory='INSTALLFOLDER' />
+	</Package>
+</Wix>

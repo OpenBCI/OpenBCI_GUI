@@ -14,7 +14,6 @@ public enum FocusXLim implements IndexingInterface
     private int index;
     private int value;
     private String label;
-    private static FocusXLim[] vals = values();
 
     FocusXLim(int _index, int _value, String _label) {
         this.index = _index;
@@ -35,14 +34,6 @@ public enum FocusXLim implements IndexingInterface
     public int getIndex() {
         return index;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum FocusMetric implements IndexingInterface
@@ -54,7 +45,6 @@ public enum FocusMetric implements IndexingInterface
     private String label;
     private BrainFlowMetrics metric;
     private String idealState;
-    private static FocusMetric[] vals = values();
 
     FocusMetric(int _index, String _label, BrainFlowMetrics _metric, String _idealState) {
         this.index = _index;
@@ -80,14 +70,6 @@ public enum FocusMetric implements IndexingInterface
     public String getIdealStateString() {
         return idealState;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum FocusClassifier implements IndexingInterface
@@ -98,8 +80,6 @@ public enum FocusClassifier implements IndexingInterface
     private int value;
     private String label;
     private BrainFlowClassifiers classifier;
-
-    private static FocusClassifier[] vals = values();
 
     FocusClassifier(int _index, String _label, BrainFlowClassifiers _classifier) {
         this.index = _index;
@@ -120,14 +100,6 @@ public enum FocusClassifier implements IndexingInterface
     public BrainFlowClassifiers getClassifier() {
         return classifier;
     }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum FocusThreshold implements IndexingInterface
@@ -141,8 +113,6 @@ public enum FocusThreshold implements IndexingInterface
     private int index;
     private float value;
     private String label;
-
-    private static FocusThreshold[] vals = values();
 
     FocusThreshold(int _index, float _value, String _label) {
         this.index = _index;
@@ -162,13 +132,5 @@ public enum FocusThreshold implements IndexingInterface
     @Override
     public int getIndex() {
         return index;
-    }
-
-    public static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }

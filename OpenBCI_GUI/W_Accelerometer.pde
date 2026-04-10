@@ -11,7 +11,7 @@
 //
 ////////////////////////////////////////////////////
 
-class W_Accelerometer extends Widget {
+class W_Accelerometer extends WidgetWithSettings {
     //To see all core variables/methods of the Widget class, refer to Widget.pde
     color graphStroke = color(210);
     color graphBG = color(245);
@@ -19,20 +19,17 @@ class W_Accelerometer extends Widget {
     color strokeColor = color(138, 146, 153);
     color eggshell = color(255, 253, 248);
 
-    //Graphing variables
-    int[] xLimOptions = {0, 1, 3, 5, 10, 20}; //number of seconds (x axis of graph)
-    int[] yLimOptions = {0, 1, 2, 4};
-    float accelXyzLimit = 4.0; //hard limit on all accel values
-    int accelHorizLimit = 20;
-    float[] lastAccelVals;
-    AccelerometerBar accelerometerBar;
-
     //Bottom xyz graph
+    AccelerometerBar accelerometerBar;
     int accelGraphWidth;
     int accelGraphHeight;
     int accelGraphX;
     int accelGraphY;
     int accPadding = 30;
+    final int PAD_FIVE = 5;
+    private AccelerometerVerticalScale verticalScale = AccelerometerVerticalScale.AUTO;
+    private AccelerometerHorizontalScale horizontalScale = AccelerometerHorizontalScale.FIVE_SEC;
+    float[] lastDataSampleValues;
 
     //Circular 3d xyz graph
     float polarWindowX;
@@ -40,67 +37,68 @@ class W_Accelerometer extends Widget {
     int polarWindowWidth;
     int polarWindowHeight;
     float polarCorner;
-
-    float yMaxMin;
+    private float polarYMaxMin;
 
     boolean accelInitHasOccured = false;
     private Button accelModeButton;
 
     private AccelerometerCapableBoard accelBoard;
 
-    W_Accelerometer(PApplet _parent) {
-        super(_parent); //calls the parent CONSTRUCTOR method of Widget (DON'T REMOVE)
+    W_Accelerometer() {
+        super();
+        widgetTitle = "Accelerometer";
         
         accelBoard = (AccelerometerCapableBoard)currentBoard;
-
-        //Default dropdown settings
-        settings.accVertScaleSave = 0;
-        settings.accHorizScaleSave = 3;
-
-        //Make dropdowns
-        addDropdown("accelVertScale", "Vert Scale", Arrays.asList(settings.accVertScaleArray), settings.accVertScaleSave);
-        addDropdown("accelDuration", "Window", Arrays.asList(settings.accHorizScaleArray), settings.accHorizScaleSave);
-
+        
         setGraphDimensions();
-        yMaxMin = adjustYMaxMinBasedOnSource();
+        polarYMaxMin = adjustYMaxMinBasedOnSource();
 
         //XYZ buffer for bottom graph
-        lastAccelVals = new float[NUM_ACCEL_DIMS];
+        lastDataSampleValues = new float[NUM_ACCEL_DIMS];
 
-        //create our channel bar and populate our accelerometerBar array!
-        accelerometerBar = new AccelerometerBar(_parent, accelXyzLimit, accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
-        accelerometerBar.adjustTimeAxis(xLimOptions[settings.accHorizScaleSave]);
-        accelerometerBar.adjustVertScale(yLimOptions[settings.accVertScaleSave]);
+        //Create our channel bar and populate our accelerometerBar array
+        accelerometerBar = new AccelerometerBar(ourApplet, verticalScale.getHighestValue(), accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight);
+        accelerometerBar.adjustTimeAxis(horizontalScale.getValue());
+        accelerometerBar.adjustVertScale(verticalScale.getValue());
 
-        createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 1), (int)(y0 + navHeight + 1), 120, navHeight - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+        createAccelModeButton("accelModeButton", "Turn Accel. Off", (int)(x + 1), (int)(y0 + NAV_HEIGHT + 1), 120, NAV_HEIGHT - 3, p5, 12, colorNotPressed, OPENBCI_DARKBLUE);
+    }
+
+    @Override void initWidgetSettings() {
+        super.initWidgetSettings();
+        widgetSettings.set(AccelerometerVerticalScale.class, AccelerometerVerticalScale.AUTO)
+                .set(AccelerometerHorizontalScale.class, AccelerometerHorizontalScale.FIVE_SEC)
+                .saveDefaults();
+        initDropdown(AccelerometerVerticalScale.class, "accelerometerVerticalScaleDropdown", "Vert Scale");
+        initDropdown(AccelerometerHorizontalScale.class, "accelerometerHorizontalScaleDropdown", "Window");
+    }
+
+    @Override void applySettings() {
+        updateDropdownLabel(AccelerometerVerticalScale.class, "accelerometerVerticalScaleDropdown");
+        updateDropdownLabel(AccelerometerHorizontalScale.class, "accelerometerHorizontalScaleDropdown");
     }
 
     float adjustYMaxMinBasedOnSource() {
         float _yMaxMin;
         if (eegDataSource == DATASOURCE_CYTON) {
             _yMaxMin = 4.0;
-        }else if (eegDataSource == DATASOURCE_GANGLION || nchan == 4) {
+        } else if (eegDataSource == DATASOURCE_GANGLION || globalChannelCount == 4) {
             _yMaxMin = 2.0;
-            accelXyzLimit = 2.0;
-        }else{
+        } else {
             _yMaxMin = 4.0;
         }
         return _yMaxMin;
     }
 
-    int nPointsBasedOnDataSource() {
-        return accelHorizLimit * ((AccelerometerCapableBoard)currentBoard).getAccelSampleRate();
-    }
-
     void update() {
-        super.update(); //calls the parent update() method of Widget (DON'T REMOVE)
+        super.update();
 
         if (accelBoard.isAccelerometerActive()) {
             //update the line graph and corresponding gplot points
             accelerometerBar.update();
 
             //update the current Accelerometer values
-            lastAccelVals = accelerometerBar.getLastAccelVals();
+            lastDataSampleValues = accelerometerBar.getLastAccelVals();
         }
         
         //ignore top left button interaction when widgetSelector dropdown is active
@@ -116,11 +114,11 @@ class W_Accelerometer extends Widget {
     }
 
     public float getLastAccelVal(int val) {
-        return lastAccelVals[val];
+        return lastDataSampleValues[val];
     }
 
     void draw() {
-        super.draw(); //calls the parent draw() method of Widget (DON'T REMOVE)
+        super.draw();
 
         pushStyle();
 
@@ -153,9 +151,9 @@ class W_Accelerometer extends Widget {
     }
 
     void setGraphDimensions() {
-        accelGraphWidth = w - accPadding*2;
+        accelGraphWidth = int(w - PAD_FIVE * 4);
         accelGraphHeight = int((float(h) - float(accPadding*3))/2.0);
-        accelGraphX = x + accPadding/3;
+        accelGraphX = x + PAD_FIVE*2;
         accelGraphY = y + h - accelGraphHeight - int(accPadding*2) + accPadding/6;
 
         polarWindowWidth = accelGraphHeight;
@@ -170,20 +168,20 @@ class W_Accelerometer extends Widget {
         int prevY = y;
         int prevW = w;
         int prevH = h;
-        super.screenResized(); //calls the parent screenResized() method of Widget (DON'T REMOVE)
+        super.screenResized();
         setGraphDimensions();
         //resize the accelerometer line graph
-        accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth-accPadding*2, accelGraphHeight); //bar x, bar y, bar w, bar h
+        accelerometerBar.screenResized(accelGraphX, accelGraphY, accelGraphWidth, accelGraphHeight); //bar x, bar y, bar w, bar h
         //update the position of the accel mode button
-        accelModeButton.setPosition((int)(x0 + 1), (int)(y0 + navHeight + 1));
+        accelModeButton.setPosition((int)(x0 + 1), (int)(y0 + NAV_HEIGHT + 1));
     }
     
     void mousePressed() {
-        super.mousePressed(); //calls the parent mousePressed() method of Widget (DON'T REMOVE)
+        super.mousePressed();
     }
 
     void mouseReleased() {
-        super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
+        super.mouseReleased();
     }
 
     private void createAccelModeButton(String name, String text, int _x, int _y, int _w, int _h, PFont _font, int _fontSize, color _bg, color _textColor) {
@@ -196,11 +194,11 @@ class W_Accelerometer extends Widget {
                     output("Starting to read accelerometer");
                     accelModeButton.getCaptionLabel().setText("Turn Accel. Off");
                     if (currentBoard instanceof DigitalCapableBoard) {
-                        w_digitalRead.toggleDigitalReadButton(false);
+                        ((W_DigitalRead) widgetManager.getWidget("W_DigitalRead")).toggleDigitalReadButton(false);
                     }
                     if (currentBoard instanceof AnalogCapableBoard) {
-                        w_pulsesensor.toggleAnalogReadButton(false);
-                        w_analogRead.toggleAnalogReadButton(false);
+                        ((W_PulseSensor) widgetManager.getWidget("W_PulseSensor")).toggleAnalogReadButton(false);
+                        ((W_AnalogRead) widgetManager.getWidget("W_AnalogRead")).toggleAnalogReadButton(false);
                     }
                     ///Hide button when set On for Cyton board only. This is a special case for Cyton board Aux mode behavior. See BoardCyton.pde for more info.
                     if ((currentBoard instanceof BoardCyton)) {
@@ -229,9 +227,9 @@ class W_Accelerometer extends Widget {
 
     //Draw the current accelerometer values as text
     void drawAccValues() {
-        float displayX = (float)lastAccelVals[0];
-        float displayY = (float)lastAccelVals[1];
-        float displayZ = (float)lastAccelVals[2];
+        float displayX = (float)lastDataSampleValues[0];
+        float displayY = (float)lastDataSampleValues[1];
+        float displayZ = (float)lastDataSampleValues[2];
         textAlign(LEFT,CENTER);
         textFont(h1,20);
         fill(ACCEL_X_COLOR);
@@ -244,18 +242,18 @@ class W_Accelerometer extends Widget {
 
     //Draw the current accelerometer values as a 3D graph
     void draw3DGraph() {
-        float displayX = (float)lastAccelVals[0];
-        float displayY = (float)lastAccelVals[1];
-        float displayZ = (float)lastAccelVals[2];
+        float displayX = (float)lastDataSampleValues[0];
+        float displayY = (float)lastDataSampleValues[1];
+        float displayZ = (float)lastDataSampleValues[2];
 
         noFill();
         strokeWeight(3);
         stroke(ACCEL_X_COLOR);
-        line(polarWindowX, polarWindowY, polarWindowX+map(displayX, -yMaxMin, yMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY);
+        line(polarWindowX, polarWindowY, polarWindowX+map(displayX, -polarYMaxMin, polarYMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY);
         stroke(ACCEL_Y_COLOR);
-        line(polarWindowX, polarWindowY, polarWindowX+map((sqrt(2)*displayY/2), -yMaxMin, yMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY+map((sqrt(2)*displayY/2), -yMaxMin, yMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
+        line(polarWindowX, polarWindowY, polarWindowX+map((sqrt(2)*displayY/2), -polarYMaxMin, polarYMaxMin, -polarWindowWidth/2, polarWindowWidth/2), polarWindowY+map((sqrt(2)*displayY/2), -polarYMaxMin, polarYMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
         stroke(ACCEL_Z_COLOR);
-        line(polarWindowX, polarWindowY, polarWindowX, polarWindowY+map(displayZ, -yMaxMin, yMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
+        line(polarWindowX, polarWindowY, polarWindowX, polarWindowY+map(displayZ, -polarYMaxMin, polarYMaxMin, polarWindowWidth/2, -polarWindowWidth/2));
         strokeWeight(1);
     }
 
@@ -276,25 +274,26 @@ class W_Accelerometer extends Widget {
         }
     }
 
-};//end W_Accelerometer class
+    public void setVerticalScale(int n) {
+        widgetSettings.setByIndex(AccelerometerVerticalScale.class, n);
+        int verticalScaleValue = widgetSettings.get(AccelerometerVerticalScale.class).getValue();
+        accelerometerBar.adjustVertScale(verticalScaleValue);
+    }
 
-//These functions are activated when an item from the corresponding dropdown is selected
-void accelVertScale(int n) {
-    settings.accVertScaleSave = n;
-    w_accelerometer.accelerometerBar.adjustVertScale(w_accelerometer.yLimOptions[n]);
+    public void setHorizontalScale(int n) {
+        widgetSettings.setByIndex(AccelerometerHorizontalScale.class, n);
+        int horizontalScaleValue = widgetSettings.get(AccelerometerHorizontalScale.class).getValue();
+        accelerometerBar.adjustTimeAxis(horizontalScaleValue);
+    }
+
+};
+
+public void accelerometerVerticalScaleDropdown(int n) {
+    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).setVerticalScale(n);
 }
 
-//triggered when there is an event in the Duration Dropdown
-void accelDuration(int n) {
-    settings.accHorizScaleSave = n;
-
-    //Sync the duration of Time Series, Accelerometer, and Analog Read(Cyton Only)
-    if (n == 0) {
-        w_accelerometer.accelerometerBar.adjustTimeAxis(w_timeSeries.getTSHorizScale().getValue());
-    } else {
-        //set accelerometer x axis to the duration selected from dropdown
-        w_accelerometer.accelerometerBar.adjustTimeAxis(w_accelerometer.xLimOptions[n]);
-    }
+public void accelerometerHorizontalScaleDropdown(int n) {
+    ((W_Accelerometer) widgetManager.getWidget("W_Accelerometer")).setHorizontalScale(n);
 }
 
 //========================================================================================================================
@@ -304,12 +303,13 @@ class AccelerometerBar {
     //this class contains the plot for the 2d graph of accelerometer data
     int x, y, w, h;
     int accBarPadding = 30;
-    int xOffset;
 
     GPlot plot; //the actual grafica-based GPlot that will be rendering the Time Series trace
     GPointsArray accelPointsX;
     GPointsArray accelPointsY;
     GPointsArray accelPointsZ;
+    private final float AUTOSCALE_SPACING = 0.1;
+    private GPlotAutoscaler gplotAutoscaler;
 
     int nPoints;
     int numSeconds = 20; //default to 20 seconds
@@ -320,16 +320,14 @@ class AccelerometerBar {
     float maxX, maxY, maxZ;
     float minVal;
     float maxVal;
-    final float autoScaleSpacing = 0.1;
-
+    
     color channelColor; //color of plot trace
 
-    boolean isAutoscale; //when isAutoscale equals true, the y-axis will automatically update to scale to the largest visible amplitude
     int lastProcessedDataPacketInd = 0;
     
     private AccelerometerCapableBoard accelBoard;
 
-    AccelerometerBar(PApplet _parent, float accelXyzLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
+    AccelerometerBar(PApplet _parentApplet, float _yLimit, int _x, int _y, int _w, int _h) { //channel number, x/y location, height, width
         
         // This widget is only instantiated when the board is accel capable, so we don't need to check
         accelBoard = (AccelerometerCapableBoard)currentBoard;
@@ -338,19 +336,14 @@ class AccelerometerBar {
         y = _y;
         w = _w;
         h = _h;
-        if (eegDataSource == DATASOURCE_CYTON) {
-            xOffset = 22;
-        } else {
-            xOffset = 0;
-        }
 
-        plot = new GPlot(_parent);
-        plot.setPos(x + 36 + 4 + xOffset, y); //match Accelerometer plot position with Time Series
-        plot.setDim(w - 36 - 4 - xOffset, h);
+        plot = new GPlot(_parentApplet);
+        plot.setPos(x + 36 + 4, y); //match Accelerometer plot position with Time Series
+        plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);
         plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
         plot.setXLim(-numSeconds,0); //set the horizontal scale
-        plot.setYLim(-accelXyzLimit, accelXyzLimit); //change this to adjust vertical scale
+        plot.setYLim(-_yLimit, _yLimit); //change this to adjust vertical scale
         //plot.setPointSize(2);
         plot.setPointColor(0);
         plot.getXAxis().setAxisLabelText("Time (s)");
@@ -365,6 +358,7 @@ class AccelerometerBar {
         plot.getYAxis().setFontColor(OPENBCI_DARKBLUE);
         plot.getYAxis().setLineColor(OPENBCI_DARKBLUE);
         plot.getYAxis().getAxisLabel().setFontColor(OPENBCI_DARKBLUE);
+        gplotAutoscaler = new GPlotAutoscaler(false, AUTOSCALE_SPACING);
 
         initArrays();
 
@@ -399,10 +393,6 @@ class AccelerometerBar {
     //Used to update the accelerometerBar class
     void update() {
         updateGPlotPoints();
-
-        if (isAutoscale) {
-            autoScale();
-        }
     }
 
     void draw() {
@@ -446,10 +436,13 @@ class AccelerometerBar {
             accelPointsY.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[1]], "");
             accelPointsZ.set(i, accelTimeArray[i], (float)allData.get(i)[accelChannels[2]], "");
         }
-
+  
         plot.setPoints(accelPointsX, "layer 1");
         plot.setPoints(accelPointsY, "layer 2");
         plot.setPoints(accelPointsZ, "layer 3");
+
+        GPointsArray[] pointsArrays = new GPointsArray[]{accelPointsX, accelPointsY, accelPointsZ};
+        gplotAutoscaler.update(plot, pointsArrays);
     }
 
     float[] getLastAccelVals() {
@@ -462,37 +455,23 @@ class AccelerometerBar {
     }
 
     void adjustVertScale(int _vertScaleValue) {
-        if (_vertScaleValue == 0) {
-            isAutoscale = true;
-        } else {
-            isAutoscale = false;
-            plot.setYLim(-_vertScaleValue, _vertScaleValue);
+        boolean enableAutoscale = _vertScaleValue == 0;
+        gplotAutoscaler.setEnabled(enableAutoscale);
+        if (enableAutoscale) {
+            return;
         }
-    }
-
-    void autoScale() {
-        float[] minMaxVals = minMax(accelPointsX, accelPointsY, accelPointsZ);
-        plot.setYLim(minMaxVals[0] - autoScaleSpacing, minMaxVals[1] + autoScaleSpacing);
-    }
-
-    float[] minMax(GPointsArray arrX, GPointsArray arrY, GPointsArray arrZ) {
-        float[] minMaxVals = {0.f, 0.f};
-        for (int i = 0; i < arrX.getNPoints(); i++) { //go through the XYZ GPpointArrays for on-screen values
-            float[] vals = {arrX.getY(i), arrY.getY(i), arrZ.getY(i)};
-            minMaxVals[0] = min(minMaxVals[0], min(vals)); //make room to see
-            minMaxVals[1] = max(minMaxVals[1], max(vals));
-        }
-        return minMaxVals;
+        
+        plot.setYLim(-_vertScaleValue, _vertScaleValue);
     }
 
     void screenResized(int _x, int _y, int _w, int _h) {
         x = _x;
         y = _y;
-        w = _w+100;
+        w = _w;
         h = _h;
         //reposition & resize the plot
-        plot.setPos(x + 36 + 4 + xOffset, y);
-        plot.setDim(w - 36 - 4 - xOffset, h);
+        plot.setPos(x + 36 + 4, y);
+        plot.setDim(w - 36 - 4, h);
 
     }
 }; //end of class

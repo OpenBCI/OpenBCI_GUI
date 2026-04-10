@@ -6,7 +6,6 @@ public enum CytonSignalCheckMode implements IndexingInterface
 
     private int index;
     private String label;
-    private static CytonSignalCheckMode[] vals = values();
 
     CytonSignalCheckMode(int _index, String _label) {
         this.index = _index;
@@ -26,14 +25,6 @@ public enum CytonSignalCheckMode implements IndexingInterface
     public boolean getIsImpedanceMode() {
         return label.equals("Impedance");
     }
-
-    private static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum CytonImpedanceLabels implements IndexingInterface
@@ -45,7 +36,6 @@ public enum CytonImpedanceLabels implements IndexingInterface
     private int index;
     private String label;
     private boolean boolean_value;
-    private static CytonImpedanceLabels[] vals = values();
 
     CytonImpedanceLabels(int _index, String _label) {
         this.index = _index;
@@ -65,14 +55,6 @@ public enum CytonImpedanceLabels implements IndexingInterface
     public boolean getIsAnatomicalName() {
         return label.equals("Anatomical");
     }
-
-    private static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
-    }
 }
 
 public enum CytonImpedanceInterval implements IndexingInterface
@@ -80,14 +62,12 @@ public enum CytonImpedanceInterval implements IndexingInterface
     FOUR (0, 4000, "4 sec"),
     FIVE (1, 5000, "5 sec"),
     SEVEN (2, 7000, "7 sec"),
-    TEN (3, 10000, "10 sec")
-    ;
+    TEN (3, 10000, "10 sec");
 
     private int index;
     private int value;
     private String label;
     private boolean boolean_value;
-    private static CytonImpedanceInterval[] vals = values();
 
     CytonImpedanceInterval(int _index, int _val, String _label) {
         this.index = _index;
@@ -107,13 +87,5 @@ public enum CytonImpedanceInterval implements IndexingInterface
 
     public int getValue() {
         return value;
-    }
-
-    private static List<String> getEnumStringsAsList() {
-        List<String> enumStrings = new ArrayList<String>();
-        for (IndexingInterface val : vals) {
-            enumStrings.add(val.getString());
-        }
-        return enumStrings;
     }
 }

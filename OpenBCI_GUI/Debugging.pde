@@ -70,11 +70,12 @@ class HelpWidget {
     public void update() {
     }
 
+    //This needs to be refactored
     public void draw() {
 
         pushStyle();
 
-        if(colorScheme == COLOR_SCHEME_DEFAULT){
+        if (colorScheme == COLOR_SCHEME_DEFAULT) {
             // draw background of widget
             stroke(OPENBCI_DARKBLUE);
             fill(255);

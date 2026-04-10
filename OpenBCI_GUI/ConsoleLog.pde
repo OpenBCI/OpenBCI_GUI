@@ -60,7 +60,7 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
         logApplet = this;
 
-        surface.setAlwaysOnTop(false);
+        surface.setAlwaysOnTop(true);
         surface.setResizable(false);
 
         Frame frame = ( (PSurfaceAWT.SmoothCanvas) ((PSurfaceAWT)surface).getNative()).getFrame();
@@ -69,6 +69,8 @@ static class ConsoleWindow extends PApplet implements Runnable {
 
         clipboardCopy = new ClipHelper();
         cp5 = new ControlP5(this);
+        cp5.setGraphics(logApplet, 0, 0);
+        cp5.setAutoDraw(false);
         PFont textAreaFont = createFont("Arial", 12, true);
         consoleTextArea = cp5.addTextarea("ConsoleWindow")
             .setPosition(0, headerHeight)
@@ -113,11 +115,12 @@ static class ConsoleWindow extends PApplet implements Runnable {
     }
 
     void draw() {
-        clear();
         scene();
-        cp5.draw();
-        //checks if the screen is resized, similar to main GUI window
-        screenResized();
+        try {
+            cp5.draw();
+        } catch (ConcurrentModificationException e) {
+            println("ConsoleLog: Error drawing cp5: " + e.getMessage());
+        }
     }
 
     void screenResized() {
