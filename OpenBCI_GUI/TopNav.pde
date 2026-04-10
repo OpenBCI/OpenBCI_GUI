@@ -110,7 +110,7 @@ class TopNav {
         color _textColorNotActive = OPENBCI_DARKBLUE;
         color borderColor = OPENBCI_DARKBLUE;
 
-        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+        if (frontendTheme.isLegacyMode()) {
             _colorNotPressed = OPENBCI_BLUE;
             _textColorNotActive = WHITE;
         }
@@ -139,7 +139,7 @@ class TopNav {
         color _textColorNotActive = OPENBCI_DARKBLUE;
         color borderColor = OPENBCI_DARKBLUE;
 
-        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+        if (frontendTheme.isLegacyMode()) {
             _colorNotPressed = SUBNAV_LIGHTBLUE;
             _textColorNotActive = WHITE;
         }
@@ -203,14 +203,22 @@ class TopNav {
         color topNavBg;
         color subNavBg;
         
-        if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
+        if (frontendTheme.isLegacyMode()) {
             topNavBg = OPENBCI_BLUE;
             subNavBg = SUBNAV_LIGHTBLUE;
             logo = logo_white;
-        } else {
+        } else if (frontendTheme.isLightMode()) {
             topNavBg = WHITE;
             subNavBg = color(229);
             logo = logo_black;
+        } else if (frontendTheme.isDarkMode()) {
+            topNavBg = #030A12;
+            subNavBg = #102337;
+            logo = logo_white;
+        } else {
+            topNavBg = OPENBCI_BLUE;
+            subNavBg = SUBNAV_LIGHTBLUE;
+            logo = logo_white;
         }
 
         //Draw background rectangles for TopNav and SubNav
@@ -258,7 +266,14 @@ class TopNav {
         tutorialSelector.draw();
 
         //Draw Console Log Image on top of cp5 object
-        PImage _logo = (colorScheme == COLOR_SCHEME_DEFAULT) ? consoleImgBlue : consoleImgWhite;
+        PImage _logo;
+        if (frontendTheme.isLegacyMode() || frontendTheme.isDarkMode()) {
+            _logo = consoleImgWhite;
+        } else if (frontendTheme.isLightMode()) {
+            _logo = consoleImgBlue;
+        } else {
+            _logo = consoleImgBlue;
+        }
         image(_logo, debugButton.getPosition()[0] + 6, debugButton.getPosition()[1] + 2, 22, 22);
         //Draw camera image on top of cp5 object
         image(screenshotImgWhite, screenshotButton.getPosition()[0] + 6, screenshotButton.getPosition()[1] + 2, 22, 22);

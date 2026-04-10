@@ -69,7 +69,7 @@ class ChannelBar {
         plot.setPos(x + uiSpaceWidth, y);
         plot.setDim(w - uiSpaceWidth, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[channelIndex%8]);
+        plot.setLineColor((int)CHANNEL_COLORS[channelIndex%8]);
         plot.setXLim(-5,0);
         plot.setYLim(yAxisLowerLim, yAxisUpperLim);
         plot.setPointSize(2);
@@ -149,7 +149,7 @@ class ChannelBar {
         updatePlotPoints();
 
         if (currentBoard.isEXGChannelActive(channelIndex)) {
-            onOffButton.setColorBackground(channelColors[channelIndex%8]); // power down == false, set color to vibrant
+            onOffButton.setColorBackground(CHANNEL_COLORS[channelIndex%8]); // power down == false, set color to vibrant
         }
         else {
             onOffButton.setColorBackground(50); // power down == true, set to grey
@@ -356,7 +356,7 @@ class ChannelBar {
     }
 
     private void createOnOffButton(String name, String text, int _x, int _y, int _w, int _h) {
-        onOffButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, channelColors[channelIndex%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
+        onOffButton = createButton(cbCp5, name, text, _x, _y, _w, _h, 0, h2, 16, CHANNEL_COLORS[channelIndex%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         onOffButton.setCircularButton(true);
         onOffButton.onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {

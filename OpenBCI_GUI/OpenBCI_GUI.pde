@@ -9,6 +9,8 @@
 //   Modified (v3.0) AJ Keller (Conor Russomanno & Joel Murphy & Wangshu), September 2017
 //   Modified (v4.0) AJ Keller (Richard Waltman), September 2018
 //   Modified (v5.0) Richard Waltman, August 2020
+//   Modified (v6.0) Richard Waltman, September 2023
+//   Modified (v7.0) Richard Waltman, April 2025
 //
 //   Requires gwoptics graphing library for processing.  Built on V0.5.0
 //   http://www.gwoptics.org/processing/gwoptics_p5lib/
@@ -175,110 +177,12 @@ processing.serial.Serial serial_output;
 //set window size
 int win_w;  //window width
 int win_h; //window height
- 
-PImage openbciLogoCog;
-Gif loadingGIF;
-Gif loadingGIF_blue;
-public Gif checkingImpedanceStatusGif;
 
-PImage logo_black;
-PImage logo_blue;
-PImage logo_white;
-PImage consoleImgBlue;
-PImage consoleImgWhite;
-PImage screenshotImgWhite;
-PImage checkMark_20x20;
-
-PFont f1;
-PFont f2;
-PFont f3;
-PFont f4;
-PFont f5;
-
-PFont h1; //large Montserrat
-PFont h2; //large/medium Montserrat
-PFont h3; //medium Montserrat
-PFont h4; //small/medium Montserrat
-PFont h5; //small Montserrat
-
-PFont p0; //large bold Open Sans
-PFont p1; //large Open Sans
-PFont p2; //large/medium Open Sans
-PFont p3; //medium Open Sans
-PFont p15;
-static PFont p4; //medium/small Open Sans
-PFont p13;
-static PFont p5; //small Open Sans
-PFont p6; //small Open Sans
-PFont p_8;
-PFont p_6;
-PFont p_5;
-
-boolean setupComplete = false;
-
-//Starting to collect the GUI-wide color pallet here. Rename constants all caps later...
-final color WHITE = color(255);
-final color BLACK = color(0);
-final color OPENBCI_DARKBLUE = color(1, 18, 41);
-final color OPENBCI_BLUE = color(31, 69, 110);
-final color OPENBCI_BLUE_ALPHA50 = color(31, 69, 110, 50);
-final color OPENBCI_BLUE_ALPHA100 = color(31, 69, 110, 100);
-final color boxColor = color(200);
-final color boxStrokeColor = OPENBCI_DARKBLUE;
-final color isSelected_color = color(184, 220, 105); //Used for textfield borders,
-final color colorNotPressed = WHITE;
-final color buttonsLightBlue = color(57,128,204);
-final color GREY_235 = color(235);
-final color GREY_200 = color(200);
-final color GREY_125 = color(125);
-final color GREY_100 = color(100);
-final color GREY_20 = color(20);
-final color TURN_ON_GREEN = color(195, 242, 181);
-final color TURN_OFF_RED = color(255, 210, 210);
-final color BOLD_RED = color(224, 56, 45);
-final color BUTTON_HOVER = color(177, 184, 193);//color(252, 221, 198);
-final color BUTTON_HOVER_LIGHT = color(211, 222, 232);
-final color BUTTON_PRESSED = color(150, 170, 200); //OPENBCI_DARKBLUE;
-final color BUTTON_PRESSED_LIGHT = color(179, 187, 199);
-final color BUTTON_LOCKED_GREY = color(128);
-final color BUTTON_PRESSED_DARKGREY = color(50);
-final color BUTTON_NOOBGREEN = color(114,204,171);
-final color BUTTON_EXPERTPURPLE = color(135,95,154);
-final color BUTTON_CAUTIONRED = color(214,100,100);
-final color OBJECT_BORDER_GREY = color(150);
-final color TOPNAV_DARKBLUE = OPENBCI_BLUE;
-final color SUBNAV_LIGHTBLUE = buttonsLightBlue;
-//Use the same colors for X,Y,Z throughout Accelerometer widget
-final color ACCEL_X_COLOR = BOLD_RED;
-final color ACCEL_Y_COLOR = color(49, 113, 89);
-final color ACCEL_Z_COLOR = color(54, 87, 158);
-//Signal check colors
-final color SIGNAL_CHECK_YELLOW = color(221, 178, 13); //Same color as yellow channel color found below
-final color SIGNAL_CHECK_YELLOW_LOWALPHA = color(221, 178, 13, 150);
-final color SIGNAL_CHECK_RED = BOLD_RED;
-final color SIGNAL_CHECK_RED_LOWALPHA = color(224, 56, 45, 150);
-public CColor dropdownColorsGlobal = new CColor();
-        
-
-//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
-//Channel Colors -- Defaulted to matching the OpenBCI electrode ribbon cable
-final color[] channelColors = {
-    color(129, 129, 129),
-    color(124, 75, 141),
-    color(54, 87, 158),
-    color(49, 113, 89),
-    SIGNAL_CHECK_YELLOW,
-    color(253, 94, 52),
-    BOLD_RED,
-    color(162, 82, 49)
-};
-
-final int COLOR_SCHEME_DEFAULT = 1;
-final int COLOR_SCHEME_ALTERNATIVE_A = 2;
-// int COLOR_SCHEME_ALTERNATIVE_B = 3;
-int colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
+boolean appSetupComplete = false;
 
 WidgetManager widgetManager;
+
+FrontendTheme frontendTheme;
 
 //Global variable for general navigation bar height
 final int NAV_HEIGHT = 22;
@@ -349,6 +253,8 @@ void setup() {
     frameRate(120);
 
     copyPaste = new CopyPaste();
+
+    frontendTheme = new FrontendTheme(ColorScheme.LEGACY);
 
     //V1 FONTS
     f1 = createFont("fonts/Raleway-SemiBold.otf", 16);
@@ -505,7 +411,7 @@ void delayedSetup() {
         // Otherwise we get a crash on launch 10% of the time
         controlPanel = new ControlPanel(this);
 
-        setupComplete = true; // signal that the setup thread has finished
+        appSetupComplete = true; // signal that the setup thread has finished
         println("OpenBCI_GUI::Setup: Setup is complete!");
     }
 
@@ -524,7 +430,7 @@ void delayedSetup() {
 synchronized void draw() {
     if (showStartupError) {
         drawStartupError();
-    } else if (setupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
+    } else if (appSetupComplete && systemMode != SYSTEMMODE_INTROANIMATION) {
         systemUpdate(); //signPost("20");
         systemDraw();   //signPost("30");
         if (midInit) {

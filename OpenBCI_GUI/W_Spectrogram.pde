@@ -143,9 +143,6 @@ class W_Spectrogram extends WidgetWithSettings {
         
         float scaleW = float(graphW) / dataImageW;
         float scaleH = float(graphH) / dataImageH;
-
-        // Draw black background
-        drawBackground();
         
         // Update spectrogram data if streaming
         if (currentBoard.isStreaming()) {
@@ -160,13 +157,6 @@ class W_Spectrogram extends WidgetWithSettings {
         spectChanSelectBot.draw();
         drawAxes(scaleW, scaleH);
         drawCenterLine();
-    }
-
-    private void drawBackground() {
-        pushStyle();
-        fill(0);
-        rect(x, y, w, h);
-        popStyle();
     }
 
     private void displaySpectrogramImage(float scaleW, float scaleH) {

@@ -46,7 +46,7 @@ class FifoChannelBar {
         plot.setPos(x + 36 + 4 + xOffset, y);
         plot.setDim(w - 36 - 4 - xOffset, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
+        plot.setLineColor((int)CHANNEL_COLORS[(NUM_ACCEL_DIMS)%8]);
         plot.setXLim(-windowSeconds,0); //horizontal scale
         plot.setYLim(0, yLimit); //vertical scale
         plot.setPointColor(0);
@@ -93,7 +93,7 @@ class FifoChannelBar {
     public void initLayers() {
         for (int i = 0; i < layerCount; i++) {
             plot.addLayer("layer" + (i + 1), new GPointsArray(windowPointsCount - 1));
-            plot.getLayer("layer" + (i + 1)).setLineColor((int)channelColors[(i + 4) % 8]);
+            plot.getLayer("layer" + (i + 1)).setLineColor((int)CHANNEL_COLORS[(i + 4) % 8]);
         }
     }
 

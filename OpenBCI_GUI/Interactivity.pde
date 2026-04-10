@@ -15,7 +15,7 @@
 //interpret a keypress...the key pressed comes in as "key"
 synchronized void keyPressed() {
     // don't allow key presses until setup is complete and the UI is initialized
-    if (!setupComplete) {
+    if (!appSetupComplete) {
         return;
     }
 
@@ -58,17 +58,8 @@ void parseKey(char val) {
             drawContainers = !drawContainers;
             return;
         case '{':
-            /*
-            if(colorScheme == COLOR_SCHEME_DEFAULT){
-                colorScheme = COLOR_SCHEME_ALTERNATIVE_A;
-            } else if(colorScheme == COLOR_SCHEME_ALTERNATIVE_A) {
-                colorScheme = COLOR_SCHEME_DEFAULT;
-            }
-            */
-            //topNav.updateNavButtonsBasedOnColorScheme();
-            output("New Dark color scheme coming soon!");
+            frontendTheme.iterateColorScheme();
             return;
-
         //deactivate channels 1-4
         case '1':
             currentBoard.setEXGChannelActive(1-1, false);
@@ -249,7 +240,7 @@ void mouseDragged() {
 //switch yard if a click is detected
 synchronized void mousePressed() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
-    if (!setupComplete) {
+    if (!appSetupComplete) {
         return;
     }
     // verbosePrint("OpenBCI_GUI: mousePressed: mouse pressed");
@@ -286,7 +277,7 @@ synchronized void mousePressed() {
 
 synchronized void mouseReleased() {
     // don't allow mouse clicks until setup is complete and the UI is initialized
-    if (!setupComplete) {
+    if (!appSetupComplete) {
         return;
     }
 

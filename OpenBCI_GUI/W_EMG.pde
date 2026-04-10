@@ -133,7 +133,7 @@ class W_Emg extends WidgetWithSettings {
                 translate(currentX, currentY);
 
                 //realtime
-                fill(channelColors[colorIndex], 200);
+                fill(CHANNEL_COLORS[colorIndex], 200);
                 noStroke();
                 circle(2*colOffset/8, rowOffset / 2, scaleFactor * emgSettingsValues.getAverageuV(channel));
 
@@ -154,7 +154,7 @@ class W_Emg extends WidgetWithSettings {
 
                 //draw normalized bar graph of uV w/ matching channel color
                 noStroke();
-                fill(channelColors[colorIndex], 200);
+                fill(CHANNEL_COLORS[colorIndex], 200);
                 rect(_x, 3*_y + 1, _w, map(emgSettingsValues.getNormalizedChannelValue(channel), 0, 1, 0, (-1) * int((4*rowOffset/8))));
 
                 //draw background bar container for mapped uV value indication

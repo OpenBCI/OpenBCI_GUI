@@ -109,11 +109,11 @@ class W_BandPower extends WidgetWithSettings {
         );
         //setting bg colors of histogram bars to match the color scheme of the channel colors w/ an opacity of 150/255
         bp_plot.getHistogram().setBgColors(new color[] {
-                color((int)channelColors[6], 200),
-                color((int)channelColors[4], 200),
-                color((int)channelColors[3], 200),
-                color((int)channelColors[2], 200), 
-                color((int)channelColors[1], 200),
+                color((int)CHANNEL_COLORS[6], 200),
+                color((int)CHANNEL_COLORS[4], 200),
+                color((int)CHANNEL_COLORS[3], 200),
+                color((int)CHANNEL_COLORS[2], 200), 
+                color((int)CHANNEL_COLORS[1], 200),
             }
         );
         //setting color of text label for each histogram bar on the x axis
@@ -150,20 +150,13 @@ class W_BandPower extends WidgetWithSettings {
         super.draw();
         pushStyle();
 
-        //remember to refer to x,y,w,h which are the positioning variables of the Widget class
-        // Draw the third plot
         bp_plot.beginDraw();
-        bp_plot.drawBackground();
         bp_plot.drawBox();
         bp_plot.drawXAxis();
         bp_plot.drawYAxis();
         bp_plot.drawGridLines(GPlot.HORIZONTAL);
         bp_plot.drawHistograms();
         bp_plot.endDraw();
-
-        //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
-        fill(200, 200, 200);
-        rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
         bpChanSelect.draw();

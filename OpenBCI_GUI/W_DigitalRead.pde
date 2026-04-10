@@ -215,15 +215,15 @@ class DigitalReadDot{
         digitalInputVal = 0;
 
         if (digitalInputPin == 11) {
-            dot1Fill = channelColors[0];
+            dot1Fill = CHANNEL_COLORS[0];
         } else if (digitalInputPin == 12) {
-            dot1Fill = channelColors[1];
+            dot1Fill = CHANNEL_COLORS[1];
         } else if (digitalInputPin == 13) {
-            dot1Fill = channelColors[2];
+            dot1Fill = CHANNEL_COLORS[2];
         } else if (digitalInputPin == 17) {
-            dot1Fill = channelColors[3];
+            dot1Fill = CHANNEL_COLORS[3];
         } else { // 18
-            dot1Fill = channelColors[4];
+            dot1Fill = CHANNEL_COLORS[4];
         }
 
         dotX = _x;

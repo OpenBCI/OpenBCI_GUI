@@ -161,7 +161,6 @@ class W_Fft extends WidgetWithSettings {
         //draw FFT Graph w/ all plots
         noStroke();
         fftPlot.beginDraw();
-        fftPlot.drawBackground();
         fftPlot.drawBox();
         fftPlot.drawXAxis();
         fftPlot.drawYAxis();
@@ -169,16 +168,12 @@ class W_Fft extends WidgetWithSettings {
         //Update and draw active channels that have been selected via channel select for this widget
         for (int j = 0; j < fftChanSelect.getActiveChannels().size(); j++) {
             int chan = fftChanSelect.getActiveChannels().get(j);
-            fftPlot.setLineColor((int)channelColors[chan % 8]);
+            fftPlot.setLineColor((int)CHANNEL_COLORS[chan % 8]);
             //remap fft point arrays to fft plots
             fftPlot.setPoints(fftGplotPoints[chan]);
             fftPlot.drawLines();
         }  
         fftPlot.endDraw();
-
-        //for this widget need to redraw the grey bar, bc the FFT plot covers it up...
-        fill(200, 200, 200);
-        rect(x, y - NAV_HEIGHT, w, NAV_HEIGHT); //button bar
 
         popStyle();
 

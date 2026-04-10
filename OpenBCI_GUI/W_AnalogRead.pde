@@ -264,7 +264,7 @@ class AnalogReadBar{
         plot.setPos(x + 36 + 4, y);
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(auxValuesPosition)%8]);
+        plot.setLineColor((int)CHANNEL_COLORS[(auxValuesPosition)%8]);
         plot.setXLim(-3.2,-2.9);
         plot.setYLim(-200,200);
         plot.setPointSize(2);

@@ -429,7 +429,7 @@ class FilterUIPopup extends PApplet implements Runnable {
         // Update UI objects for all channels
         for (int chan = 0; chan < filterSettings.getChannelCount(); chan++) {
             //Use same channel colors as the rest of the GUI for onOff buttons
-            onColor = channelColors[chan%8];
+            onColor = CHANNEL_COLORS[chan%8];
             switch (filterSettings.values.brainFlowFilter) {
                 case BANDSTOP:
                     //Fetch on/off button color
@@ -480,7 +480,7 @@ class FilterUIPopup extends PApplet implements Runnable {
     }
 
     private void createOnOffButton(String name, final String text, final int chan, int _x, int _y, int _w, int _h) {
-        onOffButtons[chan] = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, channelColors[chan%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
+        onOffButtons[chan] = createButton(cp5, name, text, _x, _y, _w, _h, 0, h2, 16, CHANNEL_COLORS[chan%8], WHITE, BUTTON_HOVER, BUTTON_PRESSED, (Integer) null, -2);
         onOffButtons[chan].setCircularButton(true);
         onOffButtons[chan].onRelease(new CallbackListener() {
             public void controlEvent(CallbackEvent theEvent) {
@@ -492,7 +492,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             onOffButtons[chan].setColorBackground(BUTTON_PRESSED_DARKGREY);
                         } else {
                             filterSettings.values.bandStopFilterActive[chan] = FilterActiveOnChannel.ON;
-                            onOffButtons[chan].setColorBackground(channelColors[chan%8]);
+                            onOffButtons[chan].setColorBackground(CHANNEL_COLORS[chan%8]);
                         }
                         break;
                     case BANDPASS:
@@ -501,7 +501,7 @@ class FilterUIPopup extends PApplet implements Runnable {
                             onOffButtons[chan].setColorBackground(BUTTON_PRESSED_DARKGREY);
                         } else {
                             filterSettings.values.bandPassFilterActive[chan] = FilterActiveOnChannel.ON;
-                            onOffButtons[chan].setColorBackground(channelColors[chan%8]);
+                            onOffButtons[chan].setColorBackground(CHANNEL_COLORS[chan%8]);
                         }
                         break;
                 }

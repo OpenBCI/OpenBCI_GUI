@@ -275,7 +275,7 @@ class W_EmgJoystick extends WidgetWithSettings {
         pushStyle();
 
         //Realtime
-        fill(channelColors[colorIndex], 200);
+        fill(CHANNEL_COLORS[colorIndex], 200);
         noStroke();
         circle(circleX, circleY, scaleFactor * emgSettingsValues.averageuV[channel]);
 
@@ -294,7 +294,7 @@ class W_EmgJoystick extends WidgetWithSettings {
 
         //Draw normalized bar graph of uV w/ matching channel color
         noStroke();
-        fill(channelColors[colorIndex], 200);
+        fill(CHANNEL_COLORS[colorIndex], 200);
         rect(barX, barY, BAR_WIDTH, normalizedBAR_HEIGHTeight);
 
         //Draw background bar container for mapped uV value indication

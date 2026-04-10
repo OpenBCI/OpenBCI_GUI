@@ -75,7 +75,7 @@ class HelpWidget {
 
         pushStyle();
 
-        if (colorScheme == COLOR_SCHEME_DEFAULT) {
+        if (frontendTheme.isLightMode()) {
             // draw background of widget
             stroke(OPENBCI_DARKBLUE);
             fill(255);
@@ -93,7 +93,7 @@ class HelpWidget {
             fill(255);
             textAlign(LEFT, TOP);
             text(currentOutput, padding*2, height - h + padding);
-        } else if (colorScheme == COLOR_SCHEME_ALTERNATIVE_A){
+        } else if (frontendTheme.isLegacyMode()) {
             // draw background of widget
             stroke(OPENBCI_DARKBLUE);
             fill(OPENBCI_BLUE);

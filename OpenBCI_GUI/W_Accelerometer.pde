@@ -341,7 +341,7 @@ class AccelerometerBar {
         plot.setPos(x + 36 + 4, y); //match Accelerometer plot position with Time Series
         plot.setDim(w - 36 - 4, h);
         plot.setMar(0f, 0f, 0f, 0f);
-        plot.setLineColor((int)channelColors[(NUM_ACCEL_DIMS)%8]);
+        plot.setLineColor((int)CHANNEL_COLORS[(NUM_ACCEL_DIMS)%8]);
         plot.setXLim(-numSeconds,0); //set the horizontal scale
         plot.setYLim(-_yLimit, _yLimit); //change this to adjust vertical scale
         //plot.setPointSize(2);

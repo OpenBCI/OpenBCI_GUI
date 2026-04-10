@@ -62,7 +62,8 @@ class Widget {
     public void draw(){
         pushStyle();
         noStroke();
-        fill(255);
+        color backgroundColor = frontendTheme.getWidgetTheme().getBackgroundColor();
+        fill(backgroundColor);
         rect(x,y-1,w,h+1); //draw white widget background
         popStyle();
 
