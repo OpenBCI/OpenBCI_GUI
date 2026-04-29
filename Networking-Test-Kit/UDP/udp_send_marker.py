@@ -36,7 +36,7 @@ if __name__ == "__main__":
       # generate random float
       marker = random.uniform(0, 4)
       # package as byte array
-      msg = struct.pack('!d', marker)
+      msg = struct.pack('!f', marker)
       # send through socket
       sock.sendto(msg, (UDP_IP, UDP_PORT))
       time.sleep(.25)
