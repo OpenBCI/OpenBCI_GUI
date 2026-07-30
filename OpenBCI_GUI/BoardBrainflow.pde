@@ -106,6 +106,9 @@ abstract class BoardBrainFlow extends Board {
         }
         try {
             boardShim.stop_stream();
+            if (!brainflowStreamer.isEmpty()) {
+                boardShim.delete_streamer(brainflowStreamer);
+            }
             streaming = false;
             time_last_datapoint = -1.0;
         }
