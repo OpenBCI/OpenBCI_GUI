@@ -1,6 +1,7 @@
 class DataLogger {
     //variables for writing EEG data out to a file
     private DataWriterODF fileWriterODF;
+    private DataWriterFilteredODF fileWriterFilteredODF;
     private DataWriterBDF fileWriterBDF;
     public DataWriterBF fileWriterBF; //Add the ability to simulataneously save to BrainFlow CSV, independent of BDF or ODF
     private String sessionName = "N/A";
@@ -12,6 +13,12 @@ class DataLogger {
     private boolean logFileIsOpen = false;
     private long logFileStartTime;
     private long logFileMaxDurationNano = -1;
+    private String currentRecordingName = "";
+    private String activeFilterSettingsJson = "";
+    private boolean activeSmoothingSetting = false;
+    private int filteredEpochNumber = 0;
+    private long nextFilteredSampleIndex = 0;
+    private boolean filteredRecordingFailed = false;
 
     DataLogger() {
         //Default to OpenBCI CSV Data Format
@@ -20,7 +27,10 @@ class DataLogger {
     }
 
     public void initialize() {
-
+        activeFilterSettingsJson = "";
+        filteredEpochNumber = 0;
+        nextFilteredSampleIndex = 0;
+        filteredRecordingFailed = false;
     }
 
     public void uninitialize() {
@@ -55,6 +65,114 @@ class DataLogger {
                 // Do nothing...
                 break;
         }
+    }
+
+    /**
+     * Save the exact filtered tail produced for the current raw board frame.
+     * This is called from processNewData() only after GUI filtering completes.
+     */
+    public void saveFilteredData(float[][] filteredDisplayData) {
+        if (!isLogFileOpen()
+                || outputDataSource != OUTPUT_SOURCE_ODF
+                || guiSettings == null
+                || !guiSettings.getSaveFilteredTimeSeries()
+                || filteredRecordingFailed) {
+            return;
+        }
+
+        double[][] rawFrameData = currentBoard.getFrameData();
+        int[] exgChannels = currentBoard.getEXGChannels();
+        if (exgChannels.length == 0
+                || rawFrameData.length == 0
+                || rawFrameData[exgChannels[0]].length == 0) {
+            return;
+        }
+
+        try {
+            String currentFilterSettingsJson = filterSettings.getJson();
+            boolean currentSmoothingSetting = getCurrentSmoothingSetting();
+            if (fileWriterFilteredODF == null
+                    || !currentFilterSettingsJson.equals(activeFilterSettingsJson)
+                    || currentSmoothingSetting != activeSmoothingSetting) {
+                FilteredDataMetadata metadata = getFilteredDataMetadata(
+                    currentFilterSettingsJson,
+                    currentSmoothingSetting
+                );
+                openNewFilteredLogFile(
+                    metadata,
+                    currentFilterSettingsJson,
+                    currentSmoothingSetting
+                );
+            }
+
+            int samplesWritten = fileWriterFilteredODF.append(
+                filteredDisplayData,
+                rawFrameData,
+                nextFilteredSampleIndex
+            );
+            nextFilteredSampleIndex += samplesWritten;
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            outputError("Filtered data recording stopped because sample alignment could not be guaranteed. Raw recording will continue.");
+            closeFilteredLogFile();
+            filteredRecordingFailed = true;
+        }
+    }
+
+    private boolean getCurrentSmoothingSetting() {
+        if (currentBoard instanceof SmoothingCapableBoard) {
+            return ((SmoothingCapableBoard)currentBoard).getSmoothingActive();
+        }
+        return false;
+    }
+
+    private FilteredDataMetadata getFilteredDataMetadata(
+        String currentFilterSettingsJson,
+        boolean smoothingActive
+    ) {
+        String brainFlowVersion = "Unknown";
+        try {
+            brainFlowVersion = BoardShim.get_version();
+        } catch (BrainFlowError e) {
+            println("DataLogging: Unable to read BrainFlow version for filtered metadata.");
+        }
+
+        return new FilteredDataMetadata(
+            currentBoard.getSampleRate(),
+            currentBoard.getClass().getName(),
+            localGUIVersionString,
+            brainFlowVersion,
+            smoothingActive,
+            currentFilterSettingsJson
+        );
+    }
+
+    private void openNewFilteredLogFile(
+        FilteredDataMetadata metadata,
+        String currentFilterSettingsJson,
+        boolean smoothingActive
+    ) {
+        closeFilteredLogFile();
+        filteredEpochNumber++;
+        fileWriterFilteredODF = new DataWriterFilteredODF(
+            getSessionPath(),
+            fileWriterODF.getFileName(),
+            currentRecordingName,
+            filteredEpochNumber,
+            nextFilteredSampleIndex,
+            metadata
+        );
+        activeFilterSettingsJson = currentFilterSettingsJson;
+        activeSmoothingSetting = smoothingActive;
+        println("OpenBCI_GUI: opened filtered ODF output file: " + fileWriterFilteredODF.getFileName());
+    }
+
+    private void closeFilteredLogFile() {
+        if (fileWriterFilteredODF != null) {
+            fileWriterFilteredODF.closeFile();
+        }
+        fileWriterFilteredODF = null;
+        activeFilterSettingsJson = "";
     }
 
     public void limitRecordingFileDuration() {
@@ -102,6 +220,10 @@ class DataLogger {
     }
 
     private void openNewLogFile(String _fileName) {
+        currentRecordingName = _fileName;
+        filteredEpochNumber = 0;
+        activeFilterSettingsJson = "";
+        filteredRecordingFailed = false;
         //close the file if it's open
         switch (outputDataSource) {
             case OUTPUT_SOURCE_ODF:
@@ -174,6 +296,7 @@ class DataLogger {
     }
 
     private void closeLogFileODF() {
+        closeFilteredLogFile();
         if (fileWriterODF != null) {
             fileWriterODF.closeFile();
         }

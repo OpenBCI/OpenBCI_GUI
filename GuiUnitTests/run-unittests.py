@@ -11,6 +11,7 @@ import traceback
 #           function which conflicts with the unit test sketch
 #           Once we get rid of globals we could copy all PDEs
 files_to_unittest = [
+    "FilteredDataSequence.pde",
     "PacketLossTracker.pde",
     "TimeTrackingQueue.pde"
 ]

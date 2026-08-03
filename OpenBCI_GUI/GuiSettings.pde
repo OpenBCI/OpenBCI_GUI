@@ -1,5 +1,7 @@
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import java.io.*;
 import java.util.regex.*;
@@ -40,6 +42,7 @@ public class GuiSettingsValues {
     public boolean autoStartDataStream = false;
     public boolean autoStartNetworkStream = false;
     public boolean autoLoadSessionSettings = false;
+    public boolean saveFilteredTimeSeries = false;
 
     public GuiSettingsValues() {
     }
@@ -77,25 +80,46 @@ class GuiSettings {
                 fileContents.append(scanner.nextLine() + System.lineSeparator());
             }
 
-            //Check for incompatible or old settings
-            if (validateJsonKeys(fileContents.toString())) {
-                Gson gson = new Gson();
-                values = gson.fromJson(fileContents.toString(), GuiSettingsValues.class);
+            boolean settingsHaveAllCurrentKeys = validateJsonKeys(fileContents.toString());
+            values = loadWithDefaults(fileContents.toString());
+
+            if (settingsHaveAllCurrentKeys) {
                 println("OpenBCI_GUI::Settings: Found and loaded existing GUI-wide Settings from file.");
             } else {
-                println("OpenBCI_GUI::Settings: Incompatible GUI-wide Settings found. Creating new file and resetting defaults.");
+                println("OpenBCI_GUI::Settings: Migrating GUI-wide Settings and preserving existing values.");
                 saveToFile();
             }
             
             return true;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             outputWarn("OpenBCI_GUI::Settings: Error loading GUI-wide settings from file. Attempting to create a new one.");
             //If there is an error, attempt to overwrite the file or create a new one
             saveToFile();
             return false;
         }      
+    }
+
+    /**
+     * Merge known values from an older settings file onto current defaults.
+     * Missing new keys therefore receive safe defaults without resetting the
+     * preferences the user already selected.
+     */
+    private GuiSettingsValues loadWithDefaults(String savedJson) {
+        Gson gson = new Gson();
+        JsonParser parser = new JsonParser();
+        JsonObject merged = parser.parse(getJson()).getAsJsonObject();
+        JsonObject saved = parser.parse(savedJson).getAsJsonObject();
+
+        for (Map.Entry<String, com.google.gson.JsonElement> entry : saved.entrySet()) {
+            if (merged.has(entry.getKey())) {
+                merged.add(entry.getKey(), entry.getValue());
+            } else {
+                println("OpenBCI_GUI::Settings: Ignoring unknown GUI-wide setting: " + entry.getKey());
+            }
+        }
+        return gson.fromJson(merged, GuiSettingsValues.class);
     }
 
     public String getJson() {
@@ -239,6 +263,15 @@ class GuiSettings {
 
     public void setAutoLoadSessionSettings(boolean b) {
         values.autoLoadSessionSettings = b;
+        saveToFile();
+    }
+
+    public boolean getSaveFilteredTimeSeries() {
+        return values.saveFilteredTimeSeries;
+    }
+
+    public void setSaveFilteredTimeSeries(boolean b) {
+        values.saveFilteredTimeSeries = b;
         saveToFile();
     }
 }

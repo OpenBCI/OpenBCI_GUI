@@ -39,6 +39,10 @@ void processNewData() {
     //apply additional processing for the time-domain montage plot (ie, filtering)
     dataProcessing.process(dataProcessingFilteredBuffer, fftBuff);
 
+    //The raw frame has already been logged. Save only the newly filtered tail
+    //that corresponds to that same frame.
+    dataLogger.saveFilteredData(dataProcessingFilteredBuffer);
+
     //look to see if the latest data is railed so that we can notify the user on the GUI
     for (int channel=0; channel < globalChannelCount; channel++) is_railed[channel].update(dataProcessingRawBuffer[channel], channel);
 
