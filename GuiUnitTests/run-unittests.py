@@ -41,7 +41,7 @@ def main ():
         dir_list = os.listdir(sketch_dir)
         print("Files and directories in '", sketch_dir, "' :")
         print(dir_list)
-        subprocess.run(["processing-java", "--force", "--sketch=" + sketch_dir, "--run"])
+        subprocess.run(["processing-java", "--force", "--sketch=" + sketch_dir, "--run"], check=True)
     except Exception as e:
         print(e)
         delete_files(sketch_dir)
